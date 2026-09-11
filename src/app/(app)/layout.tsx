@@ -1,6 +1,6 @@
-import { AppShell } from "@/components/layout/app-shell";
 import { AuthProvider } from "@/lib/context/auth-context";
 import { WorkspaceProvider } from "@/lib/context/workspace-context";
+import { WorkspaceGuard } from "@/components/layout/workspace-guard";
 
 export default function AppLayout({
   children,
@@ -10,7 +10,7 @@ export default function AppLayout({
   return (
     <AuthProvider>
       <WorkspaceProvider>
-        <AppShell>{children}</AppShell>
+        <WorkspaceGuard>{children}</WorkspaceGuard>
       </WorkspaceProvider>
     </AuthProvider>
   );

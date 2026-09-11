@@ -46,7 +46,7 @@ export default function TeamPage() {
     <Container size="lg" className="space-y-6">
       <PageHeader
         title="Team"
-        description={`Sales team roster and automated lead routing rules for ${currentWorkspace.name}.`}
+        description={`Sales team roster and automated lead routing rules for ${currentWorkspace?.name || "your workspace"}.`}
         actions={
           <Badge variant="outline" className="text-emerald-700 bg-emerald-50 border-emerald-200 text-xs font-medium">
             3 Active Brokers

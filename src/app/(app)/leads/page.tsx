@@ -109,7 +109,7 @@ export default function LeadsPage() {
   const handleExport = () => {
     setIsExporting(true);
     const leadsToExport = filteredLeads.length > 0 ? filteredLeads : leadList;
-    const result = exportLeadsToCSV(leadsToExport, currentWorkspace.name);
+    const result = exportLeadsToCSV(leadsToExport, currentWorkspace?.name || "pacia-workspace");
 
     if (result) {
       toast.success("CSV Export Complete", {
@@ -178,7 +178,7 @@ export default function LeadsPage() {
     <Container size="lg" className="space-y-4">
       <PageHeader
         title="Leads"
-        description={`Inbound property inquiries and qualification pipeline for ${currentWorkspace.name}.`}
+        description={`Inbound property inquiries and qualification pipeline for ${currentWorkspace?.name || "your workspace"}.`}
         actions={
           <div className="flex items-center gap-2">
             <Button

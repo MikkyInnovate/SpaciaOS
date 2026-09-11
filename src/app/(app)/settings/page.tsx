@@ -26,7 +26,7 @@ export default function SettingsPage() {
     <Container size="lg" className="space-y-6">
       <PageHeader
         title="Settings"
-        description={`Workspace profile, autonomous AI behavior, and access controls for ${currentWorkspace.name}.`}
+        description={`Workspace profile, autonomous AI behavior, and access controls for ${currentWorkspace?.name || "your workspace"}.`}
         actions={
           <Button
             onClick={handleSave}
@@ -61,7 +61,7 @@ export default function SettingsPage() {
                 </CardDescription>
               </div>
               <Badge variant="outline" className="text-emerald-700 bg-emerald-50 border-emerald-200 uppercase text-[10px]">
-                {currentWorkspace.tier}
+                {currentWorkspace?.tier || "Enterprise"}
               </Badge>
             </div>
           </CardHeader>
@@ -70,21 +70,21 @@ export default function SettingsPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <label className="text-xs font-medium text-stone-700">Workspace Name</label>
-                  <Input defaultValue={currentWorkspace.name} className="h-8 text-xs" />
+                  <Input defaultValue={currentWorkspace?.name || ""} className="h-8 text-xs" />
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-xs font-medium text-stone-700">Operational Email</label>
-                  <Input defaultValue={user?.email || "sales@premier.co"} type="email" className="h-8 text-xs" />
+                  <Input defaultValue={user?.email || ""} type="email" className="h-8 text-xs" />
                 </div>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <label className="text-xs font-medium text-stone-700">Primary Real Estate Market</label>
-                  <Input defaultValue={currentWorkspace.primaryMarket} className="h-8 text-xs" />
+                  <Input defaultValue={currentWorkspace?.primaryMarket || "National / Regional"} className="h-8 text-xs" />
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-xs font-medium text-stone-700">Default Currency</label>
-                  <Input defaultValue={currentWorkspace.currency} className="h-8 text-xs" />
+                  <Input defaultValue="USD ($)" className="h-8 text-xs" />
                 </div>
               </div>
             </form>
@@ -105,7 +105,7 @@ export default function SettingsPage() {
           <CardContent className="space-y-3 text-xs">
             <div className="flex items-center justify-between p-2 rounded-lg bg-stone-50 border border-stone-100">
               <span className="text-stone-600">Active Role</span>
-              <span className="font-semibold text-stone-900">{user?.name || currentWorkspace.role}</span>
+              <span className="font-semibold text-stone-900">{currentWorkspace?.role === "org:admin" ? "Workspace Admin" : "Team Member"}</span>
             </div>
             <div className="flex items-center justify-between p-2 rounded-lg bg-stone-50 border border-stone-100">
               <span className="text-stone-600">Multi-Factor Auth</span>

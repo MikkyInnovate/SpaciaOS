@@ -1,81 +1,112 @@
 "use client";
 
 import * as React from "react";
+import { useOrganization, useOrganizationList } from "@clerk/nextjs";
 import type { Workspace, WorkspaceContextValue } from "@/types/workspace";
-import { siteConfig } from "@/lib/config/site";
 import { apiClient } from "@/lib/api/client";
 
-export const MOCK_WORKSPACES: Workspace[] = [
-  {
-    id: siteConfig.defaultWorkspace.id,
-    name: siteConfig.defaultWorkspace.name,
-    slug: "premier-realty",
-    role: "Sales Operations",
-    tier: "enterprise",
-    currency: "NGN (₦)",
-    timezone: "Africa/Lagos (WAT)",
-    primaryMarket: "Lagos (Ikoyi, VI, Lekki)",
-    isDefault: true,
-  },
-  {
-    id: "ws_oakmont_capital",
-    name: "Oakmont Capital Real Estate",
-    slug: "oakmont-capital",
-    role: "Admin",
-    tier: "growth",
-    currency: "USD ($)",
-    timezone: "Africa/Lagos (WAT)",
-    primaryMarket: "Abuja (Maitama, Asokoro)",
-    isDefault: false,
-  },
-];
-
-const STORAGE_KEY = "spacia_active_workspace_id";
+const PREFERRED_WORKSPACE_STORAGE_KEY = "pacia_preferred_workspace_id";
 
 const WorkspaceContext = React.createContext<WorkspaceContextValue | undefined>(undefined);
 
 export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
-  const [workspaces] = React.useState<Workspace[]>(MOCK_WORKSPACES);
-  const [currentWorkspaceId, setCurrentWorkspaceId] = React.useState<string>(() => {
-    if (typeof window !== "undefined") {
-      try {
-        const storedId = localStorage.getItem(STORAGE_KEY);
-        if (storedId && MOCK_WORKSPACES.some((ws) => ws.id === storedId)) {
-          return storedId;
-        }
-      } catch {
-        // Storage unavailable or blocked
-      }
-    }
-    return MOCK_WORKSPACES[0].id;
+  const { organization, membership, isLoaded: isOrgLoaded } = useOrganization();
+  const { userMemberships, setActive, isLoaded: isOrgListLoaded } = useOrganizationList({
+    userMemberships: {
+      infinite: true,
+    },
   });
-  const [isLoading] = React.useState<boolean>(false);
 
-  const switchWorkspace = React.useCallback((workspaceId: string) => {
-    const target = MOCK_WORKSPACES.find((ws) => ws.id === workspaceId);
-    if (target) {
-      setCurrentWorkspaceId(workspaceId);
+  const isLoading = !isOrgLoaded || !isOrgListLoaded;
+
+  const userMembershipsData = userMemberships?.data;
+
+  // Extract list of all Clerk organizations the user belongs to
+  const workspaces = React.useMemo<Workspace[]>(() => {
+    if (!userMembershipsData) return [];
+
+    return userMembershipsData.map((mem) => ({
+      id: mem.organization.id,
+      name: mem.organization.name,
+      slug: mem.organization.slug || mem.organization.id,
+      role: mem.role,
+      imageUrl: mem.organization.imageUrl,
+    }));
+  }, [userMembershipsData]);
+
+  // Current active workspace derived strictly from active Clerk organization
+  const currentWorkspace = React.useMemo<Workspace | null>(() => {
+    if (!organization) return null;
+
+    return {
+      id: organization.id,
+      name: organization.name,
+      slug: organization.slug || organization.id,
+      role: membership?.role || "org:member",
+      imageUrl: organization.imageUrl,
+    };
+  }, [organization, membership]);
+
+  // Auto-activate organization if single organization exists or restore UI preference
+  React.useEffect(() => {
+    if (isLoading || !setActive) return;
+
+    // If an organization is already active, don't force a switch
+    if (organization) return;
+
+    if (workspaces.length === 1) {
+      // Exactly 1 organization: auto-activate to enter Pacia seamlessly
+      setActive({ organization: workspaces[0].id });
+    } else if (workspaces.length > 1) {
+      // Multiple organizations: check if non-authoritative preference exists in storage
+      let preferredId: string | null = null;
       try {
-        localStorage.setItem(STORAGE_KEY, workspaceId);
+        preferredId = localStorage.getItem(PREFERRED_WORKSPACE_STORAGE_KEY);
       } catch {
-        // Storage unavailable
+        // Storage restricted
+      }
+
+      if (preferredId && workspaces.some((ws) => ws.id === preferredId)) {
+        setActive({ organization: preferredId });
+      } else {
+        // Default to first organization
+        setActive({ organization: workspaces[0].id });
       }
     }
-  }, []);
+  }, [isLoading, organization, workspaces, setActive]);
 
-  // Keep centralized apiClient in sync with active workspace
+  // Synchronize active workspace ID with centralized apiClient
   React.useEffect(() => {
-    apiClient.setWorkspaceId(currentWorkspaceId);
-  }, [currentWorkspaceId]);
+    if (currentWorkspace?.id) {
+      apiClient.setWorkspaceId(currentWorkspace.id);
+    } else {
+      apiClient.setWorkspaceId("");
+    }
+  }, [currentWorkspace?.id]);
 
-  const currentWorkspace = React.useMemo(() => {
-    return workspaces.find((ws) => ws.id === currentWorkspaceId) || workspaces[0];
-  }, [workspaces, currentWorkspaceId]);
+  const switchWorkspace = React.useCallback(
+    async (workspaceId: string) => {
+      if (!setActive) return;
+
+      try {
+        await setActive({ organization: workspaceId });
+        try {
+          localStorage.setItem(PREFERRED_WORKSPACE_STORAGE_KEY, workspaceId);
+        } catch {
+          // Storage restricted
+        }
+      } catch (err) {
+        console.error("Failed to switch active organization:", err);
+      }
+    },
+    [setActive]
+  );
 
   const value = React.useMemo<WorkspaceContextValue>(
     () => ({
       currentWorkspace,
       workspaces,
+      hasWorkspace: Boolean(currentWorkspace),
       isLoading,
       switchWorkspace,
     }),

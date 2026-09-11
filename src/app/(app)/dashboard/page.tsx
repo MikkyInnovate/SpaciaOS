@@ -4,7 +4,7 @@ import * as React from "react";
 import { Container } from "@/components/layout/container";
 import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
-import { siteConfig } from "@/lib/config/site";
+import { useWorkspace } from "@/lib/context/workspace-context";
 import { StatMetricCard } from "@/features/dashboard/components/stat-metric-card";
 import { LeadIntakeTable } from "@/features/dashboard/components/lead-intake-table";
 import { LeadDossierPanel } from "@/features/dashboard/components/lead-dossier-panel";
@@ -33,6 +33,7 @@ import {
 } from "lucide-react";
 
 export default function DashboardPage() {
+  const { currentWorkspace } = useWorkspace();
   const [selectedLead, setSelectedLead] = React.useState<DashboardLead | null>(
     MOCK_DASHBOARD_LEADS[0] // Pre-select first lead to showcase the resizable panel immediately!
   );
@@ -72,7 +73,7 @@ export default function DashboardPage() {
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-1.5 h-8 rounded-md border border-stone-200 bg-white px-2.5 text-xs font-medium text-stone-700 shadow-2xs whitespace-nowrap">
               <Building2 className="h-3.5 w-3.5 text-stone-400 shrink-0" aria-hidden="true" />
-              <span>{siteConfig.defaultWorkspace.name}</span>
+              <span>{currentWorkspace?.name || "Workspace"}</span>
             </div>
 
             <div className="flex items-center gap-1.5 h-8 rounded-md border border-stone-200 bg-white px-2.5 text-xs font-medium text-stone-700 shadow-2xs whitespace-nowrap">

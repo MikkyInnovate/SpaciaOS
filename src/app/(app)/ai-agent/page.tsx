@@ -15,7 +15,7 @@ export default function AiAgentPage() {
     <Container size="lg" className="space-y-6">
       <PageHeader
         title="AI Sales Agent"
-        description={`Voice model persona, qualification criteria, and guardrails for ${currentWorkspace.name}.`}
+        description={`Voice model persona, qualification criteria, and guardrails for ${currentWorkspace?.name || "your workspace"}.`}
         actions={
           <div className="flex items-center gap-2">
             <span className="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
@@ -59,7 +59,7 @@ export default function AiAgentPage() {
               </div>
               <div className="p-3 rounded-lg border border-stone-100 bg-stone-50/60 space-y-1">
                 <span className="text-stone-500 text-[11px] font-medium">Outbound Greeting</span>
-                <p className="font-semibold text-stone-800">&ldquo;Hello from {currentWorkspace.name}...&rdquo;</p>
+                <p className="font-semibold text-stone-800">&ldquo;Hello from {currentWorkspace?.name || "our team"}...&rdquo;</p>
                 <p className="text-[11px] text-stone-400">Verifies property inquiry directly</p>
               </div>
               <div className="p-3 rounded-lg border border-stone-100 bg-stone-50/60 space-y-1">

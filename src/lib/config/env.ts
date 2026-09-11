@@ -9,6 +9,11 @@ const clientEnvSchema = z.object({
   NEXT_PUBLIC_APP_NAME: z.string().default("Spacia"),
   NEXT_PUBLIC_API_BASE_URL: z.string().default("http://localhost:3000/api"),
   NEXT_PUBLIC_DEFAULT_WORKSPACE_ID: z.string().default("ws_default_spacia"),
+  NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: z.string().optional(),
+  NEXT_PUBLIC_CLERK_SIGN_IN_URL: z.string().default("/sign-in"),
+  NEXT_PUBLIC_CLERK_SIGN_UP_URL: z.string().default("/sign-up"),
+  NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL: z.string().default("/dashboard"),
+  NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL: z.string().default("/dashboard"),
 });
 
 /**
@@ -17,6 +22,7 @@ const clientEnvSchema = z.object({
  */
 const serverEnvSchema = clientEnvSchema.extend({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
+  CLERK_SECRET_KEY: z.string().optional(),
   BACKEND_API_URL: z.string().url().optional(),
   BACKEND_API_KEY: z.string().min(1).optional(),
   WEBHOOK_SIGNING_SECRET: z.string().min(1).optional(),
@@ -29,7 +35,6 @@ function parseEnv() {
     const parsed = serverEnvSchema.safeParse(process.env);
     if (!parsed.success) {
       console.warn("Invalid server environment configuration:", parsed.error.format());
-      // In production or development fallback to sensible defaults
     }
     return (parsed.success ? parsed.data : serverEnvSchema.parse({})) as z.infer<typeof serverEnvSchema>;
   }
@@ -40,6 +45,11 @@ function parseEnv() {
     NEXT_PUBLIC_APP_NAME: process.env.NEXT_PUBLIC_APP_NAME,
     NEXT_PUBLIC_API_BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL,
     NEXT_PUBLIC_DEFAULT_WORKSPACE_ID: process.env.NEXT_PUBLIC_DEFAULT_WORKSPACE_ID,
+    NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
+    NEXT_PUBLIC_CLERK_SIGN_IN_URL: process.env.NEXT_PUBLIC_CLERK_SIGN_IN_URL,
+    NEXT_PUBLIC_CLERK_SIGN_UP_URL: process.env.NEXT_PUBLIC_CLERK_SIGN_UP_URL,
+    NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL: process.env.NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL,
+    NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL: process.env.NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL,
   };
 
   const parsed = clientEnvSchema.safeParse(clientData);
@@ -50,3 +60,12 @@ function parseEnv() {
 }
 
 export const env = parseEnv();
+
+/**
+ * Indicates whether Clerk credentials are configured in the current environment.
+ */
+export const isClerkConfigured = Boolean(
+  typeof process !== "undefined" &&
+  process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY &&
+  process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY.startsWith("pk_")
+);

@@ -23,7 +23,7 @@ export default function IntegrationsPage() {
     <Container size="lg" className="space-y-6">
       <PageHeader
         title="Integrations"
-        description={`Connected calendars, webhooks, and property data sources for ${currentWorkspace.name}.`}
+        description={`Connected calendars, webhooks, and property data sources for ${currentWorkspace?.name || "your workspace"}.`}
         actions={
           <Badge variant="outline" className="text-emerald-700 bg-emerald-50 border-emerald-200 text-xs font-medium">
             3 Active Connections

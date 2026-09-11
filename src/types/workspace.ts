@@ -1,22 +1,29 @@
-﻿export type WorkspaceTier = "starter" | "growth" | "enterprise";
+export type WorkspaceTier = "starter" | "growth" | "enterprise";
 
-export type WorkspaceRole = "owner" | "admin" | "sales_manager" | "sales_agent" | "viewer";
+export type WorkspaceRole =
+  | "org:admin"
+  | "org:member"
+  | "owner"
+  | "admin"
+  | "sales_manager"
+  | "sales_agent"
+  | "viewer"
+  | string;
 
 export interface Workspace {
   id: string;
   name: string;
   slug: string;
-  role: string;
-  tier: WorkspaceTier;
-  currency: string;
-  timezone: string;
-  primaryMarket: string;
-  isDefault?: boolean;
+  role?: string;
+  imageUrl?: string;
+  tier?: string;
+  primaryMarket?: string;
 }
 
 export interface WorkspaceContextValue {
-  currentWorkspace: Workspace;
+  currentWorkspace: Workspace | null;
   workspaces: Workspace[];
+  hasWorkspace: boolean;
   isLoading: boolean;
-  switchWorkspace: (workspaceId: string) => void;
+  switchWorkspace: (workspaceId: string) => Promise<void>;
 }

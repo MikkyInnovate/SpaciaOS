@@ -1,47 +1,85 @@
 "use client";
 
 import * as React from "react";
-import { useRouter } from "next/navigation";
+import { useUser, useAuth as useClerkAuth, useClerk } from "@clerk/nextjs";
 import type { UserProfile, AuthContextValue } from "@/types/auth";
-import { siteConfig } from "@/lib/config/site";
-
-const DEFAULT_USER: UserProfile = {
-  id: "usr_premier_001",
-  name: "Sales Operations",
-  email: "sales@premier.co",
-  role: "Sales Operations Lead",
-  workspaceRole: "admin",
-  currentWorkspaceId: siteConfig.defaultWorkspace.id,
-};
+import { apiClient } from "@/lib/api/client";
 
 const AuthContext = React.createContext<AuthContextValue | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const router = useRouter();
-  const [user, setUser] = React.useState<UserProfile | null>(DEFAULT_USER);
-  const [isLoading, setIsLoading] = React.useState<boolean>(false);
+  const { user: clerkUser, isLoaded: isUserLoaded, isSignedIn } = useUser();
+  const { getToken, isLoaded: isAuthLoaded } = useClerkAuth();
+  const clerk = useClerk();
+
+  const isLoading = !isUserLoaded || !isAuthLoaded;
+
+  // Map Clerk user to Pacia UserProfile
+  const user = React.useMemo<UserProfile | null>(() => {
+    if (!isSignedIn || !clerkUser) return null;
+
+    const email =
+      clerkUser.primaryEmailAddress?.emailAddress ||
+      clerkUser.emailAddresses[0]?.emailAddress ||
+      "";
+
+    const name =
+      clerkUser.fullName ||
+      clerkUser.firstName ||
+      clerkUser.username ||
+      email.split("@")[0] ||
+      "User";
+
+    return {
+      id: clerkUser.id,
+      name,
+      email,
+      avatarUrl: clerkUser.imageUrl,
+      role: "Authenticated Agent",
+    };
+  }, [isSignedIn, clerkUser]);
+
+  // Synchronize Clerk session token with centralized apiClient
+  React.useEffect(() => {
+    let isMounted = true;
+
+    async function syncToken() {
+      if (isSignedIn) {
+        try {
+          const token = await getToken();
+          if (isMounted) {
+            apiClient.setAuthToken(token);
+          }
+        } catch {
+          if (isMounted) {
+            apiClient.setAuthToken(null);
+          }
+        }
+      } else {
+        apiClient.setAuthToken(null);
+      }
+    }
+
+    syncToken();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [isSignedIn, getToken]);
 
   const signOut = React.useCallback(async () => {
-    setIsLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 800));
-    setUser(null);
-    setIsLoading(false);
-    router.push("/");
-  }, [router]);
-
-  const updateProfile = React.useCallback((updates: Partial<UserProfile>) => {
-    setUser((prev) => (prev ? { ...prev, ...updates } : null));
-  }, []);
+    apiClient.setAuthToken(null);
+    await clerk.signOut({ redirectUrl: "/sign-in" });
+  }, [clerk]);
 
   const value = React.useMemo<AuthContextValue>(
     () => ({
       user,
-      isAuthenticated: !!user,
+      isAuthenticated: Boolean(isSignedIn && user),
       isLoading,
       signOut,
-      updateProfile,
     }),
-    [user, isLoading, signOut, updateProfile]
+    [user, isSignedIn, isLoading, signOut]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

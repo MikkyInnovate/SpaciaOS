@@ -162,7 +162,7 @@ export default function CallsPage() {
       {/* Page Header */}
       <PageHeader
         title="Calls"
-        description={`Autonomous voice interactions, audio recordings, and qualification logs for ${currentWorkspace.name}.`}
+        description={`Autonomous voice interactions, audio recordings, and qualification logs for ${currentWorkspace?.name || "your workspace"}.`}
         actions={
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-1.5 h-8 rounded-md border border-stone-200 bg-white px-2.5 text-xs font-medium text-stone-700 shadow-2xs whitespace-nowrap">

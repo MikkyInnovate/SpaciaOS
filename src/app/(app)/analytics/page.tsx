@@ -174,7 +174,7 @@ export default function AnalyticsPage() {
     <Container size="lg" className="space-y-6">
       <PageHeader
         title="Analytics"
-        description={`Conversion metrics, pipeline velocity, and qualification performance for ${currentWorkspace.name}.`}
+        description={`Conversion metrics, pipeline velocity, and qualification performance for ${currentWorkspace?.name || "your workspace"}.`}
         actions={
           /* Date Picker Popover Button */
           <Popover open={isPickerOpen} onOpenChange={setIsPickerOpen}>

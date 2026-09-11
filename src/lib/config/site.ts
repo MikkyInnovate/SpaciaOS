@@ -9,8 +9,8 @@ export const siteConfig = {
   },
   defaultWorkspace: {
     id: env.NEXT_PUBLIC_DEFAULT_WORKSPACE_ID,
-    name: "Premier Realty Group",
-    role: "Sales Operations",
+    name: "Real Estate Workspace",
+    role: "Workspace Member",
   },
 } as const;
 

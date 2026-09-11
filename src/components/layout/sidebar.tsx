@@ -144,7 +144,7 @@ export function Sidebar({ className, onItemClick, ...props }: SidebarProps) {
               {siteConfig.defaultWorkspace.role}
             </span>
             <span className="text-[11px] text-muted-foreground truncate">
-              sales@premier.co
+              {siteConfig.description}
             </span>
           </div>
         </div>

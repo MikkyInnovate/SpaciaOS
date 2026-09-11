@@ -22,7 +22,7 @@ import { siteConfig } from "@/lib/config/site";
 import { useWorkspace } from "@/lib/context/workspace-context";
 import { useAuth } from "@/lib/context/auth-context";
 import { NavIcon } from "./nav-icon";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { NAVIGATION_SECTIONS } from "@/lib/constants/navigation";
 import {
   Building2,
@@ -88,7 +88,9 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
                 </div>
                 <div className="flex items-center gap-1 text-xs text-stone-500 truncate mt-0.5">
                   <Building2 className="h-3 w-3 shrink-0 text-stone-400" aria-hidden="true" />
-                  <span className="truncate font-medium text-stone-600">{currentWorkspace.name}</span>
+                  <span className="truncate font-medium text-stone-600">
+                    {currentWorkspace?.name || "Workspace"}
+                  </span>
                 </div>
               </div>
             </div>
@@ -215,16 +217,19 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
             )}
           >
             <Avatar className="h-8 w-8 shrink-0 border border-stone-200">
+              {user?.avatarUrl && (
+                <AvatarImage src={user.avatarUrl} alt={user.name} />
+              )}
               <AvatarFallback className="bg-[#0d4a36]/10 text-[#0d4a36] font-semibold text-xs">
-                SO
+                {user?.name?.slice(0, 2).toUpperCase() || "U"}
               </AvatarFallback>
             </Avatar>
             <div className="flex flex-col min-w-0 flex-1 group-data-[collapsible=icon]:hidden">
               <span className="text-xs font-semibold text-stone-900 truncate">
-                {user?.name || currentWorkspace.role}
+                {user?.name || "User"}
               </span>
               <span className="text-[11px] text-stone-500 truncate">
-                {user?.email || "sales@premier.co"}
+                {user?.email || ""}
               </span>
             </div>
             {isUserMenuOpen ? (
@@ -247,26 +252,33 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
               {/* Profile Card Header */}
               <div className="flex items-center gap-2.5 rounded-lg bg-stone-50/80 p-2.5 border border-stone-100">
                 <Avatar className="h-9 w-9 shrink-0 border border-stone-200">
+                  {user?.avatarUrl && (
+                    <AvatarImage src={user.avatarUrl} alt={user.name} />
+                  )}
                   <AvatarFallback className="bg-[#0d4a36] text-white font-semibold text-xs">
-                    {user?.name?.slice(0, 2).toUpperCase() || "SO"}
+                    {user?.name?.slice(0, 2).toUpperCase() || "U"}
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex flex-col min-w-0 flex-1">
                   <div className="flex items-center gap-1.5">
                     <span className="text-xs font-semibold text-stone-900 truncate">
-                      {user?.name || currentWorkspace.role}
+                      {user?.name || "User"}
                     </span>
                     <span className="rounded bg-emerald-50 px-1 py-0.2 text-[9px] font-medium text-emerald-800 border border-emerald-200/60 uppercase">
-                      {user?.workspaceRole || "admin"}
+                      {currentWorkspace?.role === "org:admin" ? "Admin" : "Member"}
                     </span>
                   </div>
-                  <span className="text-[11px] text-stone-500 truncate">
-                    {user?.email || "sales@premier.co"}
-                  </span>
-                  <div className="mt-1 flex items-center gap-1 text-[10px] text-stone-400">
-                    <Building2 className="h-2.5 w-2.5 shrink-0" />
-                    <span className="truncate">{currentWorkspace.name}</span>
-                  </div>
+                  {user?.email && (
+                    <span className="text-[11px] text-stone-500 truncate">
+                      {user.email}
+                    </span>
+                  )}
+                  {currentWorkspace?.name && (
+                    <div className="mt-1 flex items-center gap-1 text-[10px] text-stone-400">
+                      <Building2 className="h-2.5 w-2.5 shrink-0" />
+                      <span className="truncate">{currentWorkspace.name}</span>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -326,9 +338,9 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
                 <LogOut className="h-5 w-5" />
               </div>
               <div>
-                <h3 className="text-sm font-semibold text-stone-900">Sign out of SpaciaOS</h3>
+                <h3 className="text-sm font-semibold text-stone-900">Sign out of {siteConfig.name}</h3>
                 <p className="text-xs text-stone-500">
-                  Are you sure you want to log out of Premier Realty Group?
+                  Are you sure you want to sign out of {currentWorkspace?.name || "your workspace"}?
                 </p>
               </div>
             </div>
@@ -336,11 +348,11 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
             <div className="rounded-md border border-stone-100 bg-stone-50 p-2.5 text-[11px] text-stone-600 space-y-1">
               <div className="flex items-center justify-between">
                 <span className="text-stone-400">Account</span>
-                <span className="font-medium text-stone-800">sales@premier.co</span>
+                <span className="font-medium text-stone-800">{user?.email || user?.name || "Active Account"}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-stone-400">Autonomous Core</span>
-                <span className="font-medium text-emerald-700">Continues 24/7 background handling</span>
+                <span className="text-stone-400">Workspace</span>
+                <span className="font-medium text-stone-700">{currentWorkspace?.name || "Active Session"}</span>
               </div>
             </div>
 

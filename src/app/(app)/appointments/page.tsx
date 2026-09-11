@@ -145,7 +145,7 @@ export default function AppointmentsPage() {
     <Container size="lg" className="space-y-4">
       <PageHeader
         title="Appointments"
-        description={`Confirmed viewings and scheduled property inspections for ${currentWorkspace.name}.`}
+        description={`Confirmed viewings and scheduled property inspections for ${currentWorkspace?.name || "your workspace"}.`}
         actions={
           <div className="flex items-center gap-2">
             {/* Flow 1: Calendar Button */}
