@@ -23,6 +23,7 @@ import { useWorkspace } from "@/lib/context/workspace-context";
 import { useAuth } from "@/lib/context/auth-context";
 import { NavIcon } from "./nav-icon";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { NAVIGATION_SECTIONS } from "@/lib/constants/navigation";
 import {
   Building2,
@@ -330,63 +331,63 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
       </SidebarFooter>
 
       {/* Sign Out Confirmation Modal */}
-      {showSignOutModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4 animate-in fade-in duration-150">
-          <div className="w-full max-w-sm rounded-xl border border-stone-200 bg-white p-5 shadow-2xl space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-rose-50 text-rose-600 border border-rose-100">
-                <LogOut className="h-5 w-5" />
-              </div>
-              <div>
-                <h3 className="text-sm font-semibold text-stone-900">Sign out of {siteConfig.name}</h3>
-                <p className="text-xs text-stone-500">
-                  Are you sure you want to sign out of {currentWorkspace?.name || "your workspace"}?
-                </p>
-              </div>
+      <Dialog open={showSignOutModal} onOpenChange={setShowSignOutModal}>
+        <DialogContent className="max-w-sm p-5 space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-rose-50 text-rose-600 border border-rose-100">
+              <LogOut className="h-5 w-5" />
             </div>
-
-            <div className="rounded-md border border-stone-100 bg-stone-50 p-2.5 text-[11px] text-stone-600 space-y-1">
-              <div className="flex items-center justify-between">
-                <span className="text-stone-400">Account</span>
-                <span className="font-medium text-stone-800">{user?.email || user?.name || "Active Account"}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-stone-400">Workspace</span>
-                <span className="font-medium text-stone-700">{currentWorkspace?.name || "Active Session"}</span>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-end gap-2 pt-1">
-              <button
-                type="button"
-                disabled={isSigningOut}
-                onClick={() => setShowSignOutModal(false)}
-                className="rounded-md border border-stone-200 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 hover:bg-stone-50 transition-colors disabled:opacity-50"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                disabled={isSigningOut}
-                onClick={handleSignOutConfirm}
-                className="flex items-center gap-1.5 rounded-md bg-rose-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-rose-700 transition-colors disabled:opacity-50"
-              >
-                {isSigningOut ? (
-                  <>
-                    <span className="h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                    <span>Signing out...</span>
-                  </>
-                ) : (
-                  <>
-                    <LogOut className="h-3 w-3" />
-                    <span>Sign out</span>
-                  </>
-                )}
-              </button>
+            <div>
+              <DialogTitle className="text-sm font-semibold text-stone-900">
+                Sign out of {siteConfig.name}
+              </DialogTitle>
+              <DialogDescription className="text-xs text-stone-500">
+                Are you sure you want to sign out of {currentWorkspace?.name || "your workspace"}?
+              </DialogDescription>
             </div>
           </div>
-        </div>
-      )}
+
+          <div className="rounded-md border border-stone-100 bg-stone-50 p-2.5 text-[11px] text-stone-600 space-y-1">
+            <div className="flex items-center justify-between">
+              <span className="text-stone-400">Account</span>
+              <span className="font-medium text-stone-800">{user?.email || user?.name || "Active Account"}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-stone-400">Workspace</span>
+              <span className="font-medium text-stone-700">{currentWorkspace?.name || "Active Session"}</span>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-end gap-2 pt-1">
+            <button
+              type="button"
+              disabled={isSigningOut}
+              onClick={() => setShowSignOutModal(false)}
+              className="rounded-md border border-stone-200 bg-white px-3 py-1.5 text-xs font-medium text-stone-700 hover:bg-stone-50 transition-colors disabled:opacity-50 cursor-pointer"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              disabled={isSigningOut}
+              onClick={handleSignOutConfirm}
+              className="flex items-center gap-1.5 rounded-md bg-rose-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-rose-700 transition-colors disabled:opacity-50 cursor-pointer"
+            >
+              {isSigningOut ? (
+                <>
+                  <span className="h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                  <span>Signing out...</span>
+                </>
+              ) : (
+                <>
+                  <LogOut className="h-3 w-3" />
+                  <span>Sign out</span>
+                </>
+              )}
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <SidebarRail />
     </Sidebar>
