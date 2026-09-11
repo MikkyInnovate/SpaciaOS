@@ -127,3 +127,101 @@ body {
   font-family: var(--font-display);
   letter-spacing: -0.02em;
 }
+
+/* Clerk Auth Seamless Embedding & Zero Clipping */
+.cl-rootBox,
+.cl-cardBox,
+.cl-card,
+.cl-main,
+.cl-form,
+.cl-formField,
+.cl-formFieldRow {
+  box-shadow: none !important;
+  border: none !important;
+  background: transparent !important;
+  overflow: visible !important;
+  max-width: 100% !important;
+}
+
+.cl-card {
+  padding: 2px !important;
+}
+
+/* Ensure form field input groups don't clip outlines or borders */
+.cl-formFieldInputGroup {
+  overflow: visible !important;
+  box-sizing: border-box !important;
+  border: 1px solid var(--color-stone-200, #e7e5e4) !important;
+  border-radius: 0.375rem !important;
+  background-color: #ffffff !important;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease !important;
+}
+
+.cl-formFieldInputGroup:focus-within {
+  border-color: var(--color-stone-400, #a8a29e) !important;
+  box-shadow: 0 0 0 1px var(--color-stone-400, #a8a29e) !important;
+}
+
+/* Reset inner input inside password groups to avoid double borders or clipped corners */
+.cl-formFieldInputGroup .cl-formFieldInput {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  height: 2.5rem !important;
+  padding-left: 0.75rem !important;
+  padding-right: 0.5rem !important;
+}
+
+/* Standalone inputs (like Email address) */
+.cl-formFieldInput:not(.cl-formFieldInputGroup *) {
+  border: 1px solid var(--color-stone-200, #e7e5e4) !important;
+  border-radius: 0.375rem !important;
+  background-color: #ffffff !important;
+  box-sizing: border-box !important;
+  height: 2.5rem !important;
+  padding-left: 0.75rem !important;
+  padding-right: 0.75rem !important;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease !important;
+}
+
+.cl-formFieldInput:not(.cl-formFieldInputGroup *):focus {
+  border-color: var(--color-stone-400, #a8a29e) !important;
+  box-shadow: 0 0 0 1px var(--color-stone-400, #a8a29e) !important;
+  outline: none !important;
+}
+
+/* Show password eye button positioning */
+.cl-formFieldInputShowPasswordButton {
+  color: #71717a !important;
+  padding-right: 0.75rem !important;
+  padding-left: 0.5rem !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* Form field success / valid indicator border and text */
+.cl-formFieldInputGroup[data-state="valid"],
+.cl-formFieldInputGroup:has(.cl-formFieldInput[data-state="valid"]) {
+  border-color: #0d4a36 !important;
+  box-shadow: 0 0 0 1px #0d4a36 !important;
+}
+
+.cl-formFieldInputGroup[data-state="error"],
+.cl-formFieldInputGroup:has(.cl-formFieldInput[data-state="error"]) {
+  border-color: #e11d48 !important;
+  box-shadow: 0 0 0 1px #e11d48 !important;
+}
+
+.cl-formFieldInput:not(.cl-formFieldInputGroup *)[data-state="valid"] {
+  border-color: #0d4a36 !important;
+  box-shadow: 0 0 0 1px #0d4a36 !important;
+}
+
+.cl-formFieldInput:not(.cl-formFieldInputGroup *)[data-state="error"] {
+  border-color: #e11d48 !important;
+  box-shadow: 0 0 0 1px #e11d48 !important;
+}
+
+
