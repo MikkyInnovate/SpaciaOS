@@ -2,7 +2,7 @@
 
 > **Spacia** is a high-performance, managed AI sales orchestration platform purpose-built for modern real-estate brokerages and development firms. It autonomously captures inbound property inquiries, engages prospects via natural voice and chat, qualifies buyers against stringent underwriting criteria, evaluates purchasing power and timeline, and seamlessly books qualified viewings directly onto connected sales agents' calendars.
 
-This repository houses the **production frontend implementation for Day 1 and Day 2** of the Spacia MVP.
+This repository houses the **production frontend implementation for Day 1, Day 2, and Day 3** of the Spacia MVP.
 
 ---
 
@@ -21,9 +21,9 @@ Spacia acts as an automated sales acceleration layer positioned between inbound 
 
 | Milestone | Status | Description |
 | :--- | :---: | :--- |
-| **Day 1: Production Frontend Foundation** | **COMPLETE** | Next.js 16 (Turbopack) App Router architecture, TypeScript strict mode, Tailwind CSS v4, shadcn/ui component library, design token taxonomy, responsive shell, routing foundation, and global error/loading boundaries. |
-| **Day 2: Visual Foundation & Dashboard Shell** | **COMPLETE** | Refined light-mode-first aesthetic with Pacia Green (`#0d4a36`), warm off-white canvas (`#fbfbf9`), live AI activity feed, lead intake table, resizable Lead Dossier side-panel with simulated audio player & qualification matrix, pipeline funnel, appointments drawer, calls module, analytics date filtering, team roster, settings, command palette, notifications, and CSV export. |
-| **Day 3: Backend Integration & Live API Hookup** | **UPCOMING** | Connecting mock data sources to FastAPI / Node.js backend services, Supabase/PostgreSQL schema, live WebSockets for AI voice event streams, real Twilio/Vapi WebRTC streams, and Cal.com / Google Calendar OAuth. |
+| **Day 1: Foundation** | **COMPLETE** | Next.js 16 (Turbopack) App Router architecture, TypeScript strict mode, Tailwind CSS v4, shadcn/ui component library, design token taxonomy, responsive shell, routing foundation, and global error/loading boundaries. |
+| **Day 2: Visual / Dashboard Pass** | **COMPLETE** | Refined light-mode-first aesthetic with Pacia Green (`#0d4a36`), warm off-white canvas (`#fbfbf9`), live AI activity feed, lead intake table, resizable Lead Dossier side-panel with simulated audio player & qualification matrix, pipeline funnel, appointments drawer, calls module, analytics date filtering, team roster, settings, command palette, notifications, and CSV export. |
+| **Day 3: Authentication & Workspace** | **COMPLETE & APPROVED** | Full production Clerk authentication integration, responsive 50/50 split auth shell with typewriter animation, interactive password requirements validation, forgot password reset modal, Google sign-up detection & guidance, protected application routes via proxy middleware, authenticated user context (`AuthProvider`), multi-tenant workspace/organization context (`WorkspaceProvider` & header switcher), unauthorized/no-workspace guard state, and interactive sidebar user account menu with sign-out. *(Frontend integration complete; establishes auth contract for future backend services).* |
 
 ---
 
@@ -273,18 +273,41 @@ Spacia utilizes React Context for global app states and localized state for UI i
 
 ---
 
-## 13. Day 3 Roadmap & Upcoming Work
+## 13. Day 3 — Authentication & Workspace Architecture (Completed & Approved)
 
-For backend and fullstack engineers picking up Day 3 development:
+Day 3 delivered production-ready Clerk authentication, multi-tenant workspace routing, and security guardrails across the SpaciaOS frontend:
 
-1. **Authentication Layer**: Integrate Supabase Auth or NextAuth/Auth.js with JWT session persistence.
-2. **Database & ORM**: Implement Prisma / Drizzle schema for Workspaces, Leads, Calls, Transcripts, and Appointments.
-3. **Telephony & Voice AI Pipeline**:
-   - Inbound webhook handler for Twilio / Vonage / Vapi.
-   - Streaming WebRTC audio proxy.
-   - LLM qualification prompt runner with structured function calling.
-4. **Calendar Synchronization**: Bidirectional sync with Google Calendar and Outlook via Cal.com or Nylas APIs.
-5. **Real-Time Feed**: Server-Sent Events (SSE) or WebSockets channel for streaming live call activity to the dashboard feed.
+### 1. Clerk Authentication & Brand Shell
+- **Responsive 50/50 Split Shell**: Luxury real-estate hero visual with dynamic typewriter animation and dotted status badge on the left, paired with a restrained white auth card on the right (`@/app/(auth)/auth-split-shell.tsx`).
+- **Interactive Password Requirements**: Real-time 5-point password validation checklist (`@/components/auth/password-requirements.tsx`) with immediate feedback and visual progress (`X/5 criteria met`).
+- **Forgot Password Reset**: Integrated interactive reset modal powered by Clerk's client SDK (`@/components/auth/sign-in-helper.tsx`) allowing users to request a verification code, set a new password, and sign in.
+- **Google Sign-Up Detection**: Intelligent tracking that warns users when attempting password login on accounts created via Google OAuth, pointing them directly to the Google action with a "Last Used" badge.
+
+### 2. Protected Application Routes
+- **Edge Middleware Proxy**: Implemented via `@/proxy.ts` using `clerkMiddleware` and `createRouteMatcher`.
+- **Public Endpoints**: Restricted to `/`, `/sign-in(.*)`, `/sign-up(.*)`, `/unauthorized(.*)`, and `/api/webhooks(.*)`.
+- **Route Guarding**: All operational routes (`/dashboard`, `/leads`, `/calls`, `/appointments`, `/analytics`, `/conversations`, `/team`, `/ai-agent`, `/integrations`, `/settings`) enforce `await auth.protect()`.
+
+### 3. Authenticated User Context
+- **`AuthProvider` (`@/lib/context/auth-context.tsx`)**: Bridges Clerk user objects to the standardized Spacia `UserProfile` model.
+- **Token Synchronization**: Automatically synchronizes active Clerk session JWTs with the centralized `apiClient` instance on every auth state change.
+
+### 4. Workspace & Multi-Tenant Context
+- **`WorkspaceProvider` (`@/lib/context/workspace-context.tsx`)**: Integrates directly with Clerk Organizations (`useOrganization`, `useOrganizationList`).
+- **Auto-Activation & Persistence**: Automatically activates a user's single organization or restores previous session choices.
+- **`WorkspaceSwitcher` (`@/components/layout/workspace-switcher.tsx`)**: Header-mounted selector supporting instant organization switching with role badges.
+
+### 5. Unauthorized & No-Workspace State
+- **`WorkspaceGuard` (`@/components/layout/workspace-guard.tsx`)**: Intercepts authenticated users without an active organization/workspace assignment.
+- **`UnauthorizedState` (`@/components/shared/unauthorized-state.tsx`) & `/unauthorized`**: Explains access status, displays the authenticated user identity, and provides refresh and sign-out actions.
+
+### 6. Account Menu
+- **Interactive Sidebar User Card (`@/components/layout/app-sidebar.tsx`)**: Displays user avatar, name, email, workspace role (`Admin` / `Member`), active organization name, links to Account, Settings, and Security, and an interactive Sign Out confirmation modal.
+
+### 7. Frontend / Backend Authentication Contract
+> **Important Distinction**: Day 3 establishes the complete **Frontend Authentication & Workspace Architecture**. 
+> - The frontend manages authentication flows, route protection, organization switching, and token synchronization via `apiClient.setAuthToken(token)`.
+> - When backend services (FastAPI / Node.js) are connected in subsequent milestones, they will receive this Clerk JWT in the `Authorization: Bearer <token>` header to verify claims against the Clerk JWKS endpoint. Backend token verification and database syncing are part of future backend integration milestones.
 
 ---
 

@@ -37,6 +37,9 @@ export const viewport: Viewport = {
 };
 
 const clerkAppearance = {
+  layout: {
+    socialButtonsPlacement: "bottom" as const,
+  },
   variables: {
     colorPrimary: "#0d4a36",
     colorText: "#18181b",

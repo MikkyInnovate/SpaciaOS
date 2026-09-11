@@ -147,6 +147,99 @@ body {
   padding: 2px !important;
 }
 
+/* Tighten spacing between form fields (Email address, Password) */
+.cl-form {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0.375rem !important;
+  row-gap: 0.375rem !important;
+}
+
+.cl-form > * + *,
+.cl-formFieldRow,
+.cl-formFieldRow + .cl-formFieldRow,
+.cl-formFieldRow ~ .cl-formFieldRow,
+.cl-formField,
+.cl-formField + .cl-formField,
+.cl-formField ~ .cl-formField {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+.cl-formFieldLabel {
+  margin-top: 0 !important;
+  margin-bottom: 0.25rem !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  line-height: 1.25 !important;
+}
+
+.cl-formFieldLabelRow,
+.spacia-label-row {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  width: 100% !important;
+  margin-top: 0 !important;
+  margin-bottom: 0.25rem !important;
+  padding: 0 !important;
+}
+
+.cl-formFieldAction,
+.cl-formFieldAction__password,
+.spacia-forgot-password-slot button {
+  font-size: 0.6875rem !important;
+  font-weight: 500 !important;
+  color: #0d4a36 !important;
+  text-decoration: none !important;
+  cursor: pointer !important;
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  transition: color 0.15s ease !important;
+}
+
+.cl-formFieldAction:hover,
+.cl-formFieldAction__password:hover,
+.spacia-forgot-password-slot button:hover {
+  color: #093829 !important;
+  text-decoration: underline !important;
+}
+
+.cl-formFieldInputGroup {
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+}
+
+.cl-socialButtonsBlockButton {
+  position: relative !important;
+}
+
+.cl-formFieldErrorText:empty,
+.cl-formFieldSuccessText:empty,
+.cl-formFieldWarningText:empty,
+.cl-formFieldInfoText:empty,
+.cl-formFieldHelperText:empty {
+  display: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  height: 0 !important;
+  min-height: 0 !important;
+}
+
+.cl-formButtonPrimary {
+  margin-top: 0.625rem !important;
+}
+
+/* Ensure divider has clean spacing when placed below form */
+.cl-dividerRow {
+  margin-top: 0.625rem !important;
+  margin-bottom: 0.625rem !important;
+}
+
 /* Ensure form field input groups don't clip outlines or borders */
 .cl-formFieldInputGroup {
   overflow: visible !important;
@@ -168,7 +261,7 @@ body {
   outline: none !important;
   box-shadow: none !important;
   background: transparent !important;
-  height: 2.5rem !important;
+  height: 2.25rem !important;
   padding-left: 0.75rem !important;
   padding-right: 0.5rem !important;
 }
@@ -179,7 +272,7 @@ body {
   border-radius: 0.375rem !important;
   background-color: #ffffff !important;
   box-sizing: border-box !important;
-  height: 2.5rem !important;
+  height: 2.25rem !important;
   padding-left: 0.75rem !important;
   padding-right: 0.75rem !important;
   transition: border-color 0.15s ease, box-shadow 0.15s ease !important;
@@ -191,10 +284,15 @@ body {
   outline: none !important;
 }
 
+/* Social icon buttons height */
+.cl-socialButtonsIconButton {
+  height: 2.25rem !important;
+}
+
 /* Show password eye button positioning */
 .cl-formFieldInputShowPasswordButton {
   color: #71717a !important;
-  padding-right: 0.75rem !important;
+  padding-right: 0.5rem !important;
   padding-left: 0.5rem !important;
   display: inline-flex !important;
   align-items: center !important;
@@ -223,5 +321,46 @@ body {
   border-color: #e11d48 !important;
   box-shadow: 0 0 0 1px #e11d48 !important;
 }
+
+/* Hide Clerk's single-line redundant info text in favor of live requirement checklist */
+.cl-formFieldInfoText__password,
+.cl-formField__password p[id="password-info-feedback"],
+.cl-formField__password span[aria-live="polite"] {
+  display: none !important;
+}
+
+/* Ensure smooth password requirements slot spacing */
+.pacia-password-requirements-slot {
+  display: block;
+  width: 100%;
+  clear: both;
+}
+
+/* Tighten form field vertical spacing between inputs */
+.cl-form {
+  gap: 0.75rem !important;
+}
+
+.cl-formField,
+.cl-formFieldRow {
+  margin-bottom: 0.5rem !important;
+  margin-top: 0 !important;
+}
+
+.cl-formFieldLabelRow {
+  margin-bottom: 0.25rem !important;
+  margin-top: 0 !important;
+}
+
+/* Eliminate empty reserved feedback containers when there is no feedback text */
+.cl-formField [style*="height: 0px"],
+.cl-formField > div:empty {
+  display: none !important;
+  height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+
 
 
