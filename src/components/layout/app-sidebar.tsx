@@ -100,7 +100,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
 
       {/* Sidebar Content: Navigation Sections */}
-      <SidebarContent className="bg-white">
+      <SidebarContent className="bg-white scrollbar-none">
         {NAVIGATION_SECTIONS.map((section, idx) => (
           <SidebarGroup key={section.label || idx}>
             {section.label && (
