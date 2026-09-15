@@ -1,9 +1,5 @@
-import { LoadingSpinner } from "@/components/shared/loading-spinner";
+import { WorkspaceLoading } from "@/components/layout/workspace-loading";
 
 export default function RootLoading() {
-  return (
-    <div className="flex min-h-screen w-full items-center justify-center bg-background">
-      <LoadingSpinner size="lg" label="Initializing Spacia..." />
-    </div>
-  );
+  return <WorkspaceLoading />;
 }
