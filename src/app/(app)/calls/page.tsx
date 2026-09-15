@@ -5,6 +5,8 @@ import { Container } from "@/components/layout/container";
 import { PageHeader } from "@/components/layout/page-header";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { StatusBadge } from "@/components/ui/status-badge";
+import { ScoreIndicator } from "@/components/ui/score-indicator";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -124,37 +126,6 @@ export default function CallsPage() {
   const handleTogglePlay = (e: React.MouseEvent, callId: string) => {
     e.stopPropagation();
     setPlayingId((prev) => (prev === callId ? null : callId));
-  };
-
-  const getOutcomeBadgeVariant = (outcome: string) => {
-    switch (outcome) {
-      case "Qualified":
-        return "qualified";
-      case "Viewing Requested":
-      case "Viewing Booked":
-        return "viewing";
-      case "In Conversation":
-        return "inConversation";
-      case "Contacting":
-        return "contacting";
-      case "Follow-up":
-        return "nurture";
-      default:
-        return "secondary";
-    }
-  };
-
-  const getScoreBadgeVariant = (scoreCategory?: string) => {
-    switch (scoreCategory) {
-      case "HOT":
-        return "hot";
-      case "WARM":
-        return "warm";
-      case "COLD":
-        return "cold";
-      default:
-        return "outline";
-    }
   };
 
   return (
@@ -368,26 +339,13 @@ export default function CallsPage() {
                         {/* Explainable Lead Score */}
                         <TableCell className="py-2.5 whitespace-nowrap">
                           {call.score && (
-                            <Badge
-                              variant={getScoreBadgeVariant(call.scoreCategory)}
-                              className="gap-1 text-xs"
-                            >
-                              <span>{call.score}</span>
-                              <span className="text-[10px] font-medium opacity-75">
-                                {call.scoreCategory}
-                              </span>
-                            </Badge>
+                            <ScoreIndicator score={call.score} category={call.scoreCategory} variant="badge" />
                           )}
                         </TableCell>
 
-                        {/* Outcome Badge with Image 2 Colors */}
+                        {/* Outcome Badge */}
                         <TableCell className="py-2.5 whitespace-nowrap">
-                          <Badge
-                            variant={getOutcomeBadgeVariant(call.outcome)}
-                            className="text-[11px] whitespace-nowrap font-medium"
-                          >
-                            {call.outcome === "Viewing Requested" ? "Viewing Booked" : call.outcome}
-                          </Badge>
+                          <StatusBadge status={call.outcome} withDot />
                         </TableCell>
 
                         {/* Duration */}

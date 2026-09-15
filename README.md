@@ -24,6 +24,7 @@ Spacia acts as an automated sales acceleration layer positioned between inbound 
 | **Day 1: Foundation** | **COMPLETE** | Next.js 16 (Turbopack) App Router architecture, TypeScript strict mode, Tailwind CSS v4, shadcn/ui component library, design token taxonomy, responsive shell, routing foundation, and global error/loading boundaries. |
 | **Day 2: Visual / Dashboard Pass** | **COMPLETE** | Refined light-mode-first aesthetic with Pacia Green (`#0d4a36`), warm off-white canvas (`#fbfbf9`), live AI activity feed, lead intake table, resizable Lead Dossier side-panel with simulated audio player & qualification matrix, pipeline funnel, appointments drawer, calls module, analytics date filtering, team roster, settings, command palette, notifications, and CSV export. |
 | **Day 3: Authentication & Workspace** | **COMPLETE & APPROVED** | Full production Clerk authentication integration, responsive 50/50 split auth shell with typewriter animation, interactive password requirements validation, forgot password reset modal, Google sign-up detection & guidance, protected application routes via proxy middleware, authenticated user context (`AuthProvider`), multi-tenant workspace/organization context (`WorkspaceProvider` & header switcher), unauthorized/no-workspace guard state, and interactive sidebar user account menu with sign-out. *(Frontend integration complete; establishes auth contract for future backend services).* |
+| **Day 4: Core Domain Database UI Primitives** | **COMPLETE** | Production-ready suite of reusable command-center UI primitives: strongly-typed generic `DataTable` (sorting, pagination, search filter, skeleton/empty states), domain-aware `StatusBadge` (HOT/WARM/COLD, lifecycle stages, call outcomes, pulsing live dots), multi-variant `ScoreIndicator` (badge, gauge, 5-point BANT breakdown), resilient edge states (`EmptyState` presets, `ErrorState` with technical details accordion, `TableSkeleton`, `Skeleton`), modal & drawer patterns (`ConfirmDialog`, `DetailDrawer`), basic form suite (`SearchInput`, `CurrencyInput` with Nigerian Naira ₦ formatting, `Textarea`, `Checkbox`, `Switch`, `FormField`), and an interactive showcase testbench (`/primitives`). |
 
 ---
 
@@ -311,7 +312,49 @@ Day 3 delivered production-ready Clerk authentication, multi-tenant workspace ro
 
 ---
 
-## 14. Git Workflow & Branching Conventions
+## 14. Day 4 — Core Domain Database UI Primitives (Completed)
+
+Day 4 delivers a standardized suite of production-grade UI primitives and data-display patterns across the PaciaOS frontend:
+
+### 1. Generic Data Table (`@/components/ui/data-table.tsx`)
+- **Type-safe `<TData>` Component**: Renders strongly-typed datasets with custom column definitions, headers, and alignments.
+- **Client-Side Sorting**: Ascending, descending, and neutral toggles with visual sort indicators.
+- **Dynamic Search Filtering**: Real-time query matching across configured keys or object properties with built-in clear button.
+- **Integrated Pagination**: Accessible pagination controls displaying active record ranges ("Showing 1 to 5 of 12 records").
+- **State-Aware Fallbacks**: Automatic rendering of `TableSkeleton` during loading, `ErrorState` during network failures, and contextual `EmptyState` when queries yield no results.
+
+### 2. Domain Status Badges (`@/components/ui/status-badge.tsx`)
+- **Comprehensive Domain Taxonomy**: Native mappings for Lead Scoring (`HOT`, `WARM`, `COLD`), Lead Lifecycle (`New`, `Qualified`, `In Conversation`, `Viewing Booked`, `Contacting`, `Follow-up`), Call Outcomes, and Appointment States.
+- **Live Dot Indicators**: Optional dot accents with subtle CSS pulse animations for operational, live, or escalated calls.
+
+### 3. Qualification Score Indicator (`@/components/ui/score-indicator.tsx`)
+- **Score Representation**: Translates 0–100 numerical underwriting scores into visual indicators with calibrated color transitions (Rose 80+, Amber 60–79, Stone <60).
+- **Three Display Modes**:
+  - `variant="badge"`: Compact table cell badge with score and tier.
+  - `variant="gauge"`: Horizontal progress track for metric cards and summary bars.
+  - `variant="breakdown"`: 5-point BANT qualification matrix (Budget, Authority, Need, Timeline, Location Fit).
+
+### 4. Resilient Edge States (`@/components/shared/`)
+- **Enhanced `EmptyState`**: Domain presets (`no-leads`, `no-calls`, `no-appointments`, `no-search-results`, `no-data`) with custom action triggers.
+- **Enhanced `ErrorState`**: Actionable recovery button, error code tags, and collapsible technical debug accordion.
+- **Skeleton Suite**: Base `Skeleton` primitive and composite `TableSkeleton`.
+
+### 5. Modal & Drawer Patterns (`@/components/ui/`)
+- **`ConfirmDialog`**: Standardized confirmation modal with variant styling (`default`, `destructive`, `warning`, `success`), async action handlers, and loading spinners.
+- **`DetailDrawer`**: Adaptive inspection drawer with standardized header, scrollable body, action footer, and responsive sizing.
+
+### 6. Basic Form Components (`@/components/ui/`)
+- **`CurrencyInput`**: Real-estate currency input with prefix formatting (`₦`), thousands separators, and sanitized numeric emission.
+- **`SearchInput`**: Search bar with search icon and instant clear button.
+- **`FormField` Suite**: Accessible wrapper with `FormLabel`, `FormDescription`, and `FormMessage`.
+- **`Textarea`, `Checkbox`, `Switch`**: Accessible form primitives styled in Pacia luxury real-estate tokens.
+
+### 7. Interactive Testbench
+- **Dedicated Route (`/primitives`)**: Interactive showcase enabling live manipulation of all Day 4 primitives, state toggles (loading, error, empty), score sliders, dialogs, drawers, and form inputs. Accessible directly from the sidebar under **Management → UI Primitives**.
+
+---
+
+## 15. Git Workflow & Branching Conventions
 
 - **Dedicated Frontend Branch**: All Day 1 & Day 2 frontend foundation code resides on the `frontend` branch.
 - **Protected `main` Branch**: The `main` branch is reserved for verified releases and backend-integrated milestones.
@@ -323,7 +366,7 @@ Day 3 delivered production-ready Clerk authentication, multi-tenant workspace ro
 
 ---
 
-## 15. Contribution & Development Guidelines
+## 16. Contribution & Development Guidelines
 
 1. Always run `npm run lint` and `npm run type-check` before committing. Zero errors and zero warnings are required.
 2. Keep pages server-rendered where possible; designate `"use client"` only when user interaction, state, or browser APIs are required.

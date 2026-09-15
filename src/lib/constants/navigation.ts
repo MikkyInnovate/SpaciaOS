@@ -70,6 +70,13 @@ export const NAVIGATION_SECTIONS: NavSection[] = [
         iconName: "Settings",
         isAvailable: true,
       },
+      {
+        title: "UI Primitives",
+        href: "/primitives",
+        iconName: "Layers",
+        badge: "Day 4",
+        isAvailable: true,
+      },
     ],
   },
 ];
