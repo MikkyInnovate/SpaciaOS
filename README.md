@@ -2,7 +2,7 @@
 
 > **Spacia** is a high-performance, managed AI sales orchestration platform purpose-built for modern real-estate brokerages and development firms. It autonomously captures inbound property inquiries, engages prospects via natural voice and chat, qualifies buyers against stringent underwriting criteria, evaluates purchasing power and timeline, and seamlessly books qualified viewings directly onto connected sales agents' calendars.
 
-This repository houses the **production frontend implementation for Day 1, Day 2, and Day 3** of the Spacia MVP.
+This repository houses the **production frontend implementation for Days 1 through 5** of the Spacia MVP.
 
 ---
 
@@ -106,18 +106,30 @@ src/
 │       └── loading-spinner.tsx
 │
 ├── features/                            # Domain-driven feature slices
-│   └── dashboard/
+│   ├── dashboard/
+│   │   ├── components/
+│   │   │   ├── stat-metric-card.tsx     # Executive KPI cards with trend indicators
+│   │   │   ├── lead-intake-table.tsx    # Interactive leads data table
+│   │   │   ├── lead-dossier-panel.tsx   # Resizable dossier with playback & BANT
+│   │   │   ├── ai-agent-live-feed.tsx   # Real-time event activity ticker
+│   │   │   ├── pipeline-funnel.tsx      # Multi-stage conversion chart
+│   │   │   └── upcoming-viewings-list.tsx# Scheduled calendar viewings
+│   │   ├── data/
+│   │   │   └── mock-data.ts             # Deterministic mock datasets
+│   │   └── types/
+│   │       └── index.ts                 # Domain models (Leads, Calls, Viewings)
+│   │
+│   └── leads/                           # Day 5 Lead-Management domain
 │       ├── components/
-│       │   ├── stat-metric-card.tsx     # Executive KPI cards with trend indicators
-│       │   ├── lead-intake-table.tsx    # Interactive leads data table
-│       │   ├── lead-dossier-panel.tsx   # Resizable dossier with playback & BANT
-│       │   ├── ai-agent-live-feed.tsx   # Real-time event activity ticker
-│       │   ├── pipeline-funnel.tsx      # Multi-stage conversion chart
-│       │   └── upcoming-viewings-list.tsx# Scheduled calendar viewings
+│       │   ├── lead-table.tsx           # Operational table composing DataTable<Lead>
+│       │   ├── lead-filters-bar.tsx     # Foundational filters (Search, Score, Status)
+│       │   └── lead-detail-shell.tsx    # Lead dossier shell in DetailDrawer
 │       ├── data/
-│       │   └── mock-data.ts             # Deterministic mock datasets
+│       │   └── mock-leads.ts            # Realistic Nigerian luxury real-estate leads
+│       ├── services/
+│       │   └── leads-service.ts         # Leads API service + mock contract fallback
 │       └── types/
-│           └── index.ts                 # Domain models (Leads, Calls, Viewings)
+│           └── index.ts                 # Strongly-typed Lead domain models
 │
 ├── lib/
 │   ├── config/                          # Site metadata & environment schemas
