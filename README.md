@@ -410,42 +410,89 @@ Day 5 establishes the dedicated Lead Management domain and operational command c
 
 ---
 
-## 16. Day 6 — Complete Lead Workflow UI (Completed & Approved)
+## 16. Day 6 — Complete Lead Workflow UI
 
-Day 6 transforms the foundational lead slice into a complete, operational **Lead Workflow System** and sales command center for real-estate brokers:
+> **Current Implementation Status**: Frontend workflow implemented against isolated mock/service contracts; backend persistence remains pending.
 
-### 1. Lead Workflow Capabilities & Interactive Table (`components/lead-table.tsx`)
-- **Full Operational Columns**: Prospect identity with phone verification, Target Property with intent badges (`Purchase`, `Rental`, `Investment`), Formatted Budget (`₦` tabular numerals), Day 4 `ScoreIndicator` (`variant="badge"`), Day 4 `StatusBadge` with pulsing live dot, and actionable Next Action directive.
-- **Client-Side Sorting**: Added sorting to Prospect Name, Property Title, Budget (numerical parsing), Qualification Score, and Lifecycle Status.
-- **CSV Data Export**: Direct Excel/Sheets UTF-8 export trigger in header via `exportLeadsToCSV`.
+### 1. Day 6 Objective
+Transform the Day 5 foundational lead-management slice into a complete, operational **Lead Workflow System** and sales command center for real-estate brokers, elevating lead intake into an end-to-end qualification and deal-progression engine.
 
-### 2. Lead Detail Command Center (`components/lead-detail-shell.tsx`)
-- **Quick-Contact Action Bar**: Click-to-call (`tel:`), instant phone clipboard copy with Sonner toast feedback, and email link (`mailto:`).
-- **Synchronized State Management**: Selecting any lead opens the slide-over `DetailDrawer`. Status changes and broker memos mutate the active session store and update both table and drawer optimistically without page reloads.
+### 2. Major Features Completed
+- **Lead Workflow Table**: Operational table with prospect identification, phone verification, transaction intent badges, formatted Nigerian Naira (`₦`) budgets, qualification badges, live pulsing status indicators, and client-side column sorting.
+- **Lead Detail Dossier**: Slide-over `DetailDrawer` command center integrating quick-contact actions, property context, underwriting matrices, activity history, and status progression.
+- **Interactive Quick-Contact Bar**: Direct telephone link (`tel:`), instant clipboard copy with toast feedback, and email drafting (`mailto:`).
+- **Domain Status Progression**: Live lifecycle stage selector with domain-calibrated status dots, updating table and drawer state simultaneously without page reloads.
+- **High-Priority Operational Directives**: Next-action card presenting assigned agent/AI engine, priority tier, due date, and interactive action protocol triggers.
+- **Target Property Showcase**: Comprehensive property specs (bedrooms, bathrooms, floor area in m², development stage), price vs budget alignment analysis, and high-resolution architectural photography with interactive carousel and lightbox modal.
+- **BANT+ Underwriting Matrix**: 5-point qualification breakdown (Budget, Authority, Need, Timeline, Property Fit) with individual scores, AI intake commentary, and mock intelligence disclaimers.
+- **Chronological Activity Timeline**: Multi-channel event log (inbound forms, AI voice qualification calls, WhatsApp brochures, viewing appointments) with duration/outcome metadata.
+- **Broker Memo & Photo Ingestion**: Operational input allowing brokers to append immediate notes and attach site inspection photos, surveys, or proof-of-funds screenshots with full-screen inspection lightbox.
+- **CSV Data Export**: Single-click header export generating standardized Excel/Sheets UTF-8 CSV downloads of active leads.
 
-### 3. Lifecycle Status Transitions (`components/lead-status-select.tsx`)
-- **Clean Stage Selector**: Unified dropdown trigger with domain-calibrated live status dots (`New`, `Contacting`, `In Conversation`, `Qualified`, `Viewing Booked`, `Follow-up`, `Human Managed`).
-- **Design System Alignment**: Flat, border-driven trigger height-matched (`h-7`) with adjacent quick-contact controls, avoiding nested pill containers and dark shadows.
+### 3. Lead Workflow Capabilities
+- **Prospect Identity**: Displays verified prospect name and formatted phone number.
+- **Target Property**: Property title, location pin, and intent category (`Purchase`, `Rental`, `Investment`).
+- **Formatted Budget**: Numerical currency parsing and formatting (`₦85,000,000` with `font-mono tabular-nums`) alongside purchase timeline.
+- **Qualification Scoring**: Integrated Day 4 `ScoreIndicator` (`variant="badge"`).
+- **Lifecycle Status**: Integrated Day 4 `StatusBadge` mapped directly to domain statuses with live status dots.
+- **Next Action**: Specific operational instructions with row click inspection chevron.
+- **Sorting**: Multi-column sorting across Prospect Name, Property Title, Budget, Qualification Score, and Lifecycle Status.
+- **Row Selection**: Clicking any row activates selection highlight and slides open the dossier.
 
-### 4. High-Priority Next-Action Presentation (`components/lead-next-action-card.tsx`)
-- **Operational Directives**: Highlights required action, assigned party (Autonomous AI Engine or named Broker), due dates, priority tiers (`Immediate`, `Scheduled`, `Routine`), and recommended engagement protocols.
-- **Action Execution Trigger**: Interactive execution button with immediate toast protocol feedback.
+### 4. Lead Detail Dossier
+- **Header & Identity**: Displays lead name, system ID, intake timestamp, acquisition channel (`Instagram Lead Ad`, `Google Search`, `Direct Referral`), and overall score indicator.
+- **Direct Communication**: One-click click-to-call, phone number copying with Sonner toast feedback, and mailto links.
+- **Commercial Overview**: 3-card context summary displaying declared budget, transaction intent, and decision timeframe.
+- **Synchronized State**: Any mutation performed inside the drawer (status change or broker memo addition) immediately reflects in the lead table and drawer state.
 
-### 5. Target Property Context & Architectural Photography (`components/lead-property-card.tsx`)
-- **Real-Estate Specifications**: Bedrooms, bathrooms, floor area (`m²`), development stage, and estate name.
-- **Commercial Valuation Alignment**: Asking price vs declared budget analysis (`Within Budget`, `Budget Stretch`, `Sub-Budget`).
-- **Visual Property Showcase**: High-resolution luxury architectural photography across Nigerian estates (Ikoyi, Lekki, Banana Island, Guzape), interactive photo carousel, photo counter (`1 / 3 Photos`), and click-to-expand lightbox modal.
+### 5. Property Context & Visual Showcase
+- **Property Specifications**: Property type, bedrooms, bathrooms, floor area in square meters (`m²`), development stage (`Ready for Occupancy`, `Off-Plan`, `Completed`), and estate name.
+- **Commercial Valuation Alignment**: Asking price compared against prospect's declared budget with automated classification badges (`Within Budget`, `Budget Stretch`, `Sub-Budget`).
+- **Architectural Photography**: Curated luxury real-estate photography across Nigerian high-value corridors (Ikoyi, Lekki, Banana Island, Guzape Abuja), photo counter (`1 / 3 Photos`), prev/next navigation, and click-to-expand lightbox modal.
 
-### 6. BANT+ Qualification Underwriting (`components/lead-qualification-card.tsx`)
-- **5-Point Underwriting Matrix**: Budget, Authority, Need, Timeline, and Property Fit powered by Day 4 `ScoreIndicator` (`variant="breakdown"`).
-- **AI Intake Commentary**: Autonomous intake summary accompanied by an explicit disclaimer identifying simulated mock intelligence.
+### 6. Qualification / BANT UI
+- **5-Point Underwriting**: Dedicated evaluation for Budget (liquidity & source of funds), Authority (decision-maker status), Need (property criteria & lifestyle fit), Timeline (acquisition window), and Property Fit (listing compatibility).
+- **Score Representation**: Powered by Day 4 `ScoreIndicator` (`variant="breakdown"`).
+- **Simulated AI Intake Commentary**: Detailed qualification notes explaining score weighting, accompanied by an explicit user-facing disclaimer that data represents simulated demo intelligence.
 
-### 7. Chronological Activity Timeline & Memo Ingestion (`components/lead-activity-timeline.tsx`)
-- **Multi-Channel Interaction Log**: Chronological stream tracking inbound lead forms, AI voice qualification calls, WhatsApp brochures, and calendar bookings with duration and outcome badges.
-- **Broker Memo & Photo Attachment**: Direct input allowing brokers to append operational notes and attach site inspection photos, surveys, or proof-of-funds screenshots, with thumbnail preview chips and full-screen lightbox modal inspection.
+### 7. Activity Timeline & Broker Memo Ingestion
+- **Chronological Event Stream**: Ordered history of all prospect touchpoints with channel indicators (`Meta Lead Form`, `Spacia Voice Core`, `WhatsApp Business API`, `Calendar Connector`).
+- **Interaction Metadata**: Call durations, qualification outcomes (`Qualified — HOT (92/100)`), and confirmed viewing slots.
+- **Broker Note & Photo Attachment**: Input for operational notes with an image upload button (`ImageIcon`), attachment preview chip (`[ 🖼️ photo.jpg × ]`), and timeline photo rendering with full-screen inspection lightbox.
 
-### 8. Mock / API Boundary Integrity (`services/leads-service.ts`)
-- **Strict Contract Boundary**: All interactions stay strictly behind `leadsService`. Proposed endpoints (`PATCH /api/v1/leads/:id/status`, `POST /api/v1/leads/:id/activities`) are clearly documented as proposed contracts. In the absence of a live backend, the in-memory mock session store provides reactive state transitions without fabricating persistent production databases.
+### 8. Next-Action Presentation & Execution
+- **Operational Directive**: Clearly states the next protocol action, assigned owner (`Autonomous AI Engine` or named broker), priority tier (`Immediate`, `Scheduled`, `Routine`), and due date.
+- **Recommended Protocol**: Explicit broker execution instructions (e.g., dispatch gate security access codes, hand-deliver acquisition memorandum).
+- **Execution Button**: Interactive trigger dispatching Sonner toast confirmation.
+
+### 9. Status Transitions & State Synchronization
+- **Domain Stages**: Supports transitions between `New`, `Contacting`, `In Conversation`, `Qualified`, `Viewing Booked`, `Follow-up`, and `Human Managed`.
+- **Clean Design System Trigger**: Single border-driven select trigger height-matched (`h-7`) with adjacent buttons, featuring an inline live colored dot and eliminating nested pill borders.
+- **Optimistic State Updates**: Transitioning status updates the in-memory session store, appends an automatic status-change event to the activity timeline, and synchronizes the table and drawer views.
+
+### 10. Edge States Handling
+- **Loading State**: Displays `TableSkeleton` during initial data retrieval.
+- **Empty Filter Results**: Shows contextual `EmptyState` when search or filter combinations yield zero records, complete with a "Reset all filters" button.
+- **Empty Lead Selection**: Drawer gracefully unmounts or displays fallback state when no lead is active.
+- **Error Recovery**: Full `ErrorState` banner with retry action if service invocation fails.
+
+### 11. Mock / API Boundary Integrity
+- **Decoupled Architecture**: The UI consumes the `leadsService` abstraction (`@/features/leads/services/leads-service.ts`) and never makes direct ad-hoc HTTP calls.
+- **Proposed Contracts**: Clearly defines target REST endpoints:
+  - `GET /api/v1/leads?search=&scoreCategory=&status=`
+  - `GET /api/v1/leads/:id`
+  - `PATCH /api/v1/leads/:id/status`
+  - `POST /api/v1/leads/:id/activities`
+- **In-Memory Session Store**: In the absence of a live backend, an in-memory session store manages optimistic mutations, event appending, and lifecycle changes without fabricating persistent production databases or fake authentication.
+
+### 12. Technical Verification Status
+
+| Test Suite | Command | Result | Verification Details |
+| :--- | :--- | :---: | :--- |
+| **TypeScript Strict** | `npm run type-check` | **PASS** | `tsc --noEmit` exited with code 0. Zero errors across all domain files. |
+| **ESLint 9 Code Quality** | `npm run lint` | **PASS** | `eslint src` exited with code 0. Zero warnings, zero errors. |
+| **Next.js Production Build** | `npm run build` | **PASS** | Next.js 16 (Turbopack) successfully built and optimized all 16 routes in 19.4s. |
+| **Functional QA** | Interactive Browser Test | **PASS** | Verified search, score filtering, status filter, table sorting, drawer opening, status updates, photo memo attachment, lightbox viewer, and CSV download. |
 
 ---
 
@@ -467,4 +514,5 @@ Day 6 transforms the foundational lead slice into a complete, operational **Lead
 2. Keep pages server-rendered where possible; designate `"use client"` only when user interaction, state, or browser APIs are required.
 3. Place feature-specific components inside their respective `@/features/<feature>/components` directory rather than polluting `@/components/ui`.
 4. Ensure all interactive elements (buttons, inputs, selects, drawers) have clear accessible labels and keyboard focus states.
+
 
