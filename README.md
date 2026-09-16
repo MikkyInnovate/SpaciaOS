@@ -25,6 +25,7 @@ Spacia acts as an automated sales acceleration layer positioned between inbound 
 | **Day 2: Visual / Dashboard Pass** | **COMPLETE** | Refined light-mode-first aesthetic with Pacia Green (`#0d4a36`), warm off-white canvas (`#fbfbf9`), live AI activity feed, lead intake table, resizable Lead Dossier side-panel with simulated audio player & qualification matrix, pipeline funnel, appointments drawer, calls module, analytics date filtering, team roster, settings, command palette, notifications, and CSV export. |
 | **Day 3: Authentication & Workspace** | **COMPLETE & APPROVED** | Full production Clerk authentication integration, responsive 50/50 split auth shell with typewriter animation, interactive password requirements validation, forgot password reset modal, Google sign-up detection & guidance, protected application routes via proxy middleware, authenticated user context (`AuthProvider`), multi-tenant workspace/organization context (`WorkspaceProvider` & header switcher), unauthorized/no-workspace guard state, and interactive sidebar user account menu with sign-out. *(Frontend integration complete; establishes auth contract for future backend services).* |
 | **Day 4: Core Domain Database UI Primitives** | **COMPLETE** | Production-ready suite of reusable command-center UI primitives: strongly-typed generic `DataTable` (sorting, pagination, search filter, skeleton/empty states), domain-aware `StatusBadge` (HOT/WARM/COLD, lifecycle stages, call outcomes, pulsing live dots), multi-variant `ScoreIndicator` (badge, gauge, 5-point BANT breakdown), resilient edge states (`EmptyState` presets, `ErrorState` with technical details accordion, `TableSkeleton`, `Skeleton`), modal & drawer patterns (`ConfirmDialog`, `DetailDrawer`), basic form suite (`SearchInput`, `CurrencyInput` with Nigerian Naira ₦ formatting, `Textarea`, `Checkbox`, `Switch`, `FormField`), and an interactive showcase testbench (`/primitives`). |
+| **Day 5: Lead-Management Foundation** | **COMPLETE** | Production-ready dedicated Lead Management foundation: modular `features/leads` domain module, strongly-typed `Lead` models, decoupled `leadsService` with mock API contract fallback, operational `LeadTable` built on `DataTable<Lead>` (Prospect, Property / Interest, Budget, Score, Status, Next Action), foundational `LeadFiltersBar` (text search, score category chips, domain status dropdown, filter reset), explainable `ScoreIndicator` presentation, and the `LeadDetailShell` establishing the dossier information architecture in a slide-over `DetailDrawer` (Prospect Bio, Commercial Context, Target Property Interest, Supported Qualification Context, Operational Journey). |
 
 ---
 
@@ -354,7 +355,44 @@ Day 4 delivers a standardized suite of production-grade UI primitives and data-d
 
 ---
 
-## 15. Git Workflow & Branching Conventions
+## 15. Day 5 — Lead-Management Foundation (Completed)
+
+Day 5 establishes the dedicated Lead Management domain and operational command center for PaciaOS:
+
+### 1. Dedicated Leads Domain Module (`@/features/leads/`)
+- **Strongly-Typed Domain Models (`types/index.ts`)**: Models representing `Lead`, `LeadScoreCategory` (`HOT`, `WARM`, `COLD`), `LeadStatus` (`Qualified`, `Viewing Booked`, `In Conversation`, `Contacting`, `Follow-up`, `New`), `LeadFilterParams`, and `LeadsApiResponse`.
+- **Decoupled Leads Service (`services/leads-service.ts`)**: Client service backed by `apiClient` (`Authorization: Bearer <clerk_jwt>`, `X-Workspace-Id`) with an agreed REST contract (`GET /api/v1/leads?search=&scoreCategory=&status=`, `GET /api/v1/leads/:id`) and a graceful, deterministic offline mock fallback (`mock-leads.ts`).
+
+### 2. Operational Lead Table (`components/lead-table.tsx`)
+- **Composed with Day 4 `DataTable<Lead>`**: Displays key operational real-estate sales figures at a glance:
+  - **Prospect**: Prospect name and formatted telephone number.
+  - **Property / Interest**: Property title, location pin, and acquisition intent badge (`Purchase`, `Rental`, `Investment`).
+  - **Budget**: Formatted currency (`₦` tabular-nums) and decision timeline.
+  - **Score**: Embedded Day 4 `ScoreIndicator` (`variant="badge"`).
+  - **Status**: Embedded Day 4 `StatusBadge` mapped directly to established domain statuses with live status dots.
+  - **Next Action**: Operational instruction and row click chevron.
+- **Row Selection**: Clicking any row smoothly opens the prospect dossier in a slide-over `DetailDrawer`.
+
+### 3. Foundational Filters & Status Presentation (`components/lead-filters-bar.tsx`)
+- **Full-Text Search**: Instant search matching across prospect name, phone, property title, and location.
+- **Score Tier Segmentation**: One-click score category chips (`All Tiers`, `HOT (80+)`, `WARM (60-79)`, `COLD (<60)`).
+- **Domain Status Selection**: Dropdown filter mapped strictly to supported product statuses.
+- **Counter & Reset**: Live record counter ("Showing X of Y leads") and reset button.
+
+### 4. Lead Detail Shell (`components/lead-detail-shell.tsx`)
+- **Slide-Over Inspection (`DetailDrawer`)**: Establishes the information hierarchy for prospect dossiers:
+  - **Prospect Profile**: Verified phone and email links (`tel:`, `mailto:`).
+  - **Commercial Context**: Declared budget, transaction intent, decision timeline, and score gauge.
+  - **Target Property Interest**: Property title, neighborhood, and category.
+  - **Supported Qualification Context**: Verified BANT notes and prospect intake insights.
+  - **Operational Journey**: Structured chronological timeline representing next required action.
+
+### 5. Streamlined Route Assembly (`/leads`)
+- Clean, performant route component (`@/app/(app)/leads/page.tsx`) composing `LeadFiltersBar`, `LeadTable`, and `LeadDetailShell` with zero code bloat and full async state management (loading skeleton, empty search state, error recovery).
+
+---
+
+## 16. Git Workflow & Branching Conventions
 
 - **Dedicated Frontend Branch**: All Day 1 & Day 2 frontend foundation code resides on the `frontend` branch.
 - **Protected `main` Branch**: The `main` branch is reserved for verified releases and backend-integrated milestones.
@@ -366,7 +404,7 @@ Day 4 delivers a standardized suite of production-grade UI primitives and data-d
 
 ---
 
-## 16. Contribution & Development Guidelines
+## 17. Contribution & Development Guidelines
 
 1. Always run `npm run lint` and `npm run type-check` before committing. Zero errors and zero warnings are required.
 2. Keep pages server-rendered where possible; designate `"use client"` only when user interaction, state, or browser APIs are required.
