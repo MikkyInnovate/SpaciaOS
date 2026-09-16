@@ -30,6 +30,8 @@ export function LeadTable({
       {
         id: "prospect",
         header: "Prospect",
+        sortable: true,
+        accessorKey: "name",
         cell: ({ item }) => (
           <div className="flex flex-col min-w-[160px] py-0.5">
             <span className="font-medium text-stone-900 leading-tight truncate">
@@ -47,6 +49,8 @@ export function LeadTable({
       {
         id: "property",
         header: "Property / Interest",
+        sortable: true,
+        accessorKey: "propertyTitle",
         cell: ({ item }) => (
           <div className="flex flex-col min-w-[200px] max-w-[280px] py-0.5">
             <span className="text-xs font-medium text-stone-800 truncate" title={item.propertyTitle}>
@@ -68,6 +72,11 @@ export function LeadTable({
       {
         id: "budget",
         header: "Budget",
+        sortable: true,
+        accessorFn: (item) => {
+          const num = parseInt(item.budget.replace(/[^0-9]/g, ""), 10);
+          return isNaN(num) ? 0 : num;
+        },
         cell: ({ item }) => (
           <div className="flex flex-col py-0.5">
             <span className="font-mono text-xs font-semibold text-stone-900 tabular-nums">
@@ -82,6 +91,8 @@ export function LeadTable({
       {
         id: "score",
         header: "Score",
+        sortable: true,
+        accessorKey: "score",
         cell: ({ item }) => (
           <ScoreIndicator
             score={item.score}
@@ -94,6 +105,8 @@ export function LeadTable({
       {
         id: "status",
         header: "Status",
+        sortable: true,
+        accessorKey: "status",
         cell: ({ item }) => (
           <StatusBadge
             status={item.status}

@@ -3,3 +3,8 @@ export * from "./services/leads-service";
 export * from "./components/lead-table";
 export * from "./components/lead-filters-bar";
 export * from "./components/lead-detail-shell";
+export * from "./components/lead-status-select";
+export * from "./components/lead-next-action-card";
+export * from "./components/lead-property-card";
+export * from "./components/lead-qualification-card";
+export * from "./components/lead-activity-timeline";

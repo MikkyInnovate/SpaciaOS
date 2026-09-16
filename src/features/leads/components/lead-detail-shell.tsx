@@ -2,229 +2,244 @@
 
 import * as React from "react";
 import { DetailDrawer } from "@/components/ui/detail-drawer";
-import { StatusBadge } from "@/components/ui/status-badge";
 import { ScoreIndicator } from "@/components/ui/score-indicator";
-import type { Lead } from "../types";
+import { Button } from "@/components/ui/button";
+import { LeadStatusSelect } from "./lead-status-select";
+import { LeadNextActionCard } from "./lead-next-action-card";
+import { LeadPropertyCard } from "./lead-property-card";
+import { LeadQualificationCard } from "./lead-qualification-card";
+import { LeadActivityTimeline } from "./lead-activity-timeline";
+import type { Lead, LeadStatus } from "../types";
 import {
   User,
   Phone,
   Mail,
+  Copy,
+  Check,
   Building,
-  MapPin,
-  Clock,
-  Sparkles,
+  UserCheck,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 export interface LeadDetailShellProps {
   lead: Lead | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onStatusChange?: (leadId: string, newStatus: LeadStatus) => Promise<void> | void;
+  onAddNote?: (leadId: string, noteText: string, imageUrl?: string) => Promise<void> | void;
+  isLoading?: boolean;
 }
 
 export function LeadDetailShell({
   lead,
   open,
   onOpenChange,
+  onStatusChange,
+  onAddNote,
+  isLoading = false,
 }: LeadDetailShellProps) {
-  if (!lead) return null;
+  const [copiedPhone, setCopiedPhone] = React.useState(false);
+
+  if (!lead && !isLoading) return null;
+
+  const handleCopyPhone = (phone: string) => {
+    navigator.clipboard.writeText(phone);
+    setCopiedPhone(true);
+    toast.success("Phone number copied to clipboard", {
+      description: phone,
+    });
+    setTimeout(() => setCopiedPhone(false), 2000);
+  };
+
+  const handleStatusUpdate = async (newStatus: LeadStatus) => {
+    if (!lead || !onStatusChange) return;
+    try {
+      await onStatusChange(lead.id, newStatus);
+      toast.success("Lead Stage Updated", {
+        description: `${lead.name} transitioned to ${newStatus}.`,
+      });
+    } catch {
+      toast.error("Failed to update status", {
+        description: "Please check your network connection and retry.",
+      });
+    }
+  };
+
+  const handleAddTimelineNote = (noteText: string, imageUrl?: string) => {
+    if (!lead || !onAddNote) return;
+    onAddNote(lead.id, noteText, imageUrl);
+    toast.success("Operational note appended", {
+      description: "Recorded in lead interaction timeline.",
+    });
+  };
 
   return (
     <DetailDrawer
       open={open}
       onOpenChange={onOpenChange}
       title={
-        <div className="flex items-center gap-2.5">
-          <span className="truncate">{lead.name}</span>
-          <StatusBadge status={lead.status} withDot size="xs" />
-        </div>
+        lead ? (
+          <div className="flex items-center gap-2.5 truncate">
+            <span className="truncate">{lead.name}</span>
+          </div>
+        ) : (
+          "Loading Prospect Dossier..."
+        )
       }
       description={
-        <span>
-          Lead ID: <strong className="font-mono text-stone-900">{lead.id}</strong> • Ingested {lead.createdAt}
-        </span>
+        lead ? (
+          <span>
+            Lead ID: <strong className="font-mono text-stone-900">{lead.id}</strong> • Ingested {lead.createdAt}
+            {lead.source ? ` • via ${lead.source}` : ""}
+          </span>
+        ) : undefined
       }
       icon={<User className="h-4 w-4" />}
       badge={
-        <ScoreIndicator
-          score={lead.score}
-          category={lead.scoreCategory}
-          variant="badge"
-          size="sm"
-        />
+        lead ? (
+          <ScoreIndicator
+            score={lead.score}
+            category={lead.scoreCategory}
+            variant="badge"
+            size="sm"
+          />
+        ) : undefined
       }
       maxWidth="lg"
       footer={
-        <div className="flex items-center justify-between w-full">
-          <span className="text-xs text-stone-500">
-            Assigned workspace lead record
-          </span>
+        <div className="flex items-center justify-between w-full text-xs text-stone-500">
+          <span>Pacia Real-Estate Sales Operating System</span>
           <Button
             variant="outline"
             size="sm"
             onClick={() => onOpenChange(false)}
+            className="h-8 text-xs cursor-pointer bg-white"
           >
             Close Dossier
           </Button>
         </div>
       }
     >
-      <div className="space-y-6">
-        {/* 1. Prospect Bio & Direct Contact */}
-        <div className="rounded-lg border border-stone-200 bg-white p-4 space-y-3 shadow-2xs">
-          <div className="flex items-center justify-between border-b border-stone-100 pb-2">
-            <h4 className="text-xs font-semibold uppercase tracking-wider text-stone-500 flex items-center gap-1.5">
-              <User className="h-3.5 w-3.5 text-[#0d4a36]" />
-              Prospect Profile
-            </h4>
-            <span className="text-[11px] font-mono text-stone-400">Verified Contact</span>
-          </div>
+      {lead && (
+        <div className="space-y-5 pb-2">
+          {/* 1. Quick Broker Action Bar: Stage Switcher + Direct Contact */}
+          <div className="rounded-xl border border-stone-200 bg-white p-3 flex flex-wrap items-center justify-between gap-3">
+            <LeadStatusSelect
+              currentStatus={lead.status}
+              onStatusChange={handleStatusUpdate}
+            />
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1 text-xs">
-            <div className="space-y-1">
-              <span className="text-stone-500 text-[11px]">Primary Phone</span>
-              <div className="flex items-center gap-2">
-                <a
-                  href={"tel:" + lead.phone}
-                  className="font-mono font-medium text-stone-900 hover:text-[#0d4a36] hover:underline flex items-center gap-1"
-                >
-                  <Phone className="h-3.5 w-3.5 text-stone-400" />
-                  {lead.phone}
-                </a>
-              </div>
-            </div>
+            <div className="flex items-center gap-2">
+              <a
+                href={`tel:${lead.phone}`}
+                className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-md border border-stone-200 bg-white text-stone-700 hover:text-stone-900 hover:bg-stone-50 text-xs font-medium transition-colors"
+                title="Initiate phone call"
+              >
+                <Phone className="h-3 w-3 text-stone-500" />
+                <span className="font-mono">{lead.phone}</span>
+              </a>
 
-            <div className="space-y-1">
-              <span className="text-stone-500 text-[11px]">Email Address</span>
-              <div className="flex items-center gap-2">
-                <a
-                  href={"mailto:" + lead.email}
-                  className="font-mono font-medium text-stone-900 hover:text-[#0d4a36] hover:underline truncate flex items-center gap-1"
-                >
-                  <Mail className="h-3.5 w-3.5 text-stone-400" />
-                  {lead.email}
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
+              <button
+                type="button"
+                onClick={() => handleCopyPhone(lead.phone)}
+                className="inline-flex items-center justify-center h-7 w-7 rounded-md border border-stone-200 bg-white text-stone-500 hover:text-stone-900 hover:bg-stone-50 transition-colors cursor-pointer"
+                title="Copy phone number"
+                aria-label="Copy phone"
+              >
+                {copiedPhone ? (
+                  <Check className="h-3.5 w-3.5 text-emerald-600" />
+                ) : (
+                  <Copy className="h-3.5 w-3.5" />
+                )}
+              </button>
 
-        {/* 2. Commercial Context & Score */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {/* Budget & Intent */}
-          <div className="rounded-lg border border-stone-200 bg-white p-4 space-y-2.5 shadow-2xs">
-            <h4 className="text-xs font-semibold uppercase tracking-wider text-stone-500">
-              Commercial Context
-            </h4>
-            <div className="space-y-2 pt-1">
-              <div>
-                <span className="text-[11px] text-stone-500">Declared Budget</span>
-                <p className="font-mono text-base font-bold text-stone-900 tabular-nums">
-                  {lead.budget}
-                </p>
-              </div>
-              <div className="flex items-center justify-between text-xs border-t border-stone-100 pt-2">
-                <span className="text-stone-500">Transaction Intent:</span>
-                <span className="font-medium text-stone-900 bg-stone-100 px-2 py-0.5 rounded border border-stone-200 text-[11px]">
-                  {lead.intent}
-                </span>
-              </div>
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-stone-500">Decision Timeline:</span>
-                <span className="font-medium text-stone-900 font-mono text-[11px]">
-                  {lead.timeline}
-                </span>
-              </div>
+              <a
+                href={`mailto:${lead.email}`}
+                className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-md border border-stone-200 bg-white text-stone-700 hover:text-stone-900 hover:bg-stone-50 text-xs font-medium transition-colors"
+                title="Send email"
+              >
+                <Mail className="h-3 w-3 text-stone-500" />
+                <span className="hidden sm:inline">Email</span>
+              </a>
             </div>
           </div>
 
-          {/* Autonomous BANT Score Gauge */}
-          <div className="rounded-lg border border-stone-200 bg-white p-4 flex flex-col justify-between shadow-2xs">
-            <div>
-              <h4 className="text-xs font-semibold uppercase tracking-wider text-stone-500">
-                Score Assessment
-              </h4>
-              <div className="mt-3">
-                <ScoreIndicator
-                  score={lead.score}
-                  category={lead.scoreCategory}
-                  variant="gauge"
-                />
-              </div>
+          {/* 2. Operational Next-Action Directive Card */}
+          <LeadNextActionCard
+            directive={lead.nextActionDirective}
+            fallbackAction={lead.nextAction}
+            onExecuteAction={() => {
+              toast.info("Action Protocol Triggered", {
+                description: `Executing: ${lead.nextActionDirective?.action || lead.nextAction}`,
+              });
+            }}
+          />
+
+          {/* 3. Commercial Profile & Assigned Broker Summary */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="p-3 rounded-xl border border-stone-200 bg-white space-y-1">
+              <span className="text-[10px] text-stone-400 uppercase font-bold tracking-wider">
+                Declared Budget
+              </span>
+              <p className="font-mono text-base font-bold text-stone-900 tabular-nums">
+                {lead.budget}
+              </p>
+              <span className="text-[11px] text-stone-500 block">
+                Timeline: {lead.timeline}
+              </span>
             </div>
-            <div className="border-t border-stone-100 pt-2.5 mt-3 flex items-center justify-between text-xs">
-              <span className="text-stone-500">Tier Designation:</span>
-              <span className="font-semibold uppercase tracking-wider text-[#0d4a36] font-mono text-[11px]">
-                {lead.scoreCategory} PRIORITY
+
+            <div className="p-3 rounded-xl border border-stone-200 bg-white space-y-1">
+              <span className="text-[10px] text-stone-400 uppercase font-bold tracking-wider">
+                Assigned Sales Pod
+              </span>
+              <p className="text-xs font-semibold text-stone-900 flex items-center gap-1.5 mt-1">
+                <UserCheck className="h-3.5 w-3.5 text-emerald-700" />
+                <span>{lead.assignedBroker || "Lekki Luxury Pod"}</span>
+              </p>
+              <span className="text-[11px] text-stone-500 block">
+                Autonomous AI Supervision
+              </span>
+            </div>
+
+            <div className="p-3 rounded-xl border border-stone-200 bg-white space-y-1">
+              <span className="text-[10px] text-stone-400 uppercase font-bold tracking-wider">
+                Transaction Intent
+              </span>
+              <p className="text-xs font-semibold text-stone-900 flex items-center gap-1.5 mt-1">
+                <Building className="h-3.5 w-3.5 text-[#0d4a36]" />
+                <span>{lead.intent} Acquisition</span>
+              </p>
+              <span className="text-[11px] text-stone-500 block">
+                Primary Residential Goal
               </span>
             </div>
           </div>
+
+          {/* 4. Target Property Information */}
+          <LeadPropertyCard
+            property={lead.propertyDetails}
+            fallbackTitle={lead.propertyTitle}
+            fallbackLocation={lead.location}
+            declaredBudget={lead.budget}
+            intent={lead.intent}
+          />
+
+          {/* 5. 5-Point BANT Qualification Underwriting */}
+          <LeadQualificationCard
+            score={lead.score}
+            category={lead.scoreCategory}
+            bant={lead.bantBreakdown}
+            aiNotes={lead.aiNotes}
+          />
+
+          {/* 6. Chronological Multi-Channel Activity Timeline */}
+          <LeadActivityTimeline
+            activities={lead.activities}
+            onAddNote={handleAddTimelineNote}
+          />
         </div>
-
-        {/* 3. Property Interest */}
-        <div className="rounded-lg border border-stone-200 bg-white p-4 space-y-3 shadow-2xs">
-          <div className="flex items-center justify-between border-b border-stone-100 pb-2">
-            <h4 className="text-xs font-semibold uppercase tracking-wider text-stone-500 flex items-center gap-1.5">
-              <Building className="h-3.5 w-3.5 text-[#0d4a36]" />
-              Target Property Interest
-            </h4>
-          </div>
-
-          <div className="space-y-2 pt-1 text-xs">
-            <div>
-              <span className="text-stone-500 text-[11px]">Property Title</span>
-              <p className="font-medium text-stone-900 text-sm mt-0.5">
-                {lead.propertyTitle}
-              </p>
-            </div>
-            <div className="flex items-center gap-1.5 text-stone-600">
-              <MapPin className="h-3.5 w-3.5 text-stone-400" />
-              <span>{lead.location}</span>
-            </div>
-          </div>
-        </div>
-
-        {/* 4. Supported Qualification Notes */}
-        {lead.aiNotes && (
-          <div className="rounded-lg border border-stone-200 bg-[#fbfbfa] p-4 space-y-2 shadow-2xs">
-            <div className="flex items-center gap-1.5 text-xs font-semibold text-[#0d4a36]">
-              <Sparkles className="h-3.5 w-3.5" />
-              <span>Autonomous Qualification Context</span>
-            </div>
-            <p className="text-xs text-stone-700 leading-relaxed font-sans">
-              &ldquo;{lead.aiNotes}&rdquo;
-            </p>
-          </div>
-        )}
-
-        {/* 5. Operational Activity & Next Action */}
-        <div className="rounded-lg border border-stone-200 bg-white p-4 space-y-3 shadow-2xs">
-          <div className="flex items-center justify-between border-b border-stone-100 pb-2">
-            <h4 className="text-xs font-semibold uppercase tracking-wider text-stone-500 flex items-center gap-1.5">
-              <Clock className="h-3.5 w-3.5 text-[#0d4a36]" />
-              Operational Journey
-            </h4>
-          </div>
-
-          <div className="space-y-3 pt-1">
-            <div className="flex items-start gap-3 text-xs">
-              <div className="h-2 w-2 rounded-full bg-[#0d4a36] mt-1.5 shrink-0" />
-              <div className="space-y-0.5 flex-1">
-                <span className="font-semibold text-stone-900">Next Action Required</span>
-                <p className="text-stone-600">{lead.nextAction}</p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-3 text-xs opacity-75">
-              <div className="h-2 w-2 rounded-full bg-stone-300 mt-1.5 shrink-0" />
-              <div className="space-y-0.5 flex-1">
-                <span className="font-medium text-stone-700">Lead Ingestion Completed</span>
-                <p className="text-stone-500 text-[11px]">Record logged into PaciaOS domain database</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+      )}
     </DetailDrawer>
   );
 }

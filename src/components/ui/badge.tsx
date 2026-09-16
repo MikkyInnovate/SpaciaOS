@@ -7,17 +7,17 @@ const badgeVariants = cva(
   {
     variants: {
       variant: {
-        default: "border-transparent bg-stone-900 text-white shadow-2xs",
+        default: "border-transparent bg-stone-900 text-white",
         secondary: "border-transparent bg-stone-100 text-stone-700 hover:bg-stone-200/70",
         destructive: "border-red-200/80 bg-red-50 text-red-700",
-        outline: "border-stone-200/80 text-stone-700 bg-white shadow-2xs",
+        outline: "border-stone-200/80 text-stone-700 bg-white",
         success: "border-emerald-200/80 bg-emerald-50/60 text-emerald-800 font-medium",
         warning: "border-amber-200/80 bg-amber-50/60 text-amber-800 font-medium",
         info: "border-stone-200 bg-stone-50 text-stone-700",
         hot: "border-rose-200/70 bg-rose-50/70 text-rose-700 font-semibold",
         warm: "border-amber-200/70 bg-amber-50/70 text-amber-800 font-medium",
         cold: "border-stone-200/70 bg-stone-100/80 text-stone-600",
-        live: "border-emerald-200/80 bg-emerald-50/70 text-emerald-800 shadow-2xs font-semibold",
+        live: "border-emerald-200/80 bg-emerald-50/70 text-emerald-800 font-semibold",
         qualified: "border-emerald-200/90 bg-emerald-50/80 text-emerald-800 font-medium",
         viewing: "border-indigo-200/80 bg-indigo-50/80 text-indigo-800 font-medium",
         inConversation: "border-blue-200/80 bg-blue-50/80 text-blue-800 font-medium",

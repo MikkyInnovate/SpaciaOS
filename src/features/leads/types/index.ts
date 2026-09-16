@@ -9,6 +9,67 @@ export type LeadStatus =
   | "Viewing Booked"
   | "Human Managed";
 
+export interface PropertyDetails {
+  propertyTitle: string;
+  location: string;
+  propertyType: string;
+  bedrooms?: number;
+  bathrooms?: number;
+  squareMeters?: number;
+  targetPrice: string;
+  budgetMatch: "Within Budget" | "Budget Stretch" | "Sub-Budget";
+  developmentStage?: string;
+  estateName?: string;
+  featuredImage?: string;
+  images?: string[];
+}
+
+export interface BantBreakdown {
+  budgetScore: number;
+  budgetNote: string;
+  authorityScore: number;
+  authorityNote: string;
+  needScore: number;
+  needNote: string;
+  timelineScore: number;
+  timelineNote: string;
+  propertyFitScore: number;
+  propertyFitNote: string;
+}
+
+export type ActivityType =
+  | "inbound_capture"
+  | "ai_voice_call"
+  | "whatsapp_message"
+  | "viewing_scheduled"
+  | "human_note"
+  | "status_change";
+
+export interface LeadActivity {
+  id: string;
+  type: ActivityType;
+  title: string;
+  description: string;
+  timestamp: string;
+  channel?: string;
+  meta?: {
+    duration?: string;
+    outcome?: string;
+    brokerName?: string;
+    viewingDate?: string;
+    imageUrl?: string;
+    imageCaption?: string;
+  };
+}
+
+export interface NextActionDirective {
+  action: string;
+  assignedTo: string;
+  priority: "Immediate" | "Scheduled" | "Routine";
+  dueDate?: string;
+  protocolRecommendation?: string;
+}
+
 export interface Lead {
   id: string;
   name: string;
@@ -25,6 +86,12 @@ export interface Lead {
   nextAction: string;
   createdAt: string;
   aiNotes?: string;
+  source?: string;
+  assignedBroker?: string;
+  propertyDetails?: PropertyDetails;
+  bantBreakdown?: BantBreakdown;
+  activities?: LeadActivity[];
+  nextActionDirective?: NextActionDirective;
 }
 
 export interface LeadFilterParams {

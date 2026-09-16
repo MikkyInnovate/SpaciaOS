@@ -192,7 +192,7 @@ export function StatusBadge({
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-md border font-medium transition-colors select-none whitespace-nowrap tabular-nums shadow-2xs",
+        "inline-flex items-center rounded-md border font-medium transition-colors select-none whitespace-nowrap tabular-nums",
         config.badgeClass,
         sizeStyles[size],
         className

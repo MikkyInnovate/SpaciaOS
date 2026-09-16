@@ -53,7 +53,7 @@ export function LeadFiltersBar({
   );
 
   return (
-    <div className="flex flex-col gap-3 rounded-xl border border-stone-200 bg-white p-3.5 shadow-2xs">
+    <div className="flex flex-col gap-3 rounded-xl border border-stone-200 bg-white p-3.5">
       {/* Top row: Search input + count display */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="w-full sm:max-w-md">
@@ -106,7 +106,7 @@ export function LeadFiltersBar({
                 className={cn(
                   "rounded-md px-2.5 py-1 text-xs font-medium transition-all select-none whitespace-nowrap",
                   isSelected
-                    ? "bg-[#0d4a36] text-white shadow-2xs font-semibold"
+                    ? "bg-[#0d4a36] text-white font-semibold"
                     : "bg-stone-100 text-stone-600 hover:bg-stone-200/80 hover:text-stone-900"
                 )}
               >

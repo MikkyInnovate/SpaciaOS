@@ -2,7 +2,7 @@
 
 > **Spacia** is a high-performance, managed AI sales orchestration platform purpose-built for modern real-estate brokerages and development firms. It autonomously captures inbound property inquiries, engages prospects via natural voice and chat, qualifies buyers against stringent underwriting criteria, evaluates purchasing power and timeline, and seamlessly books qualified viewings directly onto connected sales agents' calendars.
 
-This repository houses the **production frontend implementation for Days 1 through 5** of the Spacia MVP.
+This repository houses the **production frontend implementation for Days 1 through 6** of the Spacia MVP.
 
 ---
 
@@ -25,7 +25,8 @@ Spacia acts as an automated sales acceleration layer positioned between inbound 
 | **Day 2: Visual / Dashboard Pass** | **COMPLETE** | Refined light-mode-first aesthetic with Pacia Green (`#0d4a36`), warm off-white canvas (`#fbfbf9`), live AI activity feed, lead intake table, resizable Lead Dossier side-panel with simulated audio player & qualification matrix, pipeline funnel, appointments drawer, calls module, analytics date filtering, team roster, settings, command palette, notifications, and CSV export. |
 | **Day 3: Authentication & Workspace** | **COMPLETE & APPROVED** | Full production Clerk authentication integration, responsive 50/50 split auth shell with typewriter animation, interactive password requirements validation, forgot password reset modal, Google sign-up detection & guidance, protected application routes via proxy middleware, authenticated user context (`AuthProvider`), multi-tenant workspace/organization context (`WorkspaceProvider` & header switcher), unauthorized/no-workspace guard state, and interactive sidebar user account menu with sign-out. *(Frontend integration complete; establishes auth contract for future backend services).* |
 | **Day 4: Core Domain Database UI Primitives** | **COMPLETE** | Production-ready suite of reusable command-center UI primitives: strongly-typed generic `DataTable` (sorting, pagination, search filter, skeleton/empty states), domain-aware `StatusBadge` (HOT/WARM/COLD, lifecycle stages, call outcomes, pulsing live dots), multi-variant `ScoreIndicator` (badge, gauge, 5-point BANT breakdown), resilient edge states (`EmptyState` presets, `ErrorState` with technical details accordion, `TableSkeleton`, `Skeleton`), modal & drawer patterns (`ConfirmDialog`, `DetailDrawer`), basic form suite (`SearchInput`, `CurrencyInput` with Nigerian Naira ₦ formatting, `Textarea`, `Checkbox`, `Switch`, `FormField`), and an interactive showcase testbench (`/primitives`). |
-| **Day 5: Lead-Management Foundation** | **COMPLETE** | Production-ready dedicated Lead Management foundation: modular `features/leads` domain module, strongly-typed `Lead` models, decoupled `leadsService` with mock API contract fallback, operational `LeadTable` built on `DataTable<Lead>` (Prospect, Property / Interest, Budget, Score, Status, Next Action), foundational `LeadFiltersBar` (text search, score category chips, domain status dropdown, filter reset), explainable `ScoreIndicator` presentation, and the `LeadDetailShell` establishing the dossier information architecture in a slide-over `DetailDrawer` (Prospect Bio, Commercial Context, Target Property Interest, Supported Qualification Context, Operational Journey). |
+| **Day 5: Lead-Management Foundation** | **COMPLETE** | Production-ready dedicated Lead Management foundation: modular `features/leads` domain module, strongly-typed `Lead` models, decoupled `leadsService` with mock API contract fallback, operational `LeadTable` built on `DataTable<Lead>` (Prospect, Property / Interest, Budget, Score, Status, Next Action), foundational `LeadFiltersBar` (text search, score category chips, domain status dropdown, filter reset), explainable `ScoreIndicator` presentation, and the `LeadDetailShell` establishing the dossier information architecture in a slide-over `DetailDrawer`. |
+| **Day 6: Complete Lead Workflow UI** | **COMPLETE** | Complete, operational Lead Workflow System: interactive `LeadStatusSelect` with live domain lifecycle transitions, high-priority `LeadNextActionCard` with actionable protocol directives, real-estate `LeadPropertyCard` (property specs, bedrooms/bathrooms, floor area, asking price vs declared budget alignment), 5-point BANT+ `LeadQualificationCard` (Budget, Authority, Need, Timeline, Property Fit with simulated AI underwriting notes), chronological `LeadActivityTimeline` (multi-channel event stream tracking inbound capture, voice calls, WhatsApp brochures, viewing appointments, and broker memo additions), column sorting on `LeadTable`, and client-side CSV export. |
 
 ---
 
@@ -119,15 +120,20 @@ src/
 │   │   └── types/
 │   │       └── index.ts                 # Domain models (Leads, Calls, Viewings)
 │   │
-│   └── leads/                           # Day 5 Lead-Management domain
+│   └── leads/                           # Day 5 & 6 Complete Lead Workflow domain
 │       ├── components/
-│       │   ├── lead-table.tsx           # Operational table composing DataTable<Lead>
+│       │   ├── lead-table.tsx           # Operational table with client-side sorting
 │       │   ├── lead-filters-bar.tsx     # Foundational filters (Search, Score, Status)
-│       │   └── lead-detail-shell.tsx    # Lead dossier shell in DetailDrawer
+│       │   ├── lead-detail-shell.tsx    # Complete broker command center in DetailDrawer
+│       │   ├── lead-status-select.tsx   # Live lifecycle stage selector dropdown
+│       │   ├── lead-next-action-card.tsx# High-priority operational directive card
+│       │   ├── lead-property-card.tsx   # Property specs & photo showcase gallery
+│       │   ├── lead-qualification-card.tsx # 5-point BANT underwriting & AI notes
+│       │   └── lead-activity-timeline.tsx # Event stream, broker memo & photo upload
 │       ├── data/
 │       │   └── mock-leads.ts            # Realistic Nigerian luxury real-estate leads
 │       ├── services/
-│       │   └── leads-service.ts         # Leads API service + mock contract fallback
+│       │   └── leads-service.ts         # Leads API service, mock session store & CSV export
 │       └── types/
 │           └── index.ts                 # Strongly-typed Lead domain models
 │
@@ -404,9 +410,48 @@ Day 5 establishes the dedicated Lead Management domain and operational command c
 
 ---
 
-## 16. Git Workflow & Branching Conventions
+## 16. Day 6 — Complete Lead Workflow UI (Completed & Approved)
 
-- **Dedicated Frontend Branch**: All Day 1 & Day 2 frontend foundation code resides on the `frontend` branch.
+Day 6 transforms the foundational lead slice into a complete, operational **Lead Workflow System** and sales command center for real-estate brokers:
+
+### 1. Lead Workflow Capabilities & Interactive Table (`components/lead-table.tsx`)
+- **Full Operational Columns**: Prospect identity with phone verification, Target Property with intent badges (`Purchase`, `Rental`, `Investment`), Formatted Budget (`₦` tabular numerals), Day 4 `ScoreIndicator` (`variant="badge"`), Day 4 `StatusBadge` with pulsing live dot, and actionable Next Action directive.
+- **Client-Side Sorting**: Added sorting to Prospect Name, Property Title, Budget (numerical parsing), Qualification Score, and Lifecycle Status.
+- **CSV Data Export**: Direct Excel/Sheets UTF-8 export trigger in header via `exportLeadsToCSV`.
+
+### 2. Lead Detail Command Center (`components/lead-detail-shell.tsx`)
+- **Quick-Contact Action Bar**: Click-to-call (`tel:`), instant phone clipboard copy with Sonner toast feedback, and email link (`mailto:`).
+- **Synchronized State Management**: Selecting any lead opens the slide-over `DetailDrawer`. Status changes and broker memos mutate the active session store and update both table and drawer optimistically without page reloads.
+
+### 3. Lifecycle Status Transitions (`components/lead-status-select.tsx`)
+- **Clean Stage Selector**: Unified dropdown trigger with domain-calibrated live status dots (`New`, `Contacting`, `In Conversation`, `Qualified`, `Viewing Booked`, `Follow-up`, `Human Managed`).
+- **Design System Alignment**: Flat, border-driven trigger height-matched (`h-7`) with adjacent quick-contact controls, avoiding nested pill containers and dark shadows.
+
+### 4. High-Priority Next-Action Presentation (`components/lead-next-action-card.tsx`)
+- **Operational Directives**: Highlights required action, assigned party (Autonomous AI Engine or named Broker), due dates, priority tiers (`Immediate`, `Scheduled`, `Routine`), and recommended engagement protocols.
+- **Action Execution Trigger**: Interactive execution button with immediate toast protocol feedback.
+
+### 5. Target Property Context & Architectural Photography (`components/lead-property-card.tsx`)
+- **Real-Estate Specifications**: Bedrooms, bathrooms, floor area (`m²`), development stage, and estate name.
+- **Commercial Valuation Alignment**: Asking price vs declared budget analysis (`Within Budget`, `Budget Stretch`, `Sub-Budget`).
+- **Visual Property Showcase**: High-resolution luxury architectural photography across Nigerian estates (Ikoyi, Lekki, Banana Island, Guzape), interactive photo carousel, photo counter (`1 / 3 Photos`), and click-to-expand lightbox modal.
+
+### 6. BANT+ Qualification Underwriting (`components/lead-qualification-card.tsx`)
+- **5-Point Underwriting Matrix**: Budget, Authority, Need, Timeline, and Property Fit powered by Day 4 `ScoreIndicator` (`variant="breakdown"`).
+- **AI Intake Commentary**: Autonomous intake summary accompanied by an explicit disclaimer identifying simulated mock intelligence.
+
+### 7. Chronological Activity Timeline & Memo Ingestion (`components/lead-activity-timeline.tsx`)
+- **Multi-Channel Interaction Log**: Chronological stream tracking inbound lead forms, AI voice qualification calls, WhatsApp brochures, and calendar bookings with duration and outcome badges.
+- **Broker Memo & Photo Attachment**: Direct input allowing brokers to append operational notes and attach site inspection photos, surveys, or proof-of-funds screenshots, with thumbnail preview chips and full-screen lightbox modal inspection.
+
+### 8. Mock / API Boundary Integrity (`services/leads-service.ts`)
+- **Strict Contract Boundary**: All interactions stay strictly behind `leadsService`. Proposed endpoints (`PATCH /api/v1/leads/:id/status`, `POST /api/v1/leads/:id/activities`) are clearly documented as proposed contracts. In the absence of a live backend, the in-memory mock session store provides reactive state transitions without fabricating persistent production databases.
+
+---
+
+## 17. Git Workflow & Branching Conventions
+
+- **Dedicated Frontend Branch**: All Day 1 through Day 6 frontend foundation code resides on the `frontend` branch.
 - **Protected `main` Branch**: The `main` branch is reserved for verified releases and backend-integrated milestones.
 - **Branch Naming Conventions**:
   - `feat/feature-name` for new user-facing capabilities
@@ -416,9 +461,10 @@ Day 5 establishes the dedicated Lead Management domain and operational command c
 
 ---
 
-## 17. Contribution & Development Guidelines
+## 18. Contribution & Development Guidelines
 
 1. Always run `npm run lint` and `npm run type-check` before committing. Zero errors and zero warnings are required.
 2. Keep pages server-rendered where possible; designate `"use client"` only when user interaction, state, or browser APIs are required.
 3. Place feature-specific components inside their respective `@/features/<feature>/components` directory rather than polluting `@/components/ui`.
 4. Ensure all interactive elements (buttons, inputs, selects, drawers) have clear accessible labels and keyboard focus states.
+
