@@ -3,6 +3,13 @@
 import * as React from "react";
 import { SearchInput } from "@/components/ui/search-input";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import type { LeadFilterParams, LeadScoreCategory, LeadStatus } from "../types";
 import { RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
@@ -109,27 +116,33 @@ export function LeadFiltersBar({
           })}
         </div>
 
-        {/* Status Pills */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
+        {/* Status Dropdown */}
+        <div className="flex items-center gap-1.5">
           <span className="text-[11px] font-medium text-stone-500 uppercase tracking-wider mr-1">
             Status:
           </span>
-          <select
-            value={filters.status || "ALL"}
-            onChange={(e) =>
-              onFilterChange({
-                ...filters,
-                status: e.target.value as LeadStatus | "ALL",
-              })
-            }
-            className="rounded-md border border-stone-200 bg-white px-2.5 py-1 text-xs font-medium text-stone-700 shadow-2xs focus:border-[#0d4a36] focus:outline-none focus:ring-1 focus:ring-[#0d4a36]"
-          >
-            {STATUS_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
+          <div className="w-40">
+            <Select
+              value={filters.status || "ALL"}
+              onValueChange={(value) =>
+                onFilterChange({
+                  ...filters,
+                  status: value as LeadStatus | "ALL",
+                })
+              }
+            >
+              <SelectTrigger className="h-8 text-xs bg-white border-stone-200">
+                <SelectValue placeholder="All Statuses" />
+              </SelectTrigger>
+              <SelectContent>
+                {STATUS_OPTIONS.map((opt) => (
+                  <SelectItem key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
       </div>
     </div>
