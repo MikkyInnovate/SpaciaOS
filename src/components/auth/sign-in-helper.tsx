@@ -94,21 +94,11 @@ export function SignInHelper({ containerRef }: SignInHelperProps) {
         }
       }
 
-      // 3. Mark Google button with "Last used" badge if provider was Google
+      // 3. Track last used email if provider was Google
       try {
         const lastProvider = localStorage.getItem("spacia_last_auth_provider");
         const lastEmail = localStorage.getItem("spacia_last_auth_email");
         if (lastProvider === "google") {
-          const googleBtn = root.querySelector<HTMLElement>(
-            'button[data-provider="google"], .cl-socialButtonsBlockButton__google'
-          );
-          if (googleBtn && !googleBtn.querySelector(".spacia-last-used-badge")) {
-            const badge = document.createElement("span");
-            badge.className =
-              "spacia-last-used-badge ml-auto text-[10px] font-semibold uppercase tracking-wider bg-emerald-100 text-emerald-800 px-1.5 py-0.5 rounded border border-emerald-300/60";
-            badge.textContent = "Last Used";
-            googleBtn.appendChild(badge);
-          }
           if (lastEmail && !detectedEmail) {
             setDetectedEmail(lastEmail);
           }

@@ -350,7 +350,7 @@ Day 4 delivers a standardized suite of production-grade UI primitives and data-d
 - **`Textarea`, `Checkbox`, `Switch`**: Accessible form primitives styled in Pacia luxury real-estate tokens.
 
 ### 7. Interactive Testbench
-- **Dedicated Route (`/primitives`)**: Interactive showcase enabling live manipulation of all Day 4 primitives, state toggles (loading, error, empty), score sliders, dialogs, drawers, and form inputs. Accessible directly from the sidebar under **Management → UI Primitives**.
+- **Dedicated Developer Route (`/primitives`)**: Interactive showcase enabling live manipulation of all Day 4 primitives, state toggles (loading, error, empty), score sliders, dialogs, drawers, and form inputs. Accessible directly via URL (`/primitives`) for developer testing.
 
 ---
 
