@@ -300,6 +300,8 @@ export function LeadDetailShell({
           if (!open) setSelectedPropertyForSpecs(null);
         }}
         leadName={lead?.name}
+        leadPhone={lead?.phone}
+        leadEmail={lead?.email}
       />
     </DetailDrawer>
   );

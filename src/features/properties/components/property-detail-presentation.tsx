@@ -22,6 +22,7 @@ import {
   CheckCircle2,
   Share2,
   Download,
+  Loader2,
   ChevronLeft,
   ChevronRight,
   Expand,
@@ -40,6 +41,8 @@ export interface PropertyDetailPresentationProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   leadName?: string;
+  leadPhone?: string;
+  leadEmail?: string;
 }
 
 export function PropertyDetailPresentation({
@@ -47,10 +50,12 @@ export function PropertyDetailPresentation({
   open,
   onOpenChange,
   leadName,
+  leadPhone,
 }: PropertyDetailPresentationProps) {
   const [activePhotoIdx, setActivePhotoIdx] = React.useState(0);
   const [prevPropertyId, setPrevPropertyId] = React.useState(property?.id);
   const [lightboxOpen, setLightboxOpen] = React.useState(false);
+  const [isGeneratingPdf, setIsGeneratingPdf] = React.useState(false);
 
   // Cleanly reset photo index when inspecting a different property
   if (property?.id !== prevPropertyId) {
@@ -67,15 +72,249 @@ export function PropertyDetailPresentation({
     : [];
 
   const handleShareWhatsApp = () => {
-    toast.success("Listing Brochure Dispatched", {
-      description: `Dispatched ${property.title} overview to ${leadName || "prospect"} via WhatsApp Business API.`,
+    const greetingName = leadName || "Valued Prospect";
+    const featuresSummary = property.features.slice(0, 4).join(", ");
+    const specsSummary = [
+      property.bedrooms ? `${property.bedrooms} Beds` : "",
+      property.bathrooms ? `${property.bathrooms} Baths` : "",
+      property.squareMeters ? `${property.squareMeters} m²` : "",
+    ].filter(Boolean).join(" • ");
+
+    const pitchText = `Hello ${greetingName},
+
+Here is the exclusive portfolio dossier for *${property.title}*:
+
+📍 Location: ${property.location}${property.estateName ? ` (${property.estateName})` : ""}
+💰 Asking Valuation: ${property.formattedPrice}
+📐 Layout: ${specsSummary}
+🏛️ Legal Title: ${property.verification.titleDeedType || "Verified Title Deed"}
+✨ Highlights: ${featuresSummary}
+
+Would you like to schedule a private physical inspection this week?
+
+— Spacia Real-Estate Sales Command`;
+
+    // Copy to clipboard
+    if (typeof navigator !== "undefined" && navigator.clipboard) {
+      navigator.clipboard.writeText(pitchText);
+    }
+
+    // Direct WhatsApp Web / Mobile redirect
+    const cleanPhone = leadPhone ? leadPhone.replace(/[^0-9]/g, "") : "";
+    const waUrl = cleanPhone
+      ? `https://wa.me/${cleanPhone}?text=${encodeURIComponent(pitchText)}`
+      : `https://api.whatsapp.com/send?text=${encodeURIComponent(pitchText)}`;
+
+    window.open(waUrl, "_blank");
+
+    toast.success("WhatsApp Pitch Dispatched & Copied", {
+      description: cleanPhone
+        ? `Opened chat with +${cleanPhone} and copied message to clipboard.`
+        : "Brochure pitch copied to clipboard and WhatsApp opened.",
     });
   };
 
-  const handleDownloadBrochure = () => {
-    toast.info("Preparing Architectural Brochure", {
-      description: `Generating high-res specification PDF for ${property.title}.`,
-    });
+  const handleDownloadBrochure = async () => {
+    try {
+      setIsGeneratingPdf(true);
+      const { jsPDF } = await import("jspdf");
+      const doc = new jsPDF({
+        orientation: "portrait",
+        unit: "mm",
+        format: "a4",
+      });
+
+      // 1. Luxury Header Banner (Pacia Green #0d4a36)
+      doc.setFillColor(13, 74, 54);
+      doc.rect(0, 0, 210, 32, "F");
+
+      // Brand Title
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(22);
+      doc.setFont("helvetica", "bold");
+      doc.text("SPACIA", 15, 16);
+
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "normal");
+      doc.text("PREMIER REAL-ESTATE ASSET DOSSIER", 15, 23);
+
+      const todayStr = new Date().toLocaleDateString("en-GB", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      });
+      doc.text(`DATE: ${todayStr}`, 195, 20, { align: "right" });
+
+      // 2. Property Title & Location
+      doc.setTextColor(20, 20, 20);
+      doc.setFontSize(18);
+      doc.setFont("helvetica", "bold");
+      doc.text(property.title, 15, 45);
+
+      doc.setFontSize(11);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(110, 110, 110);
+      const locStr = `${property.estateName ? property.estateName + " • " : ""}${property.location}`;
+      doc.text(locStr, 15, 52);
+
+      // 3. Valuation & Status Box
+      doc.setFillColor(248, 248, 246);
+      doc.setDrawColor(220, 220, 218);
+      doc.roundedRect(15, 58, 180, 20, 2, 2, "FD");
+
+      doc.setTextColor(120, 120, 120);
+      doc.setFontSize(8.5);
+      doc.setFont("helvetica", "bold");
+      doc.text("OFFICIAL ASKING VALUATION", 20, 66);
+
+      doc.setTextColor(13, 74, 54);
+      doc.setFontSize(15);
+      doc.setFont("helvetica", "bold");
+      doc.text(property.formattedPrice, 20, 74);
+
+      doc.setTextColor(80, 80, 80);
+      doc.setFontSize(9.5);
+      doc.setFont("helvetica", "normal");
+      doc.text(
+        `Availability: ${property.availability}  •  Title: ${property.verification.titleDeedType || "Verified"}`,
+        190,
+        70,
+        { align: "right" }
+      );
+
+      // 4. Specifications Section
+      doc.setTextColor(20, 20, 20);
+      doc.setFontSize(12);
+      doc.setFont("helvetica", "bold");
+      doc.text("Spatial & Architectural Specifications", 15, 88);
+
+      doc.setDrawColor(225, 225, 225);
+      doc.line(15, 91, 195, 91);
+
+      const specs = [
+        ["Property Category", property.propertyType],
+        ["Bedrooms", property.bedrooms ? `${property.bedrooms} Ensuite Beds` : "N/A"],
+        ["Bathrooms", property.bathrooms ? `${property.bathrooms} Bathrooms` : "N/A"],
+        ["Floor Area", property.squareMeters ? `${property.squareMeters} m²` : "N/A"],
+        ["Parking Bays", property.parkingSpaces ? `${property.parkingSpaces} Dedicated Bays` : "Gated Driveway"],
+        ["Development Stage", property.developmentStage || "Ready for Occupancy"],
+      ];
+
+      let currentY = 99;
+      specs.forEach(([label, value], i) => {
+        const x = i % 2 === 0 ? 15 : 110;
+        doc.setFontSize(8.5);
+        doc.setTextColor(120, 120, 120);
+        doc.setFont("helvetica", "normal");
+        doc.text(label, x, currentY);
+
+        doc.setFontSize(10);
+        doc.setTextColor(30, 30, 30);
+        doc.setFont("helvetica", "bold");
+        doc.text(String(value), x, currentY + 5.5);
+
+        if (i % 2 === 1) currentY += 13.5;
+      });
+
+      // 5. Legal Underwriting & Title Verification Box
+      currentY += 6;
+      doc.setTextColor(20, 20, 20);
+      doc.setFontSize(12);
+      doc.setFont("helvetica", "bold");
+      doc.text("Legal Underwriting & Title Verification", 15, currentY);
+
+      doc.setDrawColor(225, 225, 225);
+      doc.line(15, currentY + 3, 195, currentY + 3);
+
+      currentY += 10;
+      doc.setFillColor(240, 253, 244);
+      doc.setDrawColor(187, 247, 208);
+      doc.roundedRect(15, currentY, 180, 26, 2, 2, "FD");
+
+      doc.setTextColor(22, 101, 52);
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "bold");
+      doc.text(`TITLE STATUS: ${property.verification.titleDeedType || "Government Consent"}`, 20, currentY + 7);
+
+      doc.setTextColor(70, 70, 70);
+      doc.setFontSize(8.5);
+      doc.setFont("helvetica", "normal");
+      doc.text(`Registry Ref: ${property.verification.registryNumber || "Verified Cadastral Index"}`, 20, currentY + 13.5);
+
+      if (property.verification.notes) {
+        doc.setFontSize(8);
+        const splitNotes = doc.splitTextToSize(`Audit Notes: ${property.verification.notes}`, 168);
+        doc.text(splitNotes, 20, currentY + 19);
+      }
+
+      // 6. Verified Amenities
+      currentY += 34;
+      doc.setTextColor(20, 20, 20);
+      doc.setFontSize(12);
+      doc.setFont("helvetica", "bold");
+      doc.text("Verified Amenities & Infrastructure", 15, currentY);
+
+      doc.setDrawColor(225, 225, 225);
+      doc.line(15, currentY + 3, 195, currentY + 3);
+
+      currentY += 9;
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(50, 50, 50);
+
+      const features = property.features || [];
+      features.forEach((feat, idx) => {
+        const col = idx % 2 === 0 ? 15 : 110;
+        const row = currentY + Math.floor(idx / 2) * 6;
+        doc.text(`• ${feat}`, col, row);
+      });
+
+      // 7. Commercial Terms (if present)
+      if (property.commercialTerms) {
+        const featRows = Math.ceil(features.length / 2);
+        const termsY = currentY + featRows * 6 + 6;
+        doc.setTextColor(20, 20, 20);
+        doc.setFontSize(12);
+        doc.setFont("helvetica", "bold");
+        doc.text("Commercial Terms & Payment Milestones", 15, termsY);
+        doc.line(15, termsY + 3, 195, termsY + 3);
+
+        doc.setFontSize(9);
+        doc.setTextColor(60, 60, 60);
+        doc.setFont("helvetica", "normal");
+        let ty = termsY + 9;
+        if (property.commercialTerms.serviceCharge) {
+          doc.text(`Service Charge: ${property.commercialTerms.serviceCharge}`, 15, ty);
+          ty += 5.5;
+        }
+        if (property.commercialTerms.minimumDeposit) {
+          doc.text(`Initial Deposit: ${property.commercialTerms.minimumDeposit}`, 15, ty);
+          ty += 5.5;
+        }
+      }
+
+      // 8. Footer
+      doc.setFillColor(245, 245, 244);
+      doc.rect(0, 282, 210, 15, "F");
+      doc.setTextColor(140, 140, 140);
+      doc.setFontSize(8);
+      doc.text("Spacia Real-Estate Sales OS • Confidential Investment Factsheet", 105, 290, { align: "center" });
+
+      // Save PDF file
+      const fileName = `${property.slug || property.id}-brochure.pdf`;
+      doc.save(fileName);
+
+      toast.success("Architectural Brochure Downloaded", {
+        description: `Saved ${fileName} to your downloads folder.`,
+      });
+    } catch (err) {
+      console.error("PDF generation error:", err);
+      toast.error("Failed to generate PDF", {
+        description: "Please retry.",
+      });
+    } finally {
+      setIsGeneratingPdf(false);
+    }
   };
 
   return (
@@ -424,10 +663,15 @@ export function PropertyDetailPresentation({
                 variant="outline"
                 size="sm"
                 onClick={handleDownloadBrochure}
+                disabled={isGeneratingPdf}
                 className="h-8 text-xs bg-white border-stone-200 hover:bg-stone-50 text-stone-700 cursor-pointer"
               >
-                <Download className="h-3 w-3 mr-1.5 text-stone-500" />
-                Brochure PDF
+                {isGeneratingPdf ? (
+                  <Loader2 className="h-3 w-3 mr-1.5 animate-spin text-stone-500" />
+                ) : (
+                  <Download className="h-3 w-3 mr-1.5 text-stone-500" />
+                )}
+                <span>{isGeneratingPdf ? "Generating PDF..." : "Brochure PDF"}</span>
               </Button>
             </div>
 
