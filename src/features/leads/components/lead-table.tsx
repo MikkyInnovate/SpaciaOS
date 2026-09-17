@@ -53,13 +53,25 @@ export function LeadTable({
         accessorKey: "propertyTitle",
         cell: ({ item }) => (
           <div className="flex flex-col min-w-[200px] max-w-[280px] py-0.5">
-            <span className="text-xs font-medium text-stone-800 truncate" title={item.propertyTitle}>
-              {item.propertyTitle}
-            </span>
+            <div className="flex items-center gap-1.5 truncate">
+              <span className="text-xs font-medium text-stone-800 truncate" title={item.property?.title || item.propertyTitle}>
+                {item.property?.title || item.propertyTitle}
+              </span>
+              {item.property && (item.property.availability === "Unavailable" || item.property.availability === "Sold") && (
+                <span className="text-[9px] font-semibold uppercase px-1.5 py-0.2 rounded bg-amber-50 text-amber-800 border border-amber-200 shrink-0">
+                  {item.property.availability}
+                </span>
+              )}
+              {!item.property && !item.propertyDetails && (
+                <span className="text-[9px] font-semibold uppercase px-1.5 py-0.2 rounded bg-stone-100 text-stone-500 border border-stone-200 shrink-0">
+                  Unmatched
+                </span>
+              )}
+            </div>
             <div className="flex items-center gap-2 mt-1 text-[11px] text-stone-500">
               <span className="flex items-center gap-1 truncate text-stone-500">
                 <MapPin className="h-3 w-3 shrink-0 text-stone-400" />
-                {item.location}
+                {item.property?.location || item.location}
               </span>
               <span className="text-stone-300">•</span>
               <span className="text-[10px] uppercase font-semibold tracking-wider text-stone-600 bg-stone-100 px-1.5 py-0.2 rounded border border-stone-200">

@@ -1,4 +1,5 @@
 import type { Lead } from "../types";
+import { MOCK_PROPERTIES } from "@/features/properties";
 
 export const MOCK_LEADS: Lead[] = [
   {
@@ -19,6 +20,8 @@ export const MOCK_LEADS: Lead[] = [
     aiNotes: "Budget pre-confirmed. Pre-qualified buyer ready for viewing this Thursday afternoon.",
     source: "Instagram Inbound Lead Ad",
     assignedBroker: "Marcus Vance",
+    propertyId: MOCK_PROPERTIES[0].id,
+    property: MOCK_PROPERTIES[0],
     propertyDetails: {
       propertyTitle: "3-Bedroom Contemporary Flat",
       location: "Lekki Phase 1, Lagos",
@@ -105,6 +108,8 @@ export const MOCK_LEADS: Lead[] = [
     aiNotes: "AI booked calendar slot with Agent Marcus for Friday 2:00 PM. Access pass requested.",
     source: "Google Luxury Property Search",
     assignedBroker: "Marcus Vance",
+    propertyId: MOCK_PROPERTIES[1].id,
+    property: MOCK_PROPERTIES[1],
     propertyDetails: {
       propertyTitle: "Waterfront Penthouse Duplex",
       location: "Banana Island, Ikoyi, Lagos",
@@ -194,6 +199,8 @@ export const MOCK_LEADS: Lead[] = [
     aiNotes: "Asking about HOA amenities, generator maintenance, and payment plan flexibility.",
     source: "PropertyPro Referral",
     assignedBroker: "Chioma Okafor",
+    propertyId: MOCK_PROPERTIES[2].id,
+    property: MOCK_PROPERTIES[2],
     propertyDetails: {
       propertyTitle: "4-Bedroom Detached Villa",
       location: "Victoria Island Annex, Lagos",
@@ -270,6 +277,8 @@ export const MOCK_LEADS: Lead[] = [
     createdAt: "2h ago",
     aiNotes: "Downloaded brochure. Indicated preference for high rental yield property.",
     source: "LinkedIn Real Estate Ad",
+    propertyId: MOCK_PROPERTIES[3].id,
+    property: MOCK_PROPERTIES[3],
     propertyDetails: {
       propertyTitle: "2-Bedroom Luxury Serviced Apartment",
       location: "Old Ikoyi, Lagos",
@@ -335,6 +344,8 @@ export const MOCK_LEADS: Lead[] = [
     aiNotes: "High-net-worth cash buyer. Immediate capital deployment readiness.",
     source: "Direct Referral",
     assignedBroker: "Chioma Okafor",
+    propertyId: MOCK_PROPERTIES[4].id,
+    property: MOCK_PROPERTIES[4],
     propertyDetails: {
       propertyTitle: "5-Bedroom Mansion with Pool",
       location: "Diplomatic Zone, Guzape, Abuja",
@@ -425,6 +436,8 @@ export const MOCK_LEADS: Lead[] = [
     createdAt: "5h ago",
     aiNotes: "Early research phase. Exploring leasing options for retail expansion.",
     source: "Google Organic Search",
+    propertyId: MOCK_PROPERTIES[5].id,
+    property: MOCK_PROPERTIES[5],
     propertyDetails: {
       propertyTitle: "Commercial Retail Space (Ground Floor)",
       location: "Gana Street, Maitama, Abuja",
@@ -488,6 +501,8 @@ export const MOCK_LEADS: Lead[] = [
     aiNotes: "Mortgage pre-approved with Stanbic IBTC. Inspection set for Saturday 11:00 AM.",
     source: "PropertyPro Portal",
     assignedBroker: "Marcus Vance",
+    propertyId: MOCK_PROPERTIES[6].id,
+    property: MOCK_PROPERTIES[6],
     propertyDetails: {
       propertyTitle: "Semi-Detached Duplex with BQ",
       location: "Chevron Toll Gate, Lekki, Lagos",
@@ -564,6 +579,8 @@ export const MOCK_LEADS: Lead[] = [
     createdAt: "8h ago",
     aiNotes: "Form submitted via Instagram ad campaign. Awaiting qualification contact.",
     source: "Instagram Campaign",
+    propertyId: MOCK_PROPERTIES[7].id,
+    property: MOCK_PROPERTIES[7],
     propertyDetails: {
       propertyTitle: "Smart Luxury Terrace Duplex",
       location: "Osapa London, Lekki, Lagos",
@@ -616,7 +633,7 @@ export const MOCK_LEADS: Lead[] = [
     name: "Femi Adesina",
     phone: "+234 803 777 8899",
     email: "femi.a@energygroup.ng",
-    propertyTitle: "Marina View High-Rise Flat",
+    propertyTitle: "General Inquiry (No Matching Property Linked)",
     location: "Eko Atlantic City",
     budget: "₦180,000,000",
     score: 45,
@@ -624,22 +641,10 @@ export const MOCK_LEADS: Lead[] = [
     status: "New",
     intent: "Investment",
     timeline: "Unspecified",
-    nextAction: "Send general portfolio catalog",
+    nextAction: "Match available inventory to prospect criteria",
     createdAt: "1d ago",
     aiNotes: "Broad inquiry on waterfront high-rises. Budget validation pending.",
     source: "Google Display Ad",
-    propertyDetails: {
-      propertyTitle: "Marina View High-Rise Flat",
-      location: "Eko Atlantic City, Lagos",
-      propertyType: "Luxury Waterfront Apartment",
-      bedrooms: 3,
-      bathrooms: 3.5,
-      squareMeters: 250,
-      targetPrice: "₦180,000,000",
-      budgetMatch: "Within Budget",
-      developmentStage: "Under Construction",
-      estateName: "Eko Pearl Towers",
-    },
     bantBreakdown: {
       budgetScore: 50,
       budgetNote: "High budget stated but unconfirmed by voice verification.",

@@ -9,6 +9,13 @@ import { LeadNextActionCard } from "./lead-next-action-card";
 import { LeadPropertyCard } from "./lead-property-card";
 import { LeadQualificationCard } from "./lead-qualification-card";
 import { LeadActivityTimeline } from "./lead-activity-timeline";
+import {
+  PropertyCard,
+  PropertyDetailPresentation,
+  PropertyUnavailableState,
+  PropertyUnknownState,
+} from "@/features/properties";
+import type { Property } from "@/features/properties";
 import type { Lead, LeadStatus } from "../types";
 import {
   User,
@@ -39,6 +46,14 @@ export function LeadDetailShell({
   isLoading = false,
 }: LeadDetailShellProps) {
   const [copiedPhone, setCopiedPhone] = React.useState(false);
+  const [selectedPropertyForSpecs, setSelectedPropertyForSpecs] = React.useState<Property | null>(null);
+  const [prevLeadId, setPrevLeadId] = React.useState(lead?.id);
+
+  // Cleanly reset property inspection when switching leads
+  if (lead?.id !== prevLeadId) {
+    setPrevLeadId(lead?.id);
+    setSelectedPropertyForSpecs(null);
+  }
 
   if (!lead && !isLoading) return null;
 
@@ -216,14 +231,50 @@ export function LeadDetailShell({
             </div>
           </div>
 
-          {/* 4. Target Property Information */}
-          <LeadPropertyCard
-            property={lead.propertyDetails}
-            fallbackTitle={lead.propertyTitle}
-            fallbackLocation={lead.location}
-            declaredBudget={lead.budget}
-            intent={lead.intent}
-          />
+          {/* 4. Target Property Intelligence & Inventory Link */}
+          {!lead.property && !lead.propertyDetails ? (
+            <PropertyUnknownState
+              prospectPreference={{
+                declaredBudget: lead.budget,
+                location: lead.location,
+                intent: lead.intent,
+              }}
+              onMatchProperty={() => {
+                toast.info("Opening Property Matching Inventory", {
+                  description: `Searching active listings matching ${lead.budget} in ${lead.location}...`,
+                });
+              }}
+            />
+          ) : lead.property ? (
+            <div className="space-y-3">
+              {(lead.property.availability === "Unavailable" || lead.property.availability === "Sold") && (
+                <PropertyUnavailableState
+                  property={lead.property}
+                  onViewSpecs={() => setSelectedPropertyForSpecs(lead.property!)}
+                  onSelectAlternative={(altId) => {
+                    toast.info("Alternative Listing Selected", {
+                      description: `Replaced active interest with property ${altId}.`,
+                    });
+                  }}
+                />
+              )}
+              <PropertyCard
+                property={lead.property}
+                declaredBudget={lead.budget}
+                intent={lead.intent}
+                budgetMatch={lead.propertyDetails?.budgetMatch || "Within Budget"}
+                onInspectFullSpecs={(prop: Property) => setSelectedPropertyForSpecs(prop)}
+              />
+            </div>
+          ) : (
+            <LeadPropertyCard
+              property={lead.propertyDetails}
+              fallbackTitle={lead.propertyTitle}
+              fallbackLocation={lead.location}
+              declaredBudget={lead.budget}
+              intent={lead.intent}
+            />
+          )}
 
           {/* 5. 5-Point BANT Qualification Underwriting */}
           <LeadQualificationCard
@@ -240,6 +291,16 @@ export function LeadDetailShell({
           />
         </div>
       )}
+
+      {/* 7. Deep-Dive Property Detail Presentation Modal */}
+      <PropertyDetailPresentation
+        property={selectedPropertyForSpecs}
+        open={!!selectedPropertyForSpecs}
+        onOpenChange={(open) => {
+          if (!open) setSelectedPropertyForSpecs(null);
+        }}
+        leadName={lead?.name}
+      />
     </DetailDrawer>
   );
 }

@@ -1,3 +1,5 @@
+import type { Property } from "@/features/properties";
+
 export type LeadScoreCategory = "HOT" | "WARM" | "COLD";
 
 export type LeadStatus =
@@ -88,6 +90,8 @@ export interface Lead {
   aiNotes?: string;
   source?: string;
   assignedBroker?: string;
+  propertyId?: string;
+  property?: Property;
   propertyDetails?: PropertyDetails;
   bantBreakdown?: BantBreakdown;
   activities?: LeadActivity[];

@@ -27,6 +27,7 @@ Spacia acts as an automated sales acceleration layer positioned between inbound 
 | **Day 4: Core Domain Database UI Primitives** | **COMPLETE** | Production-ready suite of reusable command-center UI primitives: strongly-typed generic `DataTable` (sorting, pagination, search filter, skeleton/empty states), domain-aware `StatusBadge` (HOT/WARM/COLD, lifecycle stages, call outcomes, pulsing live dots), multi-variant `ScoreIndicator` (badge, gauge, 5-point BANT breakdown), resilient edge states (`EmptyState` presets, `ErrorState` with technical details accordion, `TableSkeleton`, `Skeleton`), modal & drawer patterns (`ConfirmDialog`, `DetailDrawer`), basic form suite (`SearchInput`, `CurrencyInput` with Nigerian Naira ₦ formatting, `Textarea`, `Checkbox`, `Switch`, `FormField`), and an interactive showcase testbench (`/primitives`). |
 | **Day 5: Lead-Management Foundation** | **COMPLETE** | Production-ready dedicated Lead Management foundation: modular `features/leads` domain module, strongly-typed `Lead` models, decoupled `leadsService` with mock API contract fallback, operational `LeadTable` built on `DataTable<Lead>` (Prospect, Property / Interest, Budget, Score, Status, Next Action), foundational `LeadFiltersBar` (text search, score category chips, domain status dropdown, filter reset), explainable `ScoreIndicator` presentation, and the `LeadDetailShell` establishing the dossier information architecture in a slide-over `DetailDrawer`. |
 | **Day 6: Complete Lead Workflow UI** | **COMPLETE** | Complete, operational Lead Workflow System: interactive `LeadStatusSelect` with live domain lifecycle transitions, high-priority `LeadNextActionCard` with actionable protocol directives, real-estate `LeadPropertyCard` (property specs, bedrooms/bathrooms, floor area, asking price vs declared budget alignment), 5-point BANT+ `LeadQualificationCard` (Budget, Authority, Need, Timeline, Property Fit with simulated AI underwriting notes), chronological `LeadActivityTimeline` (multi-channel event stream tracking inbound capture, voice calls, WhatsApp brochures, viewing appointments, and broker memo additions), column sorting on `LeadTable`, and client-side CSV export. |
+| **Day 7: Usable Property Information in Lead Workflows** | **COMPLETE** | Production-ready real-estate property domain (`features/properties`) integrated into lead workflows: strongly-typed `Property` entity, BANT commercial specs, legal title deed verification details, `PropertiesService` with mock API contract fallback, domain `PropertyAvailabilityBadge` (`Available`, `Under Offer`, `Sold`, `Reserved`, `Unavailable`, `Unknown`), `PropertyVerificationBadge` (`Verified`, `Pending Verification`, `Unverified`), operational `PropertyCard` (Price, Location, Beds, Baths, Floor Area, Verified Features chips, Availability & Verification badges, and full specs inspection trigger), deep-dive `PropertyDetailPresentation` modal (high-res photo gallery, thumbnail strip, legal title underwriting audit, HOA service charges, minimum deposits, payment milestones), resilient `PropertyUnknownState` for general inquiries lacking linked inventory with criteria match trigger, and proactive `PropertyUnavailableState` for off-market/sold inventory with alternative recommendations. |
 
 ---
 
@@ -494,11 +495,64 @@ Transform the Day 5 foundational lead-management slice into a complete, operatio
 | **Next.js Production Build** | `npm run build` | **PASS** | Next.js 16 (Turbopack) successfully built and optimized all 16 routes in 19.4s. |
 | **Functional QA** | Interactive Browser Test | **PASS** | Verified search, score filtering, status filter, table sorting, drawer opening, status updates, photo memo attachment, lightbox viewer, and CSV download. |
 
+## 17. Day 7 — Usable Property Information in Lead Workflows (Completed & Verified)
+
+Day 7 establishes a dedicated, first-class real-estate property intelligence layer (`features/properties`) directly operationalized within the lead intake and qualification workflows:
+
+### 1. Dedicated Properties Domain Architecture (`@/features/properties`)
+- **Strongly-Typed Domain Models (`types/index.ts`)**:
+  - `Property`: Canonical representation including `id`, `referenceCode`, `title`, `slug`, `location`, `estateName`, `city`, `state`, `country`, `propertyType`, `price`, `currency`, `formattedPrice`, `bedrooms`, `bathrooms`, `parkingSpaces`, `squareMeters`, `developmentStage`, `features`, `description`, `images`, `featuredImage`, `availability`, and `verification`.
+  - `PropertyAvailability`: Strongly typed union covering the operational lifecycle (`Available`, `Under Offer`, `Sold`, `Reserved`, `Unavailable`, `Unknown`).
+  - `PropertyVerificationStatus`: Multi-tier compliance states (`Verified`, `Pending Verification`, `Unverified`).
+  - `PropertyVerificationDetails`: Legal title documentation details including `titleDeedType` (`Governor's Consent`, `C of O`, `Gazette`, `Deed of Assignment`, `Excision`), `registryNumber`, `verifiedAt`, `verifiedBy`, and underwriting notes.
+  - `PropertyCommercialTerms`: Operational underwriting data including `serviceCharge`, `minimumDeposit`, `paymentPlanOptions`, and projected yields.
+- **Mock Property Registry (`data/mock-properties.ts`)**: 8 curated Nigerian luxury real-estate listings across Lekki Phase 1, Banana Island, Victoria Island, Old Ikoyi, Guzape Abuja, Maitama Abuja, Chevron Toll Gate, and Osapa London.
+- **Decoupled Properties Service (`services/properties-service.ts`)**: Encapsulates data-fetching abstractions and outlines target REST API contracts (`GET /api/v1/properties`, `GET /api/v1/properties/:id`).
+
+### 2. Operational Property Card (`@/features/properties/components/property-card.tsx`)
+- **Key Display Attributes**:
+  - **Price**: High-contrast tabular monospace valuation (`₦85,000,000`) with budget match classification badge (`Within Budget`, `Budget Stretch`, `Sub-Budget`).
+  - **Location**: Prime neighborhood and estate branding with pin indicator.
+  - **Bedrooms & Bathrooms**: Clean metric chips with icons and counts.
+  - **Floor Area**: Usable square meters (`210 m²`).
+  - **Features**: Verified amenities chips (`24/7 Monitored Power`, `Private Cinema`, `Olympic Swimming Pool`, `Armed Perimeter Patrol`) with green checkmarks.
+  - **Availability**: Integrated `PropertyAvailabilityBadge`.
+  - **Verification State**: Integrated `PropertyVerificationBadge` displaying legal title deed type.
+- **Deep-Dive Trigger**: Dedicated "Inspect Full Property Specifications & Title Deeds" action opening the presentation modal.
+
+### 3. Deep-Dive Property Detail Presentation Modal (`@/features/properties/components/property-detail-presentation.tsx`)
+- **High-Z Overlay (`z-[60]`)**: Built on Radix UI Dialog, stacking seamlessly over the Lead Dossier drawer without gesture interference.
+- **Architectural Photo Showcase**: High-resolution gallery with photo counter, carousel controls, thumbnail navigation strip, and full-screen image lightbox modal (`z-[70]`).
+- **Legal Underwriting & Title Verification**: Dedicated title deed review panel displaying deed document type, land registry index, signed clearance notes, and legal surveyor timestamps.
+- **Commercial Terms & Payment Structures**: Breakdown of HOA service charges, required initial deposits, and developer installment milestones.
+- **Broker Actions**: One-click "Share with Lead" (WhatsApp API dispatch toast) and "Brochure PDF" generation trigger.
+
+### 4. Resilient Edge & Lifecycle States
+- **Verification States**:
+  - `Verified`: High-trust emerald badge with title deed indicator (e.g. `Governor's Consent`, `C of O`).
+  - `Pending Verification`: Amber warning badge indicating documentation is currently undergoing land registry search.
+  - `Unverified`: Subtle stone indicator flagging unvetted form claims.
+- **Unavailable / Off-Market State (`PropertyUnavailableState`)**:
+  - Displays proactive operational warning when property is `Sold` or `Unavailable` (e.g., leased off-market).
+  - Outlines unavailability reason and suggests alternative active inventory in the same district and price tier.
+- **Unknown Property State (`PropertyUnknownState`)**:
+  - Handles general inbound inquiries where prospect submitted search preferences (budget, location) without linking a specific property.
+  - Displays prospect preference criteria with a one-click "Match Inventory" action.
+
+### 5. Technical Verification Status
+
+| Test Suite | Command | Result | Verification Details |
+| :--- | :--- | :---: | :--- |
+| **TypeScript Strict** | `npm run type-check` | **PASS** | `tsc --noEmit` exited with code 0. Zero loose any types, full type integrity across `features/properties` and `features/leads`. |
+| **ESLint 9 Code Quality** | `npm run lint` | **PASS** | `eslint src` exited with code 0. Zero warnings, zero errors across all components. |
+| **Next.js Production Build** | `npm run build` | **PASS** | Next.js 16 (Turbopack) successfully compiled and optimized all 16 static/dynamic routes in 35.0s. |
+| **Edge States Verification** | Lead Dossier & Table QA | **PASS** | Verified active property inspection (`lead_01`), sold/unavailable warning state (`lead_06`, `lead_07`), unknown criteria state (`lead_09`), and verification badge states. |
+
 ---
 
-## 17. Git Workflow & Branching Conventions
+## 18. Git Workflow & Branching Conventions
 
-- **Dedicated Frontend Branch**: All Day 1 through Day 6 frontend foundation code resides on the `frontend` branch.
+- **Dedicated Frontend Branch**: All Day 1 through Day 7 frontend foundation code resides on the `frontend` branch.
 - **Protected `main` Branch**: The `main` branch is reserved for verified releases and backend-integrated milestones.
 - **Branch Naming Conventions**:
   - `feat/feature-name` for new user-facing capabilities
@@ -508,7 +562,7 @@ Transform the Day 5 foundational lead-management slice into a complete, operatio
 
 ---
 
-## 18. Contribution & Development Guidelines
+## 19. Contribution & Development Guidelines
 
 1. Always run `npm run lint` and `npm run type-check` before committing. Zero errors and zero warnings are required.
 2. Keep pages server-rendered where possible; designate `"use client"` only when user interaction, state, or browser APIs are required.
