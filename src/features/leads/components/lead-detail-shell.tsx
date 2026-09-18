@@ -88,6 +88,12 @@ export function LeadDetailShell({
     });
   };
 
+  const handleRetryActivity = (activityId: string) => {
+    toast.success("Workflow Retry Initiated", {
+      description: `Dispatched retry handshake for activity ${activityId}.`,
+    });
+  };
+
   return (
     <DetailDrawer
       open={open}
@@ -288,6 +294,7 @@ export function LeadDetailShell({
           <LeadActivityTimeline
             activities={lead.activities}
             onAddNote={handleAddTimelineNote}
+            onRetryActivity={handleRetryActivity}
           />
         </div>
       )}

@@ -2,6 +2,12 @@
 
 import * as React from "react";
 import type { LeadActivity, ActivityType } from "../types";
+import {
+  WorkflowStatusIndicator,
+  AIActivityIndicator,
+  HumanActivityIndicator,
+  WorkflowRetryState,
+} from "@/features/events";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -23,6 +29,7 @@ import { cn } from "@/lib/utils/cn";
 export interface LeadActivityTimelineProps {
   activities?: LeadActivity[];
   onAddNote?: (noteText: string, imageUrl?: string) => void;
+  onRetryActivity?: (activityId: string) => Promise<void> | void;
 }
 
 function getActivityIcon(type: ActivityType) {
@@ -63,6 +70,7 @@ function getActivityDotBg(type: ActivityType) {
 export function LeadActivityTimeline({
   activities = [],
   onAddNote,
+  onRetryActivity,
 }: LeadActivityTimelineProps) {
   const [newNote, setNewNote] = React.useState("");
   const [attachedImage, setAttachedImage] = React.useState<string | null>(null);
@@ -206,12 +214,22 @@ export function LeadActivityTimeline({
               </div>
 
               {/* Event Body */}
-              <div className="flex-1 space-y-1.5">
-                <div className="flex items-center justify-between gap-2">
-                  <span className="font-semibold text-stone-900 leading-tight">
-                    {activity.title}
-                  </span>
-                  <span className="text-[10px] font-mono text-stone-400 shrink-0">
+              <div className="flex-1 space-y-2">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="font-semibold text-stone-900 leading-tight">
+                      {activity.title}
+                    </span>
+                    {activity.status && (
+                      <WorkflowStatusIndicator
+                        status={activity.status}
+                        retryAttempt={activity.retry?.currentAttempt}
+                        maxRetries={activity.retry?.maxRetries}
+                        variant="badge"
+                      />
+                    )}
+                  </div>
+                  <span className="text-[10px] font-mono text-stone-400 shrink-0 select-none">
                     {activity.timestamp}
                   </span>
                 </div>
@@ -219,6 +237,19 @@ export function LeadActivityTimeline({
                 <p className="text-stone-600 leading-relaxed text-[11px]">
                   {activity.description}
                 </p>
+
+                {/* Workflow Failure / Retry Component */}
+                {(activity.status === "retrying" ||
+                  activity.status === "failed" ||
+                  activity.retry ||
+                  activity.failure) && (
+                  <WorkflowRetryState
+                    workflowId={activity.id}
+                    retry={activity.retry}
+                    failure={activity.failure}
+                    onRetry={onRetryActivity}
+                  />
+                )}
 
                 {/* Attached Image Thumbnail */}
                 {activity.meta?.imageUrl && (
@@ -249,28 +280,48 @@ export function LeadActivityTimeline({
                   </div>
                 )}
 
-                {/* Metadata badges (duration, outcome, broker, channel) */}
-                <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
-                  {activity.channel && (
-                    <Badge variant="outline" className="text-[9px] py-0 px-1 bg-stone-50 text-stone-500 border-stone-200">
-                      {activity.channel}
-                    </Badge>
-                  )}
-                  {activity.meta?.duration && (
-                    <span className="text-[10px] font-mono text-stone-500">
-                      Duration: {activity.meta.duration}
-                    </span>
-                  )}
-                  {activity.meta?.outcome && (
-                    <span className="text-[10px] font-medium text-emerald-800 bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200">
-                      {activity.meta.outcome}
-                    </span>
-                  )}
-                  {activity.meta?.viewingDate && (
-                    <span className="text-[10px] font-semibold text-indigo-700 bg-indigo-50 px-1.5 py-0.2 rounded border border-indigo-200">
-                      Slot: {activity.meta.viewingDate}
-                    </span>
-                  )}
+                {/* Transcript snippet if present */}
+                {activity.meta?.transcriptSnippet && (
+                  <div className="rounded-lg bg-stone-50 p-2 border border-stone-200 text-[11px] font-mono text-stone-700 whitespace-pre-wrap leading-relaxed">
+                    {activity.meta.transcriptSnippet}
+                  </div>
+                )}
+
+                {/* Metadata & Actor Attribution badges */}
+                <div className="flex flex-wrap items-center justify-between gap-2 pt-0.5 border-t border-stone-100 text-xs">
+                  {/* Actor Attribution */}
+                  <div className="flex items-center gap-1.5">
+                    {activity.actor?.type === "ai_agent" && (
+                      <AIActivityIndicator actor={activity.actor} variant="badge" />
+                    )}
+                    {activity.actor?.type === "human_broker" && (
+                      <HumanActivityIndicator actor={activity.actor} variant="badge" />
+                    )}
+                  </div>
+
+                  {/* Channel & Detail Tags */}
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    {activity.channel && (
+                      <Badge variant="outline" className="text-[9px] py-0 px-1 bg-stone-50 text-stone-500 border-stone-200">
+                        {activity.channel}
+                      </Badge>
+                    )}
+                    {activity.meta?.duration && (
+                      <span className="text-[10px] font-mono text-stone-500">
+                        Duration: {activity.meta.duration}
+                      </span>
+                    )}
+                    {activity.meta?.outcome && (
+                      <span className="text-[10px] font-medium text-emerald-800 bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200">
+                        {activity.meta.outcome}
+                      </span>
+                    )}
+                    {activity.meta?.viewingDate && (
+                      <span className="text-[10px] font-semibold text-indigo-700 bg-indigo-50 px-1.5 py-0.2 rounded border border-indigo-200">
+                        Slot: {activity.meta.viewingDate}
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>

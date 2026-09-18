@@ -39,6 +39,13 @@ export interface BantBreakdown {
   propertyFitNote: string;
 }
 
+import type {
+  WorkflowExecutionStatus,
+  WorkflowActor,
+  RetryPolicy,
+  FailureDiagnostic,
+} from "@/features/events";
+
 export type ActivityType =
   | "inbound_capture"
   | "ai_voice_call"
@@ -54,6 +61,10 @@ export interface LeadActivity {
   description: string;
   timestamp: string;
   channel?: string;
+  status?: WorkflowExecutionStatus;
+  actor?: WorkflowActor;
+  retry?: RetryPolicy;
+  failure?: FailureDiagnostic;
   meta?: {
     duration?: string;
     outcome?: string;
@@ -61,6 +72,7 @@ export interface LeadActivity {
     viewingDate?: string;
     imageUrl?: string;
     imageCaption?: string;
+    transcriptSnippet?: string;
   };
 }
 
