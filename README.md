@@ -2,7 +2,7 @@
 
 > **Spacia** is a high-performance, managed AI sales orchestration platform purpose-built for modern real-estate brokerages and development firms. It autonomously captures inbound property inquiries, engages prospects via natural voice and chat, qualifies buyers against stringent underwriting criteria, evaluates purchasing power and timeline, and seamlessly books qualified viewings directly onto connected sales agents' calendars.
 
-This repository houses the **production frontend implementation for Days 1 through 6** of the Spacia MVP.
+This repository houses the **production frontend implementation for Days 1 through 9** of the Spacia MVP.
 
 ---
 
@@ -28,6 +28,8 @@ Spacia acts as an automated sales acceleration layer positioned between inbound 
 | **Day 5: Lead-Management Foundation** | **COMPLETE** | Production-ready dedicated Lead Management foundation: modular `features/leads` domain module, strongly-typed `Lead` models, decoupled `leadsService` with mock API contract fallback, operational `LeadTable` built on `DataTable<Lead>` (Prospect, Property / Interest, Budget, Score, Status, Next Action), foundational `LeadFiltersBar` (text search, score category chips, domain status dropdown, filter reset), explainable `ScoreIndicator` presentation, and the `LeadDetailShell` establishing the dossier information architecture in a slide-over `DetailDrawer`. |
 | **Day 6: Complete Lead Workflow UI** | **COMPLETE** | Complete, operational Lead Workflow System: interactive `LeadStatusSelect` with live domain lifecycle transitions, high-priority `LeadNextActionCard` with actionable protocol directives, real-estate `LeadPropertyCard` (property specs, bedrooms/bathrooms, floor area, asking price vs declared budget alignment), 5-point BANT+ `LeadQualificationCard` (Budget, Authority, Need, Timeline, Property Fit with simulated AI underwriting notes), chronological `LeadActivityTimeline` (multi-channel event stream tracking inbound capture, voice calls, WhatsApp brochures, viewing appointments, and broker memo additions), column sorting on `LeadTable`, and client-side CSV export. |
 | **Day 7: Usable Property Information in Lead Workflows** | **COMPLETE** | Production-ready real-estate property domain (`features/properties`) integrated into lead workflows: strongly-typed `Property` entity, BANT commercial specs, legal title deed verification details, `PropertiesService` with mock API contract fallback, domain `PropertyAvailabilityBadge` (`Available`, `Under Offer`, `Sold`, `Reserved`, `Unavailable`, `Unknown`), `PropertyVerificationBadge` (`Verified`, `Pending Verification`, `Unverified`), operational `PropertyCard` (Price, Location, Beds, Baths, Floor Area, Verified Features chips, Availability & Verification badges, and full specs inspection trigger), deep-dive `PropertyDetailPresentation` modal (high-res photo gallery, thumbnail strip, legal title underwriting audit, HOA service charges, minimum deposits, payment milestones), resilient `PropertyUnknownState` for general inquiries lacking linked inventory with criteria match trigger, and proactive `PropertyUnavailableState` for off-market/sold inventory with alternative recommendations. |
+| **Day 8: Event System & Automation Foundation** | **COMPLETE & VERIFIED** | Production-ready asynchronous event and automation architecture (`features/events`): strongly-typed workflow lifecycle statuses (`queued`, `in_progress`, `completed`, `failed`, `retrying`, `blocked`), polymorphic `ActivityEventCard`, resilient `WorkflowRetryState` with backoff countdown timer, retry triggers, and diagnostic logs, distinct `AIActivityIndicator` vs `HumanActivityIndicator` actor attribution, live `AutomationEventFeed` with actor filtering and event simulation, upgraded `LeadActivityTimeline`, and interactive testbench at `/primitives`. |
+| **Day 9: AI Sales Agent Interface** | **COMPLETE & VERIFIED** | Production-ready autonomous AI Sales Agent command center (`features/ai-agent`): strongly-typed agent engine status and live telemetry (`AIAgentStatusCard`), interactive dialer pause/resume toggle with in-memory persistence, comprehensive configuration presentation (`AIAgentConfigPresentation`) detailing Neural Executive voice persona, 5-point BANT qualification gates, and legal safety guardrails (3-call max attempt cap, quiet hours, DNC policy), live active call radar (`AIAgentActivityState`) with real-time waveform equalizer, duration timer, and speech transcript stream, recent agent execution feed, and standardized AI confidence & buyer intent UI primitives (`IntentConfidenceGauge`, `BuyerIntentBadge`, `IntentSignalPill`, `BuyerIntentCard`). Integrated into `/ai-agent` and testbench at `/primitives` (Section 8). |
 
 ---
 
@@ -550,9 +552,131 @@ Day 7 establishes a dedicated, first-class real-estate property intelligence lay
 
 ---
 
-## 18. Git Workflow & Branching Conventions
+## 18. Day 8 — Event System & Automation Foundation (Completed & Verified)
 
-- **Dedicated Frontend Branch**: All Day 1 through Day 7 frontend foundation code resides on the `frontend` branch.
+Day 8 prepares the PaciaOS frontend for asynchronous workflow execution states, real-estate telephony and WhatsApp events, resilient retry/failure recovery, and distinct AI autonomous versus human broker actor attribution:
+
+### 1. Dedicated Event Domain Architecture (`@/features/events`)
+- **Strongly-Typed Domain Models (`types/index.ts`)**:
+  - `WorkflowExecutionStatus`: Covers full async lifecycle (`idle`, `queued`, `in_progress`, `completed`, `failed`, `retrying`, `blocked`, `cancelled`).
+  - `ActorType`: Tri-tier actor categorization (`ai_agent`, `human_broker`, `system`).
+  - `WorkflowActor`: Union supporting `AIActorDetails` (model name, latency in ms, confidence score, live stream pulse), `HumanActorDetails` (broker avatar, name, role, territory, takeover reason, verified badge), and `SystemActorDetails`.
+  - `RetryPolicy`: Manages retry attempt counts (`Attempt 2 of 3`), backoff countdown timers (`45s`), and manual retry capability.
+  - `FailureDiagnostic`: Structured error payload (`errorCode`, `errorMessage`, `technicalDetails`, `recoverable`, `suggestedAction`, `failedAt`).
+  - `WorkflowActivityEvent`: Canonical event model supporting multi-channel touchpoints (`voice_call`, `whatsapp`, `calendar`, `underwriting`, `broker_note`, `status_transition`, `system_webhook`).
+- **Decoupled Events Service (`services/events-service.ts`)**: Encapsulates API calls with target REST contracts (`GET /api/v1/events`, `POST /api/v1/workflows/:id/retry`, `POST /api/v1/workflows/:id/cancel`) backed by an in-memory session store for deterministic offline state transitions.
+- **Realistic Event Registry (`data/mock-events.ts`)**: Luxury real-estate automation events including completed AI voice qualification calls, dropped telephony calls auto-retrying with countdowns, WhatsApp floorplan deliveries, broker escrow takeovers, and calendar slot conflicts.
+
+### 2. Workflow & Status Indicators (`components/workflow-status-indicator.tsx`)
+- **Comprehensive Lifecycle Presentation**: Renders all 7 execution states with color calibrations (Emerald for `in_progress` and `completed`, Amber for `retrying` and `blocked`, Rose for `failed`, Stone for `queued` and `cancelled`).
+- **Four Distinct Variants**:
+  - `badge`: Standard compact pill with icon, label, and attempt counter.
+  - `pill`: Rounded pill for status bars.
+  - `dot-only`: Subtle 2px animated pulse dot with tooltip explanation.
+  - `expanded`: Full-width banner with icon, label, and operational description.
+
+### 3. Actor Attribution: AI Autonomous vs. Human Broker Indicators
+- **`AIActivityIndicator` (`components/ai-activity-indicator.tsx`)**:
+  - Distinctive Pacia Green branding with emerald status pulse.
+  - Displays agent persona ("Spacia Voice Core"), neural model version ("Neural Executive v2.4"), latency metrics ("380ms"), and confidence percentage.
+  - Supports `badge`, `compact`, and `detailed` card variants with live streaming pulse toggle.
+- **`HumanActivityIndicator` (`components/human-activity-indicator.tsx`)**:
+  - Displays sales broker avatar, name, role, territory ("Lekki Phase 1 & Ikate"), and takeover rationale.
+  - High-trust verified broker badge with green shield icon.
+
+### 4. Resilient Retry & Failure Recovery Component (`components/workflow-retry-state.tsx`)
+- **Automated & Manual Recovery**:
+  - Displays failure error code (e.g. `SIP_486_BUSY_SUBSCRIBER`) and clear operational explanation.
+  - Retry counter showing current attempt vs limit (`Attempt 2 of 3`).
+  - Live backoff countdown timer (`Next in 45s`).
+  - Interactive "Retry Now" button with loading spinner and instant toast feedback.
+  - "Escalate to Human Broker" action for manual sales takeover.
+  - Collapsible terminal-style diagnostic inspector displaying raw SIP headers, network traces, and failure timestamps.
+
+### 5. Polymorphic Activity Event Card (`components/activity-event-card.tsx`)
+- **Multi-Channel Sales Touchpoints**: Renders voice calls, WhatsApp messages, viewing calendar syncs, broker memos, and webhooks.
+- **Integrated Architecture**: Composes `WorkflowStatusIndicator`, `AIActivityIndicator`, `HumanActivityIndicator`, and embeds `WorkflowRetryState` automatically when an event is in `failed` or `retrying` state.
+- **Expandable Payload Inspector**: One-click drawer/accordion toggle revealing interaction transcripts, media attachments, and delivery receipts.
+
+### 6. Live Operational Automation Event Feed (`components/automation-event-feed.tsx`)
+- **Segmented Filter Tabs**: Filter event stream by `All Events`, `AI Autonomous`, `Human Broker`, or `Alerts / Retrying`.
+- **Live Event Simulation**: Interactive "Simulate Async Event" button dynamically injects real-time events (AI underwriting calculations or telephony carrier dropouts) into the active feed.
+
+### 7. Upgraded Lead Activity Timeline Integration (`features/leads`)
+- Seamlessly enhanced `LeadActivityTimeline` in `src/features/leads` to render `WorkflowStatusIndicator`, `AIActivityIndicator`, `HumanActivityIndicator`, `WorkflowRetryState`, and transcript previews without breaking existing Day 6/7 lead workflow functionality.
+
+### 8. Interactive Testbench (`/primitives`)
+- Added Section 7 to `/primitives` featuring live state switchers across all status variants, AI pulse toggles, retry countdowns, standalone event cards, and the live automation feed.
+
+### 9. Technical Verification Status
+
+| Test Suite | Command | Result | Verification Details |
+| :--- | :--- | :---: | :--- |
+| **TypeScript Strict** | `npm run type-check` | **PASS** | `tsc --noEmit` exited with code 0. Zero loose any types, full type integrity across `features/events`, `features/leads`, and `features/properties`. |
+| **ESLint 9 Code Quality** | `npm run lint` | **PASS** | `eslint src` exited with code 0. Zero warnings, zero errors across all components. |
+| **Next.js Production Build** | `npm run build` | **PASS** | Next.js 16 (Turbopack) successfully compiled and optimized all 16 static/dynamic routes. |
+| **Interactive Testbench** | `/primitives` & `/leads` | **PASS** | Verified status state transitions, retry countdowns, simulated event injection, AI/Human badges, and lead dossier timeline integration. |
+
+---
+
+## 20. Day 9 — AI Sales Agent Interface (`features/ai-agent`)
+
+Spacia Day 9 establishes the comprehensive operational command center and atomic UI primitives for the autonomous AI Sales Agent. It gives real estate brokerages full visibility, configuration power, and intervention authority over autonomous voice qualification.
+
+```text
+src/features/ai-agent/
+├── components/
+│   ├── ai-status-card.tsx                 # Core engine telemetry, latency, concurrency, pause/resume
+│   ├── config-presentation.tsx            # Voice persona, BANT thresholds, and legal guardrails
+│   ├── ai-activity-state.tsx              # Live active call radar, audio equalizer, transcript & feed
+│   └── confidence-intent-primitives.tsx   # IntentConfidenceGauge, BuyerIntentBadge, IntentSignalPill, BuyerIntentCard
+├── data/
+│   └── mock-ai-agent.ts                   # Realistic telemetry, voice specs, live call, buyer evaluations
+├── services/
+│   └── ai-agent-service.ts                # Decoupled service with in-memory session persistence & mock contract
+├── types/
+│   └── index.ts                           # Strongly-typed agent telemetry, voice persona, BANT, and intent models
+└── index.ts                               # Domain slice barrel export
+```
+
+### 1. Autonomous AI Status Card (`components/ai-status-card.tsx`)
+- **Real-Time Telemetry**: Tracks live line concurrency (`2 / 5 lines`), sub-second speech turnaround latency (`380ms`), calls handled today (`48`), and BANT pass rate (`72%` / 14 viewings).
+- **Emergency Operator Intervention**: Prominent Pause / Resume Outbound dialer button that halts outbound queue processing while keeping inbound call routing open.
+
+### 2. Comprehensive Configuration Presentation (`components/config-presentation.tsx`)
+- **Voice Persona**: Details agent identity (*Spacia AI Sales Associate*), model (*Neural Executive v2.4*), accent (*Lagos Business Neutral*), 0.3 deterministic temperature, 450ms speech pause tolerance, 1.0x cadence, and strict verified truth policy.
+- **BANT Qualification Gates**: Enforces ₦85M minimum budget gate, `< 30 Days` priority closing window, eligible legal title deeds (*Governor's Consent, C of O, Gazette*), and immediate escalation keywords (*discount, commission, installment terms*).
+- **Safety & Legal Guardrails**: Hard 3-call outbound attempt limit, quiet hours (`20:00 – 08:00`), strict DNC list enforcement, and mandatory immediate transfer upon price negotiation.
+- **Autonomous Action Dispatch (Auto-Pilot)**: Interactive switch allowing brokers to choose between fully autonomous hands-free scheduling or supervised manual approval.
+
+### 3. Active Call Radar & Activity Stream (`components/ai-activity-state.tsx`)
+- **Live Call Radar**: Real-time duration counter, dynamic audio carrier equalizer waveform animation, step indicator (`Evaluating BANT Underwriting`, `Synthesizing Speech`, `Listening`), and live speaker transcript stream.
+- **Intervention Controls**: Instant "Take Lead" (human broker takeover with briefing toast) or "Disconnect" triggers for sales directors.
+- **Recent Executions Feed**: Live feed of autonomous agent actions (HOT qualification, physical inspection booking, broker escalation, carrier drop retry).
+
+### 4. Buyer Intent & Confidence UI Primitives (`components/confidence-intent-primitives.tsx`)
+- **`IntentConfidenceGauge`**: Color-calibrated 0–100% confidence meter (Emerald $\ge 85\%$, Amber $60–84\%$, Rose $<60\%$) in both standard and compact inline variants.
+- **`BuyerIntentBadge`**: Domain badges representing extracted purchase patterns (`High Purchase Intent`, `Yield Seeking Investor`, `Luxury Relocation`, `Exploratory`, `Unqualified`).
+- **`IntentSignalPill`**: Atomic tag identifying specific conversational qualification signals (Budget verified, 14-day close, sole decision maker, property fit) with signal strength indicators (`high`, `medium`, `low`).
+- **`BuyerIntentCard`**: Composite presentation combining prospect identity, confidence gauge, intent classification, extracted quote, signal pills, and post-call outcomes:
+  - **Autonomous Company Calendar Bookings**: Automatically checks team availability and schedules in-person physical inspections or virtual tours upon positive call outcomes.
+  - **Human Closer Payment Stage**: Seamless handoff for the physical showing and deposit/escrow collection (`[ Collect Payment ]`).
+  - **Pacia Design System Fills**: Filter pill controls with `#0d4a36` active fill and soft neutral inactive states.
+
+### 5. Technical Verification Status
+
+| Test Suite | Command | Result | Verification Details |
+| :--- | :--- | :---: | :--- |
+| **TypeScript Strict** | `npm run type-check` | **PASS** | `tsc --noEmit` exited with code 0. Zero loose any types, full type integrity across `features/ai-agent`, `features/events`, `features/leads`, and `features/properties`. |
+| **ESLint 9 Code Quality** | `npm run lint` | **PASS** | `eslint src` exited with code 0. Zero warnings, zero errors across all components. |
+| **Next.js Production Build** | `npm run build` | **PASS** | Next.js 16 (Turbopack) successfully compiled and optimized all 16 static/dynamic routes. |
+| **Interactive Testbench** | `/ai-agent` & `/primitives` | **PASS** | Verified live telemetry card, pause/resume dialer toggle, waveform equalizer, config tabs, intent filter chips, interactive confidence slider, and action dispatch toast notifications. |
+
+---
+
+## 21. Git Workflow & Branching Conventions
+
+- **Dedicated Frontend Branch**: All Day 1 through Day 9 frontend foundation code resides on the `frontend` branch.
 - **Protected `main` Branch**: The `main` branch is reserved for verified releases and backend-integrated milestones.
 - **Branch Naming Conventions**:
   - `feat/feature-name` for new user-facing capabilities
@@ -562,7 +686,7 @@ Day 7 establishes a dedicated, first-class real-estate property intelligence lay
 
 ---
 
-## 19. Contribution & Development Guidelines
+## 22. Contribution & Development Guidelines
 
 1. Always run `npm run lint` and `npm run type-check` before committing. Zero errors and zero warnings are required.
 2. Keep pages server-rendered where possible; designate `"use client"` only when user interaction, state, or browser APIs are required.
