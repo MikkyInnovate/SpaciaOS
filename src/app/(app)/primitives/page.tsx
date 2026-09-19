@@ -52,6 +52,10 @@ import {
   BUYER_INTENT_META,
   type BuyerIntentCategory,
 } from "@/features/ai-agent";
+import {
+  ConversationStateBadge,
+  ConversationMessageItem,
+} from "@/features/conversations";
 
 interface SampleLead {
   id: string;
@@ -1201,6 +1205,157 @@ export default function PrimitivesShowcasePage() {
                   toast.success(`Action Dispatched for #${leadId.toUpperCase()}`, {
                     description: action,
                   });
+                }}
+              />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* ========================================================================= */}
+      {/* SECTION 9: DAY 10 — CONVERSATION VISIBILITY & MESSAGING PRIMITIVES */}
+      {/* ========================================================================= */}
+      <Card className="border-stone-200">
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#0d4a36] text-[10px] font-bold text-white">
+              9
+            </span>
+            <CardTitle className="text-sm font-semibold text-stone-900">
+              Day 10 — Conversation Visibility & Messaging Primitives
+            </CardTitle>
+          </div>
+          <CardDescription className="text-xs text-stone-500">
+            Domain conversation lifecycle states, polymorphic AI vs. Prospect vs. Broker message rendering, and in-timeline real-estate artifacts.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Part A: Conversation States Taxonomy */}
+          <div className="space-y-2">
+            <h4 className="text-xs font-semibold text-stone-900 uppercase tracking-wider text-[10px] text-stone-500">
+              1. Conversation Lifecycle States
+            </h4>
+            <div className="flex flex-wrap items-center gap-2 p-3 bg-stone-50 rounded-lg border border-stone-200/70">
+              <ConversationStateBadge status="active_ai" />
+              <ConversationStateBadge status="awaiting_prospect" />
+              <ConversationStateBadge status="qualified" />
+              <ConversationStateBadge status="viewing_booked" />
+              <ConversationStateBadge status="human_takeover" />
+              <ConversationStateBadge status="escalated" />
+              <ConversationStateBadge status="closed" />
+            </div>
+          </div>
+
+          {/* Part B: Polymorphic Message Stream Showcase */}
+          <div className="space-y-2">
+            <h4 className="text-xs font-semibold text-stone-900 uppercase tracking-wider text-[10px] text-stone-500">
+              2. Polymorphic Message Timeline & In-Stream Artifacts
+            </h4>
+            <div className="p-4 bg-[#fbfbf9] rounded-xl border border-stone-200 space-y-4 max-w-2xl">
+              {/* Prospect Message */}
+              <ConversationMessageItem
+                message={{
+                  id: "demo_1",
+                  conversationId: "demo",
+                  sender: "prospect",
+                  senderName: "Chief Raymond Cole",
+                  content: "Good afternoon. Is the 5-Bed Smart Villa in Eko Atlantic deeded with a private marina slip?",
+                  timestamp: "2026-09-19T04:20:00Z",
+                }}
+              />
+
+              {/* AI Agent Message with Property Card Artifact */}
+              <ConversationMessageItem
+                message={{
+                  id: "demo_2",
+                  conversationId: "demo",
+                  sender: "ai_agent",
+                  senderName: "Spacia AI Sales Associate",
+                  content: "Yes, Chief Cole. The Azuri Peninsula Smart Villa includes a deeded 60-ft private marina berth with 24/7 shore power at ₦450,000,000.",
+                  timestamp: "2026-09-19T04:20:45Z",
+                  aiMetadata: {
+                    model: "Spacia Voice & Chat v2.4",
+                    latencyMs: 380,
+                    confidence: 96,
+                  },
+                  artifact: {
+                    type: "property_card",
+                    propertyTitle: "5-Bed Smart Villa — Eko Atlantic",
+                    propertyPrice: "₦450,000,000",
+                    propertyLocation: "Azuri Peninsula, Eko Atlantic, Lagos",
+                    propertyImage: "https://images.unsplash.com/photo-1613977257363-707ba9348227?w=800&auto=format&fit=crop&q=80",
+                    bedrooms: 5,
+                    bathrooms: 6,
+                    squareMeters: 680,
+                  },
+                }}
+              />
+
+              {/* AI Agent Message with BANT Qualification Gate Artifact */}
+              <ConversationMessageItem
+                message={{
+                  id: "demo_3",
+                  conversationId: "demo",
+                  sender: "ai_agent",
+                  senderName: "Spacia AI Sales Associate",
+                  content: "Underwriting criteria met. Bank draft liquidity verified for Q3 acquisition window.",
+                  timestamp: "2026-09-19T04:22:00Z",
+                  aiMetadata: {
+                    model: "Spacia Voice & Chat v2.4",
+                    latencyMs: 410,
+                    confidence: 98,
+                  },
+                  artifact: {
+                    type: "bant_milestone",
+                    milestoneTitle: "BANT Qualification Gate Passed",
+                    milestoneScore: 95,
+                    milestoneDetails: "Budget: ₦450M Verified • Authority: Sole • Need: Deeded Slip • Timeline: < 14 Days",
+                  },
+                }}
+              />
+
+              {/* System Takeover Event */}
+              <ConversationMessageItem
+                message={{
+                  id: "demo_4",
+                  conversationId: "demo",
+                  sender: "system",
+                  senderName: "System",
+                  content: "Broker takeover executed by Marcus Vance. AI autonomous responses paused.",
+                  timestamp: "2026-09-19T04:25:00Z",
+                }}
+              />
+
+              {/* Human Broker Direct Message */}
+              <ConversationMessageItem
+                message={{
+                  id: "demo_5",
+                  conversationId: "demo",
+                  sender: "human_broker",
+                  senderName: "Marcus Vance",
+                  content: "Good morning Chief Cole. Marcus Vance here. I have registered your security clearance at the Azuri security gate for tomorrow's inspection.",
+                  timestamp: "2026-09-19T04:26:00Z",
+                  deliveryStatus: "delivered",
+                }}
+              />
+
+              {/* Viewing Appointment Invite Artifact */}
+              <ConversationMessageItem
+                message={{
+                  id: "demo_6",
+                  conversationId: "demo",
+                  sender: "ai_agent",
+                  senderName: "Spacia AI Sales Associate",
+                  content: "VIP Physical viewing confirmed on connected calendar.",
+                  timestamp: "2026-09-19T04:27:00Z",
+                  artifact: {
+                    type: "viewing_invite",
+                    viewingDate: "Saturday, Sep 20, 2026",
+                    viewingTime: "11:30 AM (WAT)",
+                    viewingLocation: "Plot 14, Azuri Peninsula, Eko Atlantic",
+                    viewingBroker: "Marcus Vance",
+                    viewingStatus: "confirmed",
+                  },
                 }}
               />
             </div>

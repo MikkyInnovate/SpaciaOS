@@ -674,9 +674,80 @@ src/features/ai-agent/
 
 ---
 
-## 21. Git Workflow & Branching Conventions
+## 21. Day 10 — Conversation Visibility & Messaging Primitives (Phase 2 Staging)
 
-- **Dedicated Frontend Branch**: All Day 1 through Day 9 frontend foundation code resides on the `frontend` branch.
+Day 10 establishes the comprehensive domain architecture and UI command center for **Conversation Visibility** across omnichannel buyer communication (WhatsApp Business API, SMS, Web Chat, and In-App Portal):
+
+```text
+src/features/conversations/
+├── components/
+│   ├── conversation-state-badge.tsx       # Live status badges (active_ai, qualified, takeover, viewing_booked, etc.)
+│   ├── conversation-artifact-card.tsx     # In-stream rich media (property cards, viewing invites, BANT gates, documents)
+│   ├── conversation-message-item.tsx      # Polymorphic message bubbles (AI Agent, Prospect, Human Broker, System Event)
+│   ├── conversation-message-timeline.tsx  # Chronological message stream with date dividers and autoscroll
+│   ├── conversation-composer.tsx          # Broker message input with active AI safety warning banner & canned shortcuts
+│   ├── conversation-list-item.tsx         # Thread list item with unread count, relative time, channel, intent & confidence
+│   ├── conversation-list.tsx              # Searchable list with channel filter and status tabs (All, AI Active, Qualified, Takeover)
+│   ├── conversation-detail-header.tsx     # Active thread header with prospect info, channel badge, and broker takeover action
+│   ├── conversation-context-panel.tsx     # Commercial dossier with IntentConfidenceGauge, BuyerIntentBadge, BANT matrix
+│   └── conversations-command-center.tsx   # Complete 3-pane interactive command center
+├── data/
+│   └── mock-conversations.ts              # Realistic Nigerian luxury real-estate conversations (Ikoyi, Lekki, Eko Atlantic, Abuja)
+├── services/
+│   └── conversations-service.ts           # Decoupled service with in-memory session persistence & mock contract
+├── types/
+│   └── index.ts                           # Strongly-typed models for Conversation, Message, Channel, Status, Artifact
+└── index.ts                               # Domain slice barrel export
+```
+
+### 1. Conversation Lifecycle & Domain State Badges
+- **Granular Status Taxonomy**: `active_ai` (AI currently qualifying), `awaiting_prospect` (follow-up pending), `qualified` (BANT passed), `viewing_booked` (site inspection locked), `human_takeover` (broker managing direct communication), `escalated` (manager intervention required), and `closed`.
+- **Live Visual Cues**: Calibrated luxury real-estate colors with optional animated pulse dots for real-time states.
+
+### 2. Polymorphic Message Timeline & In-Stream Media Artifacts
+- **Actor Attribution Bubbles**:
+  - **AI Sales Associate**: Subtle emerald glow (`bg-emerald-50/40`), Spacia bot badge, model attribution, and sub-second turnaround latency (`380ms`).
+  - **Prospect**: Crisp white card with verified sender name and relative timestamp.
+  - **Human Broker**: Direct sales badge, broker attribution, and double-check delivery receipts (`delivered`, `read`).
+  - **System Event**: Centered neutral chip for lifecycle milestones (broker takeover, BANT gate passed).
+- **In-Timeline Real-Estate Artifacts**:
+  - **Luxury Property Cards**: High-resolution architectural photography, price (`₦450,000,000`), beds/baths/m² specs, and location badge.
+  - **BANT Qualification Gate Chips**: Visual pass badge with score gauge and criteria summary (Budget, Authority, Need, Timeline).
+  - **Viewing Appointment Invites**: Calendar inspection card with verified time, date, property location, and host broker.
+  - **Title Deed & Floorplan Documents**: Direct PDF inspection cards with file size and download triggers.
+
+### 3. Broker Intervention & Message Composer
+- **Active AI Safety Banner**: Amber warning banner when AI is actively managing the thread, preventing accidental message collisions.
+- **One-Click Broker Takeover**: Pauses autonomous AI replies and transfers conversation ownership to the on-call broker with toast feedback.
+- **Canned Real-Estate Shortcuts**: Quick-insert chips for common broker responses (send brochure, confirm gate access, share bank draft instructions).
+
+### 4. Commercial Context & Buyer Intent Dossier
+- **Intent Confidence Gauge**: 0–100% confidence meter integrated from Day 9 primitives.
+- **Buyer Intent Badges**: Classification pattern (`High Purchase Intent`, `Yield Seeking Investor`, `Luxury Relocation`, `Exploratory`).
+- **Valuation Alignment**: Declared prospect budget compared against property asking price with budget match badges.
+- **5-Point BANT Matrix**: Real-time evaluation of Budget, Authority, Need, Timeline, and Location Fit.
+
+### 5. PRD V1 Scope Boundary & Phase 2 Post-Launch Staging
+- **MVP Boundary Adherence**: Per the product roadmap, WhatsApp Cloud API and omnichannel messaging are scheduled for Phase 2 post-launch activation.
+- **Preserved Architecture**: 100% of the conversation feature code is preserved, verified, and exported in `@/features/conversations`.
+- **Clean Sidebar Navigation**: The Conversations item is excluded from the public MVP sidebar navigation entirely until public Phase 2 launch.
+- **Route Redirect**: Direct URL hits to `/conversations` redirect to `/calls` (the active V1 voice interaction stream).
+- **Design System Showcase**: Section 9 in `/primitives` showcases the conversation lifecycle badges, polymorphic message items, and in-timeline artifacts.
+
+### 6. Technical Verification Status
+
+| Test Suite | Command | Result | Verification Details |
+| :--- | :--- | :---: | :--- |
+| **TypeScript Strict** | `npm run type-check` | **PASS** | `tsc --noEmit` exited with code 0. Zero loose any types across `features/conversations`. |
+| **ESLint 9 Code Quality** | `npm run lint` | **PASS** | `eslint src` exited with code 0. Zero warnings, zero errors. |
+| **Next.js Production Build** | `npm run build` | **PASS** | Next.js 16 (Turbopack) successfully compiled and optimized all static/dynamic routes. |
+| **Interactive Testbench** | `/primitives` | **PASS** | Section 9 verifies conversation lifecycle states, polymorphic messages, and in-timeline artifacts. |
+
+---
+
+## 22. Git Workflow & Branching Conventions
+
+- **Dedicated Frontend Branch**: All Day 1 through Day 10 frontend foundation code resides on the `frontend` branch.
 - **Protected `main` Branch**: The `main` branch is reserved for verified releases and backend-integrated milestones.
 - **Branch Naming Conventions**:
   - `feat/feature-name` for new user-facing capabilities
@@ -686,7 +757,7 @@ src/features/ai-agent/
 
 ---
 
-## 22. Contribution & Development Guidelines
+## 23. Contribution & Development Guidelines
 
 1. Always run `npm run lint` and `npm run type-check` before committing. Zero errors and zero warnings are required.
 2. Keep pages server-rendered where possible; designate `"use client"` only when user interaction, state, or browser APIs are required.

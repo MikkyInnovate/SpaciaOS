@@ -34,13 +34,6 @@ export const NAVIGATION_SECTIONS: NavSection[] = [
         iconName: "BarChart3",
         isAvailable: true,
       },
-      {
-        title: "Conversations",
-        href: "#",
-        iconName: "MessageSquareText",
-        badge: "Soon",
-        isAvailable: false,
-      },
     ],
   },
   {
