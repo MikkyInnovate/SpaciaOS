@@ -7,4 +7,6 @@ export * from "./components/lead-status-select";
 export * from "./components/lead-next-action-card";
 export * from "./components/lead-property-card";
 export * from "./components/lead-qualification-card";
+export * from "./components/qualification-panel";
 export * from "./components/lead-activity-timeline";
+export * from "./data/mock-leads";

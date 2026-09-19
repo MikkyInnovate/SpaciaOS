@@ -1,4 +1,5 @@
 import type { Property } from "@/features/properties";
+import type { BuyerIntentCategory, IntentSignal } from "@/features/ai-agent";
 
 export type LeadScoreCategory = "HOT" | "WARM" | "COLD";
 
@@ -37,6 +38,62 @@ export interface BantBreakdown {
   timelineNote: string;
   propertyFitScore: number;
   propertyFitNote: string;
+}
+
+/**
+ * DAY 11 — Qualification Domain Models
+ */
+
+export type DecisionReadinessStage =
+  | "immediate_close"
+  | "evaluating_shortlist"
+  | "spousal_board_review"
+  | "asset_liquidation"
+  | "exploratory";
+
+export interface ObjectionItem {
+  id: string;
+  title: string;
+  description: string;
+  severity: "high" | "medium" | "low";
+  status: "open" | "resolved";
+  resolutionNote?: string;
+  resolvedAt?: string;
+}
+
+export interface ScoreFactor {
+  label: string;
+  impact: number; // positive (+15) or negative (-10)
+  category: "liquidity" | "timeline" | "authority" | "property_fit" | "objection";
+  detail?: string;
+}
+
+export interface BudgetAnalysis {
+  declared: string;
+  verifiedLiquidity?: string;
+  paymentStructure: "Outright" | "Milestone Plan" | "Mortgage";
+  targetAskingPrice?: string;
+  budgetStretchPercentage: number;
+  stretchCategory: "Within Budget" | "Moderate Stretch" | "High Stretch" | "Sub-Budget";
+}
+
+export interface QualificationProfile {
+  confidenceScore: number; // 0 - 100
+  buyerIntent: BuyerIntentCategory;
+  intentSignals: IntentSignal[];
+  motivation: string;
+  decisionReadiness: DecisionReadinessStage;
+  readinessNote: string;
+  timelineWindow: string; // e.g. "< 30 days"
+  timelineUrgency: "urgent" | "near_term" | "flexible";
+  targetClosingDate?: string;
+  budgetAnalysis: BudgetAnalysis;
+  objections: ObjectionItem[];
+  explainableBreakdown: {
+    baseScore: number;
+    positiveFactors: ScoreFactor[];
+    riskFactors: ScoreFactor[];
+  };
 }
 
 import type {
@@ -106,6 +163,7 @@ export interface Lead {
   property?: Property;
   propertyDetails?: PropertyDetails;
   bantBreakdown?: BantBreakdown;
+  qualificationProfile?: QualificationProfile;
   activities?: LeadActivity[];
   nextActionDirective?: NextActionDirective;
 }

@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { LeadStatusSelect } from "./lead-status-select";
 import { LeadNextActionCard } from "./lead-next-action-card";
 import { LeadPropertyCard } from "./lead-property-card";
-import { LeadQualificationCard } from "./lead-qualification-card";
+import { QualificationPanel } from "./qualification-panel";
 import { LeadActivityTimeline } from "./lead-activity-timeline";
 import {
   PropertyCard,
@@ -282,13 +282,8 @@ export function LeadDetailShell({
             />
           )}
 
-          {/* 5. 5-Point BANT Qualification Underwriting */}
-          <LeadQualificationCard
-            score={lead.score}
-            category={lead.scoreCategory}
-            bant={lead.bantBreakdown}
-            aiNotes={lead.aiNotes}
-          />
+          {/* 5. Comprehensive Autonomous Qualification Dossier (Day 11) */}
+          <QualificationPanel lead={lead} />
 
           {/* 6. Chronological Multi-Channel Activity Timeline */}
           <LeadActivityTimeline

@@ -31,6 +31,7 @@ Spacia acts as an automated sales acceleration layer positioned between inbound 
 | **Day 8: Event System & Automation Foundation** | **COMPLETE & VERIFIED** | Production-ready asynchronous event and automation architecture (`features/events`): strongly-typed workflow lifecycle statuses (`queued`, `in_progress`, `completed`, `failed`, `retrying`, `blocked`), polymorphic `ActivityEventCard`, resilient `WorkflowRetryState` with backoff countdown timer, retry triggers, and diagnostic logs, distinct `AIActivityIndicator` vs `HumanActivityIndicator` actor attribution, live `AutomationEventFeed` with actor filtering and event simulation, upgraded `LeadActivityTimeline`, and interactive testbench at `/primitives`. |
 | **Day 9: AI Sales Agent Interface** | **COMPLETE & VERIFIED** | Production-ready autonomous AI Sales Agent command center (`features/ai-agent`): strongly-typed agent engine status and live telemetry (`AIAgentStatusCard`), interactive dialer pause/resume toggle with in-memory persistence, comprehensive configuration presentation (`AIAgentConfigPresentation`) detailing Neural Executive voice persona, 5-point BANT qualification gates, and legal safety guardrails (3-call max attempt cap, quiet hours, DNC policy), live active call radar (`AIAgentActivityState`) with real-time waveform equalizer, duration timer, and speech transcript stream, recent agent execution feed, and standardized AI confidence & buyer intent UI primitives (`IntentConfidenceGauge`, `BuyerIntentBadge`, `IntentSignalPill`, `BuyerIntentCard`). Integrated into `/ai-agent` and testbench at `/primitives` (Section 8). |
 | **Day 10: Omnichannel Conversation Visibility & Timeline Primitives** | **COMPLETE & STAGED** | Complete omnichannel buyer messaging command center and primitives (`features/conversations`): strongly-typed polymorphic message timeline (`ConversationMessageTimeline`, `ConversationMessageItem`) distinguishing AI Sales Associate, Prospect, Human Broker, and System Events; in-timeline luxury real-estate media artifacts (`ConversationArtifactCard`: property specs, BANT qualification gates, viewing invites, title documents); live lifecycle status badges (`ConversationStateBadge`: `active_ai`, `awaiting_prospect`, `qualified`, `viewing_booked`, `human_takeover`, `escalated`, `closed`); broker intervention composer (`ConversationComposer`) with active AI safety warning banner, 1-click human takeover, and canned shortcuts; commercial context dossier (`ConversationContextPanel`) with buyer intent and BANT alignment; and 3-pane command center (`ConversationsCommandCenter`). Preserved and staged in code; hidden from public MVP sidebar navigation pending WhatsApp Phase 2 launch, fully previewable at `/primitives` (Section 9). |
+| **Day 11: Make Qualification Visible** | **COMPLETE & VERIFIED** | Comprehensive autonomous qualification and underwriting command center (`QualificationPanel` in `features/leads`): multi-dimensional budget analysis (declared allocation, verified liquidity, payment milestones, asking price stretch), buyer intent telemetry (`BuyerIntentBadge`, category metadata, behavioral intent signals), urgency timeline window (`< 30 days`, `urgent` / `near_term` / `flexible`), verified buying catalyst / motivation statement, decision readiness stage badges (`initial_inquiry`, `gathering_options`, `sole_decision_maker`, `partner_consensus`, `ready_to_transact`), interactive objections list with severity pills (`high`/`medium`/`low`), toggle status (`open`/`resolved`) with optimistic feedback and resolution notes, AI confidence telemetry (`IntentConfidenceGauge`, 0–100%), and explainable score breakdown with positive catalysts and risk deductions. Deeply integrated across `LeadDetailShell` (`/leads`), `LeadDossierPanel` (`/calls`), and showcased with interactive scenario switching at `/primitives` (Section 10). |
 
 ---
 
@@ -133,7 +134,8 @@ src/
 │       │   ├── lead-next-action-card.tsx# High-priority operational directive card
 │       │   ├── lead-property-card.tsx   # Property specs & photo showcase gallery
 │       │   ├── lead-qualification-card.tsx # 5-point BANT underwriting & AI notes
-│       │   └── lead-activity-timeline.tsx # Event stream, broker memo & photo upload
+│       │   ├── lead-activity-timeline.tsx # Event stream, broker memo & photo upload
+│       │   └── qualification-panel.tsx  # Day 11 Autonomous Underwriting & Qualification Panel
 │       ├── data/
 │       │   └── mock-leads.ts            # Realistic Nigerian luxury real-estate leads
 │       ├── services/
@@ -752,9 +754,69 @@ src/features/conversations/
 
 ---
 
-## 22. Git Workflow & Branching Conventions
+## 22. Day 11 — Qualification Visibility & Autonomous Underwriting
 
-- **Dedicated Frontend Branch**: All Day 1 through Day 10 frontend foundation code resides on the `frontend` branch.
+Day 11 delivers the complete commercial qualification visibility and autonomous underwriting command center (`features/leads`):
+
+```text
+src/features/leads/
+├── components/
+│   ├── qualification-panel.tsx            # Complete 8-widget autonomous underwriting card
+│   ├── lead-detail-shell.tsx              # Leads drawer integrating the QualificationPanel
+│   └── ...                                # Operational tables, filters, status selector, activity timeline
+├── data/
+│   └── mock-leads.ts                      # Enriched with MOCK_QUALIFICATION_PROFILES for 9 Nigerian luxury leads
+├── types/
+│   └── index.ts                           # QualificationProfile, BudgetAnalysis, ObjectionItem, ScoreFactor, etc.
+└── index.ts                               # Exports QualificationPanel and domain models
+```
+
+### 1. Multi-Dimensional Budget Underwriting
+- **Declared vs. Asking Alignment**: Real-time comparison between declared budget and property asking price with stretch tolerance indicators (`Under Budget`, `Fair Match`, `Stretch Required`).
+- **Verified Liquidity & Source of Funds**: Highlights certified funding mechanisms (e.g., USD offshore reserves, verified wire drafts, institutional private equity, diaspora repatriation).
+- **Payment Structure**: Milestones breakdown (e.g., 30% down payment, 70% escrow lock on structural completion) to assist luxury brokers in negotiating transaction terms.
+
+### 2. Buyer Intent Telemetry & Behavioral Signals
+- **Standardized Badge Hierarchy**: Reuses `BuyerIntentBadge` (`High Purchase Intent`, `Yield Seeking Investor`, `Luxury Relocation`, `Exploratory`).
+- **Intent Signals Stream**: Behavioral signals tracked by AI during calls and WhatsApp touchpoints (e.g., "Requested Governor's Consent copy", "Immediate site inspection requested").
+
+### 3. Urgency Timeline & Buying Catalyst
+- **Closing Horizon**: Granular window taxonomy (`< 30 days`, `30–60 days`, `60–90 days`, `90+ days`) alongside urgency tier badges (`urgent`, `near_term`, `flexible`).
+- **Target Closing Date**: Concrete closing milestones for deal pipelines.
+- **Verified Motivation / Catalyst**: Exact driver statements uncovered during autonomous discovery (e.g., "Capital flight hedging against Naira volatility; seeking inflation-hedged Ikoyi yield assets").
+
+### 4. Decision Readiness & Multi-Stakeholder Consensus
+- **Standardized Stage Badges**: Domain taxonomy (`initial_inquiry`, `gathering_options`, `sole_decision_maker`, `partner_consensus`, `ready_to_transact`).
+- **Sign-Off Context**: Clarifies whether the buyer has unilateral signing authority or requires offshore partner/board sign-off.
+
+### 5. Interactive Objections Management
+- **Severity-Tiered Objections**: Categorized with severity badges (`high`, `medium`, `low`).
+- **Broker Quick-Action Toggles**: Allows brokers to toggle objection status (`open` ↔ `resolved`) with optimistic visual feedback and toast notifications.
+- **AI Suggested Resolution Script**: Embedded playbooks for handling local objections (e.g., land reclamation warranties, generator noise isolation, payment milestone restructuring).
+
+### 6. AI Confidence & Explainable Score Breakdown
+- **Confidence Gauge**: Visual circular gauge displaying 0–100% confidence level (`IntentConfidenceGauge`).
+- **Transparent Score Math**: Transparent ledger showing positive score catalysts (`+points`) and risk deductions (`-points`) totaling the exact lead score.
+
+### 7. Surface Host Integrations
+- **Leads Slide-Over Drawer** (`/leads`): Accessible directly in the lead detail view.
+- **Live Call Transcriber Dossier** (`/calls`): Accessible under the Matrix tab of `LeadDossierPanel`.
+- **Primitives Testbench** (`/primitives`): Section 10 featuring interactive scenario switching across ultra-luxury buyers, diaspora relocations, commercial syndicates, and unverified inquiries.
+
+### 8. Technical Verification Status
+
+| Test Suite | Command | Result | Verification Details |
+| :--- | :--- | :---: | :--- |
+| **TypeScript Strict** | `npm run type-check` | **PASS** | `tsc --noEmit` exited with code 0. Zero loose any types across all Day 11 code. |
+| **ESLint 9 Code Quality** | `npm run lint` | **PASS** | `eslint src` exited with code 0. Zero warnings, zero errors. |
+| **Next.js Production Build** | `npm run build` | **PASS** | Next.js 16 (Turbopack) successfully compiled and optimized all static/dynamic routes. |
+| **Interactive Testbench** | `/primitives` | **PASS** | Section 10 verifies interactive scenario switcher, objection toggles, copy brief, and WhatsApp dispatch. |
+
+---
+
+## 23. Git Workflow & Branching Conventions
+
+- **Dedicated Frontend Branch**: All Day 1 through Day 11 frontend foundation code resides on the `frontend` branch.
 - **Protected `main` Branch**: The `main` branch is reserved for verified releases and backend-integrated milestones.
 - **Branch Naming Conventions**:
   - `feat/feature-name` for new user-facing capabilities
@@ -764,7 +826,7 @@ src/features/conversations/
 
 ---
 
-## 23. Contribution & Development Guidelines
+## 24. Contribution & Development Guidelines
 
 1. Always run `npm run lint` and `npm run type-check` before committing. Zero errors and zero warnings are required.
 2. Keep pages server-rendered where possible; designate `"use client"` only when user interaction, state, or browser APIs are required.

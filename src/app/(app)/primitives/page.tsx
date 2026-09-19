@@ -5,6 +5,7 @@ import { Container } from "@/components/layout/container";
 import { PageHeader } from "@/components/layout/page-header";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { DataTable, type ColumnDef } from "@/components/ui/data-table";
 import { StatusBadge, type DomainStatus } from "@/components/ui/status-badge";
 import { ScoreIndicator } from "@/components/ui/score-indicator";
@@ -56,6 +57,7 @@ import {
   ConversationStateBadge,
   ConversationMessageItem,
 } from "@/features/conversations";
+import { QualificationPanel, MOCK_LEADS } from "@/features/leads";
 
 interface SampleLead {
   id: string;
@@ -138,6 +140,12 @@ export default function PrimitivesShowcasePage() {
   const [formRawBudget, setFormRawBudget] = React.useState(150000000);
   const [formCheckbox, setFormCheckbox] = React.useState(true);
   const [formSwitch, setFormSwitch] = React.useState(true);
+
+  // 6. Day 11 Qualification Testbench state
+  const [selectedQualificationLeadId, setSelectedQualificationLeadId] = React.useState("lead_01");
+  const activeQualificationLead = React.useMemo(() => {
+    return MOCK_LEADS.find((l) => l.id === selectedQualificationLeadId) || MOCK_LEADS[0];
+  }, [selectedQualificationLeadId]);
   const [formNotes, setFormNotes] = React.useState(
     "High net-worth buyer looking for waterfront property with private boat jetty."
   );
@@ -1359,6 +1367,57 @@ export default function PrimitivesShowcasePage() {
                 }}
               />
             </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* SECTION 10: DAY 11 — QUALIFICATION VISIBILITY & UNDERWRITING PRIMITIVES */}
+      <Card className="border-border bg-white shadow-2xs">
+        <CardHeader className="p-4 border-b border-border">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <div className="flex items-center gap-2">
+                <CardTitle className="text-base font-semibold text-stone-900">
+                  Day 11 — Qualification Visibility & Autonomous Underwriting
+                </CardTitle>
+                <Badge variant="live" className="text-[10px]">
+                  Day 11 Primitives
+                </Badge>
+              </div>
+              <CardDescription className="text-xs text-stone-500 mt-1">
+                Multi-dimensional buyer underwriting panel featuring budget analysis, buyer intent tier, timeline velocity, root motivation, decision readiness, interactive objections, AI confidence telemetry, and explainable algorithmic score breakdown.
+              </CardDescription>
+            </div>
+
+            {/* Interactive Scenario Switcher */}
+            <div className="flex items-center gap-1.5 p-1 bg-stone-100 rounded-lg border border-stone-200 text-xs overflow-x-auto">
+              {[
+                { id: "lead_01", label: "Adeleke (Hot 92)" },
+                { id: "lead_02", label: "Jenkins (Warm 88)" },
+                { id: "lead_04", label: "Eze (Exploratory 68)" },
+                { id: "lead_05", label: "Okafor (Hot 95)" },
+              ].map((scenario) => (
+                <button
+                  key={scenario.id}
+                  type="button"
+                  onClick={() => setSelectedQualificationLeadId(scenario.id)}
+                  className={cn(
+                    "px-2.5 py-1 rounded-md font-medium text-xs transition-all whitespace-nowrap cursor-pointer",
+                    selectedQualificationLeadId === scenario.id
+                      ? "bg-white text-stone-900 shadow-xs font-semibold"
+                      : "text-stone-600 hover:text-stone-900"
+                  )}
+                >
+                  <span>{scenario.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </CardHeader>
+
+        <CardContent className="p-4 sm:p-6 bg-stone-50/50">
+          <div className="max-w-3xl mx-auto">
+            <QualificationPanel lead={activeQualificationLead} />
           </div>
         </CardContent>
       </Card>

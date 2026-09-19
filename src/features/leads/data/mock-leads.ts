@@ -1,7 +1,410 @@
-import type { Lead } from "../types";
+import type { Lead, QualificationProfile } from "../types";
 import { MOCK_PROPERTIES } from "@/features/properties";
 
-export const MOCK_LEADS: Lead[] = [
+export const MOCK_QUALIFICATION_PROFILES: Record<string, QualificationProfile> = {
+  lead_01: {
+    confidenceScore: 94,
+    buyerIntent: "high_purchase_intent",
+    motivation: "Current lease in Victoria Island expires in 45 days. Seeking immediate freehold acquisition for primary residence.",
+    decisionReadiness: "immediate_close",
+    readinessNote: "Sole decision maker with verified account liquidity and clear title expectations.",
+    timelineWindow: "< 30 days",
+    timelineUrgency: "urgent",
+    targetClosingDate: "October 15, 2026",
+    budgetAnalysis: {
+      declared: "₦85,000,000",
+      verifiedLiquidity: "₦90,000,000 (Tier-1 Bank statement sighted)",
+      paymentStructure: "Outright",
+      targetAskingPrice: "₦85,000,000",
+      budgetStretchPercentage: 0,
+      stretchCategory: "Within Budget",
+    },
+    intentSignals: [
+      { id: "sig_01", type: "budget", label: "Confirmed 100% Outright Liquidity", strength: "high" },
+      { id: "sig_02", type: "timeline", label: "Tenancy Closes in 45 Days", strength: "high" },
+      { id: "sig_03", type: "authority", label: "Sole Signatory", strength: "high" },
+      { id: "sig_04", type: "property_fit", label: "Elevator + Serviced BQ Match", strength: "high" },
+    ],
+    objections: [
+      {
+        id: "obj_101",
+        title: "24/7 Power Assurance",
+        description: "Inquired about dual diesel backup generator SLA and monthly estate service charge structure.",
+        severity: "low",
+        status: "resolved",
+        resolutionNote: "Facility management SLA verified and dispatched via WhatsApp.",
+        resolvedAt: "Today, 10:15 AM",
+      },
+    ],
+    explainableBreakdown: {
+      baseScore: 92,
+      positiveFactors: [
+        { label: "Verified Account Liquidity", impact: 28, category: "liquidity", detail: "Proof of funds exceeds asking price by ₦5M." },
+        { label: "Sole Individual Signatory", impact: 22, category: "authority", detail: "No board or spousal ratification required." },
+        { label: "High Relocation Urgency", impact: 24, category: "timeline", detail: "Active lease expires within 45 days." },
+        { label: "100% Inventory Criteria Match", impact: 18, category: "property_fit", detail: "Ground floor/elevator, BQ, and gym match exact preferences." },
+      ],
+      riskFactors: [],
+    },
+  },
+  lead_02: {
+    confidenceScore: 88,
+    buyerIntent: "luxury_relocation",
+    motivation: "Relocating executive family from London to Lagos for multinational oil & gas leadership posting.",
+    decisionReadiness: "spousal_board_review",
+    readinessNote: "Awaiting spouse arrival in Lagos next week for joint physical walk-through before contract sign-off.",
+    timelineWindow: "30 - 45 days",
+    timelineUrgency: "near_term",
+    targetClosingDate: "November 10, 2026",
+    budgetAnalysis: {
+      declared: "₦240,000,000",
+      verifiedLiquidity: "Corporate relocation allowance + personal equity",
+      paymentStructure: "Milestone Plan",
+      targetAskingPrice: "₦250,000,000",
+      budgetStretchPercentage: 4.1,
+      stretchCategory: "Moderate Stretch",
+    },
+    intentSignals: [
+      { id: "sig_05", type: "budget", label: "Corporate Housing Allowance Backed", strength: "high" },
+      { id: "sig_06", type: "timeline", label: "Q4 Expatriate Posting Start", strength: "high" },
+      { id: "sig_07", type: "authority", label: "Joint Spousal Decision", strength: "medium" },
+      { id: "sig_08", type: "property_fit", label: "Private Boat Jetty & Waterfront Spec", strength: "high" },
+    ],
+    objections: [
+      {
+        id: "obj_102",
+        title: "Perimeter Security & Marine Access",
+        description: "Requires verified armed guard security protocol and private boat slip access in Banana Island.",
+        severity: "medium",
+        status: "open",
+        resolutionNote: "Awaiting developer marine access clearance certificate.",
+      },
+    ],
+    explainableBreakdown: {
+      baseScore: 88,
+      positiveFactors: [
+        { label: "Corporate Relocation Allowance", impact: 32, category: "liquidity", detail: "Backed by multinational oil & gas executive package." },
+        { label: "Waterfront Location Match", impact: 26, category: "property_fit", detail: "Banana Island private jetty aligns with lifestyle requirement." },
+        { label: "Firm Relocation Window", impact: 24, category: "timeline", detail: "November employment posting locks closing deadline." },
+        { label: "High Luxury Engagement", impact: 18, category: "authority", detail: "Verified high engagement on architectural floorplans." },
+      ],
+      riskFactors: [
+        { label: "Spousal Sign-off Pending", impact: -8, category: "authority", detail: "Contract conditional on joint spousal inspection." },
+        { label: "Marine Jetty Verification", impact: -4, category: "objection", detail: "Pending boat slip clearance documentation." },
+      ],
+    },
+  },
+  lead_03: {
+    confidenceScore: 78,
+    buyerIntent: "investment_yield_seeking",
+    motivation: "Seeking medical director residential base in Victoria Island with short commute to medical center.",
+    decisionReadiness: "evaluating_shortlist",
+    readinessNote: "Comparing 2 detached properties in Victoria Island and Old Ikoyi.",
+    timelineWindow: "60 days",
+    timelineUrgency: "near_term",
+    targetClosingDate: "November 30, 2026",
+    budgetAnalysis: {
+      declared: "₦160,000,000",
+      verifiedLiquidity: "₦150,000,000 Liquid + Practice Equity",
+      paymentStructure: "Milestone Plan",
+      targetAskingPrice: "₦165,000,000",
+      budgetStretchPercentage: 3.1,
+      stretchCategory: "Moderate Stretch",
+    },
+    intentSignals: [
+      { id: "sig_09", type: "budget", label: "Partial Equity Financing Needed", strength: "medium" },
+      { id: "sig_10", type: "property_fit", label: "Clinic Proximity Required", strength: "high" },
+      { id: "sig_11", type: "timeline", label: "Flexible 60-Day Target", strength: "medium" },
+    ],
+    objections: [
+      {
+        id: "obj_103",
+        title: "HOA & Generator Service Dues",
+        description: "Expressed concern about escalations in quarterly estate diesel and security levies.",
+        severity: "medium",
+        status: "open",
+        resolutionNote: "Broker requested past 2 years of audited HOA utility statements.",
+      },
+    ],
+    explainableBreakdown: {
+      baseScore: 74,
+      positiveFactors: [
+        { label: "Established Medical Practice Equity", impact: 26, category: "liquidity", detail: "High-earning institutional medical director background." },
+        { label: "Clear Location Necessity", impact: 28, category: "property_fit", detail: "5-minute emergency commute to Victoria Island clinic required." },
+        { label: "Independent Decision Authority", impact: 20, category: "authority", detail: "Sole principal buyer." },
+      ],
+      riskFactors: [
+        { label: "Moderate Budget Stretch", impact: -5, category: "liquidity", detail: "Target price ₦5M above initial declared ceiling." },
+        { label: "HOA Levy Concerns", impact: -5, category: "objection", detail: "Hesitation regarding ongoing estate facility charges." },
+      ],
+    },
+  },
+  lead_04: {
+    confidenceScore: 72,
+    buyerIntent: "exploratory",
+    motivation: "Tech executive seeking executive pied-à-terre in Ikoyi for weekday stays away from mainland traffic.",
+    decisionReadiness: "exploratory",
+    readinessNote: "Early exploratory phase; currently assessing price-to-yield ratios across Ikoyi luxury serviced apartments.",
+    timelineWindow: "90 days",
+    timelineUrgency: "flexible",
+    budgetAnalysis: {
+      declared: "₦65,000,000",
+      verifiedLiquidity: "Tech stock options + treasury savings",
+      paymentStructure: "Milestone Plan",
+      targetAskingPrice: "₦70,000,000",
+      budgetStretchPercentage: 7.6,
+      stretchCategory: "High Stretch",
+    },
+    intentSignals: [
+      { id: "sig_12", type: "budget", label: "Discretionary Investment Capital", strength: "medium" },
+      { id: "sig_13", type: "timeline", label: "No Urgent Move-in Date", strength: "low" },
+    ],
+    objections: [
+      {
+        id: "obj_104",
+        title: "Rental Yield Feasibility",
+        description: "Skeptical of projected 14% short-let annual yields during low-season months.",
+        severity: "medium",
+        status: "open",
+        resolutionNote: "Sent historical AirDNA and short-let occupancy data for Ikoyi corridor.",
+      },
+    ],
+    explainableBreakdown: {
+      baseScore: 68,
+      positiveFactors: [
+        { label: "Tech Sector Compensation", impact: 24, category: "liquidity", detail: "High disposable earnings and tech advisory equity." },
+        { label: "Luxury Serviced Preference", impact: 22, category: "property_fit", detail: "Concierge and serviced amenities strongly appeal." },
+        { label: "Sole Investor Authority", impact: 22, category: "authority", detail: "Individual personal portfolio acquisition." },
+      ],
+      riskFactors: [
+        { label: "Flexible Uncommitted Timeline", impact: -8, category: "timeline", detail: "No relocation pressure or fixed moving date." },
+        { label: "Short-let Yield Skepticism", impact: -6, category: "objection", detail: "Requires further validation on return on capital." },
+      ],
+    },
+  },
+  lead_05: {
+    confidenceScore: 96,
+    buyerIntent: "high_purchase_intent",
+    motivation: "Prime family compound acquisition in Guzape Abuja with state-of-the-art security and embassy neighborhood proximity.",
+    decisionReadiness: "immediate_close",
+    readinessNote: "Family trust authorization secured. Inspecting for immediate acquisition closing.",
+    timelineWindow: "< 14 days",
+    timelineUrgency: "urgent",
+    targetClosingDate: "October 8, 2026",
+    budgetAnalysis: {
+      declared: "₦320,000,000",
+      verifiedLiquidity: "₦350,000,000 (Corporate treasury account)",
+      paymentStructure: "Outright",
+      targetAskingPrice: "₦320,000,000",
+      budgetStretchPercentage: 0,
+      stretchCategory: "Within Budget",
+    },
+    intentSignals: [
+      { id: "sig_14", type: "budget", label: "Full Liquid Capital Ready", strength: "high" },
+      { id: "sig_15", type: "timeline", label: "Two-Week Closing Mandate", strength: "high" },
+      { id: "sig_16", type: "authority", label: "Family Trust Principal", strength: "high" },
+      { id: "sig_17", type: "property_fit", label: "Guzape Diplomatic Zone", strength: "high" },
+    ],
+    objections: [
+      {
+        id: "obj_105",
+        title: "Perimeter Hillside Drainage",
+        description: "Requested civil engineering survey of Guzape hillside retaining wall and water runoff channels.",
+        severity: "low",
+        status: "resolved",
+        resolutionNote: "Certified structural engineering report dispatched by developer.",
+        resolvedAt: "Yesterday, 3:45 PM",
+      },
+    ],
+    explainableBreakdown: {
+      baseScore: 95,
+      positiveFactors: [
+        { label: "Corporate Treasury Liquidity", impact: 35, category: "liquidity", detail: "Instant wire transfer capability from corporate holding account." },
+        { label: "14-Day Closing Mandate", impact: 30, category: "timeline", detail: "Family mandates transaction execution before fiscal year end." },
+        { label: "Architectural & Compound Match", impact: 20, category: "property_fit", detail: "Private pool, detached BQ, and hilltop security fit requirements." },
+        { label: "Trust Signatory Authority", impact: 15, category: "authority", detail: "Sole authorized executor for property acquisitions." },
+      ],
+      riskFactors: [
+        { label: "Structural Survey Verification", impact: -5, category: "objection", detail: "Hillside drainage audit reviewed and closed." },
+      ],
+    },
+  },
+  lead_06: {
+    confidenceScore: 65,
+    buyerIntent: "unqualified",
+    motivation: "Looking to establish boutique retail fashion outlet in Maitama Abuja.",
+    decisionReadiness: "asset_liquidation",
+    readinessNote: "Contingent on raising external franchise partnership capital.",
+    timelineWindow: "6 months",
+    timelineUrgency: "flexible",
+    budgetAnalysis: {
+      declared: "₦120,000,000",
+      verifiedLiquidity: "₦40,000,000 (Remaining pending partner financing)",
+      paymentStructure: "Mortgage",
+      targetAskingPrice: "₦140,000,000",
+      budgetStretchPercentage: 16.6,
+      stretchCategory: "High Stretch",
+    },
+    intentSignals: [
+      { id: "sig_18", type: "budget", label: "External Capital Dependency", strength: "low" },
+      { id: "sig_19", type: "timeline", label: "6+ Month Speculative Window", strength: "low" },
+    ],
+    objections: [
+      {
+        id: "obj_106",
+        title: "Commercial Zoning & Parking",
+        description: "Concerned about Maitama municipal council zoning permits and customer parking restrictions.",
+        severity: "high",
+        status: "open",
+        resolutionNote: "Pending urban planning verification.",
+      },
+    ],
+    explainableBreakdown: {
+      baseScore: 55,
+      positiveFactors: [
+        { label: "Commercial Franchise Vision", impact: 25, category: "property_fit", detail: "Clear retail concept for luxury fashion." },
+        { label: "Maitama Prime Foot Traffic", impact: 20, category: "property_fit", detail: "Target location matches customer demographic." },
+      ],
+      riskFactors: [
+        { label: "Unfunded Capital Gap", impact: -18, category: "liquidity", detail: "Shortfall of ₦80M pending angel partner commitment." },
+        { label: "Municipal Zoning Ambiguity", impact: -12, category: "objection", detail: "Commercial retail conversion permit not yet secured." },
+      ],
+    },
+  },
+  lead_07: {
+    confidenceScore: 84,
+    buyerIntent: "high_purchase_intent",
+    motivation: "Upgrading from rented apartment to own family home before birth of second child.",
+    decisionReadiness: "immediate_close",
+    readinessNote: "Mortgage pre-approved with Stanbic IBTC; equity deposit ready in escrow.",
+    timelineWindow: "< 30 days",
+    timelineUrgency: "urgent",
+    targetClosingDate: "October 20, 2026",
+    budgetAnalysis: {
+      declared: "₦75,000,000",
+      verifiedLiquidity: "₦25,000,000 Equity + ₦50,000,000 Pre-approved Mortgage",
+      paymentStructure: "Mortgage",
+      targetAskingPrice: "₦75,000,000",
+      budgetStretchPercentage: 0,
+      stretchCategory: "Within Budget",
+    },
+    intentSignals: [
+      { id: "sig_20", type: "budget", label: "Stanbic IBTC Mortgage Pre-approval", strength: "high" },
+      { id: "sig_21", type: "timeline", label: "Family Expansion Deadline", strength: "high" },
+      { id: "sig_22", type: "property_fit", label: "Gated Estate Security Required", strength: "high" },
+    ],
+    objections: [
+      {
+        id: "obj_107",
+        title: "Deed of Sublease Verification",
+        description: "Stanbic mortgage legal team requires certified Governor's Consent deed confirmation.",
+        severity: "medium",
+        status: "resolved",
+        resolutionNote: "Verified Lagos State Lands Bureau title registry documentation delivered.",
+        resolvedAt: "Today, 9:30 AM",
+      },
+    ],
+    explainableBreakdown: {
+      baseScore: 82,
+      positiveFactors: [
+        { label: "Formal Bank Mortgage Guarantee", impact: 28, category: "liquidity", detail: "Stanbic IBTC formal underwriting completed." },
+        { label: "Urgent Family Life Event", impact: 26, category: "timeline", detail: "Childbirth window creates non-negotiable moving timeline." },
+        { label: "Clean Property Criteria Fit", impact: 24, category: "property_fit", detail: "Duplex with private BQ and play area matches family needs." },
+        { label: "Verified Buyer Identity", impact: 14, category: "authority", detail: "Full KYC and credit bureau scoring clean." },
+      ],
+      riskFactors: [
+        { label: "Bank Disbursement Cycle", impact: -5, category: "liquidity", detail: "7-day administrative bank processing delay expected." },
+        { label: "Title Registry Clearance", impact: -5, category: "objection", detail: "Governor's consent verification closed with lawyer." },
+      ],
+    },
+  },
+  lead_08: {
+    confidenceScore: 70,
+    buyerIntent: "exploratory",
+    motivation: "Young legal counsel exploring first-time homeownership along the Lekki development axis.",
+    decisionReadiness: "evaluating_shortlist",
+    readinessNote: "Assessing mortgage vs structured developer milestone payments over 24 months.",
+    timelineWindow: "1-2 months",
+    timelineUrgency: "near_term",
+    budgetAnalysis: {
+      declared: "₦95,000,000",
+      verifiedLiquidity: "₦30,000,000 Savings + Partner Income",
+      paymentStructure: "Milestone Plan",
+      targetAskingPrice: "₦100,000,000",
+      budgetStretchPercentage: 5.2,
+      stretchCategory: "Moderate Stretch",
+    },
+    intentSignals: [
+      { id: "sig_23", type: "budget", label: "Developer Installment Preference", strength: "medium" },
+      { id: "sig_24", type: "property_fit", label: "Smart Home Automation Desired", strength: "medium" },
+    ],
+    objections: [
+      {
+        id: "obj_108",
+        title: "Construction Completion Milestones",
+        description: "Concerned about developer delivery timelines on off-plan Osapa London project.",
+        severity: "medium",
+        status: "open",
+        resolutionNote: "Awaiting developer escrow milestone guarantee contract.",
+      },
+    ],
+    explainableBreakdown: {
+      baseScore: 61,
+      positiveFactors: [
+        { label: "Professional Legal Income", impact: 24, category: "liquidity", detail: "Stable partnership salary at top Lagos commercial law firm." },
+        { label: "Osapa Location Affinity", impact: 22, category: "property_fit", detail: "Short commute to Victoria Island law chambers." },
+        { label: "Sole Principal Buyer", impact: 18, category: "authority", detail: "Individual purchase with personal earnings." },
+      ],
+      riskFactors: [
+        { label: "Off-Plan Delivery Anxiety", impact: -8, category: "objection", detail: "Past developer delays in the region require strict contractual safeguards." },
+        { label: "Installment Cash Flow Gap", impact: -5, category: "liquidity", detail: "Requires 18-month flexible payment structure to match salary milestones." },
+      ],
+    },
+  },
+  lead_09: {
+    confidenceScore: 50,
+    buyerIntent: "exploratory",
+    motivation: "Inquiring about high-yield shoreline developments in Eko Atlantic for general investment.",
+    decisionReadiness: "exploratory",
+    readinessNote: "General inquiry submitted via online portal. Has not specified target unit or verified liquidity.",
+    timelineWindow: "Unspecified",
+    timelineUrgency: "flexible",
+    budgetAnalysis: {
+      declared: "₦180,000,000",
+      paymentStructure: "Outright",
+      targetAskingPrice: "₦200,000,000",
+      budgetStretchPercentage: 11.1,
+      stretchCategory: "High Stretch",
+    },
+    intentSignals: [
+      { id: "sig_25", type: "budget", label: "Unverified Liquidity", strength: "low" },
+      { id: "sig_26", type: "timeline", label: "No Committed Timeline", strength: "low" },
+    ],
+    objections: [
+      {
+        id: "obj_109",
+        title: "Shoreline Safety & Currency Exposure",
+        description: "Questioned ocean protection works and whether service charges are dollar-denominated.",
+        severity: "medium",
+        status: "open",
+        resolutionNote: "Dispatch Great Wall of Lagos engineering overview & FX billing policy.",
+      },
+    ],
+    explainableBreakdown: {
+      baseScore: 45,
+      positiveFactors: [
+        { label: "High Stated Budget Category", impact: 25, category: "liquidity", detail: "Declared budget in prime luxury bracket (₦180M)." },
+        { label: "Interest in Eko Atlantic Infrastructure", impact: 20, category: "property_fit", detail: "Strong interest in smart city development amenities." },
+      ],
+      riskFactors: [
+        { label: "Zero Verified Financial Proof", impact: -15, category: "liquidity", detail: "Unconfirmed capital proof or banking relationship." },
+        { label: "Unspecified Decision Window", impact: -15, category: "timeline", detail: "No relocation date or closing target declared." },
+      ],
+    },
+  },
+};
+
+const RAW_MOCK_LEADS: Lead[] = [
   {
     id: "lead_01",
     name: "Michael Adeleke",
@@ -730,3 +1133,8 @@ export const MOCK_LEADS: Lead[] = [
     ],
   },
 ];
+
+export const MOCK_LEADS: Lead[] = RAW_MOCK_LEADS.map((lead) => ({
+  ...lead,
+  qualificationProfile: MOCK_QUALIFICATION_PROFILES[lead.id],
+}));

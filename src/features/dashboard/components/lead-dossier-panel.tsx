@@ -4,6 +4,7 @@ import * as React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { DashboardLead, DashboardAICallEvent } from "../types";
+import { QualificationPanel, type Lead } from "@/features/leads";
 import { cn } from "@/lib/utils/cn";
 import {
   X,
@@ -11,9 +12,6 @@ import {
   Pause,
   Phone,
   Mail,
-  CalendarCheck,
-  CheckCircle2,
-  ShieldCheck,
   Sparkles,
   UserCheck,
 } from "lucide-react";
@@ -251,58 +249,8 @@ export function LeadDossierPanel({ lead, onClose, onTakeover, callEvent }: LeadD
             </div>
           </div>
         ) : (
-          <div className="space-y-3 text-xs">
-            {/* Qualification Signals */}
-            <div className="grid grid-cols-2 gap-2.5">
-              <div className="rounded-md border border-stone-200 p-2.5 bg-stone-50/50">
-                <span className="text-[11px] text-stone-500 font-medium">Property Fit</span>
-                <p className="font-semibold text-stone-900 mt-0.5">{lead.propertyTitle}</p>
-                <span className="inline-flex items-center gap-1 text-[11px] text-emerald-700 font-medium mt-1">
-                  <ShieldCheck className="h-3 w-3" /> Verified Available
-                </span>
-              </div>
-
-              <div className="rounded-md border border-stone-200 p-2.5 bg-stone-50/50">
-                <span className="text-[11px] text-stone-500 font-medium">Commercial Budget</span>
-                <p className="font-semibold text-stone-900 mt-0.5">{lead.budget}</p>
-                <span className="inline-flex items-center gap-1 text-[11px] text-stone-600 mt-1">
-                  <CheckCircle2 className="h-3 w-3 text-stone-500" /> Pre-confirmed
-                </span>
-              </div>
-
-              <div className="rounded-md border border-stone-200 p-2.5 bg-stone-50/50">
-                <span className="text-[11px] text-stone-500 font-medium">Buying Intent</span>
-                <p className="font-semibold text-stone-900 mt-0.5">{lead.intent} (High Intent)</p>
-                <span className="text-[11px] text-stone-500 mt-1 block">Decision Maker: Self</span>
-              </div>
-
-              <div className="rounded-md border border-stone-200 p-2.5 bg-stone-50/50">
-                <span className="text-[11px] text-stone-500 font-medium">Move-in Timeline</span>
-                <p className="font-semibold text-stone-900 mt-0.5">{lead.timeline}</p>
-                <span className="text-[11px] text-stone-500 mt-1 block">Relocating soon</span>
-              </div>
-            </div>
-
-            {/* AI Summary Note */}
-            <div className="rounded-md border border-stone-200 bg-stone-50/80 p-3 space-y-1">
-              <span className="text-[11px] font-semibold text-stone-700">AI Structured Synthesis</span>
-              <p className="text-stone-600 leading-relaxed">
-                {lead.aiNotes || "High commercial readiness. Recommend immediate viewing confirmation."}
-              </p>
-            </div>
-
-            {/* Recommended Next Action */}
-            <div className="rounded-md border border-stone-200 bg-white p-3 shadow-2xs space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-[11px] font-semibold text-stone-900">Recommended Action</span>
-                <Badge variant="live" className="text-[10px]">Ready for Agent</Badge>
-              </div>
-              <p className="text-stone-700 font-medium">{lead.nextAction}</p>
-              <Button size="sm" className="w-full text-xs bg-stone-900 text-white hover:bg-stone-800">
-                <CalendarCheck className="h-3.5 w-3.5 mr-1.5" />
-                Confirm Viewing on Calendar
-              </Button>
-            </div>
+          <div className="p-3 overflow-y-auto">
+            <QualificationPanel lead={lead as unknown as Lead} />
           </div>
         )}
       </div>
