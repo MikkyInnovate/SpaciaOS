@@ -2,7 +2,7 @@
 
 > **Spacia** is a high-performance, managed AI sales orchestration platform purpose-built for modern real-estate brokerages and development firms. It autonomously captures inbound property inquiries, engages prospects via natural voice and chat, qualifies buyers against stringent underwriting criteria, evaluates purchasing power and timeline, and seamlessly books qualified viewings directly onto connected sales agents' calendars.
 
-This repository houses the **production frontend implementation for Days 1 through 9** of the Spacia MVP.
+This repository houses the **production frontend implementation for Days 1 through 10** of the Spacia MVP.
 
 ---
 
@@ -30,6 +30,7 @@ Spacia acts as an automated sales acceleration layer positioned between inbound 
 | **Day 7: Usable Property Information in Lead Workflows** | **COMPLETE** | Production-ready real-estate property domain (`features/properties`) integrated into lead workflows: strongly-typed `Property` entity, BANT commercial specs, legal title deed verification details, `PropertiesService` with mock API contract fallback, domain `PropertyAvailabilityBadge` (`Available`, `Under Offer`, `Sold`, `Reserved`, `Unavailable`, `Unknown`), `PropertyVerificationBadge` (`Verified`, `Pending Verification`, `Unverified`), operational `PropertyCard` (Price, Location, Beds, Baths, Floor Area, Verified Features chips, Availability & Verification badges, and full specs inspection trigger), deep-dive `PropertyDetailPresentation` modal (high-res photo gallery, thumbnail strip, legal title underwriting audit, HOA service charges, minimum deposits, payment milestones), resilient `PropertyUnknownState` for general inquiries lacking linked inventory with criteria match trigger, and proactive `PropertyUnavailableState` for off-market/sold inventory with alternative recommendations. |
 | **Day 8: Event System & Automation Foundation** | **COMPLETE & VERIFIED** | Production-ready asynchronous event and automation architecture (`features/events`): strongly-typed workflow lifecycle statuses (`queued`, `in_progress`, `completed`, `failed`, `retrying`, `blocked`), polymorphic `ActivityEventCard`, resilient `WorkflowRetryState` with backoff countdown timer, retry triggers, and diagnostic logs, distinct `AIActivityIndicator` vs `HumanActivityIndicator` actor attribution, live `AutomationEventFeed` with actor filtering and event simulation, upgraded `LeadActivityTimeline`, and interactive testbench at `/primitives`. |
 | **Day 9: AI Sales Agent Interface** | **COMPLETE & VERIFIED** | Production-ready autonomous AI Sales Agent command center (`features/ai-agent`): strongly-typed agent engine status and live telemetry (`AIAgentStatusCard`), interactive dialer pause/resume toggle with in-memory persistence, comprehensive configuration presentation (`AIAgentConfigPresentation`) detailing Neural Executive voice persona, 5-point BANT qualification gates, and legal safety guardrails (3-call max attempt cap, quiet hours, DNC policy), live active call radar (`AIAgentActivityState`) with real-time waveform equalizer, duration timer, and speech transcript stream, recent agent execution feed, and standardized AI confidence & buyer intent UI primitives (`IntentConfidenceGauge`, `BuyerIntentBadge`, `IntentSignalPill`, `BuyerIntentCard`). Integrated into `/ai-agent` and testbench at `/primitives` (Section 8). |
+| **Day 10: Omnichannel Conversation Visibility & Timeline Primitives** | **COMPLETE & STAGED** | Complete omnichannel buyer messaging command center and primitives (`features/conversations`): strongly-typed polymorphic message timeline (`ConversationMessageTimeline`, `ConversationMessageItem`) distinguishing AI Sales Associate, Prospect, Human Broker, and System Events; in-timeline luxury real-estate media artifacts (`ConversationArtifactCard`: property specs, BANT qualification gates, viewing invites, title documents); live lifecycle status badges (`ConversationStateBadge`: `active_ai`, `awaiting_prospect`, `qualified`, `viewing_booked`, `human_takeover`, `escalated`, `closed`); broker intervention composer (`ConversationComposer`) with active AI safety warning banner, 1-click human takeover, and canned shortcuts; commercial context dossier (`ConversationContextPanel`) with buyer intent and BANT alignment; and 3-pane command center (`ConversationsCommandCenter`). Preserved and staged in code; hidden from public MVP sidebar navigation pending WhatsApp Phase 2 launch, fully previewable at `/primitives` (Section 9). |
 
 ---
 
@@ -139,6 +140,12 @@ src/
 │       │   └── leads-service.ts         # Leads API service, mock session store & CSV export
 │       └── types/
 │           └── index.ts                 # Strongly-typed Lead domain models
+│   │
+│   └── conversations/                   # Day 10 Omnichannel Conversation Visibility (Staged)
+│       ├── components/                  # Timeline, Composer, Artifacts, StateBadges, CommandCenter
+│       ├── data/mock-conversations.ts   # Realistic luxury real-estate threads & messages
+│       ├── services/conversations-service.ts # Decoupled service with in-memory persistence
+│       └── types/index.ts               # Strongly-typed Conversation, Message, Artifact models
 │
 ├── lib/
 │   ├── config/                          # Site metadata & environment schemas
