@@ -2,7 +2,7 @@
 
 > **Spacia** is a high-performance, managed AI sales orchestration platform purpose-built for modern real-estate brokerages and development firms. It autonomously captures inbound property inquiries, engages prospects via natural voice and chat, qualifies buyers against stringent underwriting criteria, evaluates purchasing power and timeline, and seamlessly books qualified viewings directly onto connected sales agents' calendars.
 
-This repository houses the **production frontend implementation for Days 1 through 10** of the Spacia MVP.
+This repository houses the **production frontend implementation for Days 1 through 12** of the Spacia MVP.
 
 ---
 
@@ -29,9 +29,10 @@ Spacia acts as an automated sales acceleration layer positioned between inbound 
 | **Day 6: Complete Lead Workflow UI** | **COMPLETE** | Complete, operational Lead Workflow System: interactive `LeadStatusSelect` with live domain lifecycle transitions, high-priority `LeadNextActionCard` with actionable protocol directives, real-estate `LeadPropertyCard` (property specs, bedrooms/bathrooms, floor area, asking price vs declared budget alignment), 5-point BANT+ `LeadQualificationCard` (Budget, Authority, Need, Timeline, Property Fit with simulated AI underwriting notes), chronological `LeadActivityTimeline` (multi-channel event stream tracking inbound capture, voice calls, WhatsApp brochures, viewing appointments, and broker memo additions), column sorting on `LeadTable`, and client-side CSV export. |
 | **Day 7: Usable Property Information in Lead Workflows** | **COMPLETE** | Production-ready real-estate property domain (`features/properties`) integrated into lead workflows: strongly-typed `Property` entity, BANT commercial specs, legal title deed verification details, `PropertiesService` with mock API contract fallback, domain `PropertyAvailabilityBadge` (`Available`, `Under Offer`, `Sold`, `Reserved`, `Unavailable`, `Unknown`), `PropertyVerificationBadge` (`Verified`, `Pending Verification`, `Unverified`), operational `PropertyCard` (Price, Location, Beds, Baths, Floor Area, Verified Features chips, Availability & Verification badges, and full specs inspection trigger), deep-dive `PropertyDetailPresentation` modal (high-res photo gallery, thumbnail strip, legal title underwriting audit, HOA service charges, minimum deposits, payment milestones), resilient `PropertyUnknownState` for general inquiries lacking linked inventory with criteria match trigger, and proactive `PropertyUnavailableState` for off-market/sold inventory with alternative recommendations. |
 | **Day 8: Event System & Automation Foundation** | **COMPLETE & VERIFIED** | Production-ready asynchronous event and automation architecture (`features/events`): strongly-typed workflow lifecycle statuses (`queued`, `in_progress`, `completed`, `failed`, `retrying`, `blocked`), polymorphic `ActivityEventCard`, resilient `WorkflowRetryState` with backoff countdown timer, retry triggers, and diagnostic logs, distinct `AIActivityIndicator` vs `HumanActivityIndicator` actor attribution, live `AutomationEventFeed` with actor filtering and event simulation, upgraded `LeadActivityTimeline`, and interactive testbench at `/primitives`. |
-| **Day 9: AI Sales Agent Interface** | **COMPLETE & VERIFIED** | Production-ready autonomous AI Sales Agent command center (`features/ai-agent`): strongly-typed agent engine status and live telemetry (`AIAgentStatusCard`), interactive dialer pause/resume toggle with in-memory persistence, comprehensive configuration presentation (`AIAgentConfigPresentation`) detailing Neural Executive voice persona, 5-point BANT qualification gates, and legal safety guardrails (3-call max attempt cap, quiet hours, DNC policy), live active call radar (`AIAgentActivityState`) with real-time waveform equalizer, duration timer, and speech transcript stream, recent agent execution feed, and standardized AI confidence & buyer intent UI primitives (`IntentConfidenceGauge`, `BuyerIntentBadge`, `IntentSignalPill`, `BuyerIntentCard`). Integrated into `/ai-agent` and testbench at `/primitives` (Section 8). |
+| **Day 9: AI Sales Agent Interface & Fleet Cockpit** | **COMPLETE & VERIFIED** | Production-ready autonomous AI Sales Agent command center (`features/ai-agent`): strongly-typed agent engine status, live concurrency telemetry (`AIAgentActivityState`), high-impact emergency dialer pause/resume controls (`AI Core: Outbound Paused` alert pill, halted banner with instant resume CTA), SpaciaOS architectural underline navigation tabs, configuration presentation (`AIAgentConfigPresentation`) detailing Neural Executive voice persona, 5-point BANT qualification gates, and legal safety guardrails (3-call max attempt cap, quiet hours, DNC policy), and standardized AI confidence & buyer intent UI primitives (`IntentConfidenceGauge`, `BuyerIntentBadge`, `IntentSignalPill`, `BuyerIntentCard`). Integrated into `/ai-agent` and testbench at `/primitives` (Section 8). |
 | **Day 10: Omnichannel Conversation Visibility & Timeline Primitives** | **COMPLETE & STAGED** | Complete omnichannel buyer messaging command center and primitives (`features/conversations`): strongly-typed polymorphic message timeline (`ConversationMessageTimeline`, `ConversationMessageItem`) distinguishing AI Sales Associate, Prospect, Human Broker, and System Events; in-timeline luxury real-estate media artifacts (`ConversationArtifactCard`: property specs, BANT qualification gates, viewing invites, title documents); live lifecycle status badges (`ConversationStateBadge`: `active_ai`, `awaiting_prospect`, `qualified`, `viewing_booked`, `human_takeover`, `escalated`, `closed`); broker intervention composer (`ConversationComposer`) with active AI safety warning banner, 1-click human takeover, and canned shortcuts; commercial context dossier (`ConversationContextPanel`) with buyer intent and BANT alignment; and 3-pane command center (`ConversationsCommandCenter`). Preserved and staged in code; hidden from public MVP sidebar navigation pending WhatsApp Phase 2 launch, fully previewable at `/primitives` (Section 9). |
 | **Day 11: Make Qualification Visible** | **COMPLETE & VERIFIED** | Comprehensive autonomous qualification and underwriting command center (`QualificationPanel` in `features/leads`): multi-dimensional budget analysis (declared allocation, verified liquidity, payment milestones, asking price stretch), buyer intent telemetry (`BuyerIntentBadge`, category metadata, behavioral intent signals), urgency timeline window (`< 30 days`, `urgent` / `near_term` / `flexible`), verified buying catalyst / motivation statement, decision readiness stage badges (`initial_inquiry`, `gathering_options`, `sole_decision_maker`, `partner_consensus`, `ready_to_transact`), interactive objections list with severity pills (`high`/`medium`/`low`), toggle status (`open`/`resolved`) with optimistic feedback and resolution notes, AI confidence telemetry (`IntentConfidenceGauge`, 0–100%), and explainable score breakdown with positive catalysts and risk deductions. Deeply integrated across `LeadDetailShell` (`/leads`), `LeadDossierPanel` (`/calls`), and showcased with interactive scenario switching at `/primitives` (Section 10). |
+| **Day 12: Vapi Voice Integration & Calls Hub** | **COMPLETE & VERIFIED** | Complete, production-grade Vapi AI voice telephony observability command center (`features/calls`): dedicated Calls Hub route (`/calls`) with average call duration, daily volume, and viewing conversion metrics; full-width `CallList` table with instant search and outcome filter chips (`viewing_booked`, `qualified`, `callback_requested`, `escalated_takeover`, `voicemail`); slide-over `CallDetailCockpit` with responsive backdrop; interactive `CallAudioPlayer` with play/pause, scrub slider, volume, rate toggle (1x/1.25x/1.5x/2x), and download; synchronized `TranscriptViewer` with real-time audio seek synchronization, speaker attribution badges, and confidence indicators; `CallSummaryCard` detailing automated AI synthesis, buyer sentiment, and next operational directives; and single-click broker takeover trigger. |
 
 ---
 
@@ -142,12 +143,17 @@ src/
 │       │   └── leads-service.ts         # Leads API service, mock session store & CSV export
 │       └── types/
 │           └── index.ts                 # Strongly-typed Lead domain models
+│   ├── conversations/                   # Day 10 Omnichannel Conversation Visibility (Staged)
+│   │   ├── components/                  # Timeline, Composer, Artifacts, StateBadges, CommandCenter
+│   │   ├── data/mock-conversations.ts   # Realistic luxury real-estate threads & messages
+│   │   ├── services/conversations-service.ts # Decoupled service with in-memory persistence
+│   │   └── types/index.ts               # Strongly-typed Conversation, Message, Artifact models
 │   │
-│   └── conversations/                   # Day 10 Omnichannel Conversation Visibility (Staged)
-│       ├── components/                  # Timeline, Composer, Artifacts, StateBadges, CommandCenter
-│       ├── data/mock-conversations.ts   # Realistic luxury real-estate threads & messages
-│       ├── services/conversations-service.ts # Decoupled service with in-memory persistence
-│       └── types/index.ts               # Strongly-typed Conversation, Message, Artifact models
+│   └── calls/                           # Day 12 Vapi Voice Integration & Calls Hub
+│       ├── components/                  # CallList, CallDetailCockpit, CallAudioPlayer, TranscriptViewer, CallSummaryCard
+│       ├── data/mock-calls.ts           # Realistic Nigerian luxury real-estate voice calls & transcripts
+│       ├── services/calls-service.ts    # Strongly-typed calls API service with in-memory persistence
+│       └── types/index.ts               # Call, CallTranscriptTurn, CallSummary, CallOutcome, RecordingState
 │
 ├── lib/
 │   ├── config/                          # Site metadata & environment schemas
@@ -814,9 +820,71 @@ src/features/leads/
 
 ---
 
-## 23. Git Workflow & Branching Conventions
+## 23. Day 12 — Vapi Voice Integration & Telephony Observability
 
-- **Dedicated Frontend Branch**: All Day 1 through Day 11 frontend foundation code resides on the `frontend` branch.
+Day 12 delivers the complete autonomous AI voice call observability, audio replay, and broker supervision suite (`features/calls` & `/calls`):
+
+```text
+src/features/calls/
+├── components/
+│   ├── call-list.tsx                      # Full-width operational table with outcome filters & instant search
+│   ├── call-detail-cockpit.tsx            # Slide-over call cockpit with sticky architectural tabs
+│   ├── call-audio-player.tsx              # Interactive audio player with waveform, scrubbing, and speed toggle
+│   ├── transcript-viewer.tsx              # Time-synchronized turn-by-turn dialogue stream with audio seek
+│   ├── call-summary-card.tsx              # Automated AI synthesis, prospect sentiment, and action items
+│   ├── call-outcome-badge.tsx             # Domain outcome indicators (viewing_booked, qualified, takeover, etc.)
+│   ├── call-recording-badge.tsx           # Telephony recording state (recorded, streaming, processing)
+│   └── call-metrics-strip.tsx             # Call analytics (duration, latency, BANT turns, speaking ratio)
+├── data/
+│   └── mock-calls.ts                      # Enriched dataset with Nigerian luxury leads (Babatunde Adeleke, Victoria Alabi, etc.)
+├── services/
+│   └── calls-service.ts                   # Strongly-typed calls API client with in-memory persistence
+└── types/
+    └── index.ts                           # Call, CallTranscriptTurn, CallSummary, CallOutcome, RecordingState
+```
+
+### 1. Calls Hub Route & Executive KPI Strip
+- **Average Call Duration**: Real-time duration metrics with tabular monospace numerals (`3m 42s`) and qualification conversion ratios.
+- **Outbound Volume Tracker**: Live counter of calls initiated today with sub-5s response speed benchmarking.
+- **Viewing Bookings via Voice**: Automated calendar confirmations auto-synced to agent schedules.
+
+### 2. Operational Call List with Instant Filtering
+- **Outcome Filter Chips**: SpaciaOS standard standalone filter chips (`All`, `Viewings`, `Qualified`, `Callback`, `Takeover`, `Voicemail`).
+- **Instant Multi-Field Search**: Real-time filtering across prospect names, property titles, locations, and transcript synthesis.
+- **Sortable Columns**: Lead identity, property context, composite score, call duration, recorded outcome, and recording badge.
+
+### 3. Slide-Over Call Detail Cockpit
+- **Gentle Backdrop Overlay**: Clickable backdrop with ESC key navigation and background scroll lock.
+- **Sticky Architectural Navigation**: Underline tabs (`Transcript`, `AI Synthesis`, `Vapi Metrics`) ensuring constant visibility over call metadata while scrolling.
+- **Broker Takeover Protocol**: High-priority takeover action allowing human sales agents to disconnect the AI voice line and route directly to their desk.
+
+### 4. Interactive Audio Playback & Waveform Scrubbing
+- **Full Player Controls**: Play, pause, 10s skip-forward, 10s skip-back, volume slider, and playback rate toggles (`1x`, `1.25x`, `1.5x`, `2x`).
+- **Real-Time Seeking**: Clickable waveform scrubber synchronized with dialogue turns.
+- **Audio Download**: Direct export of high-fidelity telephony recordings for broker coaching and legal compliance.
+
+### 5. Time-Synchronized Transcript Viewer
+- **Speaker Attribution**: Distinct color-coded bubbles for AI Sales Associate vs. Prospect.
+- **Live Seeking**: Clicking any timestamp immediately jumps the audio player to that exact conversational moment.
+- **BANT Signals & Confidence**: In-transcript tags highlighting detected budget commitments, viewing confirmations, and speech recognition confidence.
+
+### 6. Automated Call Synthesis & Executive Next Steps
+- **Executive Synthesis**: Concise overview of call narrative and buyer intent.
+- **Sentiment Telemetry**: High-accuracy sentiment badges (`Highly Receptive`, `Cautious / Price Sensitive`, `Skeptical`).
+- **Action Items & Takeaways**: Concrete bullet points identifying scheduled property viewings, lawyer review requests, and milestone negotiations.
+
+### 7. AI Sales Agent Fleet Operations Enhancements
+- **Operational Cockpit Switcher**: Standard SpaciaOS underline tabs switching between `Live Fleet Operations & Dispatch` (5 concurrent channels) and `Agent Studio & Guardrails`.
+- **High-Impact Emergency Killswitch**:
+  - **Paused State**: High-visibility rose/red alert badge (`AI Core: Outbound Paused`) with pinging radar dot, prominent fleet halt banner, and solid emerald `Resume Dialer` CTA.
+  - **Operational State**: Calm emerald pill (`AI Core: Operational`) with high-visibility caution `Pause Dialer` emergency button.
+- **Standard Underline Sub-Tabs**: Refactored `Voice Persona`, `BANT Gates`, and `Guardrails & Safety` into clean underline tabs with zero broken borders.
+
+---
+
+## 24. Git Workflow & Branching Conventions
+
+- **Dedicated Frontend Branch**: All Day 1 through Day 12 frontend foundation code resides on the `frontend` branch.
 - **Protected `main` Branch**: The `main` branch is reserved for verified releases and backend-integrated milestones.
 - **Branch Naming Conventions**:
   - `feat/feature-name` for new user-facing capabilities
@@ -826,7 +894,7 @@ src/features/leads/
 
 ---
 
-## 24. Contribution & Development Guidelines
+## 25. Contribution & Development Guidelines
 
 1. Always run `npm run lint` and `npm run type-check` before committing. Zero errors and zero warnings are required.
 2. Keep pages server-rendered where possible; designate `"use client"` only when user interaction, state, or browser APIs are required.

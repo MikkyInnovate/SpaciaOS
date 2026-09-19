@@ -58,6 +58,15 @@ import {
   ConversationMessageItem,
 } from "@/features/conversations";
 import { QualificationPanel, MOCK_LEADS } from "@/features/leads";
+import {
+  CallRecordingBadge,
+  CallOutcomeBadge,
+  CallAudioPlayer,
+  CallMetricsStrip,
+  TranscriptViewer,
+  CallSummaryCard,
+  MOCK_CALLS,
+} from "@/features/calls";
 
 interface SampleLead {
   id: string;
@@ -1418,6 +1427,104 @@ export default function PrimitivesShowcasePage() {
         <CardContent className="p-4 sm:p-6 bg-stone-50/50">
           <div className="max-w-3xl mx-auto">
             <QualificationPanel lead={activeQualificationLead} />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* ========================================================================= */}
+      {/* 11. CALL VISIBILITY & VOICE INTELLIGENCE PRIMITIVES (DAY 12) */}
+      {/* ========================================================================= */}
+      <Card id="calls" className="border-border bg-white shadow-2xs scroll-mt-20">
+        <CardHeader className="p-4 border-b border-stone-100">
+          <div className="flex items-center gap-2">
+            <Phone className="h-4 w-4 text-[#0d4a36]" />
+            <CardTitle className="text-sm font-semibold text-stone-900">
+              Day 12 — Call Visibility &amp; Voice Intelligence Primitives
+            </CardTitle>
+            <Badge variant="live" className="text-[10px] px-1.5 py-0">
+              Phase 1 Live
+            </Badge>
+          </div>
+          <CardDescription className="text-xs text-stone-500">
+            Suite of audio playback controls, waveform scrubbers, recording states, outcome taxonomy, speech metrics, and click-to-seek transcript viewers.
+          </CardDescription>
+        </CardHeader>
+
+        <CardContent className="p-4 space-y-6">
+          {/* A. Recording State Taxonomy */}
+          <div className="space-y-2">
+            <span className="text-xs font-semibold text-stone-900 block">
+              1. Call Recording State Indicators
+            </span>
+            <div className="flex flex-wrap gap-2 items-center">
+              <CallRecordingBadge state="ready" />
+              <CallRecordingBadge state="processing" />
+              <CallRecordingBadge state="live" />
+              <CallRecordingBadge state="failed" />
+              <CallRecordingBadge state="no_audio" />
+            </div>
+          </div>
+
+          {/* B. Call Outcome Taxonomy */}
+          <div className="space-y-2">
+            <span className="text-xs font-semibold text-stone-900 block">
+              2. Call Outcome Taxonomy
+            </span>
+            <div className="flex flex-wrap gap-2 items-center">
+              <CallOutcomeBadge outcome="viewing_booked" />
+              <CallOutcomeBadge outcome="qualified" />
+              <CallOutcomeBadge outcome="callback_requested" />
+              <CallOutcomeBadge outcome="nurture" />
+              <CallOutcomeBadge outcome="escalated_takeover" />
+              <CallOutcomeBadge outcome="voicemail" />
+            </div>
+          </div>
+
+          {/* C. Duration & Speech Metrics Strip */}
+          <div className="space-y-2">
+            <span className="text-xs font-semibold text-stone-900 block">
+              3. Call Duration &amp; Talk-to-Listen Ratio
+            </span>
+            <CallMetricsStrip metrics={MOCK_CALLS[0].metrics} />
+          </div>
+
+          {/* D. Interactive Waveform Audio Player */}
+          <div className="space-y-2">
+            <span className="text-xs font-semibold text-stone-900 block">
+              4. Interactive Audio Player &amp; Waveform Scrubber
+            </span>
+            <CallAudioPlayer
+              callId={MOCK_CALLS[0].id}
+              leadName={MOCK_CALLS[0].leadName}
+              recordingState={MOCK_CALLS[0].recordingState}
+              durationSeconds={MOCK_CALLS[0].audioDurationSeconds}
+            />
+          </div>
+
+          {/* E. Executive Summary Card */}
+          <div className="space-y-2">
+            <span className="text-xs font-semibold text-stone-900 block">
+              5. Structured Executive AI Call Summary
+            </span>
+            <CallSummaryCard
+              summary={MOCK_CALLS[0].summary}
+              leadName={MOCK_CALLS[0].leadName}
+            />
+          </div>
+
+          {/* F. Click-to-Seek Transcript Viewer */}
+          <div className="space-y-2">
+            <span className="text-xs font-semibold text-stone-900 block">
+              6. Interactive Dialogue Transcript (Click Turn to Seek)
+            </span>
+            <TranscriptViewer
+              transcript={MOCK_CALLS[0].transcript}
+              onSeekToTimestamp={(sec) => {
+                toast.info("Seeking Audio", {
+                  description: `Jumped to timestamp ${Math.floor(sec / 60)}:${(sec % 60).toString().padStart(2, "0")}.`,
+                });
+              }}
+            />
           </div>
         </CardContent>
       </Card>

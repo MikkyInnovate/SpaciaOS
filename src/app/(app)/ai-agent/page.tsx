@@ -6,45 +6,38 @@ import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
 import { 
   Cpu,
-  Building2,
   PhoneCall,
   Zap,
   Bot,
   CheckCircle2,
   CalendarCheck,
   PauseCircle,
-  PlayCircle
+  PlayCircle,
+  Radio,
+  Sliders
 } from "lucide-react";
 import { toast } from "sonner";
-import { useWorkspace } from "@/lib/context/workspace-context";
 import { StatMetricCard } from "@/features/dashboard/components/stat-metric-card";
 import {
   aiAgentService,
   AIAgentConfigPresentation,
   AIAgentActivityState,
-  BuyerIntentCard,
   AIAgentSkeletonLoading,
   type AIAgentStatusTelemetry,
   type AIAgentConfiguration,
   type ActiveCallTelemetry,
-  type BuyerIntentEvaluation,
   type AIAgentRecentActivity,
 } from "@/features/ai-agent";
 import { cn } from "@/lib/utils/cn";
 
 export default function AiAgentPage() {
-  const { currentWorkspace } = useWorkspace();
-
   const [isLoading, setIsLoading] = React.useState(true);
   // State slices
   const [telemetry, setTelemetry] = React.useState<AIAgentStatusTelemetry | null>(null);
   const [configuration, setConfiguration] = React.useState<AIAgentConfiguration | null>(null);
   const [activeCalls, setActiveCalls] = React.useState<ActiveCallTelemetry[]>([]);
   const [recentActivities, setRecentActivities] = React.useState<AIAgentRecentActivity[]>([]);
-  const [evaluations, setEvaluations] = React.useState<BuyerIntentEvaluation[]>([]);
-
-  // Filtering for intent cards
-  const [intentFilter, setIntentFilter] = React.useState<string>("all");
+  const [activeSection, setActiveSection] = React.useState<"operations" | "studio">("operations");
 
   React.useEffect(() => {
     let mounted = true;
@@ -55,15 +48,13 @@ export default function AiAgentPage() {
         aiAgentService.getConfiguration(),
         aiAgentService.getActiveCalls(),
         aiAgentService.getRecentActivity(),
-        aiAgentService.getBuyerIntentEvaluations(),
       ])
-        .then(([tel, config, calls, acts, evals]) => {
+        .then(([tel, config, calls, acts]) => {
           if (!mounted) return;
           setTelemetry(tel);
           setConfiguration(config);
           setActiveCalls(calls);
           setRecentActivities(acts);
-          setEvaluations(evals);
           setIsLoading(false);
         })
         .catch(() => {
@@ -111,18 +102,6 @@ export default function AiAgentPage() {
       });
     } catch {
       toast.error("Failed to save configuration");
-    }
-  };
-
-  const handleExecuteIntentAction = (leadId: string, action: string) => {
-    if (action.includes("Payment") || action.includes("Closing")) {
-      toast.success("Closing & Payment Handoff Initiated", {
-        description: `Preparing escrow invoice and Governor's Consent deed closing documents for Lead #${leadId.toUpperCase()}.`,
-      });
-    } else {
-      toast.info(`Company Calendar Synced for Lead #${leadId.toUpperCase()}`, {
-        description: action,
-      });
     }
   };
 
@@ -192,12 +171,6 @@ export default function AiAgentPage() {
     });
   };
 
-  // Filtered buyer evaluations
-  const filteredEvaluations = React.useMemo(() => {
-    if (intentFilter === "all") return evaluations;
-    return evaluations.filter((e) => (e.intentCategory || e.category) === intentFilter);
-  }, [evaluations, intentFilter]);
-
   if (isLoading || !telemetry || !configuration) {
     return <AIAgentSkeletonLoading />;
   }
@@ -210,47 +183,43 @@ export default function AiAgentPage() {
         description="Autonomous prospect response, qualification, and viewing pipeline."
         actions={
           <div className="flex items-center gap-2">
-            {/* Workspace Pill */}
-            <div className="flex items-center gap-1.5 h-8 rounded-md border border-stone-200 bg-white px-2.5 text-xs font-medium text-stone-700 shadow-2xs whitespace-nowrap">
-              <Building2 className="h-3.5 w-3.5 text-stone-400 shrink-0" aria-hidden="true" />
-              <span>{currentWorkspace?.name || "Workspace"}</span>
-            </div>
+            {/* AI Status Indicator Pill - High visual bang when paused */}
+            {telemetry.isOutboundPaused ? (
+              <div className="flex items-center gap-1.5 h-8 rounded-md border border-rose-300 bg-rose-50 px-2.5 text-xs font-semibold text-rose-800 shadow-2xs whitespace-nowrap">
+                <span className="relative flex h-2 w-2 shrink-0">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-600" />
+                </span>
+                <span>AI Core: Outbound Paused</span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-1.5 h-8 rounded-md border border-emerald-200/90 bg-emerald-50/80 px-2.5 text-xs font-medium text-emerald-800 shadow-2xs whitespace-nowrap">
+                <span className="h-2 w-2 rounded-full bg-emerald-600 animate-pulse shrink-0" />
+                <span>AI Core: Operational</span>
+              </div>
+            )}
 
-            {/* AI Status Indicator Pill (exact match to homepage) */}
-            <div className="flex items-center gap-1.5 h-8 rounded-md border border-stone-200 bg-white px-2.5 text-xs font-medium text-stone-700 shadow-2xs whitespace-nowrap">
-              <span
-                className={cn(
-                  "h-1.5 w-1.5 rounded-full shrink-0",
-                  telemetry.isOutboundPaused ? "bg-amber-500" : "bg-emerald-600 animate-pulse"
-                )}
-              />
-              <span>AI Core: {telemetry.isOutboundPaused ? "Paused" : "Operational"}</span>
-            </div>
-
-            {/* Emergency Operator Toggle (matching [Export] button style) */}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleToggleDialer}
-              className={cn(
-                "h-8 gap-1.5 text-xs bg-white shadow-2xs whitespace-nowrap cursor-pointer transition-colors border-stone-200",
-                telemetry.isOutboundPaused
-                  ? "text-emerald-700 hover:bg-emerald-50 hover:border-emerald-300"
-                  : "text-amber-700 hover:bg-amber-50 hover:border-amber-300"
-              )}
-            >
-              {telemetry.isOutboundPaused ? (
-                <>
-                  <PlayCircle className="h-3.5 w-3.5" />
-                  <span>Resume Dialer</span>
-                </>
-              ) : (
-                <>
-                  <PauseCircle className="h-3.5 w-3.5" />
-                  <span>Pause Dialer</span>
-                </>
-              )}
-            </Button>
+            {/* Operator Killswitch / Resume Action */}
+            {telemetry.isOutboundPaused ? (
+              <Button
+                size="sm"
+                onClick={handleToggleDialer}
+                className="h-8 gap-1.5 text-xs bg-[#0d4a36] hover:bg-[#093829] text-white shadow-2xs whitespace-nowrap cursor-pointer font-semibold px-3.5 transition-colors"
+              >
+                <PlayCircle className="h-3.5 w-3.5 text-emerald-300" />
+                <span>Resume Dialer</span>
+              </Button>
+            ) : (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleToggleDialer}
+                className="h-8 gap-1.5 text-xs border-rose-300 bg-rose-50/70 text-rose-700 hover:bg-rose-100 hover:border-rose-400 hover:text-rose-800 shadow-2xs whitespace-nowrap cursor-pointer font-semibold px-3.5 transition-colors"
+              >
+                <PauseCircle className="h-3.5 w-3.5 text-rose-600" />
+                <span>Pause Dialer</span>
+              </Button>
+            )}
           </div>
         }
       />
@@ -298,98 +267,76 @@ export default function AiAgentPage() {
         />
       </div>
 
-      {/* 3. Live Call Radar & Operational Activities (Full Width) */}
-      <AIAgentActivityState
-        activeCalls={activeCalls}
-        maxConcurrency={telemetry.maxConcurrency}
-        recentActivities={recentActivities}
-        onDisconnectCall={handleDisconnectCall}
-        onTakeoverCall={handleTakeoverCall}
-      />
-
-      {/* 4. Buyer Intent & Qualification Pipeline (matching Lead Qualification Feed) */}
-      <div className="rounded-lg border border-border bg-white shadow-2xs overflow-hidden">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border p-4 bg-stone-50/50">
-          <div>
-            <div className="flex items-center gap-2">
-              <h2 className="font-display text-base font-bold text-stone-900">
-                Buyer Intent &amp; Qualification Pipeline
-              </h2>
-              <span className="flex items-center gap-1.5 rounded-full border border-stone-200 bg-white px-2 py-0.5 text-[11px] font-medium text-stone-600 shadow-2xs">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-600" />
-                Live Feed
-              </span>
-            </div>
-            <p className="text-xs text-stone-500 mt-0.5">
-              Post-call outcomes, autonomous company calendar bookings, and human closing &amp; payment handoffs
-            </p>
-          </div>
-
-          {/* Filter Pills matching Spacia design system (LeadFiltersBar style) */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
-            <span className="text-[11px] font-medium text-stone-500 uppercase tracking-wider mr-1">
-              CATEGORY:
-            </span>
-            {(
-              [
-                { label: "All Leads", value: "all" },
-                { label: "High Intent", value: "high_purchase_intent" },
-                { label: "Investors", value: "investment_yield_seeking" },
-                { label: "Luxury", value: "luxury_relocation" },
-                { label: "Exploratory", value: "exploratory" },
-              ] as const
-            ).map((filter) => {
-              const isSelected = intentFilter === filter.value;
-              return (
-                <button
-                  key={filter.value}
-                  type="button"
-                  onClick={() => setIntentFilter(filter.value)}
-                  className={cn(
-                    "rounded-md px-2.5 py-1 text-xs font-medium transition-all select-none whitespace-nowrap cursor-pointer",
-                    isSelected
-                      ? "bg-[#0d4a36] text-white font-semibold"
-                      : "bg-stone-100 text-stone-600 hover:bg-stone-200/80 hover:text-stone-900"
-                  )}
-                >
-                  {filter.label}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        <div className="p-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {filteredEvaluations.map((evaluation) => (
-              <BuyerIntentCard
-                key={evaluation.id}
-                evaluation={evaluation}
-                onSelectAction={handleExecuteIntentAction}
-                autoDispatch={Boolean(configuration?.guardrails?.autoDispatchBookings)}
-              />
-            ))}
-
-            {filteredEvaluations.length === 0 && (
-              <div className="col-span-full rounded-lg border border-dashed border-stone-200 p-8 text-center bg-stone-50/50">
-                <Cpu className="w-8 h-8 text-stone-300 mx-auto mb-2" />
-                <p className="text-xs font-semibold text-stone-700">
-                  No prospects match the selected category
-                </p>
-                <p className="text-[11px] text-stone-500 mt-1">
-                  Select &ldquo;All Leads&rdquo; to view complete buyer intent evaluations.
-                </p>
-              </div>
+      {/* 3. Section Navigation Tabs (SpaciaOS Design System Standard) */}
+      <div className="border-b border-stone-200">
+        <div className="flex items-center gap-6 -mb-px overflow-x-auto no-scrollbar">
+          <button
+            type="button"
+            onClick={() => setActiveSection("operations")}
+            className={cn(
+              "flex items-center gap-2 pb-2.5 pt-1 text-xs transition-colors cursor-pointer whitespace-nowrap select-none border-b-2",
+              activeSection === "operations"
+                ? "border-[#0d4a36] text-[#0d4a36] font-semibold"
+                : "border-transparent text-stone-500 hover:text-stone-800 hover:border-stone-300 font-medium"
             )}
-          </div>
+          >
+            <Radio className="h-3.5 w-3.5" />
+            <span>Live Fleet Operations &amp; Dispatch</span>
+            <span
+              className={cn(
+                "px-1.5 py-0.2 rounded text-[10px] font-mono border transition-colors",
+                activeSection === "operations"
+                  ? "bg-emerald-50 text-[#0d4a36] border-emerald-200/90 font-semibold"
+                  : "bg-stone-100 text-stone-500 border-stone-200"
+              )}
+            >
+              {activeCalls.length > 0 ? `${activeCalls.length} Active` : "Standby"}
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveSection("studio")}
+            className={cn(
+              "flex items-center gap-2 pb-2.5 pt-1 text-xs transition-colors cursor-pointer whitespace-nowrap select-none border-b-2",
+              activeSection === "studio"
+                ? "border-[#0d4a36] text-[#0d4a36] font-semibold"
+                : "border-transparent text-stone-500 hover:text-stone-800 hover:border-stone-300 font-medium"
+            )}
+          >
+            <Sliders className="h-3.5 w-3.5" />
+            <span>Agent Studio &amp; Guardrails</span>
+            <span
+              className={cn(
+                "px-1.5 py-0.2 rounded text-[10px] font-mono border transition-colors",
+                activeSection === "studio"
+                  ? "bg-emerald-50 text-[#0d4a36] border-emerald-200/90 font-semibold"
+                  : "bg-stone-100 text-stone-500 border-stone-200"
+              )}
+            >
+              Voice &amp; BANT
+            </span>
+          </button>
         </div>
       </div>
 
-      {/* 5. Agent Configuration & Guardrails (Full Width - Bottom Section) */}
-      <AIAgentConfigPresentation
-        configuration={configuration}
-        onSaveConfig={handleSaveConfig}
-      />
+      {/* 4. Active Section Content (Clean, unbloated, singular focus) */}
+      {activeSection === "operations" ? (
+        <AIAgentActivityState
+          activeCalls={activeCalls}
+          maxConcurrency={telemetry.maxConcurrency}
+          isOutboundPaused={telemetry.isOutboundPaused}
+          onToggleDialer={handleToggleDialer}
+          recentActivities={recentActivities}
+          onDisconnectCall={handleDisconnectCall}
+          onTakeoverCall={handleTakeoverCall}
+        />
+      ) : (
+        <AIAgentConfigPresentation
+          configuration={configuration}
+          onSaveConfig={handleSaveConfig}
+        />
+      )}
     </Container>
   );
 }

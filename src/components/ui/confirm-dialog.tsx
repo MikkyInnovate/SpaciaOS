@@ -77,7 +77,7 @@ export function ConfirmDialog({
         return {
           icon: <AlertCircle className="h-5 w-5 text-stone-700" />,
           iconBg: "bg-stone-100 border-stone-200 text-stone-700",
-          button: "bg-stone-900 hover:bg-stone-800 text-white",
+          button: "bg-[#0d4a36] hover:bg-[#093829] text-white",
         };
     }
   };

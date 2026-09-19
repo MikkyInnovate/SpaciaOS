@@ -14,10 +14,12 @@ import {
   LucideIcon,
   ArrowRight,
   CalendarCheck,
-  CreditCard
+  CreditCard,
+  Banknote
 } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { Button } from "@/components/ui/button";
+import { ScoreIndicator } from "@/components/ui/score-indicator";
 import type { 
   BuyerIntentCategory, 
   IntentSignal, 
@@ -39,29 +41,29 @@ export interface BuyerIntentMeta {
 export const BUYER_INTENT_META: Record<BuyerIntentCategory, BuyerIntentMeta> = {
   high_purchase_intent: {
     label: "High Purchase Intent",
-    badgeClass: "bg-emerald-50 text-emerald-800 border-emerald-200/80",
-    dotClass: "bg-emerald-500",
+    badgeClass: "bg-emerald-50/80 text-[#0d4a36] border-emerald-200/90",
+    dotClass: "bg-[#0d4a36]",
     icon: Target,
     description: "Verified budget, immediate closing timeline (<30d), and explicit property requirements match.",
   },
   investment_yield_seeking: {
     label: "Yield Seeking Investor",
-    badgeClass: "bg-blue-50 text-blue-800 border-blue-200/80",
-    dotClass: "bg-blue-500",
+    badgeClass: "bg-blue-50/70 text-blue-900 border-blue-200/80",
+    dotClass: "bg-blue-600",
     icon: TrendingUp,
     description: "Evaluates rental yields, off-plan capital appreciation, and structured payment plans.",
   },
   luxury_relocation: {
     label: "Luxury Relocation",
-    badgeClass: "bg-purple-50 text-purple-800 border-purple-200/80",
-    dotClass: "bg-purple-500",
+    badgeClass: "bg-purple-50/70 text-purple-900 border-purple-200/80",
+    dotClass: "bg-purple-600",
     icon: Sparkles,
     description: "High net-worth buyer seeking prime luxury residence with bespoke finishings and security.",
   },
   exploratory: {
     label: "Exploratory / Research",
-    badgeClass: "bg-amber-50 text-amber-800 border-amber-200/80",
-    dotClass: "bg-amber-500",
+    badgeClass: "bg-amber-50/70 text-amber-900 border-amber-200/80",
+    dotClass: "bg-amber-600",
     icon: Compass,
     description: "Early market research phase; unclear liquidity or tentative timeline (>6 months).",
   },
@@ -91,15 +93,15 @@ export function BuyerIntentBadge({
   const Icon = meta.icon;
 
   const sizeClasses = {
-    sm: "px-2 py-0.5 text-[10px] gap-1",
-    md: "px-2 py-0.5 text-xs gap-1.5",
-    lg: "px-2.5 py-1 text-xs gap-1.5 font-medium",
+    sm: "px-2 py-0.5 text-[11px] gap-1.5",
+    md: "px-2.5 py-1 text-xs gap-1.5",
+    lg: "px-3 py-1 text-xs gap-2 font-medium",
   }[size];
 
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded border font-medium transition-colors shadow-2xs",
+        "inline-flex items-center rounded-md border font-semibold transition-colors shadow-2xs select-none",
         meta.badgeClass,
         sizeClasses,
         className
@@ -133,11 +135,11 @@ export function IntentConfidenceGauge({
   const clampedScore = Math.min(100, Math.max(0, Math.round(score)));
 
   const getTier = (val: number) => {
-    if (val >= 85) {
+    if (val >= 80) {
       return {
         label: "High Certainty",
-        textClass: "text-emerald-700",
-        barClass: "bg-emerald-600",
+        textClass: "text-[#0d4a36]",
+        barClass: "bg-[#0d4a36]",
       };
     }
     if (val >= 60) {
@@ -160,14 +162,14 @@ export function IntentConfidenceGauge({
     return (
       <div className={cn("inline-flex items-center gap-2", className)}>
         {showBar && (
-          <div className="w-14 h-1.5 rounded-full bg-stone-200 overflow-hidden">
+          <div className="w-14 h-1.5 rounded-full bg-stone-100 border border-stone-200/70 overflow-hidden">
             <div
               className={cn("h-full transition-all duration-300", tier.barClass)}
               style={{ width: `${clampedScore}%` }}
             />
           </div>
         )}
-        <span className={cn("text-xs font-semibold tabular-nums", tier.textClass)}>
+        <span className={cn("text-xs font-semibold tabular-nums font-mono", tier.textClass)}>
           {clampedScore}%
         </span>
       </div>
@@ -177,22 +179,24 @@ export function IntentConfidenceGauge({
   return (
     <div className={cn("space-y-1.5", className)}>
       <div className="flex items-center justify-between text-xs">
-        <span className="text-stone-500 font-medium">Confidence Score</span>
-        <div className="flex items-center gap-1.5">
+        <span className="text-[11px] font-semibold text-stone-500 uppercase tracking-wider">
+          Confidence Score
+        </span>
+        <div className="flex items-center gap-1.5 font-mono">
           {showLabel && (
-            <span className={cn("text-[11px] font-medium", tier.textClass)}>
+            <span className={cn("text-[11px] font-medium font-sans", tier.textClass)}>
               {tier.label}
             </span>
           )}
-          <span className={cn("font-bold tabular-nums", tier.textClass)}>
+          <span className={cn("font-bold text-xs tabular-nums", tier.textClass)}>
             {clampedScore}%
           </span>
         </div>
       </div>
       {showBar && (
-        <div className="w-full h-1.5 rounded-full bg-stone-100 border border-stone-200/80 overflow-hidden">
+        <div className="w-full h-1.5 rounded-full bg-stone-100 border border-stone-200/70 overflow-hidden">
           <div
-            className={cn("h-full rounded-full transition-all duration-300", tier.barClass)}
+            className={cn("h-full rounded-full transition-all duration-500", tier.barClass)}
             style={{ width: `${clampedScore}%` }}
           />
         </div>
@@ -202,7 +206,7 @@ export function IntentConfidenceGauge({
 }
 
 // ============================================================================
-// 3. INTENT SIGNAL PILL
+// 3. INTENT SIGNAL PILL (DISCIPLINED ARCHITECTURAL CHIP)
 // ============================================================================
 
 export interface IntentSignalPillProps {
@@ -210,8 +214,8 @@ export interface IntentSignalPillProps {
   className?: string;
 }
 
-const SIGNAL_ICONS: Record<IntentSignal["type"], LucideIcon> = {
-  budget: CheckCircle2,
+const SIGNAL_ICONS: Record<IntentSignal["type"], React.ComponentType<{ className?: string }>> = {
+  budget: Banknote,
   timeline: Clock,
   authority: Target,
   property_fit: Building2,
@@ -220,29 +224,33 @@ const SIGNAL_ICONS: Record<IntentSignal["type"], LucideIcon> = {
 
 export function IntentSignalPill({ signal, className }: IntentSignalPillProps) {
   const Icon = SIGNAL_ICONS[signal.type] ?? Sparkles;
-
-  const strengthColor = {
-    high: "bg-emerald-500",
-    medium: "bg-amber-500",
-    low: "bg-stone-400",
-  }[signal.strength];
-
   const displayLabel = signal.label || signal.text || "Signal";
+
+  const isWarning = signal.type === "objection" || signal.strength === "low";
+  const isHighStrength = signal.strength === "high";
 
   return (
     <div
       title={signal.evidence || signal.text}
       className={cn(
-        "inline-flex items-center gap-1.5 px-2 py-0.5 rounded text-xs border border-stone-200 bg-white text-stone-700 shadow-2xs transition-colors hover:border-stone-300",
+        "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-medium border transition-colors select-none shadow-2xs",
+        isWarning
+          ? "bg-amber-50/70 text-amber-900 border-amber-200/90"
+          : "bg-white text-stone-800 border-stone-200 hover:border-stone-300 hover:bg-stone-50/60",
         className
       )}
     >
-      <Icon className="w-3 h-3 text-stone-400 shrink-0" />
-      <span className="font-medium text-stone-800 text-[11px]">{displayLabel}</span>
-      <span
-        className={cn("w-1.5 h-1.5 rounded-full shrink-0", strengthColor)}
-        title={`Signal Strength: ${signal.strength}`}
+      <Icon
+        className={cn(
+          "w-3.5 h-3.5 shrink-0",
+          isWarning
+            ? "text-amber-600"
+            : isHighStrength
+            ? "text-[#0d4a36]"
+            : "text-stone-400"
+        )}
       />
+      <span className="leading-none">{displayLabel}</span>
     </div>
   );
 }
@@ -273,21 +281,17 @@ export function BuyerIntentCard({
   return (
     <div
       className={cn(
-        "rounded-lg border border-border bg-white p-4 shadow-2xs hover:border-stone-300 transition-colors space-y-3",
+        "rounded-lg border border-stone-200/90 bg-white p-4 shadow-2xs hover:border-stone-300 transition-colors space-y-3",
         className
       )}
     >
       {/* Header: Lead identity and intent badge */}
-      <div className="flex items-center justify-between gap-2 border-b border-stone-100 pb-2.5">
-        <div>
-          <div className="flex items-center gap-2">
-            <h4 className="text-sm font-semibold text-stone-900 tracking-tight">
-              {leadName}
-            </h4>
-            <span className="rounded bg-rose-50 px-1.5 py-0.2 text-[10px] font-bold text-rose-700 border border-rose-200">
-              {evaluation.confidenceScore} SCORE
-            </span>
-          </div>
+      <div className="flex items-center justify-between gap-2 border-b border-stone-100 pb-3">
+        <div className="flex items-center gap-2.5">
+          <h4 className="text-sm font-semibold text-stone-900 tracking-tight">
+            {leadName}
+          </h4>
+          <ScoreIndicator score={evaluation.confidenceScore} variant="badge" size="sm" />
         </div>
         <div>
           <BuyerIntentBadge category={category} size="sm" />
@@ -297,15 +301,19 @@ export function BuyerIntentCard({
       {/* Confidence Gauge */}
       <IntentConfidenceGauge score={evaluation.confidenceScore} />
 
-      {/* Synthesis Quote / Summary */}
-      <div className="rounded-lg bg-stone-50/70 border border-stone-200/80 p-2.5 text-xs text-stone-800 leading-relaxed font-normal">
+      {/* Synthesis Quote / Summary with Architectural Left Laser Line */}
+      <div className="rounded-md border-l-2 border-[#0d4a36] bg-stone-50/70 border-y border-r border-stone-200/80 p-2.5 text-xs text-stone-800 leading-relaxed font-normal shadow-2xs">
+        <span className="text-[10px] font-semibold text-stone-400 uppercase tracking-wider block mb-0.5">
+          AI Executive Synthesis
+        </span>
         &ldquo;{evaluation.summary}&rdquo;
       </div>
 
       {/* Extracted Signals */}
       <div>
-        <div className="text-[10px] font-semibold uppercase tracking-wider text-stone-400 mb-1.5">
-          Extracted Signals ({signals.length})
+        <div className="flex items-center justify-between text-[10px] font-semibold uppercase tracking-wider text-stone-400 mb-1.5">
+          <span>Extracted Signals</span>
+          <span className="font-mono text-stone-400">({signals.length})</span>
         </div>
         <div className="flex flex-wrap gap-1.5">
           {signals.map((sig: IntentSignal) => (
@@ -316,23 +324,25 @@ export function BuyerIntentCard({
 
       {/* Post-Call Company Calendar Booking (Autonomous AI Result) */}
       {evaluation.scheduledEvent && (
-        <div className="flex items-center justify-between gap-2 rounded-lg bg-emerald-50/70 border border-emerald-200/80 p-2.5 text-xs">
-          <div className="flex items-center gap-2">
-            <CalendarCheck className="w-4 h-4 text-emerald-700 shrink-0" />
-            <div>
+        <div className="flex items-center justify-between gap-2 rounded-md bg-emerald-50/50 border border-emerald-200/90 p-2.5 text-xs">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="flex h-7 w-7 items-center justify-center rounded-md bg-white border border-emerald-200 text-[#0d4a36] shrink-0 shadow-2xs">
+              <CalendarCheck className="w-3.5 h-3.5" />
+            </div>
+            <div className="truncate">
               <div className="flex items-center gap-1.5">
-                <span className="font-semibold text-emerald-950">
+                <span className="font-semibold text-stone-900 text-xs truncate">
                   {evaluation.scheduledEvent.type === "inspection"
-                    ? "Inspection Booked"
+                    ? "Physical Inspection Booked"
                     : evaluation.scheduledEvent.type === "virtual_tour"
                     ? "Virtual Tour Scheduled"
                     : "Follow-up Scheduled"}
                 </span>
-                <span className="rounded bg-emerald-100/90 text-[10px] font-semibold text-emerald-900 px-1.5 py-0.2">
+                <span className="rounded-[3px] bg-emerald-100/90 text-[9px] font-mono font-semibold text-emerald-900 px-1.5 py-0.2 border border-emerald-200/80">
                   Company Calendar
                 </span>
               </div>
-              <p className="text-[11px] text-emerald-800 font-mono mt-0.5">
+              <p className="text-[11px] text-stone-600 font-mono mt-0.5 truncate">
                 {evaluation.scheduledEvent.scheduledTime}
                 {evaluation.scheduledEvent.assignedBroker
                   ? ` · Lead: ${evaluation.scheduledEvent.assignedBroker}`
@@ -344,16 +354,16 @@ export function BuyerIntentCard({
       )}
 
       {/* Human Role & Closing Action */}
-      <div className="pt-2 border-t border-stone-100 flex items-center justify-between gap-2 text-xs">
+      <div className="pt-2.5 border-t border-stone-100 flex items-center justify-between gap-2 text-xs">
         <div className="flex items-center gap-1.5 text-stone-600 truncate">
-          <span className="font-semibold text-stone-900">
+          <span className="font-semibold text-stone-900 text-[11px] uppercase tracking-wider text-stone-500">
             {evaluation.humanActionStage === "awaiting_closing_payment"
               ? "Human Stage:"
-              : "Next Step:"}
+              : "Next Action:"}
           </span>
-          <span className="truncate text-stone-600 text-[11px]">
+          <span className="truncate text-stone-700 text-xs">
             {evaluation.humanActionStage === "awaiting_closing_payment"
-              ? "AI scheduled inspection · Closer handles physical showing & payment"
+              ? "AI scheduled inspection · Closer handles showing & payment"
               : actionText}
           </span>
         </div>
@@ -364,15 +374,15 @@ export function BuyerIntentCard({
               size="sm"
               variant="default"
               onClick={() => onSelectAction(leadId, "Initiate Closing & Payment Escrow")}
-              className="h-6.5 px-2.5 text-[11px] font-semibold bg-[#0d4a36] hover:bg-[#0a3a2a] text-white shadow-2xs cursor-pointer shrink-0 gap-1"
+              className="h-7 px-2.5 text-xs font-semibold bg-[#0d4a36] hover:bg-[#093829] text-white shadow-2xs cursor-pointer shrink-0 gap-1.5 rounded-md"
             >
-              <CreditCard className="w-3 h-3" />
+              <CreditCard className="w-3.5 h-3.5" />
               <span>Collect Payment</span>
             </Button>
           )
         ) : autoDispatch ? (
-          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200/80 rounded px-2 py-0.5 shrink-0">
-            <CheckCircle2 className="w-3 h-3" /> Calendar Synced
+          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-[#0d4a36] bg-emerald-50 border border-emerald-200/80 rounded-md px-2 py-0.5 shrink-0">
+            <CheckCircle2 className="w-3.5 h-3.5 text-[#0d4a36]" /> Calendar Synced
           </span>
         ) : (
           onSelectAction && (
@@ -380,7 +390,7 @@ export function BuyerIntentCard({
               size="sm"
               variant="ghost"
               onClick={() => onSelectAction(leadId, actionText)}
-              className="h-6 px-2 text-[11px] font-semibold text-[#0d4a36] hover:bg-stone-50 cursor-pointer shrink-0"
+              className="h-7 px-2.5 text-xs font-semibold text-[#0d4a36] hover:bg-stone-100 cursor-pointer shrink-0 rounded-md"
             >
               View Calendar <ArrowRight className="w-3 h-3 ml-1" />
             </Button>

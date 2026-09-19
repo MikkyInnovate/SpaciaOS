@@ -44,7 +44,7 @@
   /* Borders & Inputs */
   --border: #e8e8e6;
   --input: #e4e4e7;
-  --ring: #18181b;
+  --ring: #0d4a36;
 
   /* Sidebar Component Tokens */
   --sidebar-background: #ffffff;
@@ -54,7 +54,7 @@
   --sidebar-accent: #f4f4f5;
   --sidebar-accent-foreground: #18181b;
   --sidebar-border: #e8e8e6;
-  --sidebar-ring: #18181b;
+  --sidebar-ring: #0d4a36;
   --sidebar-width: 16rem;
   --sidebar-width-icon: 3.5rem;
   --sidebar-width-mobile: 18rem;
@@ -162,13 +162,13 @@ body {
   row-gap: 0.375rem !important;
 }
 
-.cl-form > * + *,
+.cl-form>*+*,
 .cl-formFieldRow,
-.cl-formFieldRow + .cl-formFieldRow,
-.cl-formFieldRow ~ .cl-formFieldRow,
+.cl-formFieldRow+.cl-formFieldRow,
+.cl-formFieldRow~.cl-formFieldRow,
 .cl-formField,
-.cl-formField + .cl-formField,
-.cl-formField ~ .cl-formField {
+.cl-formField+.cl-formField,
+.cl-formField~.cl-formField {
   margin-top: 0 !important;
   margin-bottom: 0 !important;
   padding-top: 0 !important;
@@ -343,29 +343,79 @@ body {
   clear: both;
 }
 
-/* Tighten form field vertical spacing between inputs */
+/* Tighten form field vertical spacing between inputs to standard compact Spacia scale */
 .cl-form {
-  gap: 0.75rem !important;
+  gap: 0.5rem !important;
 }
 
 .cl-formField,
 .cl-formFieldRow {
-  margin-bottom: 0.5rem !important;
+  margin-bottom: 0 !important;
   margin-top: 0 !important;
+  padding: 0 !important;
 }
 
 .cl-formFieldLabelRow {
   margin-bottom: 0.25rem !important;
   margin-top: 0 !important;
+  padding: 0 !important;
 }
 
-/* Eliminate empty reserved feedback containers when there is no feedback text */
+.cl-formFieldLabel {
+  margin-bottom: 0 !important;
+  margin-top: 0 !important;
+  padding: 0 !important;
+}
+
+.cl-formFieldInput,
+.cl-formFieldInputGroup {
+  margin-bottom: 0 !important;
+  margin-top: 0 !important;
+}
+
+/* Eliminate all empty or unused feedback containers so no ghost space is reserved */
+.cl-formFieldError:empty,
+.cl-formFieldErrorText:empty,
+.cl-formFieldSuccess:empty,
+.cl-formFieldSuccessText:empty,
+.cl-formFieldWarning:empty,
+.cl-formFieldWarningText:empty,
+.cl-formFieldInfo:empty,
+.cl-formFieldInfoText:empty,
+.cl-formFieldHelperText:empty,
+.cl-formFieldFeedback:empty,
+.cl-formFeedback:empty,
+.cl-fieldError:empty,
+.cl-fieldFeedback:empty,
+.cl-formField [id*="feedback"]:empty,
+.cl-formField [id*="error"]:empty,
+.cl-formField [aria-live="polite"]:empty,
 .cl-formField [style*="height: 0px"],
-.cl-formField > div:empty {
+.cl-formField p:empty,
+.cl-formField div:empty,
+.cl-formFieldRow p:empty,
+.cl-formFieldRow div:empty,
+.spacia-google-auth-alert-slot:empty {
   display: none !important;
   height: 0 !important;
+  min-height: 0 !important;
   margin: 0 !important;
   padding: 0 !important;
+  line-height: 0 !important;
+}
+
+/* Ensure feedback only takes space when it contains text */
+.cl-formFieldErrorText:not(:empty),
+.cl-formFieldSuccessText:not(:empty),
+.cl-formFieldWarningText:not(:empty),
+.cl-formFieldError:has(.cl-formFieldErrorText:not(:empty)),
+.cl-formFieldSuccess:has(.cl-formFieldSuccessText:not(:empty)) {
+  display: block !important;
+  height: auto !important;
+  min-height: auto !important;
+  line-height: 1.25 !important;
+  margin-top: 0.25rem !important;
+  margin-bottom: 0 !important;
 }
 
 /* ==========================================================================
@@ -424,12 +474,43 @@ body {
     left: -40%;
     width: 40%;
   }
+
   50% {
     left: 30%;
     width: 50%;
   }
+
   100% {
     left: 100%;
     width: 40%;
   }
+}
+
+/* Gentle & sleek right slidepanel animation */
+@keyframes gentleSlideInRight {
+  0% {
+    transform: translateX(100%);
+    opacity: 0.6;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.animate-gentle-slide-in {
+  animation: gentleSlideInRight 0.38s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes gentleFadeInBackdrop {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.animate-fade-in-backdrop {
+  animation: gentleFadeInBackdrop 0.28s ease-out forwards;
 }
