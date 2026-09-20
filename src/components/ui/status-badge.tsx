@@ -43,6 +43,7 @@ export type StatusBadgeVariant =
   | "inConversation"
   | "contacting"
   | "nurture"
+  | "humanManaged"
   | "success"
   | "warning"
   | "destructive"
@@ -94,8 +95,12 @@ const VARIANT_CONFIGS: Record<StatusBadgeVariant, VariantConfig> = {
     dotClass: "bg-amber-500",
   },
   nurture: {
-    badgeClass: "border-stone-200 bg-stone-100 text-stone-600",
-    dotClass: "bg-stone-500",
+    badgeClass: "border-teal-200/80 bg-teal-50 text-teal-800",
+    dotClass: "bg-teal-600",
+  },
+  humanManaged: {
+    badgeClass: "border-sky-200/90 bg-sky-50 text-sky-800 font-medium",
+    dotClass: "bg-sky-600",
   },
   success: {
     badgeClass: "border-emerald-200/80 bg-emerald-50 text-emerald-800",
@@ -131,9 +136,14 @@ function resolveVariantForStatus(status: string): StatusBadgeVariant {
     case "pending":
       return "warm";
     case "cold":
-    case "nurture":
     case "follow-up":
       return "cold";
+    case "nurture":
+      return "nurture";
+    case "human managed":
+    case "human-managed":
+    case "human takeover":
+      return "humanManaged";
     case "qualified":
     case "completed":
     case "confirmed":

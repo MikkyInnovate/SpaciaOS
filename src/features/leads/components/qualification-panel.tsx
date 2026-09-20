@@ -23,6 +23,7 @@ import {
   Copy,
   Check,
   Share2,
+  Mail,
   TrendingUp,
   AlertTriangle,
   UserCheck,
@@ -255,15 +256,15 @@ Next Action: ${lead.nextAction}`;
               className="h-7 text-xs gap-1.5 bg-white text-stone-700 hover:text-stone-900"
             >
               <a
-                href={`https://wa.me/?text=${encodeURIComponent(
-                  `Pacia Qualification for ${lead.name} (${lead.propertyTitle}): Score ${lead.score}/100, Budget ${profile.budgetAnalysis.declared}, Timeline ${profile.timelineWindow}.`
+                href={`mailto:?subject=${encodeURIComponent(
+                  `Spacia Qualification Dossier: ${lead.name} (${lead.propertyTitle})`
+                )}&body=${encodeURIComponent(
+                  `Spacia Underwriting & Qualification Brief for ${lead.name} (${lead.propertyTitle}):\nScore: ${lead.score}/100\nBudget: ${profile.budgetAnalysis.declared}\nTimeline: ${profile.timelineWindow}\nPhone: ${lead.phone}\nEmail: ${lead.email}`
                 )}`}
-                target="_blank"
-                rel="noreferrer"
-                title="Share via WhatsApp"
+                title="Email Qualification Brief"
               >
-                <Share2 className="h-3 w-3 text-emerald-600" />
-                <span>WhatsApp</span>
+                <Mail className="h-3 w-3 text-stone-600" />
+                <span>Email Brief</span>
               </a>
             </Button>
           </div>

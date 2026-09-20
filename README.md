@@ -2,7 +2,7 @@
 
 > **Spacia** is a high-performance, managed AI sales orchestration platform purpose-built for modern real-estate brokerages and development firms. It autonomously captures inbound property inquiries, engages prospects via natural voice and chat, qualifies buyers against stringent underwriting criteria, evaluates purchasing power and timeline, and seamlessly books qualified viewings directly onto connected sales agents' calendars.
 
-This repository houses the **production frontend implementation for Days 1 through 12** of the Spacia MVP.
+This repository houses the **production frontend implementation for Days 1 through 13** of the Spacia MVP.
 
 ---
 
@@ -33,6 +33,7 @@ Spacia acts as an automated sales acceleration layer positioned between inbound 
 | **Day 10: Omnichannel Conversation Visibility & Timeline Primitives** | **COMPLETE & STAGED** | Complete omnichannel buyer messaging command center and primitives (`features/conversations`): strongly-typed polymorphic message timeline (`ConversationMessageTimeline`, `ConversationMessageItem`) distinguishing AI Sales Associate, Prospect, Human Broker, and System Events; in-timeline luxury real-estate media artifacts (`ConversationArtifactCard`: property specs, BANT qualification gates, viewing invites, title documents); live lifecycle status badges (`ConversationStateBadge`: `active_ai`, `awaiting_prospect`, `qualified`, `viewing_booked`, `human_takeover`, `escalated`, `closed`); broker intervention composer (`ConversationComposer`) with active AI safety warning banner, 1-click human takeover, and canned shortcuts; commercial context dossier (`ConversationContextPanel`) with buyer intent and BANT alignment; and 3-pane command center (`ConversationsCommandCenter`). Preserved and staged in code; hidden from public MVP sidebar navigation pending WhatsApp Phase 2 launch, fully previewable at `/primitives` (Section 9). |
 | **Day 11: Make Qualification Visible** | **COMPLETE & VERIFIED** | Comprehensive autonomous qualification and underwriting command center (`QualificationPanel` in `features/leads`): multi-dimensional budget analysis (declared allocation, verified liquidity, payment milestones, asking price stretch), buyer intent telemetry (`BuyerIntentBadge`, category metadata, behavioral intent signals), urgency timeline window (`< 30 days`, `urgent` / `near_term` / `flexible`), verified buying catalyst / motivation statement, decision readiness stage badges (`initial_inquiry`, `gathering_options`, `sole_decision_maker`, `partner_consensus`, `ready_to_transact`), interactive objections list with severity pills (`high`/`medium`/`low`), toggle status (`open`/`resolved`) with optimistic feedback and resolution notes, AI confidence telemetry (`IntentConfidenceGauge`, 0–100%), and explainable score breakdown with positive catalysts and risk deductions. Deeply integrated across `LeadDetailShell` (`/leads`), `LeadDossierPanel` (`/calls`), and showcased with interactive scenario switching at `/primitives` (Section 10). |
 | **Day 12: Vapi Voice Integration & Calls Hub** | **COMPLETE & VERIFIED** | Complete, production-grade Vapi AI voice telephony observability command center (`features/calls`): dedicated Calls Hub route (`/calls`) with average call duration, daily volume, and viewing conversion metrics; full-width `CallList` table with instant search and outcome filter chips (`viewing_booked`, `qualified`, `callback_requested`, `escalated_takeover`, `voicemail`); slide-over `CallDetailCockpit` with responsive backdrop; interactive `CallAudioPlayer` with play/pause, scrub slider, volume, rate toggle (1x/1.25x/1.5x/2x), and download; synchronized `TranscriptViewer` with real-time audio seek synchronization, speaker attribution badges, and confidence indicators; `CallSummaryCard` detailing automated AI synthesis, buyer sentiment, and next operational directives; and single-click broker takeover trigger. |
+| **Day 13: Human-in-the-Loop Supervision** | **COMPLETE & VERIFIED** | Comprehensive broker control suite (`features/leads`): 1-click broker takeover action, AI pause/resume emergency killswitch, disposition workflows (Mark Nurture / Mark Lost dialogs), human-managed state taxonomy (`Human Managed`, `Nurture`, `Lost`), structured handoff context (AI synthesis, trigger catalyst, prospect quotes, unresolved queries), prescriptive operational directives (`RecommendedActionCard`), and follow-up lifecycle scheduling (`FollowUpScheduleCard`). Integrated across `/leads`, `/calls`, and `/primitives` (Section 12). |
 
 ---
 
@@ -882,9 +883,87 @@ src/features/calls/
 
 ---
 
-## 24. Git Workflow & Branching Conventions
+## 24. Day 13 — Human-in-the-Loop Supervision & AI Control Suite
 
-- **Dedicated Frontend Branch**: All Day 1 through Day 12 frontend foundation code resides on the `frontend` branch.
+Day 13 delivers absolute human governance over autonomous AI across the Spacia sales engine (`features/leads`):
+
+```text
+src/features/leads/
+├── components/
+│   ├── human-supervision-cockpit.tsx      # Master command center with Take Over, Stop/Resume AI, Nurture, Lost
+│   ├── handoff-context-card.tsx           # AI discovery briefing, trigger catalyst, prospect quotes, unresolved items
+│   ├── recommended-action-card.tsx        # Prescriptive broker action directives with 1-click execution hooks
+│   ├── follow-up-schedule-card.tsx        # Interactive scheduled date/time, countdown, cadence, and reschedule modal
+│   ├── mark-nurture-dialog.tsx            # Radix dialog capturing nurture timeframe presets, cadence, and channel
+│   ├── mark-lost-dialog.tsx               # Radix dialog capturing loss reason taxonomy and competitor intelligence
+│   ├── lead-table.tsx                     # Enhanced with Human Managed status badge, inline AI Paused, broker tag
+│   ├── lead-detail-shell.tsx              # Deeply integrated HumanSupervisionCockpit above property & underwriting
+│   └── ...
+├── services/
+│   └── leads-service.ts                   # REST contracts & optimistic handlers for takeover, pause, nurture, lost
+└── types/
+    └── index.ts                           # Extended LeadStatus, ManagementMode, HandoffContext, RecommendedAction, etc.
+```
+
+### 1. 1-Click Broker Takeover Action
+- **Instant Intervention**: Immediate transition of any autonomous lead to `"Human Managed"` status.
+- **AI Automation Disconnect**: Autonomous voice qualification and automated outreach sequences are instantly halted.
+- **Attribution**: Automatically stamps the assigned broker name (`"Marcus Vance (Broker)"`) across the table and dossier.
+- **Handoff Generation**: Synthesizes real-time handoff context summarizing AI conversational discoveries, verbatim buyer quotes, and outstanding deal queries.
+
+### 2. AI Killswitch & Safe Resume
+- **Granular Pause**: Distinct from changing lifecycle status, brokers can pause AI voice and messaging (`isAiStopped: true`) while investigating financing or consulting property partners.
+- **Pulsing Alert Banner**: Displays high-visibility amber banner inside the lead dossier with an instant `Resume AI Automation` trigger.
+- **Cross-Surface Badging**: Table renders an inline `AI Paused` badge next to the status badge for rapid scanning.
+
+### 3. Structured Disposition Workflows (Mark Nurture & Mark Lost)
+- **Mark Nurture Dialog**:
+  - Timeframe presets: `7 Days`, `14 Days`, `30 Days`, `60 Days`.
+  - Cadence selector: `Weekly`, `Bi-weekly`, `Monthly`, `One-Time Only`.
+  - Preferred touchpoint channel: `Email`, `Phone Call`.
+  - Automatically updates `followUpSchedule` and transitions status to `"Nurture"`.
+- **Mark Lost Dialog**:
+  - Structured reason taxonomy: `Budget Mismatch`, `Purchased Competitor`, `Timeline Postponed`, `Unresponsive`, `Location Mismatch`, `Other`.
+  - Competitor tracking field (e.g., *Periwinkle Residences*, *Eko Pearl*).
+  - Disposition notes field capturing broker post-mortem for market intelligence.
+
+### 4. Rich Handoff Context Display
+- **Discovery Synthesis**: High-level summary of what the AI learned during conversational qualification.
+- **Handoff Catalyst Badge**: Clearly identifies the trigger (`High-Value Deal Escalation`, `Broker Override`, `Complex Underwriting`, etc.).
+- **Direct Prospect Quotes**: Callout cards rendering verbatim prospect statements to preserve buyer tone and expectations.
+- **Unresolved Questions Checklist**: Visual checklist highlighting specific queries the broker must answer upon calling (e.g., deed verification, offshore transfer timelines).
+
+### 5. Recommended Broker Action Directives
+- **Operational Clarity**: High-priority directive describing the exact strategic next step for the sales associate.
+- **Urgency Badging**: Color-coded urgency tiers (`Urgent` red, `High` amber, `Routine` stone).
+- **1-Click Direct Execution**:
+  - `Initiate Call`: Direct `tel:` link opening native telephony with prospect number.
+  - `Send Email`: Direct `mailto:` link pre-populated with lead context and directive briefing.
+  - `Schedule Viewing`: Triggers calendar inspection scheduling.
+
+### 6. Follow-up Lifecycle Schedule
+- **Scheduled Time**: Localized to Lagos time (`WAT`) with explicit relative countdown ("Due in 3 days" or "Tomorrow").
+- **Cadence & Channel**: Clear badges indicating follow-up frequency and channel preference (`Phone Call` or `Email`).
+- **Interactive Reschedule Modal**: Allows sales associates to adjust scheduled date, time, cadence, and notes with live optimistic updates.
+
+### 7. Communication Channel Standardization (Phone & Email)
+- Standardized all outreach touchpoints exclusively on **Direct Voice Phone (`tel:`)** and **Executive Email (`mailto:`)**.
+- Replaced third-party messaging redirects with high-conversion formal property pitch dossiers (`PropertyDetailPresentation`) and qualification underwriting briefs (`QualificationPanel`).
+
+### 8. Performance & Compilation Optimizations
+- **Icon Tree-Shaking**: Eliminated heavy multi-thousand export libraries (`@hugeicons/core-free-icons`) across the app in favor of lightweight `lucide-react`, dropping initial route compile time from 2.4 minutes to ~24 seconds.
+- **Bypassed Unprovisioned API Probes**: Added short-circuiting in `ApiClient` for prototype mode, preventing doomed `/api/v1` 404 network calls from triggering Clerk authentication redirects and server stalls.
+
+### 9. Surface Host Integrations
+- **Leads Hub (`/leads`)**: Integrated in table, filter bar, and detail drawer shell.
+- **Calls Command Center (`/calls`)**: Integrated in live call takeover action with `leadsService.takeoverLead()`.
+- **Primitives Testbench (`/primitives`)**: Section 12 interactive scenario switcher across 4 realistic Nigerian real estate personas with full live action triggers.
+
+---
+
+## 25. Git Workflow & Branching Conventions
+
+- **Dedicated Frontend Branch**: All Day 1 through Day 13 frontend foundation code resides on the `frontend` branch.
 - **Protected `main` Branch**: The `main` branch is reserved for verified releases and backend-integrated milestones.
 - **Branch Naming Conventions**:
   - `feat/feature-name` for new user-facing capabilities
@@ -894,7 +973,7 @@ src/features/calls/
 
 ---
 
-## 25. Contribution & Development Guidelines
+## 26. Contribution & Development Guidelines
 
 1. Always run `npm run lint` and `npm run type-check` before committing. Zero errors and zero warnings are required.
 2. Keep pages server-rendered where possible; designate `"use client"` only when user interaction, state, or browser APIs are required.

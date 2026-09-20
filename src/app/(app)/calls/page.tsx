@@ -10,18 +10,18 @@ import {
   MOCK_CALLS,
   type Call,
 } from "@/features/calls";
+import { leadsService } from "@/features/leads";
 import { useWorkspace } from "@/lib/context/workspace-context";
-import { HugeiconsIcon } from "@hugeicons/react";
 import {
-  Clock01Icon,
-  Call02Icon,
-  CalendarCheck01Icon,
-} from "@hugeicons/core-free-icons";
+  Clock,
+  PhoneCall,
+  CalendarCheck,
+} from "lucide-react";
 import { toast } from "sonner";
 
 export default function CallsPage() {
   const { currentWorkspace } = useWorkspace();
-  const [calls] = React.useState<Call[]>(MOCK_CALLS);
+  const [calls, setCalls] = React.useState<Call[]>(MOCK_CALLS);
   const [selectedCall, setSelectedCall] = React.useState<Call | null>(null);
 
   // Close sidepanel on ESC key & lock background scroll
@@ -45,8 +45,25 @@ export default function CallsPage() {
   }, [selectedCall]);
 
   const handleTakeover = (call: Call) => {
+    if (call.leadId) {
+      leadsService.takeoverLead(call.leadId, "Marcus Vance", "Broker takeover from live call cockpit");
+    }
+    setCalls((prev) =>
+      prev.map((c) =>
+        c.id === call.id
+          ? { ...c, outcome: "escalated_takeover" as const, isEscalated: true }
+          : c
+      )
+    );
+    if (selectedCall && selectedCall.id === call.id) {
+      setSelectedCall({
+        ...selectedCall,
+        outcome: "escalated_takeover",
+        isEscalated: true,
+      });
+    }
     toast.success("Broker Takeover Activated", {
-      description: `Autonomous voice engine paused for ${call.leadName}. Direct line active.`,
+      description: `Autonomous voice engine paused for ${call.leadName}. Direct line routed to on-call broker.`,
     });
   };
 
@@ -62,12 +79,7 @@ export default function CallsPage() {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <Card className="p-3.5 border-border bg-white shadow-2xs">
           <div className="flex items-center gap-1.5 text-xs text-stone-600 font-medium">
-            <HugeiconsIcon
-              icon={Clock01Icon}
-              size={15}
-              className="text-stone-500 shrink-0"
-              strokeWidth={1.8}
-            />
+            <Clock className="h-3.5 w-3.5 text-stone-500 shrink-0" />
             <span>Avg. Call Duration</span>
           </div>
           <div className="mt-2 flex items-baseline">
@@ -89,12 +101,7 @@ export default function CallsPage() {
 
         <Card className="p-3.5 border-border bg-white shadow-2xs">
           <div className="flex items-center gap-1.5 text-xs text-stone-600 font-medium">
-            <HugeiconsIcon
-              icon={Call02Icon}
-              size={15}
-              className="text-stone-500 shrink-0"
-              strokeWidth={1.8}
-            />
+            <PhoneCall className="h-3.5 w-3.5 text-stone-500 shrink-0" />
             <span>Calls Placed Today</span>
           </div>
           <div className="mt-2 flex items-baseline gap-1.5">
@@ -110,12 +117,7 @@ export default function CallsPage() {
 
         <Card className="p-3.5 border-border bg-white shadow-2xs">
           <div className="flex items-center gap-1.5 text-xs text-stone-600 font-medium">
-            <HugeiconsIcon
-              icon={CalendarCheck01Icon}
-              size={15}
-              className="text-stone-500 shrink-0"
-              strokeWidth={1.8}
-            />
+            <CalendarCheck className="h-3.5 w-3.5 text-stone-500 shrink-0" />
             <span>Viewings Booked via Voice</span>
           </div>
           <div className="mt-2 flex items-baseline gap-1.5">

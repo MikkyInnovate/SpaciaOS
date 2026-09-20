@@ -15,8 +15,9 @@ import {
   PropertyUnavailableState,
   PropertyUnknownState,
 } from "@/features/properties";
+import { HumanSupervisionCockpit } from "./human-supervision-cockpit";
 import type { Property } from "@/features/properties";
-import type { Lead, LeadStatus } from "../types";
+import type { Lead, LeadStatus, FollowUpSchedule, LossDetails } from "../types";
 import {
   User,
   Phone,
@@ -34,6 +35,12 @@ export interface LeadDetailShellProps {
   onOpenChange: (open: boolean) => void;
   onStatusChange?: (leadId: string, newStatus: LeadStatus) => Promise<void> | void;
   onAddNote?: (leadId: string, noteText: string, imageUrl?: string) => Promise<void> | void;
+  onTakeover?: (leadId: string, brokerName?: string, reason?: string) => Promise<void> | void;
+  onStopAI?: (leadId: string, reason?: string) => Promise<void> | void;
+  onResumeAI?: (leadId: string) => Promise<void> | void;
+  onMarkNurture?: (leadId: string, schedule: FollowUpSchedule, notes?: string) => Promise<void> | void;
+  onMarkLost?: (leadId: string, lossDetails: LossDetails) => Promise<void> | void;
+  onUpdateSchedule?: (leadId: string, schedule: FollowUpSchedule) => Promise<void> | void;
   isLoading?: boolean;
 }
 
@@ -43,6 +50,12 @@ export function LeadDetailShell({
   onOpenChange,
   onStatusChange,
   onAddNote,
+  onTakeover,
+  onStopAI,
+  onResumeAI,
+  onMarkNurture,
+  onMarkLost,
+  onUpdateSchedule,
   isLoading = false,
 }: LeadDetailShellProps) {
   const [copiedPhone, setCopiedPhone] = React.useState(false);
@@ -184,6 +197,17 @@ export function LeadDetailShell({
               </a>
             </div>
           </div>
+
+          {/* Day 13: Human-in-the-Loop Supervision Cockpit */}
+          <HumanSupervisionCockpit
+            lead={lead}
+            onTakeover={(brokerName, reason) => onTakeover?.(lead.id, brokerName, reason)}
+            onStopAI={(reason) => onStopAI?.(lead.id, reason)}
+            onResumeAI={() => onResumeAI?.(lead.id)}
+            onMarkNurture={(schedule, notes) => onMarkNurture?.(lead.id, schedule, notes)}
+            onMarkLost={(lossDetails) => onMarkLost?.(lead.id, lossDetails)}
+            onUpdateSchedule={(schedule) => onUpdateSchedule?.(lead.id, schedule)}
+          />
 
           {/* 2. Operational Next-Action Directive Card */}
           <LeadNextActionCard

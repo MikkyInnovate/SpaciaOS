@@ -1,4 +1,4 @@
-﻿import { ApiError, AuthenticationError, ForbiddenError, NotFoundError, NetworkError } from "./errors";
+import { ApiError, AuthenticationError, ForbiddenError, NotFoundError, NetworkError } from "./errors";
 
 export interface RequestOptions extends Omit<RequestInit, "headers"> {
   headers?: Record<string, string>;
@@ -21,6 +21,16 @@ class ApiClient {
   }
 
   private async request<T>(endpoint: string, options: RequestOptions = {}): Promise<T> {
+    // In local development / prototype mode without a provisioned remote backend,
+    // immediately short-circuit mock endpoints to avoid sending doomed network requests
+    // to Next.js which stalls compilation and triggers unnecessary 404s.
+    const isBackendConfigured = Boolean(
+      process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BACKEND_URL
+    );
+    if (!isBackendConfigured && endpoint.startsWith("/api/v1")) {
+      throw new NetworkError("Backend API not provisioned; utilizing local mock store");
+    }
+
     const {
       workspaceId = this.activeWorkspaceId,
       token = this.authToken,

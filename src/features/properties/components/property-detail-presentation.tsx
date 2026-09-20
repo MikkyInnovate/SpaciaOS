@@ -21,6 +21,7 @@ import {
   ShieldCheck,
   CheckCircle2,
   Share2,
+  Mail,
   Download,
   Loader2,
   ChevronLeft,
@@ -51,6 +52,7 @@ export function PropertyDetailPresentation({
   onOpenChange,
   leadName,
   leadPhone,
+  leadEmail,
 }: PropertyDetailPresentationProps) {
   const [activePhotoIdx, setActivePhotoIdx] = React.useState(0);
   const [prevPropertyId, setPrevPropertyId] = React.useState(property?.id);
@@ -71,7 +73,7 @@ export function PropertyDetailPresentation({
     ? [property.featuredImage]
     : [];
 
-  const handleShareWhatsApp = () => {
+  const handleShareEmail = () => {
     const greetingName = leadName || "Valued Prospect";
     const featuresSummary = property.features.slice(0, 4).join(", ");
     const specsSummary = [
@@ -82,7 +84,7 @@ export function PropertyDetailPresentation({
 
     const pitchText = `Hello ${greetingName},
 
-Here is the exclusive portfolio dossier for *${property.title}*:
+Here is the exclusive portfolio dossier for ${property.title}:
 
 📍 Location: ${property.location}${property.estateName ? ` (${property.estateName})` : ""}
 💰 Asking Valuation: ${property.formattedPrice}
@@ -99,18 +101,15 @@ Would you like to schedule a private physical inspection this week?
       navigator.clipboard.writeText(pitchText);
     }
 
-    // Direct WhatsApp Web / Mobile redirect
-    const cleanPhone = leadPhone ? leadPhone.replace(/[^0-9]/g, "") : "";
-    const waUrl = cleanPhone
-      ? `https://wa.me/${cleanPhone}?text=${encodeURIComponent(pitchText)}`
-      : `https://api.whatsapp.com/send?text=${encodeURIComponent(pitchText)}`;
+    const subject = `Executive Portfolio Dossier: ${property.title}`;
+    const mailtoUrl = `mailto:${leadEmail || ""}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(pitchText)}`;
 
-    window.open(waUrl, "_blank");
+    window.open(mailtoUrl, "_blank");
 
-    toast.success("WhatsApp Pitch Dispatched & Copied", {
-      description: cleanPhone
-        ? `Opened chat with +${cleanPhone} and copied message to clipboard.`
-        : "Brochure pitch copied to clipboard and WhatsApp opened.",
+    toast.success("Email Pitch Dossier Prepared", {
+      description: leadEmail
+        ? `Opened email client for ${leadEmail} and copied pitch to clipboard.`
+        : "Brochure pitch copied to clipboard and email client opened.",
     });
   };
 
@@ -652,11 +651,11 @@ Would you like to schedule a private physical inspection this week?
                 type="button"
                 variant="outline"
                 size="sm"
-                onClick={handleShareWhatsApp}
+                onClick={handleShareEmail}
                 className="h-8 text-xs bg-white border-stone-200 hover:bg-stone-50 text-stone-700 cursor-pointer"
               >
-                <Share2 className="h-3 w-3 mr-1.5 text-emerald-600" />
-                Share with Lead
+                <Mail className="h-3 w-3 mr-1.5 text-stone-600" />
+                Email Pitch Dossier
               </Button>
               <Button
                 type="button"

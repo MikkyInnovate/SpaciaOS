@@ -27,7 +27,9 @@ const STATUS_CONFIG: Record<
   Qualified: { label: "Qualified", dot: "bg-emerald-500" },
   "Viewing Booked": { label: "Viewing Booked", dot: "bg-cyan-500" },
   "Follow-up": { label: "Follow-up", dot: "bg-orange-500" },
-  "Human Managed": { label: "Human Managed", dot: "bg-stone-500" },
+  "Human Managed": { label: "Human Managed", dot: "bg-sky-600" },
+  Nurture: { label: "Nurture", dot: "bg-teal-600" },
+  Lost: { label: "Lost", dot: "bg-rose-600" },
 };
 
 const ALL_STATUSES: Array<{ label: string; value: LeadStatus }> = [
@@ -38,6 +40,8 @@ const ALL_STATUSES: Array<{ label: string; value: LeadStatus }> = [
   { label: "Viewing Booked", value: "Viewing Booked" },
   { label: "Follow-up", value: "Follow-up" },
   { label: "Human Managed", value: "Human Managed" },
+  { label: "Nurture", value: "Nurture" },
+  { label: "Lost", value: "Lost" },
 ];
 
 export function LeadStatusSelect({

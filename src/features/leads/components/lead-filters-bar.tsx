@@ -33,10 +33,13 @@ const STATUS_OPTIONS: Array<{ label: string; value: LeadStatus | "ALL" }> = [
   { label: "All Statuses", value: "ALL" },
   { label: "Qualified", value: "Qualified" },
   { label: "Viewing Booked", value: "Viewing Booked" },
+  { label: "Human Managed", value: "Human Managed" },
   { label: "In Conversation", value: "In Conversation" },
-  { label: "Contacting", value: "Contacting" },
+  { label: "Nurture", value: "Nurture" },
   { label: "Follow-up", value: "Follow-up" },
+  { label: "Contacting", value: "Contacting" },
   { label: "New", value: "New" },
+  { label: "Lost", value: "Lost" },
 ];
 
 export function LeadFiltersBar({

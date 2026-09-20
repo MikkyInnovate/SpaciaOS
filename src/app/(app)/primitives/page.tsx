@@ -44,6 +44,11 @@ import {
   Sparkles,
   UserCheck,
   Brain,
+  ShieldAlert,
+  BotOff,
+  CalendarClock,
+  Lightbulb,
+  FileQuestion,
 } from "lucide-react";
 import {
   BuyerIntentBadge,
@@ -57,7 +62,19 @@ import {
   ConversationStateBadge,
   ConversationMessageItem,
 } from "@/features/conversations";
-import { QualificationPanel, MOCK_LEADS } from "@/features/leads";
+import {
+  QualificationPanel,
+  MOCK_LEADS,
+  HumanSupervisionCockpit,
+  HandoffContextCard,
+  RecommendedActionCard,
+  FollowUpScheduleCard,
+  leadsService,
+  type Lead,
+  type LossReasonCategory,
+  type LossDetails,
+  type FollowUpSchedule,
+} from "@/features/leads";
 import {
   CallRecordingBadge,
   CallOutcomeBadge,
@@ -170,6 +187,92 @@ export default function PrimitivesShowcasePage() {
 
   // 7. Day 9 AI Confidence & Intent Showcase State
   const [interactiveConfidence, setInteractiveConfidence] = React.useState(92);
+
+  // 8. Day 13 Human-in-the-Loop Supervision Showcase State
+  const [day13Leads, setDay13Leads] = React.useState<Lead[]>(() => [...MOCK_LEADS]);
+  const [selectedDay13LeadId, setSelectedDay13LeadId] = React.useState("lead_01");
+  const activeDay13Lead = React.useMemo(() => {
+    return day13Leads.find((l) => l.id === selectedDay13LeadId) || day13Leads[0];
+  }, [day13Leads, selectedDay13LeadId]);
+
+  const handleDay13Takeover = async (leadId: string, brokerName?: string, reason?: string) => {
+    try {
+      const updated = await leadsService.takeoverLead(leadId, brokerName || "Marcus Vance (Broker)", reason);
+      setDay13Leads((prev) => prev.map((l) => (l.id === leadId ? updated : l)));
+      toast.success("Broker Takeover Active", {
+        description: `Autonomous AI paused for ${updated.name}. Broker assigned.`,
+      });
+    } catch {
+      toast.error("Takeover failed");
+    }
+  };
+
+  const handleDay13StopAI = async (leadId: string, reason?: string) => {
+    try {
+      const updated = await leadsService.stopAI(leadId, reason || "Broker intervention requested from primitives testbench.");
+      setDay13Leads((prev) => prev.map((l) => (l.id === leadId ? updated : l)));
+      toast.warning("AI Processing Suspended", {
+        description: `Voice & messaging paused for ${updated.name}.`,
+      });
+    } catch {
+      toast.error("Failed to stop AI");
+    }
+  };
+
+  const handleDay13ResumeAI = async (leadId: string) => {
+    try {
+      const updated = await leadsService.resumeAI(leadId);
+      setDay13Leads((prev) => prev.map((l) => (l.id === leadId ? updated : l)));
+      toast.success("AI Automation Resumed", {
+        description: `Pacia conversational agent reactivated for ${updated.name}.`,
+      });
+    } catch {
+      toast.error("Failed to resume AI");
+    }
+  };
+
+  const handleDay13MarkNurture = async (
+    leadId: string,
+    schedule: FollowUpSchedule,
+    notes?: string
+  ) => {
+    try {
+      const updated = await leadsService.markNurture(leadId, schedule, notes);
+      setDay13Leads((prev) => prev.map((l) => (l.id === leadId ? updated : l)));
+      toast.info("Lead Reassigned to Nurture", {
+        description: `${updated.name} staged for follow-up (${schedule.cadence}).`,
+      });
+    } catch {
+      toast.error("Failed to set nurture");
+    }
+  };
+
+  const handleDay13MarkLost = async (
+    leadId: string,
+    lossDetails: LossDetails
+  ) => {
+    try {
+      const updated = await leadsService.markLost(leadId, lossDetails);
+      setDay13Leads((prev) => prev.map((l) => (l.id === leadId ? updated : l)));
+      toast.error("Lead Marked as Lost", {
+        description: `${updated.name} archived (${lossDetails.reasonLabel}).`,
+      });
+    } catch {
+      toast.error("Failed to mark lost");
+    }
+  };
+
+  const handleDay13UpdateSchedule = async (leadId: string, schedule: FollowUpSchedule) => {
+    try {
+      const updated = await leadsService.updateFollowUpSchedule(leadId, schedule);
+      setDay13Leads((prev) => prev.map((l) => (l.id === leadId ? updated : l)));
+      toast.success("Follow-up Rescheduled", {
+        description: `Next action slated for ${new Date(schedule.scheduledAt).toLocaleDateString("en-NG")}.`,
+      });
+    } catch {
+      toast.error("Failed to reschedule follow-up");
+    }
+  };
 
   // DataTable columns definition
   const columns: ColumnDef<SampleLead>[] = [
@@ -366,6 +469,8 @@ export default function PrimitivesShowcasePage() {
                 <StatusBadge status="In Conversation" withDot />
                 <StatusBadge status="Contacting" withDot />
                 <StatusBadge status="Follow-up" withDot />
+                <StatusBadge status="Human Managed" withDot />
+                <StatusBadge status="Nurture" withDot />
                 <StatusBadge status="Lost" withDot />
                 <StatusBadge status="New" />
               </div>
@@ -1525,6 +1630,181 @@ export default function PrimitivesShowcasePage() {
                 });
               }}
             />
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* ========================================================================= */}
+      {/* 12. HUMAN-IN-THE-LOOP SUPERVISION & AI CONTROL SUITE (DAY 13) */}
+      {/* ========================================================================= */}
+      <Card id="supervision" className="border-border bg-white shadow-2xs scroll-mt-20">
+        <CardHeader className="p-4 border-b border-stone-100">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <ShieldAlert className="h-4 w-4 text-[#0d4a36]" />
+                <CardTitle className="text-sm font-semibold text-stone-900">
+                  Day 13 — Human-in-the-Loop Supervision &amp; AI Control Suite
+                </CardTitle>
+                <Badge variant="live" className="text-[10px] px-1.5 py-0 bg-emerald-100 text-emerald-800 border-emerald-300">
+                  Interactive Testbench
+                </Badge>
+              </div>
+              <CardDescription className="text-xs text-stone-500">
+                Gives real estate brokers absolute control over autonomous AI. Features 1-click broker takeover, AI killswitch/resume, disposition workflows (Nurture / Lost), and intelligent handoff context with actionable directives.
+              </CardDescription>
+            </div>
+
+            {/* Scenario Selector */}
+            <div className="flex items-center bg-stone-100 p-1 rounded-lg border border-stone-200 self-start sm:self-auto overflow-x-auto max-w-full">
+              {[
+                { id: "lead_01", label: "Adeleke (Autonomous AI)" },
+                { id: "lead_02", label: "Chief Cole (Human Managed)" },
+                { id: "lead_03", label: "Dr. Okafor (Nurture)" },
+                { id: "lead_05", label: "Ibrahim (Marked Lost)" },
+              ].map((scenario) => (
+                <button
+                  key={scenario.id}
+                  type="button"
+                  onClick={() => setSelectedDay13LeadId(scenario.id)}
+                  className={cn(
+                    "px-2.5 py-1 rounded-md font-medium text-xs transition-all whitespace-nowrap cursor-pointer",
+                    selectedDay13LeadId === scenario.id
+                      ? "bg-white text-stone-900 shadow-xs font-semibold"
+                      : "text-stone-600 hover:text-stone-900"
+                  )}
+                >
+                  <span>{scenario.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </CardHeader>
+
+        <CardContent className="p-4 sm:p-6 space-y-6 bg-stone-50/50">
+          {/* Active Lead Summary Strip */}
+          <div className="flex flex-wrap items-center justify-between gap-3 p-3 bg-white rounded-lg border border-stone-200">
+            <div className="flex items-center gap-3">
+              <div className="h-9 w-9 rounded-full bg-[#0d4a36]/10 text-[#0d4a36] font-semibold text-xs flex items-center justify-center border border-[#0d4a36]/20">
+                {activeDay13Lead.name.split(" ").map((n) => n[0]).slice(0, 2).join("")}
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="font-semibold text-sm text-stone-900">{activeDay13Lead.name}</span>
+                  <StatusBadge status={activeDay13Lead.status} withDot />
+                  {activeDay13Lead.isAiStopped && (
+                    <Badge variant="outline" className="text-[10px] bg-amber-50 text-amber-800 border-amber-300 font-mono">
+                      AI Paused
+                    </Badge>
+                  )}
+                </div>
+                <div className="text-[11px] text-stone-500 flex items-center gap-2">
+                  <span>{activeDay13Lead.propertyTitle}</span>
+                  <span>•</span>
+                  <span className="font-mono">{activeDay13Lead.budget}</span>
+                  {activeDay13Lead.assignedBroker && (
+                    <>
+                      <span>•</span>
+                      <span className="text-sky-700 font-medium">Assigned: {activeDay13Lead.assignedBroker}</span>
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-7 text-xs bg-white cursor-pointer"
+              onClick={() => {
+                const original = MOCK_LEADS.find((l) => l.id === activeDay13Lead.id);
+                if (original) {
+                  setDay13Leads((prev) => prev.map((l) => (l.id === activeDay13Lead.id ? { ...original } : l)));
+                  toast.info("State Reset", { description: `Reset ${original.name} to default initial state.` });
+                }
+              }}
+            >
+              Reset Scenario State
+            </Button>
+          </div>
+
+          {/* Primary Interactive Cockpit */}
+          <div className="space-y-2">
+            <span className="text-xs font-semibold text-stone-900 block">
+              1. Full Human Supervision Cockpit (All Actions Live)
+            </span>
+            <div className="bg-white rounded-xl border border-stone-200 p-4 shadow-xs">
+              <HumanSupervisionCockpit
+                lead={activeDay13Lead}
+                onTakeover={(brokerName, reason) => handleDay13Takeover(activeDay13Lead.id, brokerName, reason)}
+                onStopAI={(reason) => handleDay13StopAI(activeDay13Lead.id, reason)}
+                onResumeAI={() => handleDay13ResumeAI(activeDay13Lead.id)}
+                onMarkNurture={(schedule, notes) => handleDay13MarkNurture(activeDay13Lead.id, schedule, notes)}
+                onMarkLost={(lossDetails) => handleDay13MarkLost(activeDay13Lead.id, lossDetails)}
+                onUpdateSchedule={(schedule) => handleDay13UpdateSchedule(activeDay13Lead.id, schedule)}
+              />
+            </div>
+          </div>
+
+          {/* Standalone Primitives Display Grid */}
+          <div className="space-y-2 pt-2">
+            <span className="text-xs font-semibold text-stone-900 block">
+              2. Granular Briefing &amp; Action Subcomponents
+            </span>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+              {/* Context */}
+              <div className="space-y-1.5">
+                <span className="text-[11px] font-mono uppercase tracking-wider text-stone-500 font-semibold flex items-center gap-1">
+                  <FileQuestion className="h-3.5 w-3.5 text-stone-400" />
+                  HandoffContextCard
+                </span>
+                {activeDay13Lead.handoffContext ? (
+                  <HandoffContextCard handoff={activeDay13Lead.handoffContext} />
+                ) : (
+                  <div className="p-4 rounded-xl border border-dashed border-stone-200 bg-white text-center text-xs text-stone-400">
+                    No handoff context generated yet. Click &quot;Take Over&quot; in the cockpit above to simulate an emergency handoff.
+                  </div>
+                )}
+              </div>
+
+              {/* Recommended Action */}
+              <div className="space-y-1.5">
+                <span className="text-[11px] font-mono uppercase tracking-wider text-stone-500 font-semibold flex items-center gap-1">
+                  <Lightbulb className="h-3.5 w-3.5 text-amber-500" />
+                  RecommendedActionCard
+                </span>
+                {activeDay13Lead.recommendedAction ? (
+                  <RecommendedActionCard
+                    action={activeDay13Lead.recommendedAction}
+                    leadPhone={activeDay13Lead.phone}
+                    leadEmail={activeDay13Lead.email}
+                    leadName={activeDay13Lead.name}
+                  />
+                ) : (
+                  <div className="p-4 rounded-xl border border-dashed border-stone-200 bg-white text-center text-xs text-stone-400">
+                    No active broker directive for this lead.
+                  </div>
+                )}
+              </div>
+
+              {/* Follow-Up Schedule */}
+              <div className="space-y-1.5">
+                <span className="text-[11px] font-mono uppercase tracking-wider text-stone-500 font-semibold flex items-center gap-1">
+                  <CalendarClock className="h-3.5 w-3.5 text-stone-400" />
+                  FollowUpScheduleCard
+                </span>
+                {activeDay13Lead.followUpSchedule ? (
+                  <FollowUpScheduleCard
+                    schedule={activeDay13Lead.followUpSchedule}
+                    onUpdateSchedule={(schedule) => handleDay13UpdateSchedule(activeDay13Lead.id, schedule)}
+                  />
+                ) : (
+                  <div className="p-4 rounded-xl border border-dashed border-stone-200 bg-white text-center text-xs text-stone-400">
+                    No follow-up scheduled. Mark as Nurture to create a schedule.
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>

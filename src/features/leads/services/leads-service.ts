@@ -1,13 +1,28 @@
 import { apiClient } from "@/lib/api/client";
-import type { Lead, LeadFilterParams, LeadsApiResponse, LeadStatus, LeadActivity } from "../types";
+import type {
+  Lead,
+  LeadFilterParams,
+  LeadsApiResponse,
+  LeadStatus,
+  LeadActivity,
+  FollowUpSchedule,
+  LossDetails,
+  HandoffContext,
+} from "../types";
 import { MOCK_LEADS } from "../data/mock-leads";
 
 /**
  * Proposed Backend Contracts (Defined by Frontend, Pending Backend Verification):
- * - GET /api/v1/leads?search=&scoreCategory=&status=
+ * - GET /api/v1/leads?search=&scoreCategory=&status=&managementMode=
  * - GET /api/v1/leads/:id
  * - PATCH /api/v1/leads/:id/status { status, note }
  * - POST /api/v1/leads/:id/activities { type, title, description }
+ * - POST /api/v1/leads/:id/takeover { brokerName, reason }
+ * - POST /api/v1/leads/:id/stop-ai { reason }
+ * - POST /api/v1/leads/:id/resume-ai {}
+ * - POST /api/v1/leads/:id/nurture { schedule, notes }
+ * - POST /api/v1/leads/:id/lost { lossDetails }
+ * - PATCH /api/v1/leads/:id/follow-up { schedule }
  *
  * Mock Boundary Strategy:
  * Until backend services implement and verify these endpoints, this service
@@ -66,6 +81,10 @@ class LeadsService {
 
     if (filters?.status && filters.status !== "ALL") {
       filtered = filtered.filter((lead) => lead.status === filters.status);
+    }
+
+    if (filters?.managementMode && filters.managementMode !== "ALL") {
+      filtered = filtered.filter((lead) => lead.managementMode === filters.managementMode);
     }
 
     return {
@@ -169,6 +188,289 @@ class LeadsService {
     }
 
     return newActivity;
+  }
+
+  /**
+   * Proposed contract: POST /api/v1/leads/:id/takeover
+   * Human broker seizes direct control of the lead, pausing AI automation.
+   */
+  async takeoverLead(
+    id: string,
+    brokerName = "Marcus Vance",
+    reason = "Manual broker takeover initiated"
+  ): Promise<Lead> {
+    try {
+      const response = await apiClient.post<{ lead: Lead }>(
+        `/api/v1/leads/${id}/takeover`,
+        { brokerName, reason }
+      );
+      if (response?.lead) return response.lead;
+    } catch {
+      // Fallback
+    }
+
+    await new Promise((r) => setTimeout(r, 120));
+
+    const index = inMemoryMockLeads.findIndex((l) => l.id === id);
+    if (index === -1) throw new Error(`Lead ${id} not found.`);
+
+    const current = inMemoryMockLeads[index];
+    const handoff: HandoffContext = {
+      triggerReason: reason,
+      triggerCategory: "manual_broker",
+      synthesis:
+        current.handoffContext?.synthesis ||
+        current.aiNotes ||
+        "Lead transitioned to direct human supervision. AI automation paused.",
+      keyQuotes: current.handoffContext?.keyQuotes || [
+        `Lead requested broker follow-up on ${current.propertyTitle}.`,
+      ],
+      unresolvedObjections: current.handoffContext?.unresolvedObjections || [],
+      handedOffAt: "Just now",
+      brokerName,
+    };
+
+    const updated: Lead = {
+      ...current,
+      status: "Human Managed",
+      managementMode: "human_managed",
+      assignedBroker: brokerName,
+      isAiStopped: true,
+      aiStoppedReason: `Direct human supervision active under ${brokerName}.`,
+      handoffContext: handoff,
+    };
+
+    const takeoverActivity: LeadActivity = {
+      id: `act_takeover_${Date.now()}`,
+      type: "status_change",
+      title: "Broker Seized Direct Control",
+      description: `Autonomous AI paused. ${brokerName} assumed active transaction leadership.`,
+      timestamp: "Just now",
+      channel: "Broker Command",
+      actor: {
+        type: "human_broker",
+        name: brokerName,
+        role: "Sales Associate",
+        territory: current.location,
+        verifiedBadge: true,
+      },
+    };
+
+    updated.activities = [takeoverActivity, ...(updated.activities || [])];
+    inMemoryMockLeads[index] = updated;
+
+    return JSON.parse(JSON.stringify(updated));
+  }
+
+  /**
+   * Proposed contract: POST /api/v1/leads/:id/stop-ai
+   * Pauses autonomous AI actions without claiming lead.
+   */
+  async stopAI(id: string, reason = "Broker paused autonomous AI automation"): Promise<Lead> {
+    try {
+      const res = await apiClient.post<{ lead: Lead }>(`/api/v1/leads/${id}/stop-ai`, {
+        reason,
+      });
+      if (res?.lead) return res.lead;
+    } catch {
+      // Fallback
+    }
+
+    await new Promise((r) => setTimeout(r, 100));
+
+    const index = inMemoryMockLeads.findIndex((l) => l.id === id);
+    if (index === -1) throw new Error(`Lead ${id} not found.`);
+
+    const current = inMemoryMockLeads[index];
+    const updated: Lead = {
+      ...current,
+      isAiStopped: true,
+      aiStoppedReason: reason,
+    };
+
+    const activity: LeadActivity = {
+      id: `act_stop_ai_${Date.now()}`,
+      type: "status_change",
+      title: "AI Automation Suspended",
+      description: reason,
+      timestamp: "Just now",
+      channel: "AI Supervisor",
+    };
+
+    updated.activities = [activity, ...(updated.activities || [])];
+    inMemoryMockLeads[index] = updated;
+
+    return JSON.parse(JSON.stringify(updated));
+  }
+
+  /**
+   * Proposed contract: POST /api/v1/leads/:id/resume-ai
+   * Resumes autonomous AI engine for this lead.
+   */
+  async resumeAI(id: string): Promise<Lead> {
+    try {
+      const res = await apiClient.post<{ lead: Lead }>(`/api/v1/leads/${id}/resume-ai`, {});
+      if (res?.lead) return res.lead;
+    } catch {
+      // Fallback
+    }
+
+    await new Promise((r) => setTimeout(r, 100));
+
+    const index = inMemoryMockLeads.findIndex((l) => l.id === id);
+    if (index === -1) throw new Error(`Lead ${id} not found.`);
+
+    const current = inMemoryMockLeads[index];
+    const updated: Lead = {
+      ...current,
+      isAiStopped: false,
+      aiStoppedReason: undefined,
+    };
+
+    const activity: LeadActivity = {
+      id: `act_resume_ai_${Date.now()}`,
+      type: "status_change",
+      title: "AI Automation Resumed",
+      description: "Autonomous voice and chat engagement active.",
+      timestamp: "Just now",
+      channel: "AI Supervisor",
+    };
+
+    updated.activities = [activity, ...(updated.activities || [])];
+    inMemoryMockLeads[index] = updated;
+
+    return JSON.parse(JSON.stringify(updated));
+  }
+
+  /**
+   * Proposed contract: POST /api/v1/leads/:id/nurture
+   * Marks lead as Nurture and schedules follow-up cadence.
+   */
+  async markNurture(
+    id: string,
+    schedule: FollowUpSchedule,
+    notes?: string
+  ): Promise<Lead> {
+    try {
+      const res = await apiClient.post<{ lead: Lead }>(`/api/v1/leads/${id}/nurture`, {
+        schedule,
+        notes,
+      });
+      if (res?.lead) return res.lead;
+    } catch {
+      // Fallback
+    }
+
+    await new Promise((r) => setTimeout(r, 120));
+
+    const index = inMemoryMockLeads.findIndex((l) => l.id === id);
+    if (index === -1) throw new Error(`Lead ${id} not found.`);
+
+    const current = inMemoryMockLeads[index];
+    const updated: Lead = {
+      ...current,
+      status: "Nurture",
+      managementMode: "nurture",
+      followUpSchedule: schedule,
+    };
+
+    const activity: LeadActivity = {
+      id: `act_nurture_${Date.now()}`,
+      type: "status_change",
+      title: "Transitioned to Nurture Pipeline",
+      description: `Follow-up set for ${schedule.scheduledFormatted} (${schedule.relativeCountdown}) via ${schedule.channel.toUpperCase()}.${notes ? ` Note: ${notes}` : ""}`,
+      timestamp: "Just now",
+      channel: "Broker Command",
+    };
+
+    updated.activities = [activity, ...(updated.activities || [])];
+    inMemoryMockLeads[index] = updated;
+
+    return JSON.parse(JSON.stringify(updated));
+  }
+
+  /**
+   * Proposed contract: POST /api/v1/leads/:id/lost
+   * Marks lead as Lost with structured reason classification.
+   */
+  async markLost(id: string, lossDetails: LossDetails): Promise<Lead> {
+    try {
+      const res = await apiClient.post<{ lead: Lead }>(`/api/v1/leads/${id}/lost`, {
+        lossDetails,
+      });
+      if (res?.lead) return res.lead;
+    } catch {
+      // Fallback
+    }
+
+    await new Promise((r) => setTimeout(r, 120));
+
+    const index = inMemoryMockLeads.findIndex((l) => l.id === id);
+    if (index === -1) throw new Error(`Lead ${id} not found.`);
+
+    const current = inMemoryMockLeads[index];
+    const updated: Lead = {
+      ...current,
+      status: "Lost",
+      managementMode: "lost",
+      isAiStopped: true,
+      aiStoppedReason: `Deal marked as lost: ${lossDetails.reasonLabel}`,
+      lossDetails,
+    };
+
+    const activity: LeadActivity = {
+      id: `act_lost_${Date.now()}`,
+      type: "status_change",
+      title: `Deal Marked as Lost: ${lossDetails.reasonLabel}`,
+      description: lossDetails.notes || `Discontinued qualification. Reason: ${lossDetails.reasonLabel}`,
+      timestamp: "Just now",
+      channel: "Broker Command",
+    };
+
+    updated.activities = [activity, ...(updated.activities || [])];
+    inMemoryMockLeads[index] = updated;
+
+    return JSON.parse(JSON.stringify(updated));
+  }
+
+  /**
+   * Proposed contract: PATCH /api/v1/leads/:id/follow-up
+   * Updates or reschedules the follow-up reminder.
+   */
+  async updateFollowUpSchedule(id: string, schedule: FollowUpSchedule): Promise<Lead> {
+    try {
+      const res = await apiClient.patch<{ lead: Lead }>(`/api/v1/leads/${id}/follow-up`, {
+        schedule,
+      });
+      if (res?.lead) return res.lead;
+    } catch {
+      // Fallback
+    }
+
+    await new Promise((r) => setTimeout(r, 100));
+
+    const index = inMemoryMockLeads.findIndex((l) => l.id === id);
+    if (index === -1) throw new Error(`Lead ${id} not found.`);
+
+    const current = inMemoryMockLeads[index];
+    const updated: Lead = {
+      ...current,
+      followUpSchedule: schedule,
+    };
+
+    const activity: LeadActivity = {
+      id: `act_resched_${Date.now()}`,
+      type: "status_change",
+      title: "Follow-up Touchpoint Rescheduled",
+      description: `New schedule: ${schedule.scheduledFormatted} (${schedule.relativeCountdown}) via ${schedule.channel.toUpperCase()}.`,
+      timestamp: "Just now",
+      channel: "Broker Calendar",
+    };
+
+    updated.activities = [activity, ...(updated.activities || [])];
+    inMemoryMockLeads[index] = updated;
+
+    return JSON.parse(JSON.stringify(updated));
   }
 }
 

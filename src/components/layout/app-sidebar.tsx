@@ -152,7 +152,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
                             : "text-stone-600 hover:text-stone-900 hover:bg-stone-50"
                         }
                       >
-                        <Link href={item.href}>
+                        <Link href={item.href} prefetch={false}>
                           <NavIcon
                             name={item.iconName}
                             className={isActive ? "text-[#0d4a36]" : "text-stone-400"}

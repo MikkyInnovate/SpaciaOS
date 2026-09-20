@@ -10,7 +10,9 @@ export type LeadStatus =
   | "Qualified"
   | "Follow-up"
   | "Viewing Booked"
-  | "Human Managed";
+  | "Human Managed"
+  | "Nurture"
+  | "Lost";
 
 export interface PropertyDetails {
   propertyTitle: string;
@@ -141,6 +143,66 @@ export interface NextActionDirective {
   protocolRecommendation?: string;
 }
 
+/**
+ * DAY 13 — Human-in-the-Loop & Autonomous Supervision Models
+ */
+
+export type ManagementMode =
+  | "ai_autonomous"
+  | "human_managed"
+  | "nurture"
+  | "lost";
+
+export type HandoffTriggerCategory =
+  | "negotiation"
+  | "objection"
+  | "high_value"
+  | "manual_broker"
+  | "prospect_request";
+
+export interface HandoffContext {
+  triggerReason: string;
+  triggerCategory: HandoffTriggerCategory;
+  synthesis: string;
+  keyQuotes: string[];
+  unresolvedObjections: string[];
+  handedOffAt: string;
+  brokerName?: string;
+}
+
+export interface RecommendedAction {
+  title: string;
+  directive: string;
+  priority: "Immediate" | "Scheduled" | "Routine";
+  suggestedChannel: "call" | "whatsapp" | "email" | "in_person";
+  actionProtocol: string;
+  dueTimeFormatted?: string;
+}
+
+export interface FollowUpSchedule {
+  scheduledAt: string;
+  scheduledFormatted: string;
+  relativeCountdown: string;
+  channel: "call" | "whatsapp" | "email";
+  cadence: "once" | "daily" | "weekly" | "biweekly" | "monthly";
+  notes?: string;
+}
+
+export type LossReasonCategory =
+  | "budget_mismatch"
+  | "purchased_competitor"
+  | "unresponsive"
+  | "unrealistic_criteria"
+  | "title_deed_dispute"
+  | "other";
+
+export interface LossDetails {
+  reason: LossReasonCategory;
+  reasonLabel: string;
+  notes?: string;
+  lostAt: string;
+}
+
 export interface Lead {
   id: string;
   name: string;
@@ -166,15 +228,26 @@ export interface Lead {
   qualificationProfile?: QualificationProfile;
   activities?: LeadActivity[];
   nextActionDirective?: NextActionDirective;
+
+  // Day 13: Human-in-the-Loop Supervision Extensions
+  managementMode?: ManagementMode;
+  isAiStopped?: boolean;
+  aiStoppedReason?: string;
+  handoffContext?: HandoffContext;
+  recommendedAction?: RecommendedAction;
+  followUpSchedule?: FollowUpSchedule;
+  lossDetails?: LossDetails;
 }
 
 export interface LeadFilterParams {
   search?: string;
   scoreCategory?: LeadScoreCategory | "ALL";
   status?: LeadStatus | "ALL";
+  managementMode?: ManagementMode | "ALL";
 }
 
 export interface LeadsApiResponse {
   leads: Lead[];
   total: number;
 }
+

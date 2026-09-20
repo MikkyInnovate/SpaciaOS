@@ -9,4 +9,11 @@ export * from "./components/lead-property-card";
 export * from "./components/lead-qualification-card";
 export * from "./components/qualification-panel";
 export * from "./components/lead-activity-timeline";
+export * from "./components/human-supervision-cockpit";
+export * from "./components/handoff-context-card";
+export * from "./components/recommended-action-card";
+export * from "./components/follow-up-schedule-card";
+export * from "./components/mark-lost-dialog";
+export * from "./components/mark-nurture-dialog";
 export * from "./data/mock-leads";
+

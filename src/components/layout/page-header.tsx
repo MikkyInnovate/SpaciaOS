@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils/cn";
 
 export interface PageHeaderProps extends React.HTMLAttributes<HTMLDivElement> {
   title: string;
-  description?: string;
+  description?: React.ReactNode;
   actions?: React.ReactNode;
 }
 

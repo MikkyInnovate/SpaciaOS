@@ -13,6 +13,8 @@ import {
   type Lead,
   type LeadStatus,
   type LeadFilterParams,
+  type FollowUpSchedule,
+  type LossDetails,
 } from "@/features/leads";
 import { exportLeadsToCSV } from "@/lib/utils/export-csv";
 import { Download, Loader2 } from "lucide-react";
@@ -146,6 +148,60 @@ export default function LeadsPage() {
     [selectedLead]
   );
 
+  // Day 13: Handle Broker Takeover
+  const handleTakeover = React.useCallback(
+    async (leadId: string, brokerName?: string, reason?: string) => {
+      const updated = await leadsService.takeoverLead(leadId, brokerName, reason);
+      setSelectedLead(updated);
+      setLeads((prev) => prev.map((l) => (l.id === leadId ? updated : l)));
+    },
+    []
+  );
+
+  // Day 13: Handle Stop AI
+  const handleStopAI = React.useCallback(async (leadId: string, reason?: string) => {
+    const updated = await leadsService.stopAI(leadId, reason);
+    setSelectedLead(updated);
+    setLeads((prev) => prev.map((l) => (l.id === leadId ? updated : l)));
+  }, []);
+
+  // Day 13: Handle Resume AI
+  const handleResumeAI = React.useCallback(async (leadId: string) => {
+    const updated = await leadsService.resumeAI(leadId);
+    setSelectedLead(updated);
+    setLeads((prev) => prev.map((l) => (l.id === leadId ? updated : l)));
+  }, []);
+
+  // Day 13: Handle Mark Nurture
+  const handleMarkNurture = React.useCallback(
+    async (leadId: string, schedule: FollowUpSchedule, notes?: string) => {
+      const updated = await leadsService.markNurture(leadId, schedule, notes);
+      setSelectedLead(updated);
+      setLeads((prev) => prev.map((l) => (l.id === leadId ? updated : l)));
+    },
+    []
+  );
+
+  // Day 13: Handle Mark Lost
+  const handleMarkLost = React.useCallback(
+    async (leadId: string, lossDetails: LossDetails) => {
+      const updated = await leadsService.markLost(leadId, lossDetails);
+      setSelectedLead(updated);
+      setLeads((prev) => prev.map((l) => (l.id === leadId ? updated : l)));
+    },
+    []
+  );
+
+  // Day 13: Handle Update Follow-up Schedule
+  const handleUpdateSchedule = React.useCallback(
+    async (leadId: string, schedule: FollowUpSchedule) => {
+      const updated = await leadsService.updateFollowUpSchedule(leadId, schedule);
+      setSelectedLead(updated);
+      setLeads((prev) => prev.map((l) => (l.id === leadId ? updated : l)));
+    },
+    []
+  );
+
   // Handle CSV data export
   const handleExport = () => {
     if (leads.length === 0) {
@@ -178,16 +234,18 @@ export default function LeadsPage() {
         <PageHeader
           title="Lead Management"
           description={
-            "Operational lead directory and autonomous qualification pipeline" +
-            (currentWorkspace ? ` for ${currentWorkspace.name}` : ".")
+            <span>
+              Autonomous prospect intake, 5-point qualification underwriting, and deal progression for{" "}
+              <strong>{currentWorkspace?.name || "Pacia Agency HQ"}</strong>.
+            </span>
           }
           actions={
             <Button
               variant="outline"
               size="sm"
               onClick={handleExport}
-              disabled={isExporting || leads.length === 0}
-              className="h-8 gap-1.5 text-xs text-stone-700 bg-white border-stone-200 shadow-2xs hover:bg-stone-50 cursor-pointer"
+              disabled={isExporting}
+              className="h-8 gap-1.5 text-xs text-stone-700 bg-white shadow-2xs hover:bg-stone-50 cursor-pointer"
             >
               {isExporting ? (
                 <>
@@ -197,7 +255,7 @@ export default function LeadsPage() {
               ) : (
                 <>
                   <Download className="h-3.5 w-3.5 text-stone-400" />
-                  <span>Export ({leads.length})</span>
+                  <span>Export Leads</span>
                 </>
               )}
             </Button>
@@ -232,6 +290,12 @@ export default function LeadsPage() {
           onOpenChange={setIsDrawerOpen}
           onStatusChange={handleStatusChange}
           onAddNote={handleAddNote}
+          onTakeover={handleTakeover}
+          onStopAI={handleStopAI}
+          onResumeAI={handleResumeAI}
+          onMarkNurture={handleMarkNurture}
+          onMarkLost={handleMarkLost}
+          onUpdateSchedule={handleUpdateSchedule}
         />
       </Container>
     </div>
