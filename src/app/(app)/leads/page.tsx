@@ -10,6 +10,7 @@ import {
   LeadTable,
   LeadFiltersBar,
   LeadDetailShell,
+  LeadIntakeDialog,
   type Lead,
   type LeadStatus,
   type LeadFilterParams,
@@ -17,7 +18,7 @@ import {
   type LossDetails,
 } from "@/features/leads";
 import { exportLeadsToCSV } from "@/lib/utils/export-csv";
-import { Download, Loader2 } from "lucide-react";
+import { Download, Loader2, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 
 export default function LeadsPage() {
@@ -40,6 +41,9 @@ export default function LeadsPage() {
   // Selected lead for detail inspection drawer
   const [selectedLead, setSelectedLead] = React.useState<Lead | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = React.useState(false);
+
+  // Day 14: Lead Intake Modal
+  const [isIntakeOpen, setIsIntakeOpen] = React.useState(false);
 
   // Fetch leads when filters change
   const loadLeads = React.useCallback(async () => {
@@ -97,6 +101,14 @@ export default function LeadsPage() {
   // Handle row selection to open detail shell
   const handleSelectLead = React.useCallback((lead: Lead) => {
     setSelectedLead(lead);
+    setIsDrawerOpen(true);
+  }, []);
+
+  // Handle lead successfully registered via intake modal
+  const handleLeadCreated = React.useCallback((newLead: Lead) => {
+    setLeads((prev) => [newLead, ...prev]);
+    setTotalCount((prev) => prev + 1);
+    setSelectedLead(newLead);
     setIsDrawerOpen(true);
   }, []);
 
@@ -261,25 +273,36 @@ export default function LeadsPage() {
             </span>
           }
           actions={
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleExport}
-              disabled={isExporting}
-              className="h-8 gap-1.5 text-xs text-stone-700 bg-white shadow-2xs hover:bg-stone-50 cursor-pointer"
-            >
-              {isExporting ? (
-                <>
-                  <Loader2 className="h-3.5 w-3.5 animate-spin text-stone-500" />
-                  <span>Exporting...</span>
-                </>
-              ) : (
-                <>
-                  <Download className="h-3.5 w-3.5 text-stone-400" />
-                  <span>Export Leads</span>
-                </>
-              )}
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleExport}
+                disabled={isExporting}
+                className="h-8 gap-1.5 text-xs text-stone-700 bg-white shadow-2xs hover:bg-stone-50 cursor-pointer"
+              >
+                {isExporting ? (
+                  <>
+                    <Loader2 className="h-3.5 w-3.5 animate-spin text-stone-500" />
+                    <span>Exporting...</span>
+                  </>
+                ) : (
+                  <>
+                    <Download className="h-3.5 w-3.5 text-stone-400" />
+                    <span>Export Leads</span>
+                  </>
+                )}
+              </Button>
+
+              <Button
+                size="sm"
+                onClick={() => setIsIntakeOpen(true)}
+                className="h-8 gap-1.5 text-xs bg-[#0d4a36] hover:bg-[#0a3a2a] text-white shadow-2xs cursor-pointer font-medium"
+              >
+                <UserPlus className="h-3.5 w-3.5" />
+                <span>Intake Lead</span>
+              </Button>
+            </div>
           }
         />
 
@@ -318,6 +341,20 @@ export default function LeadsPage() {
           onMarkLost={handleMarkLost}
           onUpdateSchedule={handleUpdateSchedule}
           onObjectionStatusChange={handleObjectionStatusChange}
+        />
+
+        {/* Day 14: Lead Intake Dialog with Live Duplicate Detection */}
+        <LeadIntakeDialog
+          open={isIntakeOpen}
+          onOpenChange={setIsIntakeOpen}
+          onLeadCreated={handleLeadCreated}
+          onSelectExistingLead={(leadId) => {
+            const match = leads.find((l) => l.id === leadId);
+            if (match) {
+              setSelectedLead(match);
+              setIsDrawerOpen(true);
+            }
+          }}
         />
       </Container>
     </div>

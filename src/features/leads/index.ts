@@ -15,5 +15,6 @@ export * from "./components/recommended-action-card";
 export * from "./components/follow-up-schedule-card";
 export * from "./components/mark-lost-dialog";
 export * from "./components/mark-nurture-dialog";
+export * from "./components/lead-intake-dialog";
 export * from "./data/mock-leads";
 

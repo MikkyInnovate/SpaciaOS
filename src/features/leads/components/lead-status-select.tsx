@@ -15,6 +15,8 @@ export interface LeadStatusSelectProps {
   currentStatus: LeadStatus;
   onStatusChange: (status: LeadStatus) => Promise<void> | void;
   disabled?: boolean;
+  align?: "start" | "end" | "center";
+  showLabel?: boolean;
 }
 
 const STATUS_CONFIG: Record<
@@ -48,13 +50,15 @@ export function LeadStatusSelect({
   currentStatus,
   onStatusChange,
   disabled = false,
+  align = "end",
+  showLabel = false,
 }: LeadStatusSelectProps) {
   const [isUpdating, setIsUpdating] = React.useState(false);
 
   const handleValueChange = async (value: string) => {
     if (value === currentStatus) return;
+    setIsUpdating(true);
     try {
-      setIsUpdating(true);
       await onStatusChange(value as LeadStatus);
     } finally {
       setIsUpdating(false);
@@ -68,9 +72,11 @@ export function LeadStatusSelect({
 
   return (
     <div className="flex items-center gap-2">
-      <span className="text-[10px] font-bold text-stone-400 uppercase tracking-wider select-none">
-        Stage
-      </span>
+      {showLabel && (
+        <span className="text-[10px] font-bold text-stone-400 uppercase tracking-wider select-none">
+          Stage:
+        </span>
+      )}
       <div className="relative">
         <Select
           value={currentStatus}
@@ -95,7 +101,12 @@ export function LeadStatusSelect({
               </div>
             )}
           </SelectTrigger>
-          <SelectContent align="start" className="text-xs min-w-[160px] bg-white border border-stone-200 shadow-md">
+          <SelectContent
+            align={align}
+            sideOffset={6}
+            collisionPadding={16}
+            className="text-xs min-w-[165px] bg-white border border-stone-200 shadow-xl rounded-lg z-50"
+          >
             {ALL_STATUSES.map((s) => {
               const config = STATUS_CONFIG[s.value];
               return (

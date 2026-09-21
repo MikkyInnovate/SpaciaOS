@@ -514,3 +514,94 @@ body {
 .animate-fade-in-backdrop {
   animation: gentleFadeInBackdrop 0.28s ease-out forwards;
 }
+
+@keyframes timelineBeam {
+  0% {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(280%);
+    opacity: 0;
+  }
+}
+
+.animate-timeline-beam {
+  animation: timelineBeam 3.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@keyframes timelineDotGlow {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(13, 74, 54, 0);
+  }
+  50% {
+    box-shadow: 0 0 0 4px rgba(13, 74, 54, 0.15);
+  }
+}
+
+.animate-dot-glow {
+  animation: timelineDotGlow 2.4s ease-in-out infinite;
+}
+
+/* Luxury Modal Fluid Animation (Linear/Apple-Grade Ease) */
+@keyframes spaciaDialogEnter {
+  0% {
+    opacity: 0;
+    transform: scale(0.96) translateY(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes spaciaDialogExit {
+  0% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.96) translateY(8px);
+  }
+}
+
+@keyframes spaciaOverlayEnter {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes spaciaOverlayExit {
+  0% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.spacia-dialog-modal[data-state="open"] {
+  animation: spaciaDialogEnter 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.spacia-dialog-modal[data-state="closed"] {
+  animation: spaciaDialogExit 0.15s ease-in forwards;
+}
+
+.spacia-modal-overlay[data-state="open"] {
+  animation: spaciaOverlayEnter 0.2s ease-out forwards;
+}
+
+.spacia-modal-overlay[data-state="closed"] {
+  animation: spaciaOverlayExit 0.15s ease-in forwards;
+}

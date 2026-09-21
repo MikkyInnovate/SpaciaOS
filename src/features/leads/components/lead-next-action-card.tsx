@@ -37,10 +37,10 @@ export function LeadNextActionCard({
   return (
     <div
       className={cn(
-        "rounded-xl border p-4 transition-all space-y-3",
+        "rounded-xl border p-4 transition-all space-y-3 shadow-[0_1px_2px_rgba(0,0,0,0.02)]",
         isCompleted
-          ? "border-emerald-200 bg-emerald-50/40"
-          : "border-stone-200 bg-white"
+          ? "border-emerald-200/80 bg-emerald-50/40"
+          : "border-stone-200/70 bg-white"
       )}
     >
       {/* Top row: Priority & Assignee tags */}

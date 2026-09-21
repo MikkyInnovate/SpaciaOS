@@ -38,19 +38,14 @@ export function AIAgentConfigPresentation({
   const [isEditing, setIsEditing] = React.useState(false);
   const [isSaving, setIsSaving] = React.useState(false);
 
-  // Editable state buffer
-  const [editConfig, setEditConfig] = React.useState<AIAgentConfiguration | null>(null);
+  // Editable state buffer initialized when entering edit mode
+  const [editConfig, setEditConfig] = React.useState<AIAgentConfiguration | null>(() =>
+    activeConfig ? JSON.parse(JSON.stringify(activeConfig)) : null
+  );
 
   // Tag creation inputs
   const [newDeedText, setNewDeedText] = React.useState("");
   const [newKeywordText, setNewKeywordText] = React.useState("");
-
-  // Sync edit buffer whenever activeConfig changes
-  React.useEffect(() => {
-    if (activeConfig) {
-      setEditConfig(JSON.parse(JSON.stringify(activeConfig)));
-    }
-  }, [activeConfig]);
 
   if (!activeConfig || !editConfig) return null;
 

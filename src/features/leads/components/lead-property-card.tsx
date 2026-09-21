@@ -57,7 +57,7 @@ export function LeadPropertyCard({
   }[budgetMatch];
 
   return (
-    <div className="rounded-xl border border-stone-200 bg-white p-4 space-y-3.5">
+    <div className="rounded-xl border border-stone-200/70 bg-white p-4 space-y-3.5 shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
       {/* Section Header */}
       <div className="flex items-center justify-between border-b border-stone-100 pb-2.5">
         <h4 className="text-xs font-semibold uppercase tracking-wider text-stone-500 flex items-center gap-1.5">

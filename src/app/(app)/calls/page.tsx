@@ -4,9 +4,11 @@ import * as React from "react";
 import { Container } from "@/components/layout/container";
 import { PageHeader } from "@/components/layout/page-header";
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import {
   CallList,
   CallDetailCockpit,
+  InitiateCallDialog,
   MOCK_CALLS,
   type Call,
 } from "@/features/calls";
@@ -23,6 +25,7 @@ export default function CallsPage() {
   const { currentWorkspace } = useWorkspace();
   const [calls, setCalls] = React.useState<Call[]>(MOCK_CALLS);
   const [selectedCall, setSelectedCall] = React.useState<Call | null>(null);
+  const [isInitiateOpen, setIsInitiateOpen] = React.useState(false);
 
   // Close sidepanel on ESC key & lock background scroll
   React.useEffect(() => {
@@ -67,12 +70,27 @@ export default function CallsPage() {
     });
   };
 
+  const handleCallCompleted = (newCall: Call) => {
+    setCalls((prev) => [newCall, ...prev]);
+    setSelectedCall(newCall);
+  };
+
   return (
     <Container size="lg" className="space-y-4">
       {/* Page Header */}
       <PageHeader
         title="Calls"
         description={`Autonomous voice interactions, audio recordings, and qualification logs for ${currentWorkspace?.name || "your workspace"}.`}
+        actions={
+          <Button
+            size="sm"
+            onClick={() => setIsInitiateOpen(true)}
+            className="h-8 gap-1.5 text-xs bg-[#0d4a36] hover:bg-[#0a3a2a] text-white shadow-2xs cursor-pointer font-medium"
+          >
+            <PhoneCall className="h-3.5 w-3.5" />
+            <span>Initiate AI Call</span>
+          </Button>
+        }
       />
 
       {/* Voice Metrics Summary Strip */}
@@ -164,6 +182,13 @@ export default function CallsPage() {
           </div>
         </div>
       )}
+
+      {/* Day 14: Vapi Voice Call Initiation Dialog */}
+      <InitiateCallDialog
+        open={isInitiateOpen}
+        onOpenChange={setIsInitiateOpen}
+        onCallCompleted={handleCallCompleted}
+      />
     </Container>
   );
 }

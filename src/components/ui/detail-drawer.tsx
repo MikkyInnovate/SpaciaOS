@@ -48,9 +48,9 @@ export function DetailDrawer({
 
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
-      <DrawerContent className={cn("mx-auto w-full max-h-[90vh] overflow-hidden flex flex-col", maxWidthClass, className)}>
+      <DrawerContent className={cn("mx-auto w-full h-[88vh] max-h-[90vh] overflow-hidden flex flex-col border border-stone-200/80 bg-white", maxWidthClass, className)}>
         {/* Header */}
-        <DrawerHeader className="p-4 border-b border-stone-100 flex-shrink-0">
+        <DrawerHeader className="p-4 border-b border-stone-100 flex-shrink-0 bg-white">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-2.5 min-w-0">
               {icon && (
@@ -87,13 +87,13 @@ export function DetailDrawer({
         </DrawerHeader>
 
         {/* Scrollable Body */}
-        <div className="p-4 overflow-y-auto flex-1 space-y-4">
+        <div className="p-4 overflow-y-auto flex-1 space-y-4 bg-stone-50/40">
           {children}
         </div>
 
         {/* Optional Footer */}
         {footer && (
-          <DrawerFooter className="p-3 border-t border-stone-100 bg-stone-50/50 flex flex-row items-center justify-end gap-2 flex-shrink-0">
+          <DrawerFooter className="p-3 border-t border-stone-100 bg-white flex flex-row items-center justify-end gap-2 flex-shrink-0">
             {footer}
           </DrawerFooter>
         )}

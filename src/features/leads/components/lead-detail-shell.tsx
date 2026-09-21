@@ -4,7 +4,6 @@ import * as React from "react";
 import { DetailDrawer } from "@/components/ui/detail-drawer";
 import { ScoreIndicator } from "@/components/ui/score-indicator";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { LeadStatusSelect } from "./lead-status-select";
 import { LeadNextActionCard } from "./lead-next-action-card";
 import { LeadPropertyCard } from "./lead-property-card";
@@ -22,6 +21,7 @@ import {
   CallAudioPlayer,
   CallSummaryCard,
   CallDetailCockpit,
+  InitiateCallDialog,
   type Call,
 } from "@/features/calls";
 import type { Property } from "@/features/properties";
@@ -38,10 +38,7 @@ import {
   History,
   ShieldCheck,
   Sparkles,
-  Bot,
   PauseCircle,
-  PlayCircle,
-  FileText,
   Compass,
   ExternalLink,
   MessageSquare,
@@ -94,6 +91,7 @@ export function LeadDetailShell({
   const [selectedPropertyForSpecs, setSelectedPropertyForSpecs] = React.useState<Property | null>(null);
   const [connectedCalls, setConnectedCalls] = React.useState<Call[]>([]);
   const [isLoadingCalls, setIsLoadingCalls] = React.useState(false);
+  const [isInitiateCallOpen, setIsInitiateCallOpen] = React.useState(false);
   const [selectedCallForCockpit, setSelectedCallForCockpit] = React.useState<Call | null>(null);
   const [prevLeadId, setPrevLeadId] = React.useState<string | undefined>(lead?.id);
 
@@ -109,7 +107,6 @@ export function LeadDetailShell({
   React.useEffect(() => {
     let isCancelled = false;
     if (!lead || !open) {
-      setConnectedCalls([]);
       return;
     }
 
@@ -234,22 +231,6 @@ export function LeadDetailShell({
         ) : undefined
       }
       maxWidth="xl"
-      footer={
-        <div className="flex flex-wrap items-center justify-between w-full text-xs text-stone-500 gap-2">
-          <div className="flex items-center gap-2">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-            <span>Pacia Command Center • Autonomous Sales Operations</span>
-          </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onOpenChange(false)}
-            className="h-8 text-xs cursor-pointer bg-white text-stone-700 hover:bg-stone-50"
-          >
-            Close Command Center
-          </Button>
-        </div>
-      }
     >
       {/* SKELETON LOADING STATE */}
       {isLoading && (
@@ -268,7 +249,7 @@ export function LeadDetailShell({
       {lead && !isLoading && (
         <div className="space-y-4 pb-2">
           {/* 1. APEX OPERATIONAL ACTION & TELEMETRY BAR */}
-          <div className="rounded-xl border border-stone-200 bg-white p-3 shadow-2xs space-y-3">
+          <div className="rounded-xl border border-stone-200/70 bg-white p-3.5 shadow-[0_1px_2px_rgba(0,0,0,0.02)] space-y-3">
             <div className="flex flex-wrap items-center justify-between gap-2.5">
               {/* Live AI Engine State Pill with Instant Killswitch */}
               <div className="flex items-center gap-2">
@@ -323,13 +304,14 @@ export function LeadDetailShell({
               </div>
 
               {/* Stage Switcher */}
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400">
+              <div className="flex items-center gap-2 shrink-0">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400 select-none">
                   Stage:
                 </span>
                 <LeadStatusSelect
                   currentStatus={lead.status}
                   onStatusChange={handleStatusUpdate}
+                  showLabel={false}
                 />
               </div>
             </div>
@@ -483,10 +465,10 @@ export function LeadDetailShell({
                 }}
               />
 
-              {/* Commercial Profile Summary */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div className="p-3 rounded-xl border border-stone-200 bg-white space-y-1">
-                  <span className="text-[10px] text-stone-400 uppercase font-bold tracking-wider">
+              {/* Commercial Profile Summary — Clean Unboxed Key Metrics Strip */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-stone-200/70 py-1 px-1 gap-3 sm:gap-0">
+                <div className="sm:pr-5 space-y-0.5">
+                  <span className="text-[10px] text-stone-400 uppercase font-bold tracking-wider block">
                     Declared Allocation
                   </span>
                   <p className="font-mono text-base font-bold text-stone-900 tabular-nums">
@@ -497,8 +479,8 @@ export function LeadDetailShell({
                   </span>
                 </div>
 
-                <div className="p-3 rounded-xl border border-stone-200 bg-white space-y-1">
-                  <span className="text-[10px] text-stone-400 uppercase font-bold tracking-wider">
+                <div className="pt-2 sm:pt-0 sm:px-5 space-y-0.5">
+                  <span className="text-[10px] text-stone-400 uppercase font-bold tracking-wider block">
                     Assigned Sales Pod
                   </span>
                   <p className="text-xs font-semibold text-stone-900 flex items-center gap-1.5 mt-1">
@@ -510,8 +492,8 @@ export function LeadDetailShell({
                   </span>
                 </div>
 
-                <div className="p-3 rounded-xl border border-stone-200 bg-white space-y-1">
-                  <span className="text-[10px] text-stone-400 uppercase font-bold tracking-wider">
+                <div className="pt-2 sm:pt-0 sm:pl-5 space-y-0.5">
+                  <span className="text-[10px] text-stone-400 uppercase font-bold tracking-wider block">
                     Transaction Intent
                   </span>
                   <p className="text-xs font-semibold text-stone-900 flex items-center gap-1.5 mt-1">
@@ -596,9 +578,19 @@ export function LeadDetailShell({
                     Live synthetic playback, conversational metrics, and turn transcripts
                   </span>
                 </div>
-                <span className="text-[11px] font-mono text-stone-400 font-medium">
-                  {connectedCalls.length} Records Found
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] font-mono text-stone-400 font-medium">
+                    {connectedCalls.length} Records Found
+                  </span>
+                  <Button
+                    size="sm"
+                    onClick={() => setIsInitiateCallOpen(true)}
+                    className="h-7 text-[11px] bg-[#0d4a36] hover:bg-[#0a3a2a] text-white shadow-2xs cursor-pointer gap-1.5 font-medium px-2.5"
+                  >
+                    <PhoneCall className="h-3 w-3" />
+                    <span>Dispatch Vapi Call</span>
+                  </Button>
+                </div>
               </div>
 
               {isLoadingCalls ? (
@@ -619,12 +611,8 @@ export function LeadDetailShell({
                   <div className="pt-2">
                     <Button
                       size="sm"
-                      onClick={() => {
-                        toast.success("Outbound AI Call Triggered", {
-                          description: `Dialing ${lead.name} (${lead.phone}) with Neural Executive persona...`,
-                        });
-                      }}
-                      className="h-8 text-xs bg-[#0d4a36] hover:bg-[#093829] text-white cursor-pointer"
+                      onClick={() => setIsInitiateCallOpen(true)}
+                      className="h-8 text-xs bg-[#0d4a36] hover:bg-[#0a3a2a] text-white cursor-pointer shadow-2xs font-medium"
                     >
                       <PhoneCall className="h-3.5 w-3.5 mr-1.5" />
                       <span>Initiate AI Telephony Call</span>
@@ -736,6 +724,21 @@ export function LeadDetailShell({
           onTakeover={(call) => {
             onTakeover?.(lead?.id || "", "Marcus Vance", `Takeover from Call ${call.id}`);
             setSelectedCallForCockpit(null);
+          }}
+        />
+      )}
+
+      {/* Day 14: Vapi Call Initiation Dialog */}
+      {lead && (
+        <InitiateCallDialog
+          open={isInitiateCallOpen}
+          onOpenChange={setIsInitiateCallOpen}
+          defaultLeadId={lead.id}
+          onCallCompleted={(newCall) => {
+            setConnectedCalls((prev) => [newCall, ...prev]);
+            toast.success("Voice Session Active", {
+              description: `Vapi call with ${lead.name} recorded and added to timeline.`,
+            });
           }}
         />
       )}

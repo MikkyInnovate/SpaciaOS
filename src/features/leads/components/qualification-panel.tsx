@@ -2,7 +2,12 @@
 
 import * as React from "react";
 import { cn } from "@/lib/utils/cn";
-import type { Lead, QualificationProfile, DecisionReadinessStage } from "../types";
+import type {
+  Lead,
+  QualificationProfile,
+  DecisionReadinessStage,
+  AiToolExecutionStep,
+} from "../types";
 import { ScoreIndicator } from "@/components/ui/score-indicator";
 import {
   BuyerIntentBadge,
@@ -28,8 +33,11 @@ import {
   AlertTriangle,
   UserCheck,
   Info,
+  Bot,
+  Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
+import { leadsService } from "../services/leads-service";
 
 export interface QualificationPanelProps {
   lead: Lead;
@@ -79,6 +87,8 @@ export function QualificationPanel({
   onObjectionStatusChange,
 }: QualificationPanelProps) {
   const [hasCopied, setHasCopied] = React.useState(false);
+  const [isRunningAi, setIsRunningAi] = React.useState(false);
+  const [aiToolTrace, setAiToolTrace] = React.useState<AiToolExecutionStep[]>([]);
 
   // Derive or fallback profile safely
   const profile: QualificationProfile = React.useMemo(() => {
@@ -201,6 +211,21 @@ Next Action: ${lead.nextAction}`;
     setTimeout(() => setHasCopied(false), 2000);
   };
 
+  const handleRunAiUnderwriting = async () => {
+    setIsRunningAi(true);
+    try {
+      const res = await leadsService.rerunAiQualification(lead.id);
+      setAiToolTrace(res.trace);
+      toast.success("AI Underwriting Refreshed", {
+        description: `OpenRouter (Claude 3.5 Sonnet) completed 3 tool passes. Score: ${res.lead.score}/100.`,
+      });
+    } catch {
+      toast.error("Failed to execute AI underwriting.");
+    } finally {
+      setIsRunningAi(false);
+    }
+  };
+
   const readinessMeta = READINESS_META[profile.decisionReadiness] || READINESS_META.exploratory;
   const ReadinessIcon = readinessMeta.icon;
 
@@ -267,8 +292,70 @@ Next Action: ${lead.nextAction}`;
                 <span>Email Brief</span>
               </a>
             </Button>
+
+            <Button
+              size="sm"
+              onClick={handleRunAiUnderwriting}
+              disabled={isRunningAi}
+              className="h-7 text-xs gap-1.5 bg-stone-900 hover:bg-stone-800 text-white shadow-2xs font-medium cursor-pointer"
+            >
+              {isRunningAi ? (
+                <>
+                  <Loader2 className="h-3 w-3 animate-spin text-stone-400" />
+                  <span>Underwriting...</span>
+                </>
+              ) : (
+                <>
+                  <Sparkles className="h-3 w-3 text-emerald-400" />
+                  <span>Run AI Underwriting</span>
+                </>
+              )}
+            </Button>
           </div>
         </div>
+
+        {/* AI Tool Execution Stream (OpenRouter Tool Layer) */}
+        {(isRunningAi || aiToolTrace.length > 0) && (
+          <div className="rounded-lg border border-stone-200/90 bg-[#fcfcfb] p-3 space-y-2 animate-in fade-in duration-200">
+            <div className="flex items-center justify-between text-xs">
+              <div className="flex items-center gap-1.5 font-medium text-stone-900">
+                <Bot className="h-3.5 w-3.5 text-stone-700" />
+                <span>OpenRouter AI Tool Execution Layer</span>
+                <span className="text-[10px] px-1.5 py-0.5 rounded border border-stone-300 font-mono text-stone-600 bg-white">
+                  Claude 3.5 Sonnet
+                </span>
+              </div>
+              <span className="text-[10px] text-stone-400 font-mono">
+                {isRunningAi ? "Executing tool chain..." : `${aiToolTrace.length} tools executed`}
+              </span>
+            </div>
+
+            <div className="space-y-1.5 pt-1 border-t border-stone-100">
+              {aiToolTrace.map((step, idx) => (
+                <div
+                  key={idx}
+                  className="flex items-start justify-between rounded-md bg-white p-2 border border-stone-200/60 text-[11px]"
+                >
+                  <div className="space-y-0.5 min-w-0 pr-2">
+                    <div className="flex items-center gap-1.5 font-mono font-semibold text-stone-800">
+                      <CheckCircle2 className="h-3 w-3 text-emerald-600 shrink-0" />
+                      <span>{step.tool}()</span>
+                    </div>
+                    <p className="text-[10px] text-stone-500 font-mono truncate">
+                      input: {step.input}
+                    </p>
+                    <p className="text-[10px] text-emerald-700 font-mono truncate">
+                      output: {step.output}
+                    </p>
+                  </div>
+                  <span className="text-[10px] font-mono text-stone-400 shrink-0">
+                    {step.durationMs}ms
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Top Metric Gauges */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">

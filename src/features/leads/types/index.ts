@@ -239,6 +239,46 @@ export interface Lead {
   lossDetails?: LossDetails;
 }
 
+export interface DuplicateMatch {
+  leadId: string;
+  leadName: string;
+  phone: string;
+  email: string;
+  score: number;
+  scoreCategory: LeadScoreCategory;
+  status: LeadStatus;
+  propertyTitle: string;
+  matchType: "phone" | "email" | "both";
+  relativeTime: string;
+}
+
+export interface DuplicateCheckResult {
+  hasDuplicate: boolean;
+  matches: DuplicateMatch[];
+}
+
+export interface CreateLeadInput {
+  name: string;
+  phone: string;
+  email?: string;
+  source: string;
+  budget: string;
+  propertyTitle: string;
+  location?: string;
+  intent?: "Purchase" | "Rental" | "Investment";
+  timeline?: string;
+  notes?: string;
+  forceDuplicate?: boolean;
+}
+
+export interface AiToolExecutionStep {
+  tool: string;
+  input: string;
+  output: string;
+  durationMs: number;
+  timestamp: string;
+}
+
 export interface LeadFilterParams {
   search?: string;
   scoreCategory?: LeadScoreCategory | "ALL";

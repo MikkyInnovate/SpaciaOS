@@ -8,8 +8,35 @@ import type {
   FollowUpSchedule,
   LossDetails,
   HandoffContext,
+  CreateLeadInput,
+  DuplicateCheckResult,
+  DuplicateMatch,
+  AiToolExecutionStep,
 } from "../types";
 import { MOCK_LEADS } from "../data/mock-leads";
+
+/**
+ * Normalizes phone numbers for canonical matching across Nigerian local (080...)
+ * and international (+234...) formats.
+ */
+export function normalizePhoneNumber(raw?: string): string {
+  if (!raw) return "";
+  let cleaned = raw.replace(/[^\d+]/g, "");
+  if (cleaned.startsWith("+")) {
+    cleaned = cleaned.substring(1);
+  }
+  // Nigerian local standard: 080... (11 digits) -> 23480...
+  if (cleaned.startsWith("0") && cleaned.length === 11) {
+    cleaned = "234" + cleaned.substring(1);
+  } else if (cleaned.length === 10 && !cleaned.startsWith("234")) {
+    cleaned = "234" + cleaned;
+  }
+  return cleaned;
+}
+
+function createUniqueId(prefix: string): string {
+  return `${prefix}_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
+}
 
 /**
  * Proposed Backend Contracts (Defined by Frontend, Pending Backend Verification):
@@ -141,7 +168,7 @@ class LeadsService {
 
     // Append an activity entry for this status transition
     const statusActivity: LeadActivity = {
-      id: `act_status_${Date.now()}`,
+      id: createUniqueId("act_status"),
       type: "status_change",
       title: `Status Transitioned to ${newStatus}`,
       description: note || `Broker updated lifecycle status from ${currentLead.status} to ${newStatus}.`,
@@ -164,7 +191,7 @@ class LeadsService {
   ): Promise<LeadActivity> {
     const newActivity: LeadActivity = {
       ...activityData,
-      id: `act_${Date.now()}`,
+      id: createUniqueId("act"),
     };
 
     try {
@@ -241,7 +268,7 @@ class LeadsService {
     };
 
     const takeoverActivity: LeadActivity = {
-      id: `act_takeover_${Date.now()}`,
+      id: createUniqueId("act_takeover"),
       type: "status_change",
       title: "Broker Seized Direct Control",
       description: `Autonomous AI paused. ${brokerName} assumed active transaction leadership.`,
@@ -289,7 +316,7 @@ class LeadsService {
     };
 
     const activity: LeadActivity = {
-      id: `act_stop_ai_${Date.now()}`,
+      id: createUniqueId("act_stop_ai"),
       type: "status_change",
       title: "AI Automation Suspended",
       description: reason,
@@ -328,7 +355,7 @@ class LeadsService {
     };
 
     const activity: LeadActivity = {
-      id: `act_resume_ai_${Date.now()}`,
+      id: createUniqueId("act_resume_ai"),
       type: "status_change",
       title: "AI Automation Resumed",
       description: "Autonomous voice and chat engagement active.",
@@ -375,7 +402,7 @@ class LeadsService {
     };
 
     const activity: LeadActivity = {
-      id: `act_nurture_${Date.now()}`,
+      id: createUniqueId("act_nurture"),
       type: "status_change",
       title: "Transitioned to Nurture Pipeline",
       description: `Follow-up set for ${schedule.scheduledFormatted} (${schedule.relativeCountdown}) via ${schedule.channel.toUpperCase()}.${notes ? ` Note: ${notes}` : ""}`,
@@ -419,7 +446,7 @@ class LeadsService {
     };
 
     const activity: LeadActivity = {
-      id: `act_lost_${Date.now()}`,
+      id: createUniqueId("act_lost"),
       type: "status_change",
       title: `Deal Marked as Lost: ${lossDetails.reasonLabel}`,
       description: lossDetails.notes || `Discontinued qualification. Reason: ${lossDetails.reasonLabel}`,
@@ -459,7 +486,7 @@ class LeadsService {
     };
 
     const activity: LeadActivity = {
-      id: `act_resched_${Date.now()}`,
+      id: createUniqueId("act_resched"),
       type: "status_change",
       title: "Follow-up Touchpoint Rescheduled",
       description: `New schedule: ${schedule.scheduledFormatted} (${schedule.relativeCountdown}) via ${schedule.channel.toUpperCase()}.`,
@@ -542,7 +569,7 @@ class LeadsService {
     const objTitle = targetObj?.title || "Buyer Concern";
 
     const activity: LeadActivity = {
-      id: `act_obj_${Date.now()}`,
+      id: createUniqueId("act_obj"),
       type: "status_change",
       title: status === "resolved" ? `Objection Resolved: ${objTitle}` : `Objection Reopened: ${objTitle}`,
       description:
@@ -578,6 +605,226 @@ class LeadsService {
     inMemoryMockLeads[index] = updated;
 
     return { lead: JSON.parse(JSON.stringify(updated)), scoreDelta };
+  }
+
+  /**
+   * Scans existing leads in the workspace for canonical phone number or email matches.
+   */
+  detectDuplicates(phone?: string, email?: string): DuplicateCheckResult {
+    const normPhone = phone ? normalizePhoneNumber(phone) : "";
+    const normEmail = email ? email.trim().toLowerCase() : "";
+
+    if (!normPhone && !normEmail) {
+      return { hasDuplicate: false, matches: [] };
+    }
+
+    const matches: DuplicateMatch[] = [];
+
+    for (const lead of inMemoryMockLeads) {
+      const leadNormPhone = normalizePhoneNumber(lead.phone);
+      const leadNormEmail = lead.email ? lead.email.trim().toLowerCase() : "";
+
+      const phoneMatch = Boolean(normPhone && leadNormPhone && normPhone === leadNormPhone);
+      const emailMatch = Boolean(normEmail && leadNormEmail && normEmail === leadNormEmail);
+
+      if (phoneMatch || emailMatch) {
+        matches.push({
+          leadId: lead.id,
+          leadName: lead.name,
+          phone: lead.phone,
+          email: lead.email,
+          score: lead.score,
+          scoreCategory: lead.scoreCategory,
+          status: lead.status,
+          propertyTitle: lead.propertyTitle,
+          matchType: phoneMatch && emailMatch ? "both" : phoneMatch ? "phone" : "email",
+          relativeTime: "Existing record in system",
+        });
+      }
+    }
+
+    return {
+      hasDuplicate: matches.length > 0,
+      matches,
+    };
+  }
+
+  /**
+   * Intakes a new prospect, validates duplicates, initializes BANT profile, and prepends to database.
+   */
+  async createLead(input: CreateLeadInput): Promise<Lead> {
+    await new Promise((r) => setTimeout(r, 120));
+
+    const duplicateCheck = this.detectDuplicates(input.phone, input.email);
+    const isDuplicateFlagged = duplicateCheck.hasDuplicate;
+
+    const newId = createUniqueId("lead");
+    const nowFormatted = "Just now";
+
+    // Dynamic initial BANT score calculation based on declared budget and investment intent
+    const budgetNum = parseInt(input.budget.replace(/[^\d]/g, ""), 10) || 0;
+    const isUltraHighNetWorth = budgetNum >= 300000000 || input.budget.includes("B");
+    const initialScore = isUltraHighNetWorth ? 86 : 74;
+    const initialCategory: "HOT" | "WARM" | "COLD" = initialScore >= 85 ? "HOT" : "WARM";
+
+    const intakeActivity: LeadActivity = {
+      id: createUniqueId("act_intake"),
+      type: "inbound_capture",
+      title: `Inbound Intake Captured via ${input.source}`,
+      description:
+        input.notes ||
+        `Direct inbound prospect registered for ${input.propertyTitle}. Declared budget: ${input.budget}.`,
+      timestamp: nowFormatted,
+      channel: input.source,
+      actor: {
+        type: "system",
+        name: "Autonomous Intake Engine",
+        subsystem: "Inbound Intake Gateway",
+      },
+    };
+
+    const newLead: Lead = {
+      id: newId,
+      name: input.name.trim(),
+      phone: input.phone.trim(),
+      email: input.email?.trim() || `${input.name.toLowerCase().replace(/\s+/g, ".")}@client.com`,
+      propertyTitle: input.propertyTitle,
+      location: input.location || "Lagos, Nigeria",
+      budget: input.budget,
+      score: initialScore,
+      scoreCategory: initialCategory,
+      status: "New",
+      managementMode: "ai_autonomous",
+      intent: input.intent || "Purchase",
+      timeline: input.timeline || "< 30 days",
+      nextAction: "AI Voice Outreach Scheduled",
+      source: input.source,
+      createdAt: new Date().toISOString(),
+      aiNotes: `Inbound intake captured from ${input.source}. Requirement: ${input.propertyTitle} with declared budget ${input.budget}. Automated qualification queued.`,
+      isAiStopped: false,
+      activities: [intakeActivity],
+      qualificationProfile: {
+        confidenceScore: 84,
+        buyerIntent: "high_purchase_intent",
+        intentSignals: [
+          { id: createUniqueId("sig_budget"), type: "budget", label: `Budget declared at ${input.budget}`, strength: "high" },
+          { id: createUniqueId("sig_timeline"), type: "timeline", label: `Target acquisition: ${input.timeline || "< 30 days"}`, strength: "medium" },
+        ],
+        motivation: input.notes || "Seeking verified luxury residential/commercial property in Lagos.",
+        decisionReadiness: "evaluating_shortlist",
+        readinessNote: "Inbound registration recorded. Initial underwriting underway.",
+        timelineWindow: input.timeline || "< 30 days",
+        timelineUrgency: "near_term",
+        budgetAnalysis: {
+          declared: input.budget,
+          verifiedLiquidity: input.budget,
+          paymentStructure: "Outright",
+          budgetStretchPercentage: 0,
+          stretchCategory: "Within Budget",
+        },
+        objections: [],
+        explainableBreakdown: {
+          baseScore: initialScore,
+          positiveFactors: [
+            { label: "Direct Inbound Interest", impact: 15, category: "timeline" },
+            { label: "Declared Capital Allocation", impact: 20, category: "liquidity" },
+          ],
+          riskFactors: isDuplicateFlagged
+            ? [
+                {
+                  label: "Existing Record Match",
+                  impact: -5,
+                  category: "objection",
+                  detail: "Duplicate contact record detected in workspace registry",
+                },
+              ]
+            : [],
+        },
+      },
+    };
+
+    inMemoryMockLeads.unshift(newLead);
+    return JSON.parse(JSON.stringify(newLead));
+  }
+
+  /**
+   * Executes AI re-qualification and simulated tool execution trace (OpenRouter inference).
+   */
+  async rerunAiQualification(
+    leadId: string
+  ): Promise<{ lead: Lead; trace: AiToolExecutionStep[] }> {
+    await new Promise((r) => setTimeout(r, 450));
+    const index = inMemoryMockLeads.findIndex((l) => l.id === leadId);
+    if (index === -1) throw new Error(`Lead ${leadId} not found.`);
+
+    const current = inMemoryMockLeads[index];
+    const trace: AiToolExecutionStep[] = [
+      {
+        tool: "lookup_property",
+        input: JSON.stringify({ property: current.propertyTitle, budget: current.budget }),
+        output: JSON.stringify({
+          matchStatus: "verified",
+          marketPriceRange: current.budget,
+          titleVerification: "Governor's Consent (Verified)",
+        }),
+        durationMs: 140,
+        timestamp: "Just now",
+      },
+      {
+        tool: "calculate_bant_score",
+        input: JSON.stringify({
+          budget: current.budget,
+          timeline: current.timeline,
+          intent: current.intent,
+        }),
+        output: JSON.stringify({
+          calculatedScore: Math.min(96, current.score + 4),
+          category: "HOT",
+          confidenceRate: "95%",
+        }),
+        durationMs: 210,
+        timestamp: "Just now",
+      },
+      {
+        tool: "log_buyer_objection",
+        input: JSON.stringify({ leadId, scan: "residual_risks" }),
+        output: JSON.stringify({
+          unresolvedCount: current.qualificationProfile?.objections.filter((o) => o.status === "open").length || 0,
+          recommendation: "Proceed with viewing invitation",
+        }),
+        durationMs: 110,
+        timestamp: "Just now",
+      },
+    ];
+
+    const updatedScore = Math.min(98, current.score + 3);
+    const updatedCategory: "HOT" | "WARM" | "COLD" = updatedScore >= 85 ? "HOT" : "WARM";
+
+    const activity: LeadActivity = {
+      id: createUniqueId("act_ai_underwrite"),
+      type: "status_change",
+      title: "AI Underwriting Refreshed (OpenRouter)",
+      description: `Deep qualification analysis executed via Claude 3.5 Sonnet. Score adjusted to ${updatedScore}/100 (${updatedCategory}).`,
+      timestamp: "Just now",
+      channel: "OpenRouter LLM",
+      actor: {
+        type: "ai_agent",
+        name: "Spacia Underwriting Core",
+        role: "Autonomous Underwriter",
+        modelIdentifier: "Claude 3.5 Sonnet via OpenRouter",
+        confidenceScore: 95,
+      },
+    };
+
+    const updatedLead: Lead = {
+      ...current,
+      score: updatedScore,
+      scoreCategory: updatedCategory,
+      activities: [activity, ...(current.activities || [])],
+    };
+
+    inMemoryMockLeads[index] = updatedLead;
+    return { lead: JSON.parse(JSON.stringify(updatedLead)), trace };
   }
 }
 

@@ -76,14 +76,14 @@ export function RecommendedActionCard({
   return (
     <div
       className={cn(
-        "rounded-xl border border-emerald-200/80 bg-gradient-to-br from-emerald-50/40 via-white to-white p-4 shadow-2xs space-y-3",
+        "rounded-xl border border-stone-200/70 bg-white p-4 shadow-[0_1px_2px_rgba(0,0,0,0.02)] space-y-3",
         className
       )}
     >
       {/* Header with Title and Priority */}
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-emerald-100 pb-2.5">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-stone-100 pb-2.5">
         <div className="flex items-center gap-2">
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-100 text-[#0d4a36]">
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-stone-100 text-stone-700">
             <Compass className="h-4 w-4" />
           </div>
           <div>
@@ -129,12 +129,12 @@ export function RecommendedActionCard({
       </div>
 
       {/* Protocol Guidance / Script Box */}
-      <div className="rounded-lg bg-emerald-50/60 border border-emerald-200/60 p-2.5 text-xs text-stone-700 space-y-1">
-        <span className="text-[10px] font-bold uppercase tracking-wider text-[#0d4a36] flex items-center gap-1">
-          <CheckCircle2 className="h-3.5 w-3.5 text-emerald-700" />
+      <div className="rounded-lg bg-stone-50 border border-stone-200/70 p-2.5 text-xs text-stone-700 space-y-1">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-stone-600 flex items-center gap-1.5">
+          <CheckCircle2 className="h-3.5 w-3.5 text-stone-500" />
           <span>Execution Protocol</span>
         </span>
-        <p className="text-xs text-stone-800 leading-relaxed font-sans pl-4">
+        <p className="text-xs text-stone-800 leading-relaxed font-sans pl-5">
           {action.actionProtocol}
         </p>
       </div>
@@ -143,7 +143,7 @@ export function RecommendedActionCard({
       <div className="pt-2 flex flex-wrap items-center gap-2">
         <Button
           size="sm"
-          className="h-8 gap-1.5 bg-[#0d4a36] hover:bg-[#093829] text-white text-xs font-semibold shadow-2xs cursor-pointer"
+          className="h-8 gap-1.5 bg-stone-900 hover:bg-stone-800 text-white text-xs font-medium cursor-pointer"
           onClick={() => {
             handleAction(
               "Direct Phone Call",

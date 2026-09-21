@@ -2,7 +2,7 @@
 
 > **Spacia** is a high-performance, managed AI sales orchestration platform purpose-built for modern real-estate brokerages and development firms. It autonomously captures inbound property inquiries, engages prospects via natural voice and chat, qualifies buyers against stringent underwriting criteria, evaluates purchasing power and timeline, and seamlessly books qualified viewings directly onto connected sales agents' calendars.
 
-This repository houses the **production frontend implementation for Days 1 through 13** of the Spacia MVP.
+This repository houses the **production frontend implementation for Days 1 through 14** of the Spacia MVP.
 
 ---
 
@@ -33,7 +33,8 @@ Spacia acts as an automated sales acceleration layer positioned between inbound 
 | **Day 10: Omnichannel Conversation Visibility & Timeline Primitives** | **COMPLETE & STAGED** | Complete omnichannel buyer messaging command center and primitives (`features/conversations`): strongly-typed polymorphic message timeline (`ConversationMessageTimeline`, `ConversationMessageItem`) distinguishing AI Sales Associate, Prospect, Human Broker, and System Events; in-timeline luxury real-estate media artifacts (`ConversationArtifactCard`: property specs, BANT qualification gates, viewing invites, title documents); live lifecycle status badges (`ConversationStateBadge`: `active_ai`, `awaiting_prospect`, `qualified`, `viewing_booked`, `human_takeover`, `escalated`, `closed`); broker intervention composer (`ConversationComposer`) with active AI safety warning banner, 1-click human takeover, and canned shortcuts; commercial context dossier (`ConversationContextPanel`) with buyer intent and BANT alignment; and 3-pane command center (`ConversationsCommandCenter`). Preserved and staged in code; hidden from public MVP sidebar navigation pending WhatsApp Phase 2 launch, fully previewable at `/primitives` (Section 9). |
 | **Day 11: Make Qualification Visible** | **COMPLETE & VERIFIED** | Comprehensive autonomous qualification and underwriting command center (`QualificationPanel` in `features/leads`): multi-dimensional budget analysis (declared allocation, verified liquidity, payment milestones, asking price stretch), buyer intent telemetry (`BuyerIntentBadge`, category metadata, behavioral intent signals), urgency timeline window (`< 30 days`, `urgent` / `near_term` / `flexible`), verified buying catalyst / motivation statement, decision readiness stage badges (`initial_inquiry`, `gathering_options`, `sole_decision_maker`, `partner_consensus`, `ready_to_transact`), interactive objections list with severity pills (`high`/`medium`/`low`), toggle status (`open`/`resolved`) with optimistic feedback and resolution notes, AI confidence telemetry (`IntentConfidenceGauge`, 0–100%), and explainable score breakdown with positive catalysts and risk deductions. Deeply integrated across `LeadDetailShell` (`/leads`), `LeadDossierPanel` (`/calls`), and showcased with interactive scenario switching at `/primitives` (Section 10). |
 | **Day 12: Vapi Voice Integration & Calls Hub** | **COMPLETE & VERIFIED** | Complete, production-grade Vapi AI voice telephony observability command center (`features/calls`): dedicated Calls Hub route (`/calls`) with average call duration, daily volume, and viewing conversion metrics; full-width `CallList` table with instant search and outcome filter chips (`viewing_booked`, `qualified`, `callback_requested`, `escalated_takeover`, `voicemail`); slide-over `CallDetailCockpit` with responsive backdrop; interactive `CallAudioPlayer` with play/pause, scrub slider, volume, rate toggle (1x/1.25x/1.5x/2x), and download; synchronized `TranscriptViewer` with real-time audio seek synchronization, speaker attribution badges, and confidence indicators; `CallSummaryCard` detailing automated AI synthesis, buyer sentiment, and next operational directives; and single-click broker takeover trigger. |
-| **Day 13: Operational Command Center & Human Supervision** | **COMPLETE & VERIFIED** | First complete operational command center: segmented command navigation (Overview & Property, Qualification & Score, Voice Calls & Audio, Timeline Log, Supervision), embedded Vapi `CallAudioPlayer` with waveform scrubber and speed toggle, interactive objections with reactive score lift, live AI killswitch and telemetry pill, actor-filtered activity stream, rich animated skeleton states, and full responsive optimization. |
+| **Day 13: Operational Command Center & Human Supervision** | **COMPLETE & VERIFIED** | Segmented command navigation (Overview & Property, Qualification & Score, Voice Calls & Audio, Timeline Log, Supervision), embedded Vapi `CallAudioPlayer` with waveform scrubber and speed toggle, interactive objections with reactive score lift, live AI killswitch and telemetry pill, actor-filtered activity stream, rich animated skeleton states, and full responsive optimization. |
+| **Day 14: The Complete Operational Command Center** | **COMPLETE & VERIFIED** | First complete operational command center: polished lead detail dossier with 5 segmented tabs, connected Vapi call timeline and outbound dispatching (`InitiateCallDialog`), full qualification with BANT breakdown and objection resolution, reactive 0–100 explainable scoring, polymorphic AI activity stream with note/attachment composer, 1-click human broker handoff and emergency AI stop mechanism, comprehensive loading/empty/error states, and responsive design QA with fluid dialog animations. |
 
 ---
 
@@ -961,9 +962,60 @@ src/features/leads/
 
 ---
 
-## 25. Git Workflow & Branching Conventions
+## 25. Day 14: The First Complete Operational Command Center
 
-- **Dedicated Frontend Branch**: All Day 1 through Day 13 frontend foundation code resides on the `frontend` branch.
+Day 14 consolidates and connects all operational layers into the first complete, unified command center for real-estate sales teams and human supervisors.
+
+### 1. Polished Lead Detail Dossier (`LeadDetailShell`)
+- **Apex Operational Telemetry**: Fixed header providing instant broker visibility with live status switcher (`LeadStatusSelect`), live AI automation killswitch toggle, and 1-click direct contact channels (click-to-call, WhatsApp direct link, copy phone number, email).
+- **Segmented Command Navigation**: 5 dedicated tabs organizing high-density data without visual clutter:
+  - `Overview & Property`: Prospect profile, declared parameters, high-density property specs card with verified badges, and recommended next action directives.
+  - `Qualification & Score`: 5-point BANT criteria with liquidity metrics, urgency countdown, buyer motivation profile, and reactive objections matrix.
+  - `Voice Calls & Audio`: Historical Vapi voice sessions, interactive audio player, synchronized turn-by-turn transcripts, and AI call summaries.
+  - `Timeline Log`: Polymorphic chronological event feed tracking multi-channel touchpoints with actor attribution and internal memo composer.
+  - `Supervision & Handoff`: Human broker takeover cockpit, AI outreach pause controls, and structured lifecycle transitions (Mark Nurture, Mark Lost).
+
+### 2. Connected Voice Call Timeline & Dispatching (`callsService`)
+- **Lead-Scoped Call History**: Live queries via `callsService.getCallsByLeadId()` linking calls by ID, normalized phone numbers, and prospect names.
+- **Embedded Audio Player (`CallAudioPlayer`)**: Interactive timeline scrubber, play/pause controls, volume adjustments, and playback speed options (1x, 1.25x, 1.5x, 2x).
+- **Synchronized Transcripts (`TranscriptViewer`)**: Turn-by-turn conversational view distinguishing AI Sales Associate vs Buyer with sentiment tags and click-to-seek audio synchronization.
+- **Automated Synthesis (`CallSummaryCard`)**: Post-call AI extraction of core objections, agreed milestones, and strategic broker recommendations.
+- **Live Vapi Call Dispatching (`InitiateCallDialog`)**: Modal dialog allowing brokers to dispatch voice calls to any prospect phone number, auto-generating call records and reactively updating the call timeline.
+
+### 3. Deep Autonomous Qualification & BANT Underwriting (`QualificationPanel`)
+- **5-Point BANT Scoring**: In-depth analysis of Budget Liquidity (declared budget vs asking price stretch), Authority/Decision Readiness, Need/Catalyst motivation statements, Timeline Horizon countdown, and Property Fit.
+- **Interactive Objection Tracking**: Objections categorized by severity (`high`, `medium`, `low`) with live `open` ↔ `resolved` toggles, broker resolution notes, and reactive score recalculation.
+- **AI Underwriting Engine**: Interactive simulation executing Claude 3.5 Sonnet / OpenRouter tool invocations (`lookup_property`, `calculate_bant_score`, `log_buyer_objection`).
+
+### 4. Reactive 0–100 Explainable Scoring Matrix
+- **Auditable Catalysts & Deductions**: Transparent itemized score breakdown showing positive factors (+25 liquidity, +20 timeline < 30 days) and risk deductions (-15 objections).
+- **Reactive State Sync**: Resolving an objection awards points while reopening subtracts points; updates immediately sync across the detail view, table score badges, and header pills.
+
+### 5. Polymorphic AI Activity Feed & Broker Memo Composer (`LeadActivityTimeline`)
+- **Actor Attribution**: Distinguishes `AI Sales Associate` (with model badge e.g. Claude 3.5 Sonnet, and confidence ratings) from `Human Broker` and `System Gateway`.
+- **Operational Memo Composer**: In-timeline note editor enabling brokers to log internal directives and attach image/file verification proofs.
+
+### 6. Human Supervision Cockpit & Emergency Controls (`HumanSupervisionCockpit`)
+- **1-Click Broker Takeover**: Instantly pauses autonomous AI outreach and reassigns lead responsibility to an active sales associate.
+- **Emergency AI Killswitch**: High-visibility toggle with confirmation dialog to halt autonomous outreach across telephony, messaging, and scheduled follow-ups.
+- **Disposition Dialogs**: Structured transitions for `Mark Nurture` (cadence, timeframe, touchpoint) and `Mark Lost` (loss taxonomy, competitor tracking, disposition post-mortem).
+
+### 7. Resilient Edge States & Fault Tolerance
+- **TableSkeleton**: Smooth skeleton loaders during initial data fetching.
+- **EmptyState**: Zero-match feedback for searches or status filters with 1-click filter reset.
+- **ErrorState**: Technical diagnostics drawer and retry triggers.
+- **Property Edge States**: `PropertyUnknownState` for unassigned listings and `PropertyUnavailableState` for off-market inventory.
+
+### 8. Design System Fidelity & Fluid Dialog Centering
+- **Pacia Green Identity**: Signature `#0d4a36` brand color with `#fbfbf9` canvas, `#ffffff` cards, and stone borders.
+- **Centered Viewport Dialogs**: Replaced buggy transform offsets with `fixed inset-0 flex items-center justify-center p-4` wrapper, eliminating top cutoffs across all viewport sizes.
+- **Apple/Linear-Grade Animations**: Fluid entrance keyframes (`spaciaDialogEnter`) using `cubic-bezier(0.16, 1, 0.3, 1)`.
+
+---
+
+## 26. Git Workflow & Branching Conventions
+
+- **Dedicated Frontend Branch**: All Day 1 through Day 14 frontend foundation code resides on the `frontend` branch.
 - **Protected `main` Branch**: The `main` branch is reserved for verified releases and backend-integrated milestones.
 - **Branch Naming Conventions**:
   - `feat/feature-name` for new user-facing capabilities
@@ -973,7 +1025,7 @@ src/features/leads/
 
 ---
 
-## 26. Contribution & Development Guidelines
+## 27. Contribution & Development Guidelines
 
 1. Always run `npm run lint` and `npm run type-check` before committing. Zero errors and zero warnings are required.
 2. Keep pages server-rendered where possible; designate `"use client"` only when user interaction, state, or browser APIs are required.

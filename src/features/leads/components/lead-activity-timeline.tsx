@@ -12,6 +12,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+} from "@/components/ui/select";
+import {
   History,
   PhoneCall,
   MessageSquare,
@@ -23,6 +29,7 @@ import {
   Image as ImageIcon,
   X,
   ZoomIn,
+  Filter,
 } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 
@@ -98,6 +105,32 @@ export function LeadActivityTimeline({
     return activities;
   }, [activities, activeFilter]);
 
+  const callsCount = React.useMemo(
+    () => activities.filter((a) => a.type === "ai_voice_call").length,
+    [activities]
+  );
+  const notesCount = React.useMemo(
+    () => activities.filter((a) => a.type === "human_note" || a.meta?.imageUrl).length,
+    [activities]
+  );
+  const systemCount = React.useMemo(
+    () =>
+      activities.filter(
+        (a) =>
+          a.type === "status_change" ||
+          a.type === "viewing_scheduled" ||
+          a.type === "inbound_capture"
+      ).length,
+    [activities]
+  );
+
+  const filterDisplayMap = {
+    all: { label: "All Events", count: activities.length },
+    calls: { label: "Voice Calls", count: callsCount },
+    notes: { label: "Broker Notes", count: notesCount },
+    system: { label: "System & Stage", count: systemCount },
+  };
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -131,7 +164,7 @@ export function LeadActivityTimeline({
   };
 
   return (
-    <div className="rounded-xl border border-stone-200 bg-white p-4 space-y-4 shadow-2xs">
+    <div className="rounded-xl border border-stone-200/70 bg-white p-4 space-y-4 shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
       {/* Section Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-stone-100 pb-3">
         <div className="flex items-center gap-2">
@@ -148,56 +181,64 @@ export function LeadActivityTimeline({
           </div>
         </div>
 
-        {/* Filter Pills */}
-        <div className="flex items-center gap-1 bg-stone-100/80 p-0.5 rounded-lg text-[11px] self-start sm:self-auto overflow-x-auto">
-          <button
-            type="button"
-            onClick={() => setActiveFilter("all")}
-            className={cn(
-              "px-2 py-0.5 rounded-md font-medium transition-colors cursor-pointer",
-              activeFilter === "all"
-                ? "bg-white text-stone-900 shadow-2xs"
-                : "text-stone-500 hover:text-stone-900"
-            )}
+        {/* Dropdown Filter */}
+        <div className="flex items-center gap-1.5 self-start sm:self-auto shrink-0">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400 select-none">
+            Filter:
+          </span>
+          <Select
+            value={activeFilter}
+            onValueChange={(val) => setActiveFilter(val as "all" | "calls" | "notes" | "system")}
           >
-            All ({activities.length})
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveFilter("calls")}
-            className={cn(
-              "px-2 py-0.5 rounded-md font-medium transition-colors cursor-pointer",
-              activeFilter === "calls"
-                ? "bg-white text-emerald-800 shadow-2xs"
-                : "text-stone-500 hover:text-stone-900"
-            )}
-          >
-            Voice Calls ({activities.filter((a) => a.type === "ai_voice_call").length})
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveFilter("notes")}
-            className={cn(
-              "px-2 py-0.5 rounded-md font-medium transition-colors cursor-pointer",
-              activeFilter === "notes"
-                ? "bg-white text-stone-900 shadow-2xs"
-                : "text-stone-500 hover:text-stone-900"
-            )}
-          >
-            Broker Notes ({activities.filter((a) => a.type === "human_note" || a.meta?.imageUrl).length})
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveFilter("system")}
-            className={cn(
-              "px-2 py-0.5 rounded-md font-medium transition-colors cursor-pointer",
-              activeFilter === "system"
-                ? "bg-white text-stone-900 shadow-2xs"
-                : "text-stone-500 hover:text-stone-900"
-            )}
-          >
-            System &amp; Stage
-          </button>
+            <SelectTrigger className="h-7 w-auto min-w-[145px] gap-2 px-2.5 py-0 text-xs bg-white hover:bg-stone-50 border border-stone-200 hover:border-stone-300 text-stone-800 font-medium cursor-pointer rounded-md focus:ring-1 focus:ring-stone-300 transition-colors">
+              <div className="flex items-center gap-1.5 text-xs text-stone-800 font-medium truncate">
+                <Filter className="h-3 w-3 text-stone-400 shrink-0" />
+                <span>
+                  {filterDisplayMap[activeFilter].label} ({filterDisplayMap[activeFilter].count})
+                </span>
+              </div>
+            </SelectTrigger>
+            <SelectContent
+              align="end"
+              sideOffset={4}
+              collisionPadding={16}
+              className="text-xs min-w-[185px] bg-white border border-stone-200 shadow-xl rounded-lg z-50 p-1"
+            >
+              <SelectItem value="all" className="text-xs py-1.5 cursor-pointer">
+                <div className="flex items-center justify-between w-full gap-3">
+                  <span className="font-medium text-stone-800">All Events</span>
+                  <span className="font-mono text-[10px] text-stone-400">({activities.length})</span>
+                </div>
+              </SelectItem>
+              <SelectItem value="calls" className="text-xs py-1.5 cursor-pointer">
+                <div className="flex items-center justify-between w-full gap-3">
+                  <div className="flex items-center gap-1.5">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 shrink-0" />
+                    <span className="font-medium text-stone-800">Voice Calls</span>
+                  </div>
+                  <span className="font-mono text-[10px] text-emerald-700 font-semibold">({callsCount})</span>
+                </div>
+              </SelectItem>
+              <SelectItem value="notes" className="text-xs py-1.5 cursor-pointer">
+                <div className="flex items-center justify-between w-full gap-3">
+                  <div className="flex items-center gap-1.5">
+                    <span className="h-1.5 w-1.5 rounded-full bg-sky-500 shrink-0" />
+                    <span className="font-medium text-stone-800">Broker Notes</span>
+                  </div>
+                  <span className="font-mono text-[10px] text-sky-700 font-semibold">({notesCount})</span>
+                </div>
+              </SelectItem>
+              <SelectItem value="system" className="text-xs py-1.5 cursor-pointer">
+                <div className="flex items-center justify-between w-full gap-3">
+                  <div className="flex items-center gap-1.5">
+                    <span className="h-1.5 w-1.5 rounded-full bg-amber-500 shrink-0" />
+                    <span className="font-medium text-stone-800">System &amp; Stage</span>
+                  </div>
+                  <span className="font-mono text-[10px] text-stone-400">({systemCount})</span>
+                </div>
+              </SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
@@ -270,8 +311,10 @@ export function LeadActivityTimeline({
 
       {/* Vertical Timeline */}
       <div className="relative pl-6 space-y-4 pt-1">
-        {/* Timeline track line */}
-        <div className="absolute left-2.75 top-2 bottom-2 w-px bg-stone-200" aria-hidden="true" />
+        {/* Timeline track line with continuous animated light beam */}
+        <div className="absolute left-2.75 top-2 bottom-2 w-0.5 bg-stone-200/70 rounded-full overflow-hidden" aria-hidden="true">
+          <div className="w-full h-32 bg-gradient-to-b from-transparent via-[#0d4a36] to-transparent animate-timeline-beam opacity-80" />
+        </div>
 
         {filteredActivities.length === 0 ? (
           <div className="rounded-lg border border-dashed border-stone-200 bg-stone-50/50 p-6 text-center space-y-1.5 my-2">
@@ -296,17 +339,30 @@ export function LeadActivityTimeline({
             )}
           </div>
         ) : (
-          filteredActivities.map((activity, idx) => (
-            <div key={activity.id || idx} className="relative flex items-start gap-3 text-xs">
-              {/* Timeline Icon Node */}
+          filteredActivities.map((activity, idx) => {
+            const isLatest = idx === 0;
+            return (
               <div
-                className={cn(
-                  "absolute -left-6 top-0 flex h-6 w-6 items-center justify-center rounded-full border",
-                  getActivityDotBg(activity.type)
-                )}
+                key={activity.id || idx}
+                className="group relative flex items-start gap-3 text-xs transition-all duration-200"
               >
-                {getActivityIcon(activity.type)}
-              </div>
+                {/* Timeline Icon Node with animated pulse and hover state */}
+                <div className="absolute -left-6 top-0 flex items-center justify-center">
+                  {isLatest && (
+                    <span className="absolute -inset-1 rounded-full bg-emerald-500/30 animate-ping opacity-60 pointer-events-none" />
+                  )}
+                  <div
+                    className={cn(
+                      "relative flex h-6 w-6 items-center justify-center rounded-full border shadow-2xs transition-all duration-300 group-hover:scale-115 group-hover:shadow-md group-hover:ring-2 group-hover:ring-stone-400/20",
+                      getActivityDotBg(activity.type),
+                      isLatest && "ring-2 ring-emerald-500/25 animate-dot-glow"
+                    )}
+                  >
+                    <div className="transition-transform duration-200 group-hover:scale-110">
+                      {getActivityIcon(activity.type)}
+                    </div>
+                  </div>
+                </div>
 
               {/* Event Body */}
               <div className="flex-1 space-y-2">
@@ -459,8 +515,9 @@ export function LeadActivityTimeline({
                 </div>
               </div>
             </div>
-          ))
-        )}
+          );
+        })
+      )}
       </div>
 
       {/* Lightbox Modal */}

@@ -97,14 +97,14 @@ export function FollowUpScheduleCard({
     <>
       <div
         className={cn(
-          "rounded-xl border border-teal-200/80 bg-gradient-to-br from-teal-50/40 via-white to-teal-50/20 p-4 shadow-2xs space-y-3",
+          "rounded-xl border border-stone-200/70 bg-white p-4 shadow-[0_1px_2px_rgba(0,0,0,0.02)] space-y-3",
           className
         )}
       >
         {/* Header */}
-        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-teal-100 pb-2.5">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-stone-100 pb-2.5">
           <div className="flex items-center gap-2">
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-teal-100 text-teal-800">
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-stone-100 text-stone-700">
               <CalendarClock className="h-4 w-4" />
             </div>
             <div>
@@ -120,9 +120,9 @@ export function FollowUpScheduleCard({
           <div className="flex items-center gap-1.5">
             <Badge
               variant="outline"
-              className="bg-teal-50 text-teal-800 border-teal-200 gap-1 text-[11px] font-semibold py-0.5 px-2"
+              className="bg-stone-100/80 text-stone-700 border-stone-200 gap-1 text-[11px] font-semibold py-0.5 px-2"
             >
-              <Clock className="h-3 w-3 shrink-0 text-teal-600" />
+              <Clock className="h-3 w-3 shrink-0 text-stone-500" />
               <span>{schedule.relativeCountdown}</span>
             </Badge>
 
@@ -137,13 +137,13 @@ export function FollowUpScheduleCard({
         </div>
 
         {/* Date & Time display */}
-        <div className="flex items-center justify-between gap-3 p-2.5 rounded-lg bg-white border border-teal-200/60">
+        <div className="flex items-center justify-between gap-3 p-2.5 rounded-lg bg-stone-50 border border-stone-200/70">
           <div className="space-y-0.5">
             <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400 block">
               Scheduled Date & Time
             </span>
             <p className="font-mono text-sm font-bold text-stone-900 tabular-nums flex items-center gap-1.5">
-              <CalendarDays className="h-4 w-4 text-teal-700" />
+              <CalendarDays className="h-4 w-4 text-stone-600" />
               <span>{schedule.scheduledFormatted}</span>
             </p>
           </div>
@@ -161,8 +161,8 @@ export function FollowUpScheduleCard({
 
         {/* Agenda / Notes */}
         {schedule.notes && (
-          <div className="text-xs text-stone-600 bg-teal-50/40 rounded-lg p-2 border border-teal-100/80 flex items-start gap-1.5">
-            <span className="font-semibold text-teal-900 shrink-0">Focus:</span>
+          <div className="text-xs text-stone-600 bg-stone-50 rounded-lg p-2 border border-stone-200/60 flex items-start gap-1.5">
+            <span className="font-semibold text-stone-800 shrink-0">Focus:</span>
             <span className="font-normal">{schedule.notes}</span>
           </div>
         )}

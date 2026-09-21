@@ -158,9 +158,9 @@ export function HumanSupervisionCockpit({
             ) : (
               <Badge
                 variant="outline"
-                className="bg-emerald-50 text-emerald-800 border-emerald-200 gap-1.5 py-0.5 px-2 text-xs font-semibold"
+                className="bg-stone-100/80 text-stone-700 border-stone-200 gap-1.5 py-0.5 px-2 text-xs font-semibold"
               >
-                <Bot className="h-3.5 w-3.5 text-emerald-700" />
+                <Bot className="h-3.5 w-3.5 text-stone-600" />
                 <span>AI Autonomous Queue</span>
               </Badge>
             )}
@@ -184,7 +184,7 @@ export function HumanSupervisionCockpit({
                 size="sm"
                 onClick={handleTakeoverClick}
                 disabled={isActing}
-                className="h-7 gap-1.5 bg-[#0d4a36] hover:bg-[#093829] text-white text-xs font-semibold shadow-2xs cursor-pointer"
+                className="h-7 gap-1.5 bg-stone-900 hover:bg-stone-800 text-white text-xs font-medium cursor-pointer"
               >
                 <UserCheck className="h-3.5 w-3.5" />
                 <span>Take Over</span>
@@ -199,9 +199,9 @@ export function HumanSupervisionCockpit({
                   size="sm"
                   onClick={handleResumeAIClick}
                   disabled={isActing}
-                  className="h-7 gap-1.5 bg-white hover:bg-emerald-50 text-emerald-800 border-emerald-200 text-xs font-medium cursor-pointer shadow-2xs"
+                  className="h-7 gap-1.5 bg-white hover:bg-stone-50 text-stone-700 border-stone-200 text-xs font-medium cursor-pointer"
                 >
-                  <PlayCircle className="h-3.5 w-3.5 text-emerald-600" />
+                  <PlayCircle className="h-3.5 w-3.5 text-stone-600" />
                   <span>Resume AI</span>
                 </Button>
               ) : (
@@ -210,7 +210,7 @@ export function HumanSupervisionCockpit({
                   size="sm"
                   onClick={handleStopAIClick}
                   disabled={isActing}
-                  className="h-7 gap-1.5 bg-white hover:bg-amber-50 text-amber-800 border-amber-200 text-xs font-medium cursor-pointer shadow-2xs"
+                  className="h-7 gap-1.5 bg-white hover:bg-amber-50 text-amber-800 border-amber-200 text-xs font-medium cursor-pointer"
                 >
                   <PauseCircle className="h-3.5 w-3.5 text-amber-600" />
                   <span>Stop AI</span>
@@ -225,9 +225,9 @@ export function HumanSupervisionCockpit({
                 size="sm"
                 onClick={() => setIsNurtureDialogOpen(true)}
                 disabled={isActing}
-                className="h-7 gap-1.5 bg-white hover:bg-teal-50 text-teal-800 border-teal-200 text-xs font-medium cursor-pointer shadow-2xs"
+                className="h-7 gap-1.5 bg-white hover:bg-stone-50 text-stone-700 border-stone-200 text-xs font-medium cursor-pointer"
               >
-                <CalendarHeart className="h-3.5 w-3.5 text-teal-600" />
+                <CalendarHeart className="h-3.5 w-3.5 text-stone-500" />
                 <span>Mark Nurture</span>
               </Button>
             )}
@@ -239,9 +239,9 @@ export function HumanSupervisionCockpit({
                 size="sm"
                 onClick={() => setIsLostDialogOpen(true)}
                 disabled={isActing}
-                className="h-7 gap-1.5 bg-white hover:bg-rose-50 text-rose-700 border-rose-200 text-xs font-medium cursor-pointer shadow-2xs"
+                className="h-7 gap-1.5 bg-white hover:bg-rose-50 text-stone-700 hover:text-rose-700 border-stone-200 text-xs font-medium cursor-pointer"
               >
-                <UserX className="h-3.5 w-3.5 text-rose-600" />
+                <UserX className="h-3.5 w-3.5 text-stone-500" />
                 <span>Mark Lost</span>
               </Button>
             )}

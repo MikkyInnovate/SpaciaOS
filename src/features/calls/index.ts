@@ -7,6 +7,7 @@ export * from "./components/transcript-viewer";
 export * from "./components/call-summary-card";
 export * from "./components/call-detail-cockpit";
 export * from "./components/call-list";
+export * from "./components/initiate-call-dialog";
 
 // Types
 export * from "./types";
