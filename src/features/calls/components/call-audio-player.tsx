@@ -227,8 +227,8 @@ export function CallAudioPlayer({
                 className={cn(
                   "px-1.5 py-0.5 rounded transition-colors font-semibold cursor-pointer",
                   playbackSpeed === speed
-                    ? "bg-[#0d4a36] text-white shadow-2xs"
-                    : "text-stone-600 hover:text-stone-900"
+                    ? "bg-white text-stone-900 shadow-xs border border-stone-200/80"
+                    : "text-stone-600 hover:text-stone-900 hover:bg-white/40 border border-transparent"
                 )}
               >
                 {speed}x

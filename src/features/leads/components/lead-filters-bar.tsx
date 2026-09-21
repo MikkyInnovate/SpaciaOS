@@ -10,6 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { SegmentedControl, SegmentedControlItem } from "@/components/ui/segmented-control";
 import type { LeadFilterParams, LeadScoreCategory, LeadStatus } from "../types";
 import { RotateCcw } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
@@ -91,32 +92,27 @@ export function LeadFiltersBar({
 
       {/* Bottom row: Score chips & Status dropdown filter */}
       <div className="flex flex-wrap items-center justify-between gap-2 border-t border-stone-100 pt-2.5">
-        {/* Score Category Segmented Control */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
-          <span className="text-[11px] font-medium text-stone-500 uppercase tracking-wider mr-1">
+        {/* Score Category Segmented Control (Image 2 Design Pattern) */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
+          <span className="text-[11px] font-medium text-stone-500 uppercase tracking-wider">
             Score:
           </span>
-          {SCORE_OPTIONS.map((option) => {
-            const isSelected =
-              (filters.scoreCategory || "ALL") === option.value;
-            return (
-              <button
-                key={option.value}
-                type="button"
-                onClick={() =>
-                  onFilterChange({ ...filters, scoreCategory: option.value })
-                }
-                className={cn(
-                  "rounded-md px-2.5 py-1 text-xs font-medium transition-all select-none whitespace-nowrap",
-                  isSelected
-                    ? "bg-[#0d4a36] text-white font-semibold"
-                    : "bg-stone-100 text-stone-600 hover:bg-stone-200/80 hover:text-stone-900"
-                )}
-              >
+          <SegmentedControl
+            size="sm"
+            value={filters.scoreCategory || "ALL"}
+            onValueChange={(val) =>
+              onFilterChange({
+                ...filters,
+                scoreCategory: val as LeadScoreCategory | "ALL",
+              })
+            }
+          >
+            {SCORE_OPTIONS.map((option) => (
+              <SegmentedControlItem key={option.value} value={option.value}>
                 {option.label}
-              </button>
-            );
-          })}
+              </SegmentedControlItem>
+            ))}
+          </SegmentedControl>
         </div>
 
         {/* Status Dropdown */}
