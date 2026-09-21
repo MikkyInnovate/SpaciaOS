@@ -394,49 +394,56 @@ export function LeadDetailShell({
             </div>
           </div>
 
-          {/* 2. COMMAND CENTER SEGMENT NAVIGATION (Image 2 Capsule Track Pattern) */}
-          <div className="w-full overflow-x-auto pb-1">
+          {/* 2. COMMAND CENTER FULL-WIDTH SEGMENTED NAVIGATION */}
+          <div className="w-full">
             <SegmentedControl
+              fullWidth
               value={activeTab}
               onValueChange={(val) => setActiveTab(val as CommandCenterTab)}
+              className="w-full grid grid-cols-5 p-1 gap-1"
             >
               <SegmentedControlItem
                 value="overview"
-                icon={<Compass className="h-3.5 w-3.5" />}
+                icon={<Compass className="h-3.5 w-3.5 shrink-0" />}
+                title="Overview & Property Dossier"
               >
-                Overview &amp; Property
+                Overview
               </SegmentedControlItem>
 
               <SegmentedControlItem
                 value="qualification"
-                icon={<Sparkles className="h-3.5 w-3.5" />}
-                badge={`${lead.score}/100`}
+                icon={<Sparkles className="h-3.5 w-3.5 shrink-0 text-emerald-700" />}
+                badge={lead.score}
                 badgeVariant="emerald"
+                title="Underwriting Qualification & Score"
               >
-                Qualification &amp; Score
+                Score
               </SegmentedControlItem>
 
               <SegmentedControlItem
                 value="calls"
-                icon={<PhoneCall className="h-3.5 w-3.5" />}
+                icon={<PhoneCall className="h-3.5 w-3.5 shrink-0 text-emerald-700" />}
                 badge={connectedCalls.length}
                 badgeVariant="neutral"
+                title="Voice Calls & Synthetic Telephony"
               >
-                Voice Calls &amp; Audio
+                Calls
               </SegmentedControlItem>
 
               <SegmentedControlItem
                 value="timeline"
-                icon={<History className="h-3.5 w-3.5" />}
+                icon={<History className="h-3.5 w-3.5 shrink-0 text-[#0d4a36]" />}
                 badge={lead.activities?.length || 0}
                 badgeVariant="neutral"
+                title="Interaction Timeline & Broker Memos"
               >
-                Timeline Log
+                Timeline
               </SegmentedControlItem>
 
               <SegmentedControlItem
                 value="supervision"
-                icon={<ShieldCheck className="h-3.5 w-3.5" />}
+                icon={<ShieldCheck className="h-3.5 w-3.5 shrink-0 text-indigo-700" />}
+                title="Broker Supervision, Takeover & AI Pause"
               >
                 Supervision
               </SegmentedControlItem>

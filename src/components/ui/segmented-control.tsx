@@ -8,29 +8,45 @@ const useIsomorphicLayoutEffect =
   typeof window !== "undefined" ? React.useLayoutEffect : React.useEffect;
 
 const segmentedControlTrackVariants = cva(
-  "relative inline-flex items-center gap-1 bg-stone-100/90 border border-stone-200/80 shadow-2xs select-none p-1",
+  "relative select-none transition-all",
   {
     variants: {
+      variant: {
+        capsule:
+          "bg-stone-100/90 border border-stone-200/80 shadow-2xs rounded-xl p-1 gap-1",
+        underline:
+          "bg-transparent border-b border-stone-200 p-0 rounded-none gap-2",
+      },
       size: {
-        sm: "p-0.5 rounded-lg text-[11px]",
-        default: "p-1 rounded-xl text-xs",
-        lg: "p-1 rounded-xl text-sm",
+        sm: "text-[11px]",
+        default: "text-xs",
+        lg: "text-sm",
+      },
+      fullWidth: {
+        true: "w-full grid",
+        false: "inline-flex items-center",
       },
     },
     defaultVariants: {
+      variant: "capsule",
       size: "default",
+      fullWidth: false,
     },
   }
 );
 
 const segmentedControlItemVariants = cva(
-  "relative z-10 inline-flex items-center justify-center gap-2 font-medium cursor-pointer whitespace-nowrap outline-none focus-visible:ring-2 focus-visible:ring-[#0d4a36]/30 select-none",
+  "relative z-10 inline-flex items-center justify-center font-medium cursor-pointer whitespace-nowrap outline-none focus-visible:ring-2 focus-visible:ring-[#0d4a36]/30 select-none min-w-0",
   {
     variants: {
+      variant: {
+        capsule: "gap-1.5",
+        underline: "gap-2 pb-2.5 pt-1",
+      },
       size: {
-        sm: "px-2.5 py-1 rounded-md text-[11px]",
-        default: "px-3.5 py-1.5 rounded-lg text-xs",
-        lg: "px-4 py-2 rounded-lg text-sm",
+        sm: "px-2 py-1 rounded-md text-[11px]",
+        default: "px-2.5 sm:px-3 py-1.5 rounded-lg text-xs",
+        lg: "px-3.5 sm:px-4 py-2 rounded-lg text-sm",
       },
       disabled: {
         true: "opacity-40 cursor-not-allowed pointer-events-none",
@@ -38,6 +54,7 @@ const segmentedControlItemVariants = cva(
       },
     },
     defaultVariants: {
+      variant: "capsule",
       size: "default",
       disabled: false,
     },
@@ -48,7 +65,9 @@ interface SegmentedControlContextValue {
   value: string;
   onValueChange: (val: string) => void;
   size: "sm" | "default" | "lg";
+  variant: "capsule" | "underline";
   isReady: boolean;
+  fullWidth: boolean;
 }
 
 const SegmentedControlContext = React.createContext<SegmentedControlContextValue | null>(null);
@@ -59,6 +78,8 @@ export interface SegmentedControlProps
   value?: string;
   defaultValue?: string;
   onValueChange?: (value: string) => void;
+  variant?: "capsule" | "underline";
+  fullWidth?: boolean;
   children?: React.ReactNode;
 }
 
@@ -66,7 +87,9 @@ export function SegmentedControl({
   value: controlledValue,
   defaultValue = "",
   onValueChange,
+  variant = "capsule",
   size = "default",
+  fullWidth = false,
   className,
   children,
   ...props
@@ -115,8 +138,8 @@ export function SegmentedControl({
     const buttonRect = activeButton.getBoundingClientRect();
 
     setIndicator({
-      left: buttonRect.left - trackRect.left,
-      top: buttonRect.top - trackRect.top,
+      left: buttonRect.left - trackRect.left + trackRef.current.scrollLeft,
+      top: buttonRect.top - trackRect.top + trackRef.current.scrollTop,
       width: buttonRect.width,
       height: buttonRect.height,
       ready: true,
@@ -131,7 +154,7 @@ export function SegmentedControl({
     updateIndicator();
     if (!indicator.ready) return;
 
-    // After first placement, enable transition animation
+    // After first initial placement, enable smooth animation
     const timer = setTimeout(() => {
       hasAnimated.current = true;
     }, 50);
@@ -154,17 +177,19 @@ export function SegmentedControl({
         value: activeValue,
         onValueChange: handleValueChange,
         size: size || "default",
+        variant: variant || "capsule",
         isReady: indicator.ready,
+        fullWidth: Boolean(fullWidth),
       }}
     >
       <div
         ref={trackRef}
         role="tablist"
-        className={cn(segmentedControlTrackVariants({ size }), className)}
+        className={cn(segmentedControlTrackVariants({ variant, size, fullWidth }), className)}
         {...props}
       >
-        {/* Sleek, physical sliding capsule pill */}
-        {indicator.ready && (
+        {/* Sleek, physical sliding indicator */}
+        {indicator.ready && variant === "capsule" && (
           <div
             aria-hidden="true"
             className={cn(
@@ -176,7 +201,21 @@ export function SegmentedControl({
               width: `${indicator.width}px`,
               height: `${indicator.height}px`,
               transition: hasAnimated.current
-                ? "transform 360ms cubic-bezier(0.16, 1, 0.3, 1), width 360ms cubic-bezier(0.16, 1, 0.3, 1), height 360ms cubic-bezier(0.16, 1, 0.3, 1)"
+                ? "transform 350ms cubic-bezier(0.16, 1, 0.3, 1), width 350ms cubic-bezier(0.16, 1, 0.3, 1), height 350ms cubic-bezier(0.16, 1, 0.3, 1)"
+                : "none",
+            }}
+          />
+        )}
+
+        {indicator.ready && variant === "underline" && (
+          <div
+            aria-hidden="true"
+            className="absolute z-10 bottom-0 h-0.5 bg-[#0d4a36] rounded-full pointer-events-none will-change-transform"
+            style={{
+              transform: `translate3d(${indicator.left}px, 0, 0)`,
+              width: `${indicator.width}px`,
+              transition: hasAnimated.current
+                ? "transform 320ms cubic-bezier(0.16, 1, 0.3, 1), width 320ms cubic-bezier(0.16, 1, 0.3, 1)"
                 : "none",
             }}
           />
@@ -220,6 +259,7 @@ export const SegmentedControlItem = React.forwardRef<
 
     const isActive = ctx.value === value;
     const isReady = ctx.isReady;
+    const isCapsule = ctx.variant === "capsule";
 
     return (
       <button
@@ -232,15 +272,19 @@ export const SegmentedControlItem = React.forwardRef<
         onClick={() => ctx.onValueChange(value)}
         className={cn(
           segmentedControlItemVariants({
+            variant: ctx.variant,
             size: ctx.size,
             disabled: !!disabled,
           }),
+          ctx.fullWidth && "w-full min-w-0 justify-center",
           "transition-colors duration-200",
           isActive
             ? "text-stone-900 font-semibold"
-            : "text-stone-600 hover:text-stone-900 hover:bg-stone-200/40",
-          // Fallback static background before initial animation measurement is ready
-          isActive && !isReady && "bg-white shadow-xs border border-stone-200/80",
+            : isCapsule
+            ? "text-stone-600 hover:text-stone-900 hover:bg-stone-200/40"
+            : "text-stone-500 hover:text-stone-800",
+          // Fallback static background for capsule before initial animation measurement is ready
+          isCapsule && isActive && !isReady && "bg-white shadow-xs border border-stone-200/80",
           className
         )}
         {...props}
@@ -256,12 +300,12 @@ export const SegmentedControlItem = React.forwardRef<
           </span>
         )}
 
-        <span>{children}</span>
+        <span className="truncate">{children}</span>
 
         {badge !== undefined && (
           <span
             className={cn(
-              "font-mono text-[10px] px-1.5 py-0.5 rounded-md font-bold transition-all duration-200 tabular-nums",
+              "font-mono text-[10px] px-1.5 py-0.2 rounded-md font-bold transition-all duration-200 tabular-nums shrink-0",
               badgeVariant === "emerald"
                 ? isActive
                   ? "bg-emerald-100 text-emerald-800"
