@@ -30,6 +30,7 @@ export interface LeadActivityTimelineProps {
   activities?: LeadActivity[];
   onAddNote?: (noteText: string, imageUrl?: string) => void;
   onRetryActivity?: (activityId: string) => Promise<void> | void;
+  onInspectCall?: (callId?: string) => void;
 }
 
 function getActivityIcon(type: ActivityType) {
@@ -71,13 +72,31 @@ export function LeadActivityTimeline({
   activities = [],
   onAddNote,
   onRetryActivity,
+  onInspectCall,
 }: LeadActivityTimelineProps) {
   const [newNote, setNewNote] = React.useState("");
   const [attachedImage, setAttachedImage] = React.useState<string | null>(null);
   const [attachedImageName, setAttachedImageName] = React.useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [lightboxImage, setLightboxImage] = React.useState<string | null>(null);
+  const [activeFilter, setActiveFilter] = React.useState<"all" | "calls" | "notes" | "system">("all");
   const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  const filteredActivities = React.useMemo(() => {
+    if (activeFilter === "all") return activities;
+    if (activeFilter === "calls") {
+      return activities.filter((a) => a.type === "ai_voice_call");
+    }
+    if (activeFilter === "notes") {
+      return activities.filter((a) => a.type === "human_note" || a.meta?.imageUrl);
+    }
+    if (activeFilter === "system") {
+      return activities.filter(
+        (a) => a.type === "status_change" || a.type === "viewing_scheduled" || a.type === "inbound_capture"
+      );
+    }
+    return activities;
+  }, [activities, activeFilter]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -112,16 +131,74 @@ export function LeadActivityTimeline({
   };
 
   return (
-    <div className="rounded-xl border border-stone-200 bg-white p-4 space-y-4">
+    <div className="rounded-xl border border-stone-200 bg-white p-4 space-y-4 shadow-2xs">
       {/* Section Header */}
-      <div className="flex items-center justify-between border-b border-stone-100 pb-2.5">
-        <h4 className="text-xs font-semibold uppercase tracking-wider text-stone-500 flex items-center gap-1.5">
-          <History className="h-3.5 w-3.5 text-[#0d4a36]" />
-          Interaction History &amp; Activity Log
-        </h4>
-        <span className="text-[11px] font-mono text-stone-400">
-          {activities.length} Recorded Events
-        </span>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-stone-100 pb-3">
+        <div className="flex items-center gap-2">
+          <div className="flex h-6 w-6 items-center justify-center rounded-md bg-stone-100 text-stone-700">
+            <History className="h-3.5 w-3.5 text-[#0d4a36]" />
+          </div>
+          <div>
+            <h4 className="text-xs font-semibold uppercase tracking-wider text-stone-900">
+              Interaction Timeline &amp; Audit Log
+            </h4>
+            <span className="text-[11px] text-stone-500">
+              Omnichannel touchpoints, AI voice calls, and broker memos
+            </span>
+          </div>
+        </div>
+
+        {/* Filter Pills */}
+        <div className="flex items-center gap-1 bg-stone-100/80 p-0.5 rounded-lg text-[11px] self-start sm:self-auto overflow-x-auto">
+          <button
+            type="button"
+            onClick={() => setActiveFilter("all")}
+            className={cn(
+              "px-2 py-0.5 rounded-md font-medium transition-colors cursor-pointer",
+              activeFilter === "all"
+                ? "bg-white text-stone-900 shadow-2xs"
+                : "text-stone-500 hover:text-stone-900"
+            )}
+          >
+            All ({activities.length})
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveFilter("calls")}
+            className={cn(
+              "px-2 py-0.5 rounded-md font-medium transition-colors cursor-pointer",
+              activeFilter === "calls"
+                ? "bg-white text-emerald-800 shadow-2xs"
+                : "text-stone-500 hover:text-stone-900"
+            )}
+          >
+            Voice Calls ({activities.filter((a) => a.type === "ai_voice_call").length})
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveFilter("notes")}
+            className={cn(
+              "px-2 py-0.5 rounded-md font-medium transition-colors cursor-pointer",
+              activeFilter === "notes"
+                ? "bg-white text-stone-900 shadow-2xs"
+                : "text-stone-500 hover:text-stone-900"
+            )}
+          >
+            Broker Notes ({activities.filter((a) => a.type === "human_note" || a.meta?.imageUrl).length})
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveFilter("system")}
+            className={cn(
+              "px-2 py-0.5 rounded-md font-medium transition-colors cursor-pointer",
+              activeFilter === "system"
+                ? "bg-white text-stone-900 shadow-2xs"
+                : "text-stone-500 hover:text-stone-900"
+            )}
+          >
+            System &amp; Stage
+          </button>
+        </div>
       </div>
 
       {/* Quick Broker Note Ingestion with Image Attachment */}
@@ -196,12 +273,30 @@ export function LeadActivityTimeline({
         {/* Timeline track line */}
         <div className="absolute left-2.75 top-2 bottom-2 w-px bg-stone-200" aria-hidden="true" />
 
-        {activities.length === 0 ? (
-          <p className="text-xs text-stone-400 italic py-2">
-            No previous interaction history recorded for this lead.
-          </p>
+        {filteredActivities.length === 0 ? (
+          <div className="rounded-lg border border-dashed border-stone-200 bg-stone-50/50 p-6 text-center space-y-1.5 my-2">
+            <History className="h-5 w-5 text-stone-400 mx-auto" />
+            <p className="text-xs font-semibold text-stone-700">
+              No matching activity events found
+            </p>
+            <p className="text-[11px] text-stone-500">
+              {activeFilter === "all"
+                ? "No previous interaction history recorded for this prospect."
+                : `No events matching the "${activeFilter}" category for this lead.`}
+            </p>
+            {activeFilter !== "all" && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setActiveFilter("all")}
+                className="h-6 text-[10px] mt-1 bg-white text-stone-600 cursor-pointer"
+              >
+                Show All Touchpoints
+              </Button>
+            )}
+          </div>
         ) : (
-          activities.map((activity, idx) => (
+          filteredActivities.map((activity, idx) => (
             <div key={activity.id || idx} className="relative flex items-start gap-3 text-xs">
               {/* Timeline Icon Node */}
               <div
@@ -237,6 +332,45 @@ export function LeadActivityTimeline({
                 <p className="text-stone-600 leading-relaxed text-[11px]">
                   {activity.description}
                 </p>
+
+                {/* Connected Call Quick Inspection Bar */}
+                {activity.type === "ai_voice_call" && (
+                  <div className="rounded-lg border border-emerald-100 bg-emerald-50/40 p-2.5 flex flex-wrap items-center justify-between gap-2.5 text-xs">
+                    <div className="flex items-center gap-2">
+                      <div className="flex h-7 w-7 items-center justify-center rounded-full bg-emerald-100 text-emerald-800 shrink-0">
+                        <PhoneCall className="h-3.5 w-3.5" />
+                      </div>
+                      <div className="space-y-0.5">
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-semibold text-emerald-950 text-xs">
+                            Vapi Voice Recording &amp; Transcript
+                          </span>
+                          {activity.meta?.duration && (
+                            <span className="text-[10px] font-mono font-medium text-emerald-800 bg-emerald-100/60 px-1.5 py-0.2 rounded">
+                              {activity.meta.duration}
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-[10px] text-emerald-800/80">
+                          Neural Executive audio mastered • Synchronized turn transcript
+                        </p>
+                      </div>
+                    </div>
+
+                    {onInspectCall && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => onInspectCall(activity.id)}
+                        className="h-7 text-xs px-2.5 bg-white border-emerald-200 text-emerald-800 hover:bg-emerald-100/80 cursor-pointer shadow-2xs font-medium shrink-0"
+                      >
+                        <PhoneCall className="h-3 w-3 mr-1 text-emerald-700" />
+                        <span>Inspect in Call Cockpit</span>
+                      </Button>
+                    )}
+                  </div>
+                )}
 
                 {/* Workflow Failure / Retry Component */}
                 {(activity.status === "retrying" ||

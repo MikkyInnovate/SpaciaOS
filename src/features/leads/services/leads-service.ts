@@ -472,6 +472,113 @@ class LeadsService {
 
     return JSON.parse(JSON.stringify(updated));
   }
+
+  /**
+   * Proposed contract: PATCH /api/v1/leads/:id/objections/:objectionId
+   * Resolves or reopens a buyer objection and dynamically recalculates qualification score.
+   */
+  async updateObjectionStatus(
+    leadId: string,
+    objectionId: string,
+    status: "open" | "resolved",
+    note?: string
+  ): Promise<{ lead: Lead; scoreDelta: number }> {
+    try {
+      const res = await apiClient.patch<{ lead: Lead; scoreDelta: number }>(
+        `/api/v1/leads/${leadId}/objections/${objectionId}`,
+        { status, note }
+      );
+      if (res?.lead) return res;
+    } catch {
+      // Fallback
+    }
+
+    await new Promise((r) => setTimeout(r, 100));
+
+    const index = inMemoryMockLeads.findIndex((l) => l.id === leadId);
+    if (index === -1) throw new Error(`Lead ${leadId} not found.`);
+
+    const current = inMemoryMockLeads[index];
+    const profile = current.qualificationProfile;
+    if (!profile) return { lead: JSON.parse(JSON.stringify(current)), scoreDelta: 0 };
+
+    let scoreDelta = 0;
+    const updatedObjections = profile.objections.map((obj) => {
+      if (obj.id === objectionId) {
+        const prevStatus = obj.status;
+        if (prevStatus !== status) {
+          // If resolving: award +6 to +10 score lift depending on severity
+          const impactValue = obj.severity === "high" ? 10 : obj.severity === "medium" ? 6 : 4;
+          scoreDelta = status === "resolved" ? impactValue : -impactValue;
+        }
+        return {
+          ...obj,
+          status,
+          resolutionNote: note || obj.resolutionNote,
+          resolvedAt: status === "resolved" ? "Just now" : undefined,
+        };
+      }
+      return obj;
+    });
+
+    // Recalculate score
+    const newScore = Math.min(99, Math.max(10, current.score + scoreDelta));
+    const newScoreCategory: "HOT" | "WARM" | "COLD" =
+      newScore >= 85 ? "HOT" : newScore >= 60 ? "WARM" : "COLD";
+
+    // Update risk factors in explainable breakdown
+    const updatedRiskFactors = profile.explainableBreakdown.riskFactors.map((rf) => {
+      if (rf.category === "objection") {
+        return {
+          ...rf,
+          impact: status === "resolved" ? 0 : -Math.abs(rf.impact || 5),
+          detail: status === "resolved" ? `Resolved: ${note || "Objection addressed"}` : rf.detail,
+        };
+      }
+      return rf;
+    });
+
+    const targetObj = profile.objections.find((o) => o.id === objectionId);
+    const objTitle = targetObj?.title || "Buyer Concern";
+
+    const activity: LeadActivity = {
+      id: `act_obj_${Date.now()}`,
+      type: "status_change",
+      title: status === "resolved" ? `Objection Resolved: ${objTitle}` : `Objection Reopened: ${objTitle}`,
+      description:
+        note ||
+        (status === "resolved"
+          ? `Broker addressed objection (${objTitle}). Score adjusted by +${scoreDelta} pts.`
+          : `Objection (${objTitle}) reopened for broker intervention. Score adjusted by ${scoreDelta} pts.`),
+      timestamp: "Just now",
+      channel: "Broker Command",
+      actor: {
+        type: "human_broker",
+        name: current.assignedBroker || "Assigned Broker",
+        role: "Sales Associate",
+        verifiedBadge: true,
+      },
+    };
+
+    const updated: Lead = {
+      ...current,
+      score: newScore,
+      scoreCategory: newScoreCategory,
+      qualificationProfile: {
+        ...profile,
+        objections: updatedObjections,
+        explainableBreakdown: {
+          ...profile.explainableBreakdown,
+          riskFactors: updatedRiskFactors,
+        },
+      },
+      activities: [activity, ...(current.activities || [])],
+    };
+
+    inMemoryMockLeads[index] = updated;
+
+    return { lead: JSON.parse(JSON.stringify(updated)), scoreDelta };
+  }
 }
 
 export const leadsService = new LeadsService();

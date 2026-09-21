@@ -202,6 +202,27 @@ export default function LeadsPage() {
     []
   );
 
+  // Day 13: Handle Objection Status Change with Reactive Score Lift
+  const handleObjectionStatusChange = React.useCallback(
+    async (leadId: string, objectionId: string, status: "open" | "resolved", note?: string) => {
+      const res = await leadsService.updateObjectionStatus(leadId, objectionId, status, note);
+      setSelectedLead(res.lead);
+      setLeads((prev) => prev.map((l) => (l.id === leadId ? res.lead : l)));
+
+      if (res.scoreDelta !== 0) {
+        toast.info(
+          res.scoreDelta > 0
+            ? `Underwriting Score Lift (+${res.scoreDelta} pts)`
+            : `Score Adjustment (${res.scoreDelta} pts)`,
+          {
+            description: `${res.lead.name}'s qualification score is now ${res.lead.score}/100 (${res.lead.scoreCategory}).`,
+          }
+        );
+      }
+    },
+    []
+  );
+
   // Handle CSV data export
   const handleExport = () => {
     if (leads.length === 0) {
@@ -296,6 +317,7 @@ export default function LeadsPage() {
           onMarkNurture={handleMarkNurture}
           onMarkLost={handleMarkLost}
           onUpdateSchedule={handleUpdateSchedule}
+          onObjectionStatusChange={handleObjectionStatusChange}
         />
       </Container>
     </div>
