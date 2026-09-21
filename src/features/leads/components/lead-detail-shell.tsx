@@ -5,7 +5,6 @@ import { DetailDrawer } from "@/components/ui/detail-drawer";
 import { ScoreIndicator } from "@/components/ui/score-indicator";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { SegmentedControl, SegmentedControlItem } from "@/components/ui/segmented-control";
 import { LeadStatusSelect } from "./lead-status-select";
 import { LeadNextActionCard } from "./lead-next-action-card";
 import { LeadPropertyCard } from "./lead-property-card";
@@ -385,74 +384,94 @@ export function LeadDetailShell({
                   </a>
                 )}
               </div>
-
-              <div className="flex items-center gap-2">
-                <span className="text-[11px] font-mono text-stone-400">
-                  Pod: <strong className="text-stone-700">{lead.assignedBroker || "Lekki Luxury Pod"}</strong>
-                </span>
-              </div>
             </div>
           </div>
 
-          {/* 2. COMMAND CENTER FULL-WIDTH SEGMENTED NAVIGATION */}
-          <div className="w-full">
-            <SegmentedControl
-              fullWidth
-              value={activeTab}
-              onValueChange={(val) => setActiveTab(val as CommandCenterTab)}
-              className="w-full grid grid-cols-5 p-1 gap-1"
+          {/* 2. COMMAND CENTER SEGMENT NAVIGATION */}
+          <div className="flex items-center gap-1 border-b border-stone-200 pb-px overflow-x-auto">
+            <button
+              type="button"
+              onClick={() => setActiveTab("overview")}
+              className={cn(
+                "flex items-center gap-1.5 px-3 py-2 text-xs font-semibold border-b-2 transition-all cursor-pointer whitespace-nowrap",
+                activeTab === "overview"
+                  ? "border-[#0d4a36] text-[#0d4a36] bg-[#0d4a36]/5 rounded-t-lg"
+                  : "border-transparent text-stone-600 hover:text-stone-900 hover:bg-stone-50"
+              )}
             >
-              <SegmentedControlItem
-                value="overview"
-                icon={<Compass className="h-3.5 w-3.5 shrink-0" />}
-                title="Overview & Property Dossier"
-              >
-                Overview
-              </SegmentedControlItem>
+              <Compass className="h-3.5 w-3.5" />
+              <span>Overview &amp; Property</span>
+            </button>
 
-              <SegmentedControlItem
-                value="qualification"
-                icon={<Sparkles className="h-3.5 w-3.5 shrink-0 text-emerald-700" />}
-                badge={lead.score}
-                badgeVariant="emerald"
-                title="Underwriting Qualification & Score"
-              >
-                Score
-              </SegmentedControlItem>
+            <button
+              type="button"
+              onClick={() => setActiveTab("qualification")}
+              className={cn(
+                "flex items-center gap-1.5 px-3 py-2 text-xs font-semibold border-b-2 transition-all cursor-pointer whitespace-nowrap",
+                activeTab === "qualification"
+                  ? "border-[#0d4a36] text-[#0d4a36] bg-[#0d4a36]/5 rounded-t-lg"
+                  : "border-transparent text-stone-600 hover:text-stone-900 hover:bg-stone-50"
+              )}
+            >
+              <Sparkles className="h-3.5 w-3.5 text-emerald-700" />
+              <span>Qualification &amp; Score</span>
+              <span className="font-mono text-[10px] px-1.5 py-0.2 rounded-full bg-emerald-100 text-emerald-800 font-bold">
+                {lead.score}/100
+              </span>
+            </button>
 
-              <SegmentedControlItem
-                value="calls"
-                icon={<PhoneCall className="h-3.5 w-3.5 shrink-0 text-emerald-700" />}
-                badge={connectedCalls.length}
-                badgeVariant="neutral"
-                title="Voice Calls & Synthetic Telephony"
-              >
-                Calls
-              </SegmentedControlItem>
+            <button
+              type="button"
+              onClick={() => setActiveTab("calls")}
+              className={cn(
+                "flex items-center gap-1.5 px-3 py-2 text-xs font-semibold border-b-2 transition-all cursor-pointer whitespace-nowrap",
+                activeTab === "calls"
+                  ? "border-[#0d4a36] text-[#0d4a36] bg-[#0d4a36]/5 rounded-t-lg"
+                  : "border-transparent text-stone-600 hover:text-stone-900 hover:bg-stone-50"
+              )}
+            >
+              <PhoneCall className="h-3.5 w-3.5 text-emerald-700" />
+              <span>Voice Calls &amp; Audio</span>
+              <span className="font-mono text-[10px] px-1.5 py-0.2 rounded-full bg-stone-100 text-stone-700 font-bold">
+                {connectedCalls.length}
+              </span>
+            </button>
 
-              <SegmentedControlItem
-                value="timeline"
-                icon={<History className="h-3.5 w-3.5 shrink-0 text-[#0d4a36]" />}
-                badge={lead.activities?.length || 0}
-                badgeVariant="neutral"
-                title="Interaction Timeline & Broker Memos"
-              >
-                Timeline
-              </SegmentedControlItem>
+            <button
+              type="button"
+              onClick={() => setActiveTab("timeline")}
+              className={cn(
+                "flex items-center gap-1.5 px-3 py-2 text-xs font-semibold border-b-2 transition-all cursor-pointer whitespace-nowrap",
+                activeTab === "timeline"
+                  ? "border-[#0d4a36] text-[#0d4a36] bg-[#0d4a36]/5 rounded-t-lg"
+                  : "border-transparent text-stone-600 hover:text-stone-900 hover:bg-stone-50"
+              )}
+            >
+              <History className="h-3.5 w-3.5" />
+              <span>Timeline Log</span>
+              <span className="font-mono text-[10px] px-1.5 py-0.2 rounded-full bg-stone-100 text-stone-700 font-bold">
+                {lead.activities?.length || 0}
+              </span>
+            </button>
 
-              <SegmentedControlItem
-                value="supervision"
-                icon={<ShieldCheck className="h-3.5 w-3.5 shrink-0 text-indigo-700" />}
-                title="Broker Supervision, Takeover & AI Pause"
-              >
-                Supervision
-              </SegmentedControlItem>
-            </SegmentedControl>
+            <button
+              type="button"
+              onClick={() => setActiveTab("supervision")}
+              className={cn(
+                "flex items-center gap-1.5 px-3 py-2 text-xs font-semibold border-b-2 transition-all cursor-pointer whitespace-nowrap",
+                activeTab === "supervision"
+                  ? "border-[#0d4a36] text-[#0d4a36] bg-[#0d4a36]/5 rounded-t-lg"
+                  : "border-transparent text-stone-600 hover:text-stone-900 hover:bg-stone-50"
+              )}
+            >
+              <ShieldCheck className="h-3.5 w-3.5 text-indigo-700" />
+              <span>Supervision</span>
+            </button>
           </div>
 
           {/* TAB 1: OVERVIEW & PROPERTY */}
           {activeTab === "overview" && (
-            <div className="space-y-4 animate-in fade-in-50 slide-in-from-bottom-2 duration-300 ease-out fill-mode-both">
+            <div className="space-y-4 animate-in fade-in duration-150">
               {/* Operational Next-Action Directive Card */}
               <LeadNextActionCard
                 directive={lead.nextActionDirective}
@@ -554,7 +573,7 @@ export function LeadDetailShell({
 
           {/* TAB 2: QUALIFICATION & SCORE */}
           {activeTab === "qualification" && (
-            <div className="space-y-4 animate-in fade-in-50 slide-in-from-bottom-2 duration-300 ease-out fill-mode-both">
+            <div className="space-y-4 animate-in fade-in duration-150">
               <QualificationPanel
                 lead={lead}
                 onObjectionStatusChange={(objectionId, status, note) =>
@@ -566,7 +585,7 @@ export function LeadDetailShell({
 
           {/* TAB 3: VOICE CALLS & AUDIO */}
           {activeTab === "calls" && (
-            <div className="space-y-4 animate-in fade-in-50 slide-in-from-bottom-2 duration-300 ease-out fill-mode-both">
+            <div className="space-y-4 animate-in fade-in duration-150">
               <div className="flex items-center justify-between border-b border-stone-200 pb-2">
                 <div>
                   <h4 className="text-xs font-semibold uppercase tracking-wider text-stone-900 flex items-center gap-1.5">
@@ -670,7 +689,7 @@ export function LeadDetailShell({
 
           {/* TAB 4: INTERACTION TIMELINE */}
           {activeTab === "timeline" && (
-            <div className="space-y-4 animate-in fade-in-50 slide-in-from-bottom-2 duration-300 ease-out fill-mode-both">
+            <div className="space-y-4 animate-in fade-in duration-150">
               <LeadActivityTimeline
                 activities={lead.activities}
                 onAddNote={handleAddTimelineNote}
@@ -682,7 +701,7 @@ export function LeadDetailShell({
 
           {/* TAB 5: SUPERVISION & DIRECTIVES */}
           {activeTab === "supervision" && (
-            <div className="space-y-4 animate-in fade-in-50 slide-in-from-bottom-2 duration-300 ease-out fill-mode-both">
+            <div className="space-y-4 animate-in fade-in duration-150">
               <HumanSupervisionCockpit
                 lead={lead}
                 onTakeover={(brokerName, reason) => onTakeover?.(lead.id, brokerName, reason)}

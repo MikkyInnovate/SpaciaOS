@@ -11,7 +11,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { SegmentedControl, SegmentedControlItem } from "@/components/ui/segmented-control";
 import {
   History,
   PhoneCall,
@@ -149,26 +148,56 @@ export function LeadActivityTimeline({
           </div>
         </div>
 
-        {/* Filter Pills (Image 2 Segmented Capsule Pattern) */}
-        <div className="self-start sm:self-auto overflow-x-auto">
-          <SegmentedControl
-            size="sm"
-            value={activeFilter}
-            onValueChange={(val) => setActiveFilter(val as "all" | "calls" | "notes" | "system")}
+        {/* Filter Pills */}
+        <div className="flex items-center gap-1 bg-stone-100/80 p-0.5 rounded-lg text-[11px] self-start sm:self-auto overflow-x-auto">
+          <button
+            type="button"
+            onClick={() => setActiveFilter("all")}
+            className={cn(
+              "px-2 py-0.5 rounded-md font-medium transition-colors cursor-pointer",
+              activeFilter === "all"
+                ? "bg-white text-stone-900 shadow-2xs"
+                : "text-stone-500 hover:text-stone-900"
+            )}
           >
-            <SegmentedControlItem value="all">
-              All ({activities.length})
-            </SegmentedControlItem>
-            <SegmentedControlItem value="calls">
-              Voice Calls ({activities.filter((a) => a.type === "ai_voice_call").length})
-            </SegmentedControlItem>
-            <SegmentedControlItem value="notes">
-              Broker Notes ({activities.filter((a) => a.type === "human_note" || a.meta?.imageUrl).length})
-            </SegmentedControlItem>
-            <SegmentedControlItem value="system">
-              System &amp; Stage
-            </SegmentedControlItem>
-          </SegmentedControl>
+            All ({activities.length})
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveFilter("calls")}
+            className={cn(
+              "px-2 py-0.5 rounded-md font-medium transition-colors cursor-pointer",
+              activeFilter === "calls"
+                ? "bg-white text-emerald-800 shadow-2xs"
+                : "text-stone-500 hover:text-stone-900"
+            )}
+          >
+            Voice Calls ({activities.filter((a) => a.type === "ai_voice_call").length})
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveFilter("notes")}
+            className={cn(
+              "px-2 py-0.5 rounded-md font-medium transition-colors cursor-pointer",
+              activeFilter === "notes"
+                ? "bg-white text-stone-900 shadow-2xs"
+                : "text-stone-500 hover:text-stone-900"
+            )}
+          >
+            Broker Notes ({activities.filter((a) => a.type === "human_note" || a.meta?.imageUrl).length})
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveFilter("system")}
+            className={cn(
+              "px-2 py-0.5 rounded-md font-medium transition-colors cursor-pointer",
+              activeFilter === "system"
+                ? "bg-white text-stone-900 shadow-2xs"
+                : "text-stone-500 hover:text-stone-900"
+            )}
+          >
+            System &amp; Stage
+          </button>
         </div>
       </div>
 
