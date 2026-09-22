@@ -14,7 +14,9 @@
     "db:studio": "drizzle-kit studio",
     "test:isolation": "ts-node test/tenant-isolation.spec.ts",
     "test:e2e": "ts-node test/auth-tenant.e2e.spec.ts",
-    "test:auth": "ts-node test/day3-authorization.spec.ts"
+    "test:auth": "ts-node test/day3-authorization.spec.ts",
+    "test:schema": "ts-node test/day4-domain-schema.spec.ts",
+    "test:ingestion": "ts-node test/day5-lead-ingestion.spec.ts"
   },
   "dependencies": {
     "@clerk/backend": "^3.18.1",

@@ -32,6 +32,28 @@ export class ClerkAuthGuard implements CanActivate {
     ]);
 
     if (isPublic) {
+      const request = context.switchToHttp().getRequest();
+      const authHeader = request.headers["authorization"];
+      if (authHeader && authHeader.startsWith("Bearer ")) {
+        const token = authHeader.substring(7).trim();
+        if (token) {
+          try {
+            const session = await this.clerkService.verifySessionToken(token);
+            if (session.orgId) {
+              const clientRole = mapClerkRoleToClientRole(session.orgRole);
+              request.tenantContext = {
+                userId: session.userId,
+                workspaceId: session.orgId,
+                role: clientRole,
+                permissions: DEFAULT_ROLE_PERMISSIONS[clientRole] || [],
+                orgSlug: session.orgSlug,
+              };
+            }
+          } catch {
+            // Optional auth on public route: proceed unauthenticated
+          }
+        }
+      }
       return true;
     }
 

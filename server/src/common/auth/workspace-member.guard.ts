@@ -49,6 +49,22 @@ export class WorkspaceMemberGuard implements CanActivate {
     ]);
 
     if (isPublic) {
+      const request = context.switchToHttp().getRequest();
+      if (request.tenantContext) {
+        try {
+          const dbMember =
+            await this.workspaceMembersService.validateMembership(
+              request.tenantContext.workspaceId,
+              request.tenantContext.userId
+            );
+          const authoritativeRole = dbMember.role as ClientRole;
+          request.tenantContext.role = authoritativeRole;
+          request.tenantContext.permissions =
+            DEFAULT_ROLE_PERMISSIONS[authoritativeRole] || [];
+        } catch {
+          delete request.tenantContext;
+        }
+      }
       return true;
     }
 

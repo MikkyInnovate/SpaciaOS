@@ -36,6 +36,18 @@ Spacia acts as an automated sales acceleration layer positioned between inbound 
 | **Day 13: Operational Command Center & Human Supervision** | **COMPLETE & VERIFIED** | Segmented command navigation (Overview & Property, Qualification & Score, Voice Calls & Audio, Timeline Log, Supervision), embedded Vapi `CallAudioPlayer` with waveform scrubber and speed toggle, interactive objections with reactive score lift, live AI killswitch and telemetry pill, actor-filtered activity stream, rich animated skeleton states, and full responsive optimization. |
 | **Day 14: The Complete Operational Command Center** | **COMPLETE & VERIFIED** | First complete operational command center: polished lead detail dossier with 5 segmented tabs, connected Vapi call timeline and outbound dispatching (`InitiateCallDialog`), full qualification with BANT breakdown and objection resolution, reactive 0–100 explainable scoring, polymorphic AI activity stream with note/attachment composer, 1-click human broker handoff and emergency AI stop mechanism, comprehensive loading/empty/error states, and responsive design QA with fluid dialog animations. |
 
+### Backend Implementation Status (`/server` — NestJS + Neon PostgreSQL)
+
+> Detailed documentation is maintained in [`server/README.md`](server/README.md).
+
+| Backend Milestone | Status | Description |
+| :--- | :---: | :--- |
+| **Day 1: Architecture Foundation** | **COMPLETE** | Isolated NestJS 11 modular monolith in `/server`, Neon PostgreSQL connection pooling, Drizzle ORM, Zod environment schemas, standardized response/error envelopes, global validation pipes, and health probes. |
+| **Day 2: Clerk Multi-Tenant Architecture** | **COMPLETE** | Clerk-native multi-tenant authentication, session token verification, tenant-scoped data access via `BaseTenantRepository`, and cascade vs. retention deletion rules. |
+| **Day 3: Server-Side Authorization** | **COMPLETE** | Neon database membership validation (`workspace_members`), 4-tier Pacia role hierarchy (`owner`, `admin`, `sales_manager`, `sales_agent`), granular permissions, and explicit sync onboarding (`POST /api/v1/auth/sync`). |
+| **Day 4: Core Domain Database Schemas** | **COMPLETE** | 19 live Neon PostgreSQL tables spanning Properties, Agents, Leads, Lead Events, Lead Scores, Conversations, Messages, Calls, Transcripts, Call Summaries, Qualification, Appointments, Integrations, and Notifications with composite foreign keys and multi-tenant isolation. |
+| **Day 5: Lead Ingestion Engine** | **COMPLETE** | Production-ready lead intake endpoint (`POST /api/v1/leads/ingest`), payload validation and phone/email normalization (E.164), authoritative workspace resolution, database-enforced idempotency (`idempotency_keys`), tenant-scoped duplicate detection/re-engagement, inbound event logging, and transactional outbox emission (`NewLead`). |
+
 ---
 
 ## 3. Technology Stack

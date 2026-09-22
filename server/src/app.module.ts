@@ -10,6 +10,7 @@ import { PermissionsGuard } from "./common/auth/permissions.guard";
 import { HealthModule } from "./modules/health/health.module";
 import { WorkspacesModule } from "./modules/workspaces/workspaces.module";
 import { TesterModule } from "./modules/tester/tester.module";
+import { LeadsModule } from "./modules/leads/leads.module";
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { TesterModule } from "./modules/tester/tester.module";
     HealthModule,
     WorkspacesModule,
     TesterModule,
+    LeadsModule,
   ],
   providers: [
     {

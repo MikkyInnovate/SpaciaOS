@@ -21,7 +21,15 @@ async function bootstrap() {
   app.enableCors({
     origin: [envService.frontendUrl, "http://localhost:3000"],
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization", "X-Workspace-Id", "Accept"],
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "X-Workspace-Id",
+      "X-Workspace-Slug",
+      "Idempotency-Key",
+      "X-Idempotency-Key",
+      "Accept",
+    ],
     credentials: true,
   });
 

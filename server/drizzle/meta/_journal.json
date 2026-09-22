@@ -15,6 +15,27 @@
       "when": 1790087520972,
       "tag": "0001_regular_viper",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1790093374082,
+      "tag": "0002_stale_talisman",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1790094359816,
+      "tag": "0003_orange_texas_twister",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1790095361923,
+      "tag": "0004_tiresome_nicolaos",
+      "breakpoints": true
     }
   ]
 }
