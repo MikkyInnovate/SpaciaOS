@@ -1,5 +1,5 @@
 {
-  "name": "spacia-server",
+  "name": "@spacia/backend",
   "version": "0.1.0",
   "private": true,
   "scripts": {
