@@ -320,6 +320,7 @@ Standardized Success Response (HTTP 201 Created)
 
 | Test Suite | Command | Result |
 | :--- | :--- | :---: |
+| **Day 7 Property Adapter** | `npm run test:properties` | **PASS (100%)** |
 | **Day 6 Leads API** | `npm run test:leads` | **PASS (100%)** |
 | **Day 5 Ingestion** | `npm run test:ingestion` | **PASS (100%)** |
 | **Day 4 Domain Schemas** | `npm run test:schema` | **PASS (100%)** |
@@ -381,5 +382,80 @@ All endpoints are prefixed with `/api/v1/leads` and enforce active workspace ten
   9. Chronological activity timeline retrieval (`GET /leads/:id/activities`).
   10. Ephemeral test workspace provisioning and clean teardown.
 - **Result**: `ALL DAY 6 LEAD MANAGEMENT API TESTS PASSED (100%)`.
+
+---
+
+# Day 7: Property Adapter Layer & Integration Abstraction
+
+## Objective
+Establish a clean, provider-agnostic Property Adapter Layer decoupling AI agent reasoning engines, lead qualification workflows, appointment booking systems, and frontend clients from client property inventory backends (Neon PostgreSQL, external PMS like Yardi or Entrata, or custom CRMs).
+
+---
+
+## Architecture
+
+```text
+AI / Business Logic / Controllers
+              ↓
+    PropertyAdapterService
+              ↓
+       IPropertyAdapter
+              ↓
+ ┌──────────────────────────┬──────────────────────────┐
+ │                          │                          │
+SpaciaNativePropertyAdapter  MockPmsPropertyAdapter   Future Providers...
+ (Neon / Drizzle PostgreSQL)  (Test Reference Store)   (Yardi / Entrata / MLS)
+```
+
+1. **AI / Business Logic** never knows or depends on how property records are stored.
+2. **IPropertyAdapter** is the provider boundary:
+   - `searchProperties(workspaceId, params)`
+   - `getProperty(workspaceId, propertyId)`
+   - `checkAvailability(workspaceId, query)`
+   - `getPrice(workspaceId, query)`
+   - `checkHealth(workspaceId)`
+3. **PropertyAdapterRegistry**: Dynamically resolves the authoritative provider per workspace based on integration settings, falling back safely to native database storage.
+
+---
+
+## Canonical Normalized Contracts
+
+- `NormalizedProperty`: Complete standardized property dossier (amenities, location, pricing, availability, verification, commercial terms).
+- `NormalizedPropertySummary`: Optimized summary for list and search views.
+- `NormalizedUnit`: Optional sub-unit representation for multi-unit developments.
+- `PropertySearchParams` & `PropertySearchResult`: Keyword search, price, type, location, pagination, sorting.
+- `AvailabilityQuery` & `AvailabilityResult`: Real-time status without fabricated unit holds.
+- `PriceQuery` & `PriceResult`: Real price and stored fee breakdown without fabricated taxes.
+- `IntegrationHealthStatus`: Operational health check with actual connection latency and capability flags.
+
+---
+
+## REST Endpoints Implemented
+
+| Endpoint | Method | Required Permission | Description |
+| :--- | :---: | :---: | :--- |
+| `/properties/health` | `GET` | `properties:read` | Integration operational health, real latency check, and provider capabilities. |
+| `/properties` | `GET` | `properties:read` | Paginated search across workspace property inventory with keyword, type, price, and status filters. |
+| `/properties/:id` | `GET` | `properties:read` | Normalized detailed property dossier. Cross-tenant access returns 404 without leaking existence. |
+| `/properties/:id/availability` | `GET` | `properties:read` | Real-time availability check for property or sub-unit. |
+| `/properties/:id/price` | `GET` | `properties:read` | Normalized pricing breakdown and payment terms. |
+
+---
+
+## Verification & Automated Test Suite
+
+- **Command**: `npm run test:properties`
+- **File**: `server/test/day7-property-adapter.spec.ts`
+- **8 Scenarios Verified Live Against Neon PostgreSQL**:
+  1. `IPropertyAdapter` contract conformance across native and mock reference adapters.
+  2. Multi-tenant workspace isolation on property search.
+  3. Cross-workspace lookup non-disclosure (Workspace B cannot access Workspace A property; returns `null` / `404`).
+  4. Normalized availability contract with provider-backed status.
+  5. Normalized pricing contract with real stored commercial terms.
+  6. Integration health abstraction with real database latency measurement.
+  7. Dynamic provider resolution via `PropertyAdapterRegistry`.
+  8. Full REST API flow end-to-end with verified `TenantContext`.
+- **Result**: `ALL 8 PACIA DAY 7 INTEGRATION ADAPTER TESTS PASSED 100%`.
+
 
 

@@ -17,7 +17,8 @@
     "test:auth": "ts-node test/day3-authorization.spec.ts",
     "test:schema": "ts-node test/day4-domain-schema.spec.ts",
     "test:ingestion": "ts-node test/day5-lead-ingestion.spec.ts",
-    "test:leads": "ts-node test/day6-leads-api.spec.ts"
+    "test:leads": "ts-node test/day6-leads-api.spec.ts",
+    "test:properties": "ts-node test/day7-property-adapter.spec.ts"
   },
   "dependencies": {
     "@clerk/backend": "^3.18.1",

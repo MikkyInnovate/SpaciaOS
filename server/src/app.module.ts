@@ -11,6 +11,7 @@ import { HealthModule } from "./modules/health/health.module";
 import { WorkspacesModule } from "./modules/workspaces/workspaces.module";
 import { TesterModule } from "./modules/tester/tester.module";
 import { LeadsModule } from "./modules/leads/leads.module";
+import { PropertiesModule } from "./modules/properties/properties.module";
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { LeadsModule } from "./modules/leads/leads.module";
     WorkspacesModule,
     TesterModule,
     LeadsModule,
+    PropertiesModule,
   ],
   providers: [
     {

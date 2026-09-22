@@ -50,6 +50,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<ClientRole, string[]> = {
     "leads:write",
     "calls:trigger",
     "properties:manage",
+    "properties:read",
     "events:read",
   ],
   sales_manager: [
