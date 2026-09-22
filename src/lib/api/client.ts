@@ -21,15 +21,6 @@ class ApiClient {
   }
 
   private async request<T>(endpoint: string, options: RequestOptions = {}): Promise<T> {
-    // In local development / prototype mode without a provisioned remote backend,
-    // immediately short-circuit mock endpoints to avoid sending doomed network requests
-    // to Next.js which stalls compilation and triggers unnecessary 404s.
-    const isBackendConfigured = Boolean(
-      process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BACKEND_URL
-    );
-    if (!isBackendConfigured && endpoint.startsWith("/api/v1")) {
-      throw new NetworkError("Backend API not provisioned; utilizing local mock store");
-    }
 
     const {
       workspaceId = this.activeWorkspaceId,
@@ -90,7 +81,16 @@ class ApiClient {
         return null as unknown as T;
       }
 
-      return (await response.json()) as T;
+      const json = await response.json();
+      if (
+        json &&
+        typeof json === "object" &&
+        json.success === true &&
+        "data" in json
+      ) {
+        return json.data as T;
+      }
+      return json as T;
     } catch (err: unknown) {
       clearTimeout(timeout);
       if (err instanceof ApiError) {

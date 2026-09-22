@@ -320,17 +320,66 @@ Standardized Success Response (HTTP 201 Created)
 
 | Test Suite | Command | Result |
 | :--- | :--- | :---: |
+| **Day 6 Leads API** | `npm run test:leads` | **PASS (100%)** |
 | **Day 5 Ingestion** | `npm run test:ingestion` | **PASS (100%)** |
 | **Day 4 Domain Schemas** | `npm run test:schema` | **PASS (100%)** |
 | **Day 3 Authorization** | `npm run test:auth` | **PASS (100%)** |
 | **Day 2 Tenant Isolation**| `npm run test:isolation` | **PASS (100%)** |
 | **HTTP E2E Suite** | `npm run test:e2e` | **PASS (100%)** |
 | **TypeScript Typecheck** | `npm run type-check` | **PASS (0 errors)** |
-| **Production Build** | `npm run build` | **PASS (Clean build)** |
 
 ---
 
-## Git & Repository Status
-- All changes strictly isolated to `/server`.
-- Frontend code (`src/`) remains untouched.
+# Day 6: Lead Management & Lifecycle APIs
+
+## Objective
+Implement production-grade, tenant-scoped Lead Query and Lifecycle APIs (`/api/v1/leads`) in the backend modular monolith, providing search filtering, domain status filtering, score category filtering, pagination, deep dossier hydration, status updates with immutable audit logging (`lead_events`), and lead activity timeline creation, backed by pure DTO mappers to insulate the frontend UI from internal database table structures.
+
+---
+
+## APIs & Endpoints Implemented
+
+All endpoints are prefixed with `/api/v1/leads` and enforce active workspace tenancy via `ClerkAuthGuard`, `WorkspaceMemberGuard`, and `PermissionsGuard`.
+
+| Endpoint | Method | Required Permission | Description |
+| :--- | :---: | :---: | :--- |
+| `/leads` | `GET` | `leads:read` | Returns paginated list of leads for the active workspace (`search`, `status`, `scoreCategory`, `managementMode`, `page`, `limit`). |
+| `/leads/:id` | `GET` | `leads:read` | Returns comprehensive lead dossier hydration (property, assigned broker, score breakdown, qualification, activities). |
+| `/leads/:id/status` | `PATCH` | `leads:write` | Validated status transition (`New`, `Contacting`, `In Conversation`, `Qualified`, `Follow-up`, `Viewing Booked`, `Human Managed`, `Nurture`, `Lost`), updates management mode, and writes immutable `status_change` audit event into `lead_events`. |
+| `/leads/:id/activities` | `POST` | `leads:write` | Creates a new timeline event (`inbound_capture`, `ai_voice_call`, `whatsapp_message`, `viewing_scheduled`, `human_note`, `status_change`) attributed to the authenticated broker. |
+| `/leads/:id/activities` | `GET` | `leads:read` | Returns paginated chronological activity timeline stream for a lead. |
+
+---
+
+## Architectural Safeguards & DTO Insulation
+
+1. **Strict DTO Boundary (`lead.mapper.ts`)**:
+   - Internal relational database rows (`leads`, `properties`, `agents`, `lead_scores`, `qualifications`, `lead_events`) are mapped into clean domain DTOs (`LeadSummaryDto`, `LeadDetailDto`, `LeadActivityDto`).
+   - Zero internal database artifacts (raw table names, database foreign keys, snake_case table columns) leak to the frontend.
+2. **PostgreSQL Tenant Isolation**:
+   - All queries enforce `where: eq(leads.workspaceId, tenant.workspaceId)`.
+   - Cross-workspace queries and mutations return `404 LEAD_NOT_FOUND`, preventing data discovery across tenants.
+3. **Automated Audit Logging**:
+   - Any status transition writes an immutable event into `lead_events` with previous status, new status, transition reason, and broker attribution.
+   - Transitioning to `Human Managed` automatically sets `managementMode = 'human_managed'` and `isAiStopped = true`.
+
+---
+
+## Verification & Automated Test Suite
+
+- **Command**: `npm run test:leads`
+- **File**: `server/test/day6-leads-api.spec.ts`
+- **10 Scenarios Verified Live Against Neon PostgreSQL**:
+  1. Standard paginated lead retrieval matching frontend DTO contract.
+  2. Search filtering across lead name and phone numbers (including Nigerian local 080... vs international +234... normalization).
+  3. Status and score category filtering (`status=Qualified`, `scoreCategory=HOT`).
+  4. Multi-tenant isolation: Workspace B cannot see Workspace A leads; cross-tenant GET and PATCH return `404`.
+  5. Deep dossier fetch with linked property, broker, BANT score breakdown, and qualification profile.
+  6. Status transition with automatic immutable `status_change` audit event in `lead_events`.
+  7. Management mode automation: Transition to `Human Managed` halts AI (`isAiStopped = true`).
+  8. Lead activity creation (`POST /leads/:id/activities`) with broker attribution.
+  9. Chronological activity timeline retrieval (`GET /leads/:id/activities`).
+  10. Ephemeral test workspace provisioning and clean teardown.
+- **Result**: `ALL DAY 6 LEAD MANAGEMENT API TESTS PASSED (100%)`.
+
 
