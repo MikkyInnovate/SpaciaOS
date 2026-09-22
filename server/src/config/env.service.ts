@@ -1,0 +1,40 @@
+import { Injectable } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
+import type { EnvConfig } from "./env.schema";
+
+@Injectable()
+export class EnvService {
+  constructor(private readonly configService: ConfigService<EnvConfig, true>) {}
+
+  get port(): number {
+    return this.configService.get("PORT", { infer: true });
+  }
+
+  get nodeEnv(): "development" | "production" | "test" {
+    return this.configService.get("NODE_ENV", { infer: true });
+  }
+
+  get databaseUrl(): string {
+    return this.configService.get("DATABASE_URL", { infer: true });
+  }
+
+  get frontendUrl(): string {
+    return this.configService.get("FRONTEND_URL", { infer: true });
+  }
+
+  get clerkSecretKey(): string {
+    return this.configService.get("CLERK_SECRET_KEY", { infer: true });
+  }
+
+  get clerkPublishableKey(): string | undefined {
+    return this.configService.get("CLERK_PUBLISHABLE_KEY", { infer: true });
+  }
+
+  get isDevelopment(): boolean {
+    return this.nodeEnv === "development";
+  }
+
+  get isProduction(): boolean {
+    return this.nodeEnv === "production";
+  }
+}

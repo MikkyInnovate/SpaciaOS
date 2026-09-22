@@ -1,0 +1,39 @@
+import { Module } from "@nestjs/common";
+import { APP_GUARD } from "@nestjs/core";
+import { ConfigModule } from "./config/config.module";
+import { DatabaseModule } from "./database/database.module";
+import { UsersModule } from "./modules/users/users.module";
+import { AuthModule } from "./common/auth/auth.module";
+import { ClerkAuthGuard } from "./common/auth/clerk-auth.guard";
+import { WorkspaceMemberGuard } from "./common/auth/workspace-member.guard";
+import { PermissionsGuard } from "./common/auth/permissions.guard";
+import { HealthModule } from "./modules/health/health.module";
+import { WorkspacesModule } from "./modules/workspaces/workspaces.module";
+import { TesterModule } from "./modules/tester/tester.module";
+
+@Module({
+  imports: [
+    ConfigModule,
+    DatabaseModule,
+    UsersModule,
+    AuthModule,
+    HealthModule,
+    WorkspacesModule,
+    TesterModule,
+  ],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: ClerkAuthGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: WorkspaceMemberGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: PermissionsGuard,
+    },
+  ],
+})
+export class AppModule {}
