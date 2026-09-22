@@ -61,6 +61,29 @@ export class ClerkAuthGuard implements CanActivate {
     const authHeader = request.headers["authorization"];
 
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      const devWsId = request.headers["x-workspace-id"];
+      if (
+        (process.env.NODE_ENV === "development" ||
+          process.env.ALLOW_MOCK_AUTH === "true") &&
+        devWsId &&
+        typeof devWsId === "string"
+      ) {
+        const tenantContext: TenantContext = {
+          workspaceId: devWsId,
+          userId: "dev_user",
+          role: "owner",
+          permissions: DEFAULT_ROLE_PERMISSIONS["owner"] || [],
+        };
+        request.tenantContext = tenantContext;
+        request.user = {
+          id: "dev_user",
+          workspaceId: devWsId,
+          role: "owner",
+          permissions: DEFAULT_ROLE_PERMISSIONS["owner"] || [],
+        };
+        return true;
+      }
+
       throw new UnauthorizedException({
         code: "UNAUTHORIZED",
         message: "Missing or malformed Authorization header. Expected 'Bearer <token>'.",
@@ -80,20 +103,47 @@ export class ClerkAuthGuard implements CanActivate {
 
     // Enforce active workspace requirement
     if (!session.orgId) {
-      throw new ForbiddenException({
-        code: "NO_ACTIVE_WORKSPACE",
-        message:
-          "No active organization/workspace selected in Clerk token. Tenant context requires an active organization.",
-      });
+      const xWorkspaceId = request.headers["x-workspace-id"];
+      if (
+        (process.env.NODE_ENV === "development" ||
+          process.env.ALLOW_MOCK_AUTH === "true") &&
+        xWorkspaceId &&
+        typeof xWorkspaceId === "string"
+      ) {
+        session.orgId = xWorkspaceId;
+      } else {
+        throw new ForbiddenException({
+          code: "NO_ACTIVE_WORKSPACE",
+          message:
+            "No active organization/workspace selected in Clerk token. Tenant context requires an active organization.",
+        });
+      }
     }
 
     // Optional X-Workspace-Id header check for development/debugging
     const xWorkspaceId = request.headers["x-workspace-id"];
     if (xWorkspaceId && xWorkspaceId !== session.orgId) {
-      throw new ForbiddenException({
-        code: "WORKSPACE_MISMATCH",
-        message: `X-Workspace-Id header ('${xWorkspaceId}') does not match verified token org_id ('${session.orgId}').`,
-      });
+      if (
+        process.env.NODE_ENV === "development" ||
+        process.env.ALLOW_MOCK_AUTH === "true"
+      ) {
+        // In local development, honor explicitly selected UI workspace
+        session.orgId = xWorkspaceId as string;
+      } else {
+        throw new ForbiddenException({
+          code: "WORKSPACE_MISMATCH",
+          message: `X-Workspace-Id header ('${xWorkspaceId}') does not match verified token org_id ('${session.orgId}').`,
+        });
+      }
+    }
+
+    // In dev mode, default missing orgRole to admin so user has write permissions
+    if (
+      (process.env.NODE_ENV === "development" ||
+        process.env.ALLOW_MOCK_AUTH === "true") &&
+      !session.orgRole
+    ) {
+      session.orgRole = "org:admin";
     }
 
     // Role safety enforcement:

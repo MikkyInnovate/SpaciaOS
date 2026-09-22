@@ -90,12 +90,25 @@ export class LeadsIngestService {
         }
       }
 
-      const workspace = await this.workspacesRepo.findById(authWsId);
+      let workspace = await this.workspacesRepo.findById(authWsId);
       if (!workspace) {
-        throw new NotFoundException({
-          code: "WORKSPACE_NOT_PROVISIONED",
-          message: `Authenticated workspace '${authWsId}' not found in database.`,
-        });
+        if (
+          process.env.NODE_ENV === "development" ||
+          process.env.ALLOW_MOCK_AUTH === "true"
+        ) {
+          workspace = await this.workspacesRepo.create({
+            id: authWsId,
+            name: tenantContext.orgSlug
+              ? tenantContext.orgSlug.replace(/-/g, " ")
+              : "Primary Workspace",
+            slug: tenantContext.orgSlug || authWsId,
+          });
+        } else {
+          throw new NotFoundException({
+            code: "WORKSPACE_NOT_PROVISIONED",
+            message: `Authenticated workspace '${authWsId}' not found in database.`,
+          });
+        }
       }
       return workspace;
     }
@@ -107,10 +120,21 @@ export class LeadsIngestService {
     if (headerWsId) {
       workspace = await this.workspacesRepo.findById(headerWsId);
       if (!workspace) {
-        throw new NotFoundException({
-          code: "WORKSPACE_NOT_PROVISIONED",
-          message: `Workspace ID '${headerWsId}' specified in X-Workspace-Id header not found.`,
-        });
+        if (
+          process.env.NODE_ENV === "development" ||
+          process.env.ALLOW_MOCK_AUTH === "true"
+        ) {
+          workspace = await this.workspacesRepo.create({
+            id: headerWsId,
+            name: headerWsSlug ? headerWsSlug.replace(/-/g, " ") : "Primary Workspace",
+            slug: headerWsSlug || headerWsId,
+          });
+        } else {
+          throw new NotFoundException({
+            code: "WORKSPACE_NOT_PROVISIONED",
+            message: `Workspace ID '${headerWsId}' specified in X-Workspace-Id header not found.`,
+          });
+        }
       }
       return workspace;
     }
@@ -146,6 +170,14 @@ export class LeadsIngestService {
         });
       }
       return workspace;
+    }
+
+    if (
+      process.env.NODE_ENV === "development" ||
+      process.env.ALLOW_MOCK_AUTH === "true"
+    ) {
+      const defaultWs = await this.workspacesRepo.findById("org_dubai_palace");
+      if (defaultWs) return defaultWs;
     }
 
     throw new BadRequestException({

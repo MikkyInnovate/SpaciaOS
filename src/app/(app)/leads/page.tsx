@@ -22,7 +22,7 @@ import { Download, Loader2, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 
 export default function LeadsPage() {
-  const { currentWorkspace } = useWorkspace();
+  const { currentWorkspace, isLoading: isWorkspaceLoading } = useWorkspace();
 
   // Filter state
   const [filters, setFilters] = React.useState<LeadFilterParams>({
@@ -71,9 +71,15 @@ export default function LeadsPage() {
   }, [filters, selectedLead]);
 
   React.useEffect(() => {
+    if (isWorkspaceLoading) {
+      return;
+    }
+
     let isCancelled = false;
 
     const fetchLeads = async () => {
+      setIsLoading(true);
+      setError(null);
       try {
         const response = await leadsService.getLeads(filters);
         if (!isCancelled) {
@@ -96,7 +102,7 @@ export default function LeadsPage() {
     return () => {
       isCancelled = true;
     };
-  }, [filters]);
+  }, [filters, currentWorkspace?.id, isWorkspaceLoading]);
 
   // Handle row selection to open detail shell
   const handleSelectLead = React.useCallback((lead: Lead) => {
@@ -106,7 +112,7 @@ export default function LeadsPage() {
 
   // Handle lead successfully registered via intake modal
   const handleLeadCreated = React.useCallback((newLead: Lead) => {
-    setLeads((prev) => [newLead, ...prev]);
+    setLeads((prev) => [newLead, ...prev.filter((l) => l.id !== newLead.id)]);
     setTotalCount((prev) => prev + 1);
     setSelectedLead(newLead);
     setIsDrawerOpen(true);

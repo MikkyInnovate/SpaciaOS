@@ -11,6 +11,7 @@ const DEFAULT_TIMEOUT_MS = 15000;
 class ApiClient {
   private activeWorkspaceId: string | null = null;
   private authToken: string | null = null;
+  private tokenProvider: (() => Promise<string | null>) | null = null;
 
   public setWorkspaceId(workspaceId: string) {
     this.activeWorkspaceId = workspaceId;
@@ -20,11 +21,27 @@ class ApiClient {
     this.authToken = token;
   }
 
+  public setTokenProvider(provider: (() => Promise<string | null>) | null) {
+    this.tokenProvider = provider;
+  }
+
   private async request<T>(endpoint: string, options: RequestOptions = {}): Promise<T> {
+    let resolvedToken = options.token;
+    if (!resolvedToken && this.tokenProvider) {
+      try {
+        const dynamicToken = await this.tokenProvider();
+        if (dynamicToken) resolvedToken = dynamicToken;
+      } catch {
+        // Fall back to stored static token
+      }
+    }
+    if (!resolvedToken && this.authToken) {
+      resolvedToken = this.authToken;
+    }
 
     const {
       workspaceId = this.activeWorkspaceId,
-      token = this.authToken,
+      token = resolvedToken,
       headers: customHeaders = {},
       ...fetchOptions
     } = options;
@@ -56,14 +73,18 @@ class ApiClient {
       clearTimeout(timeout);
 
       if (!response.ok) {
-        let errorData: { message?: string; error?: string } = {};
+        let errorData: any = {};
         try {
           errorData = await response.json();
         } catch {
           // Response body was not JSON
         }
 
-        const message = errorData.message || errorData.error || `HTTP request failed (${response.status})`;
+        const message =
+          (typeof errorData.message === "string" ? errorData.message : null) ||
+          (typeof errorData.error?.message === "string" ? errorData.error.message : null) ||
+          (typeof errorData.error === "string" ? errorData.error : null) ||
+          `HTTP request failed (${response.status})`;
 
         switch (response.status) {
           case 401:

@@ -389,98 +389,28 @@ class LeadsService {
    * Intakes a new prospect, validates duplicates, initializes BANT profile, and prepends to database.
    */
   async createLead(input: CreateLeadInput): Promise<Lead> {
-    await new Promise((r) => setTimeout(r, 120));
-
-    const duplicateCheck = this.detectDuplicates(input.phone, input.email);
-    const isDuplicateFlagged = duplicateCheck.hasDuplicate;
-
-    const newId = createUniqueId("lead");
-    const nowFormatted = "Just now";
-
-    // Dynamic initial BANT score calculation based on declared budget and investment intent
-    const budgetNum = parseInt(input.budget.replace(/[^\d]/g, ""), 10) || 0;
-    const isUltraHighNetWorth = budgetNum >= 300000000 || input.budget.includes("B");
-    const initialScore = isUltraHighNetWorth ? 86 : 74;
-    const initialCategory: "HOT" | "WARM" | "COLD" = initialScore >= 85 ? "HOT" : "WARM";
-
-    const intakeActivity: LeadActivity = {
-      id: createUniqueId("act_intake"),
-      type: "inbound_capture",
-      title: `Inbound Intake Captured via ${input.source}`,
-      description:
-        input.notes ||
-        `Direct inbound prospect registered for ${input.propertyTitle}. Declared budget: ${input.budget}.`,
-      timestamp: nowFormatted,
-      channel: input.source,
-      actor: {
-        type: "system",
-        name: "Autonomous Intake Engine",
-        subsystem: "Inbound Intake Gateway",
-      },
-    };
-
-    const newLead: Lead = {
-      id: newId,
-      name: input.name.trim(),
-      phone: input.phone.trim(),
-      email: input.email?.trim() || `${input.name.toLowerCase().replace(/\s+/g, ".")}@client.com`,
-      propertyTitle: input.propertyTitle,
-      location: input.location || "Lagos, Nigeria",
+    const res = await apiClient.post<{
+      lead: { id: string };
+      isDuplicate: boolean;
+      reEngaged: boolean;
+      message: string;
+    }>("/api/v1/leads/ingest", {
+      name: input.name,
+      phone: input.phone,
+      email: input.email,
       budget: input.budget,
-      score: initialScore,
-      scoreCategory: initialCategory,
-      status: "New",
-      managementMode: "ai_autonomous",
-      intent: input.intent || "Purchase",
-      timeline: input.timeline || "< 30 days",
-      nextAction: "AI Voice Outreach Scheduled",
+      timeline: input.timeline,
+      locationPreference: input.location,
+      message: input.notes,
       source: input.source,
-      createdAt: new Date().toISOString(),
-      aiNotes: `Inbound intake captured from ${input.source}. Requirement: ${input.propertyTitle} with declared budget ${input.budget}. Automated qualification queued.`,
-      isAiStopped: false,
-      activities: [intakeActivity],
-      qualificationProfile: {
-        confidenceScore: 84,
-        buyerIntent: "high_purchase_intent",
-        intentSignals: [
-          { id: createUniqueId("sig_budget"), type: "budget", label: `Budget declared at ${input.budget}`, strength: "high" },
-          { id: createUniqueId("sig_timeline"), type: "timeline", label: `Target acquisition: ${input.timeline || "< 30 days"}`, strength: "medium" },
-        ],
-        motivation: input.notes || "Seeking verified luxury residential/commercial property in Lagos.",
-        decisionReadiness: "evaluating_shortlist",
-        readinessNote: "Inbound registration recorded. Initial underwriting underway.",
-        timelineWindow: input.timeline || "< 30 days",
-        timelineUrgency: "near_term",
-        budgetAnalysis: {
-          declared: input.budget,
-          verifiedLiquidity: input.budget,
-          paymentStructure: "Outright",
-          budgetStretchPercentage: 0,
-          stretchCategory: "Within Budget",
-        },
-        objections: [],
-        explainableBreakdown: {
-          baseScore: initialScore,
-          positiveFactors: [
-            { label: "Direct Inbound Interest", impact: 15, category: "timeline" },
-            { label: "Declared Capital Allocation", impact: 20, category: "liquidity" },
-          ],
-          riskFactors: isDuplicateFlagged
-            ? [
-                {
-                  label: "Existing Record Match",
-                  impact: -5,
-                  category: "objection",
-                  detail: "Duplicate contact record detected in workspace registry",
-                },
-              ]
-            : [],
-        },
-      },
-    };
+    });
 
-    inMemoryMockLeads.unshift(newLead);
-    return JSON.parse(JSON.stringify(newLead));
+    if (res?.lead?.id) {
+      const created = await this.getLeadById(res.lead.id);
+      if (created) return created;
+    }
+
+    throw new Error("Failed to intake lead: Lead could not be loaded from backend.");
   }
 
   /**

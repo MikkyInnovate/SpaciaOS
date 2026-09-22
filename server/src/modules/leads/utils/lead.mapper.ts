@@ -12,6 +12,12 @@ import {
   LeadActivityDto,
 } from "../dto/lead-response.dto";
 
+function toIsoSafe(d: Date | string | null | undefined): string {
+  if (!d) return new Date().toISOString();
+  if (d instanceof Date) return d.toISOString();
+  return new Date(d).toISOString();
+}
+
 export function toLeadSummaryDto(
   lead: LeadRecord,
   property?: PropertyRecord | null,
@@ -42,7 +48,7 @@ export function toLeadSummaryDto(
     timeline: lead.timeline || meta.timeline || "Within 30 Days",
     nextAction:
       lead.nextAction || meta.nextAction || "Pending qualification review",
-    createdAt: lead.createdAt.toISOString(),
+    createdAt: toIsoSafe(lead.createdAt),
     aiNotes: lead.inboundNotes || meta.aiNotes || undefined,
     source: lead.source,
     assignedBroker: agent?.name || meta.assignedBroker || undefined,
@@ -61,7 +67,7 @@ export function toLeadActivityDto(event: LeadEventRecord): LeadActivityDto {
     type: event.type,
     title: event.title,
     description: event.description,
-    timestamp: event.createdAt.toISOString(),
+    timestamp: toIsoSafe(event.createdAt),
     channel: event.channel || undefined,
     status: meta.status || undefined,
     actor: {
@@ -155,7 +161,7 @@ export function toLeadDetailDto(
       reason: lead.lossReason,
       reasonLabel: lead.lossReason,
       notes: lead.lossNotes || undefined,
-      lostAt: lead.updatedAt.toISOString(),
+      lostAt: toIsoSafe(lead.updatedAt),
     };
   }
 

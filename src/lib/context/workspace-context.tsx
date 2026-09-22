@@ -23,7 +23,19 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
 
   // Extract list of all Clerk organizations the user belongs to
   const workspaces = React.useMemo<Workspace[]>(() => {
-    if (!userMembershipsData) return [];
+    if (!userMembershipsData || userMembershipsData.length === 0) {
+      if (process.env.NODE_ENV === "development") {
+        return [
+          {
+            id: "org_dubai_palace",
+            name: "Dubai Palace Realty",
+            slug: "dubai-palace",
+            role: "org:admin",
+          },
+        ];
+      }
+      return [];
+    }
 
     return userMembershipsData.map((mem) => ({
       id: mem.organization.id,
@@ -36,7 +48,20 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
 
   // Current active workspace derived strictly from active Clerk organization
   const currentWorkspace = React.useMemo<Workspace | null>(() => {
-    if (!organization) return null;
+    if (!organization) {
+      if (
+        process.env.NODE_ENV === "development" &&
+        (!userMembershipsData || userMembershipsData.length === 0)
+      ) {
+        return {
+          id: "org_dubai_palace",
+          name: "Dubai Palace Realty",
+          slug: "dubai-palace",
+          role: "org:admin",
+        };
+      }
+      return null;
+    }
 
     return {
       id: organization.id,
@@ -45,7 +70,7 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
       role: membership?.role || "org:member",
       imageUrl: organization.imageUrl,
     };
-  }, [organization, membership]);
+  }, [organization, membership, userMembershipsData]);
 
   // Auto-activate organization if single organization exists or restore UI preference
   React.useEffect(() => {
