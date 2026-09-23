@@ -457,5 +457,110 @@ SpaciaNativePropertyAdapter  MockPmsPropertyAdapter   Future Providers...
   8. Full REST API flow end-to-end with verified `TenantContext`.
 - **Result**: `ALL 8 PACIA DAY 7 INTEGRATION ADAPTER TESTS PASSED 100%`.
 
+---
+
+# Day 8: BullMQ & Redis Asynchronous Workflow Infrastructure
+
+## Objective
+Establish a reliable, production-grade asynchronous workflow execution infrastructure for Pacia using **BullMQ + Redis**, ensuring downstream workflows (e.g. AI qualification, scoring) do not block synchronous lead ingestion.
+
+```text
+Lead Ingestion (POST /leads/ingest)
+        ↓
+Interactive PostgreSQL Transaction (Persist Lead + Record 'NewLead' System Event)
+        ↓
+Post-Transaction Async Queue Dispatch
+        ↓
+BullMQ / Redis (`lead-workflows` queue, `process-new-lead` job)
+        ↓
+Worker Process
+        ↓
+Workflow Execution
+        ↓
+PostgreSQL System Event ('LeadWorkflowStarted' → 'LeadWorkflowCompleted' / 'LeadWorkflowFailed')
+```
+
+---
+
+## Architectural Principles & Constraints
+
+### 1. Redis Required for Production Execution (No Silent In-Memory Fallback)
+- **Constraint**: Redis is required for real queue execution. The system will **never** silently fall back to an in-memory queue when Redis is unavailable.
+- **Surfacing Failure**: If Redis is unreachable, `BullMQQueueService` surfaces an explicit infrastructure failure (`"Redis queue infrastructure is unavailable. Cannot enqueue workflow job."`).
+- **Transactional Safety**: The `NewLead` event remains durably recorded in PostgreSQL with status `'emitted'` so recovery mechanisms can discover and dispatch it once Redis is available.
+
+### 2. Clean Queue Abstraction Layer
+Domain modules do not couple directly to BullMQ or Redis internals:
+```text
+Lead Domain (leads-ingest.service.ts)
+        ↓
+LeadWorkflowQueueService
+        ↓
+Queue Abstraction (queue.interface.ts)
+        ↓
+BullMQQueueService
+        ↓
+RedisConnectionService (ioredis)
+```
+
+### 3. Canonical Job Contract (`process-new-lead`)
+- **Queue Name**: `lead-workflows`
+- **Job Name**: `process-new-lead`
+- **Minimal, Domain-Oriented Payload (`NewLeadWorkflowPayload`)**:
+  ```typescript
+  interface NewLeadWorkflowPayload {
+    workspaceId: string;
+    leadId: string;
+    phone: string;
+    email?: string;
+    source: string;
+    isReEngagement: boolean;
+    metadata?: Record<string, any>;
+  }
+  ```
+- Raw database rows, relational entities, or sensitive tokens are strictly excluded from queue payloads.
+
+### 4. Centralized Retry Policy & Exponential Backoff
+- Centralized configuration in `DEFAULT_WORKFLOW_RETRY_CONFIG`:
+  - **Attempts**: 3 total
+  - **Backoff Strategy**: Exponential
+  - **Initial Delay**: 1000ms
+  - **Progression**: 1s → 2s → 4s
+  - **Retention**: Last 100 completed and 500 failed jobs preserved for operator inspection.
+
+### 5. Idempotency & Deduplication
+- **Queue Layer**: BullMQ `jobId` provides duplicate-job protection for the initial workflow:
+  $$\text{jobId} = \text{lead\_wf\_}\{\text{workspaceId}\}\_\{\text{leadId}\}$$
+- **Business Layer**: PostgreSQL state and `system_events` table provide durable business idempotency across worker restarts, retries, and job retention purges.
+
+### 6. Durable System Events Lifecycle Tracking
+Reuses existing PostgreSQL `system_events` table and `SystemEventsService`:
+- `NewLead` (status: `"emitted"`, aggregateType: `"lead"`) — Persisted during lead ingestion transaction.
+- `LeadWorkflowStarted` (status: `"processing"`, aggregateType: `"workflow"`) — Written when worker begins processing.
+- `LeadWorkflowCompleted` (status: `"completed"`, aggregateType: `"workflow"`) — Written upon successful execution with execution duration.
+- `LeadWorkflowFailed` (status: `"failed"`, aggregateType: `"workflow"`) — Written when all 3 attempts are exhausted. Contains sanitized stack trace and attempt counts (no secrets, passwords, or API keys).
+
+### 7. Graceful Shutdown & Lifecycle Management
+- Implements NestJS `OnApplicationShutdown` across `BullMQQueueService` and `RedisConnectionService`.
+- Closes workers, queues, and Redis socket connections cleanly during application termination to prevent dangling connections.
+
+---
+
+## Verification & Automated Test Suite
+
+- **Command**: `npm run test:queue`
+- **File**: `server/test/day8-queue-infrastructure.spec.ts`
+- **8 Scenarios Verified Live Against Neon PostgreSQL**:
+  1. `Redis Connection Options & Failure Visibility`: Connection options configured; probe verifies availability; explicit error thrown when Redis is unreachable without silent in-memory fallback.
+  2. `Centralized Queue Contracts & Exponential Backoff`: Verified `lead-workflows` queue name, `process-new-lead` job name, 3 attempts, exponential backoff starting at 1000ms.
+  3. `Deterministic Idempotency Key Generation`: Deterministic `lead_wf_${workspaceId}_${leadId}` protection tested.
+  4. `Durable System Event Lifecycle Recording`: Verified `LeadWorkflowStarted` (status: processing) and `LeadWorkflowCompleted` (status: completed) stored in Neon DB.
+  5. `Terminal Failure & Exhaustion Handling`: Verified `LeadWorkflowFailed` persisted with `attemptsMade: 3`, `maxAttempts: 3`, and zero secrets leaked.
+  6. `Lead Ingestion Integration & Non-Blocking Dispatch`: Verified `POST /leads/ingest` returns HTTP 201 immediately (< 2000ms) with `NewLead` event committed in PostgreSQL outbox.
+  7. `Multi-Tenant Workspace Event Isolation`: Confirmed Workspace Alpha never observes events from Workspace Beta.
+  8. `Graceful Shutdown Lifecycle Handling`: Verified BullMQ Queue, Worker, and Redis connection close gracefully.
+- **Result**: `ALL DAY 8 BULLMQ & REDIS TESTS PASSED (8/8 - 100%)`.
+
+
 
 

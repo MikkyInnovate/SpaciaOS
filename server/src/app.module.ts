@@ -12,6 +12,7 @@ import { WorkspacesModule } from "./modules/workspaces/workspaces.module";
 import { TesterModule } from "./modules/tester/tester.module";
 import { LeadsModule } from "./modules/leads/leads.module";
 import { PropertiesModule } from "./modules/properties/properties.module";
+import { QueueModule } from "./modules/queue/queue.module";
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { PropertiesModule } from "./modules/properties/properties.module";
     TesterModule,
     LeadsModule,
     PropertiesModule,
+    QueueModule,
   ],
   providers: [
     {

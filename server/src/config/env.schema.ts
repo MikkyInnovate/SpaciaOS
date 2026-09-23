@@ -8,6 +8,10 @@ export const envSchema = z.object({
   CLERK_SECRET_KEY: z.string().min(1, "CLERK_SECRET_KEY is required"),
   CLERK_PUBLISHABLE_KEY: z.string().optional(),
   ALLOW_MOCK_AUTH: z.string().optional().default("false"),
+  REDIS_URL: z.string().optional(),
+  REDIS_HOST: z.string().optional().default("localhost"),
+  REDIS_PORT: z.coerce.number().optional().default(6379),
+  REDIS_PASSWORD: z.string().optional(),
 });
 
 export type EnvConfig = z.infer<typeof envSchema>;

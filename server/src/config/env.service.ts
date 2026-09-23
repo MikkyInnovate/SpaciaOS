@@ -37,4 +37,20 @@ export class EnvService {
   get isProduction(): boolean {
     return this.nodeEnv === "production";
   }
+
+  get redisUrl(): string | undefined {
+    return this.configService.get("REDIS_URL", { infer: true });
+  }
+
+  get redisHost(): string {
+    return this.configService.get("REDIS_HOST", { infer: true }) || "localhost";
+  }
+
+  get redisPort(): number {
+    return this.configService.get("REDIS_PORT", { infer: true }) || 6379;
+  }
+
+  get redisPassword(): string | undefined {
+    return this.configService.get("REDIS_PASSWORD", { infer: true });
+  }
 }

@@ -18,7 +18,8 @@
     "test:schema": "ts-node test/day4-domain-schema.spec.ts",
     "test:ingestion": "ts-node test/day5-lead-ingestion.spec.ts",
     "test:leads": "ts-node test/day6-leads-api.spec.ts",
-    "test:properties": "ts-node test/day7-property-adapter.spec.ts"
+    "test:properties": "ts-node test/day7-property-adapter.spec.ts",
+    "test:queue": "ts-node test/day8-queue-infrastructure.spec.ts"
   },
   "dependencies": {
     "@clerk/backend": "^3.18.1",
@@ -27,10 +28,12 @@
     "@nestjs/config": "^4.0.1",
     "@nestjs/core": "^11.0.11",
     "@nestjs/platform-express": "^11.0.11",
+    "bullmq": "^5.41.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
     "dotenv": "^16.4.7",
     "drizzle-orm": "^0.40.0",
+    "ioredis": "^5.4.1",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2",
     "ws": "^8.18.1",

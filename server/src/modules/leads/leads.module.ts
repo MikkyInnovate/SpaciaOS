@@ -1,5 +1,6 @@
 import { Module } from "@nestjs/common";
 import { WorkspacesModule } from "../workspaces/workspaces.module";
+import { QueueModule } from "../queue/queue.module";
 import { LeadsIngestController } from "./leads-ingest.controller";
 import { LeadsIngestService } from "./leads-ingest.service";
 import { LeadsController } from "./leads.controller";
@@ -9,7 +10,7 @@ import { LeadDeduplicationService } from "./services/lead-deduplication.service"
 import { LeadWorkflowQueueService } from "./services/lead-workflow-queue.service";
 
 @Module({
-  imports: [WorkspacesModule],
+  imports: [WorkspacesModule, QueueModule],
   controllers: [LeadsIngestController, LeadsController],
   providers: [
     LeadsIngestService,
