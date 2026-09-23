@@ -53,4 +53,28 @@ export class EnvService {
   get redisPassword(): string | undefined {
     return this.configService.get("REDIS_PASSWORD", { infer: true });
   }
+
+  get openRouterApiKey(): string | undefined {
+    return this.configService.get("OPENROUTER_API_KEY", { infer: true });
+  }
+
+  get openRouterBaseUrl(): string {
+    return this.configService.get("OPENROUTER_BASE_URL", { infer: true });
+  }
+
+  get openRouterDefaultModel(): string {
+    return this.configService.get("OPENROUTER_DEFAULT_MODEL", { infer: true });
+  }
+
+  get aiProvider(): "openrouter" | "mock" {
+    return this.configService.get("AI_PROVIDER", { infer: true });
+  }
+
+  get aiMaxToolIterations(): number {
+    return this.configService.get("AI_MAX_TOOL_ITERATIONS", { infer: true });
+  }
+
+  get aiContextWindowSize(): number {
+    return this.configService.get("AI_CONTEXT_WINDOW_SIZE", { infer: true });
+  }
 }

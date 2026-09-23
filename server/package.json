@@ -19,7 +19,11 @@
     "test:ingestion": "ts-node test/day5-lead-ingestion.spec.ts",
     "test:leads": "ts-node test/day6-leads-api.spec.ts",
     "test:properties": "ts-node test/day7-property-adapter.spec.ts",
-    "test:queue": "ts-node test/day8-queue-infrastructure.spec.ts"
+    "test:queue": "ts-node test/day8-queue-infrastructure.spec.ts",
+    "test:ai-tools": "ts-node test/day9-controlled-ai-tools.spec.ts",
+    "test:ai-agent": "NODE_ENV=test AI_PROVIDER=mock ts-node test/day10-ai-agent.spec.ts",
+    "demo:tools": "ts-node scripts/demo-tools.ts",
+    "demo:ai-agent": "ts-node scripts/demo-ai-agent.ts"
   },
   "dependencies": {
     "@clerk/backend": "^3.18.1",

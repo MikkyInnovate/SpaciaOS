@@ -13,6 +13,8 @@ import { TesterModule } from "./modules/tester/tester.module";
 import { LeadsModule } from "./modules/leads/leads.module";
 import { PropertiesModule } from "./modules/properties/properties.module";
 import { QueueModule } from "./modules/queue/queue.module";
+import { AiToolsModule } from "./modules/ai-tools/ai-tools.module";
+import { AiAgentModule } from "./modules/ai-agent/ai-agent.module";
 
 @Module({
   imports: [
@@ -26,6 +28,8 @@ import { QueueModule } from "./modules/queue/queue.module";
     LeadsModule,
     PropertiesModule,
     QueueModule,
+    AiToolsModule,
+    AiAgentModule,
   ],
   providers: [
     {

@@ -12,12 +12,19 @@ export const envSchema = z.object({
   REDIS_HOST: z.string().optional().default("localhost"),
   REDIS_PORT: z.coerce.number().optional().default(6379),
   REDIS_PASSWORD: z.string().optional(),
+  OPENROUTER_API_KEY: z.string().optional(),
+  OPENROUTER_BASE_URL: z.string().default("https://openrouter.ai/api/v1"),
+  OPENROUTER_DEFAULT_MODEL: z.string().default("anthropic/claude-3.5-sonnet"),
+  AI_PROVIDER: z.enum(["openrouter", "mock"]).default("mock"),
+  AI_MAX_TOOL_ITERATIONS: z.coerce.number().default(5),
+  AI_CONTEXT_WINDOW_SIZE: z.coerce.number().default(10),
 });
 
 export type EnvConfig = z.infer<typeof envSchema>;
 
 export function validateEnv(config: Record<string, unknown>): EnvConfig {
-  const parsed = envSchema.safeParse(config);
+  const merged = { ...config, ...process.env };
+  const parsed = envSchema.safeParse(merged);
   if (!parsed.success) {
     const errorDetails = parsed.error.issues
       .map((issue) => `[${issue.path.join(".")}] ${issue.message}`)

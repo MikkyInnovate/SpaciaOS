@@ -204,6 +204,11 @@ export class SpaciaNativePropertyAdapter implements IPropertyAdapter {
     workspaceId: string,
     propertyId: string
   ): Promise<NormalizedProperty | null> {
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(propertyId);
+    if (!isUuid) {
+      return null;
+    }
+
     const [row] = await this.db
       .select()
       .from(schema.properties)
@@ -274,6 +279,18 @@ export class SpaciaNativePropertyAdapter implements IPropertyAdapter {
     workspaceId: string,
     query: AvailabilityQuery
   ): Promise<AvailabilityResult> {
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(query.propertyId);
+    if (!isUuid) {
+      return {
+        propertyId: query.propertyId,
+        unitId: query.unitId,
+        status: "Unknown",
+        isAvailable: false,
+        checkedAt: new Date().toISOString(),
+        provider: this.providerId,
+      };
+    }
+
     const [row] = await this.db
       .select({
         id: schema.properties.id,
@@ -324,6 +341,11 @@ export class SpaciaNativePropertyAdapter implements IPropertyAdapter {
     workspaceId: string,
     query: PriceQuery
   ): Promise<PriceResult> {
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(query.propertyId);
+    if (!isUuid) {
+      throw new Error(`Property ${query.propertyId} not found in workspace.`);
+    }
+
     const [row] = await this.db
       .select({
         id: schema.properties.id,

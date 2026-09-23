@@ -14,7 +14,7 @@ import {
   PauseCircle,
   PlayCircle,
   Radio,
-  Sliders
+  Sliders,
 } from "lucide-react";
 import { toast } from "sonner";
 import { StatMetricCard } from "@/features/dashboard/components/stat-metric-card";

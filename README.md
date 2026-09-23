@@ -49,6 +49,10 @@ Spacia acts as an automated sales acceleration layer positioned between inbound 
 | **Day 5: Lead Ingestion Engine** | **COMPLETE** | Production-ready lead intake endpoint (`POST /api/v1/leads/ingest`), payload validation and phone/email normalization (E.164), authoritative workspace resolution, database-enforced idempotency (`idempotency_keys`), tenant-scoped duplicate detection/re-engagement, inbound event logging, and transactional outbox emission (`NewLead`). |
 | **Day 6: Lead Management APIs & Live Integration** | **COMPLETE & VERIFIED** | Production-ready Lead Management REST endpoints (`GET /api/v1/leads`, `GET /api/v1/leads/:id`, `PATCH /api/v1/leads/:id/status`, `POST /api/v1/leads/:id/activities`, `GET /api/v1/leads/:id/activities`). Decoupled DTO mapper layer (`LeadSummaryDto`, `LeadDetailDto`, `LeadActivityDto`) insulating frontend from database schema. Multi-tenant isolation enforced. Automatic immutable audit trail on status transitions. End-to-end integration with frontend UI via Next.js API gateway proxy with resilient dynamic Clerk auth tokens and JIT development membership provisioning. 10/10 automated tests passing. |
 | **Day 7: Property Adapter Layer & Integration Abstraction** | **COMPLETE & VERIFIED** | Provider-agnostic Property Adapter Layer decoupling AI agents and business logic from disparate property inventory backends. Canonical normalized contracts (`NormalizedProperty`, `NormalizedPropertySummary`, `NormalizedUnit`, `PropertySearchParams`, `AvailabilityResult`, `PriceResult`, `IntegrationHealthStatus`). Provider interface `IPropertyAdapter` with `SpaciaNativePropertyAdapter` (Neon PostgreSQL / Drizzle) and `MockPmsPropertyAdapter` (test/reference PMS infrastructure). Dynamic provider resolution via `PropertyAdapterRegistry`. Enforced TenantContext workspace isolation across search, direct lookup, availability, and pricing. REST API endpoints (`GET /api/v1/properties`, `GET /api/v1/properties/health`, `GET /api/v1/properties/:id`, `GET /api/v1/properties/:id/availability`, `GET /api/v1/properties/:id/price`). 8/8 automated integration tests passing (100%). |
+| **Day 8: Queue Infrastructure & Event Processing** | **COMPLETE & VERIFIED** | Redis & BullMQ asynchronous job queue infrastructure supporting background task offloading (`lead-events`, `ai-tasks`), retry policies with exponential backoff, dead-letter queue handling, and robust local fallback when Redis is unavailable. |
+| **Day 9: Controlled AI Tools & Execution Engine** | **COMPLETE & VERIFIED** | Six production-grade controlled tool contracts (`search_properties`, `get_property`, `check_property_availability`, `get_property_price`, `get_company_policy`, `get_agent`). Every tool strictly enforces 5 guarantees: inside-the-tool workspace authorization (prompt injection defense), parameter schema validation, data source verification (`sourceVerification`), and durable audit logging in Neon PostgreSQL `audit_logs`. REST endpoints: `GET /api/v1/ai-tools`, `POST /api/v1/ai-tools/execute`. 11/11 automated tests passing (100%). |
+| **Day 10: Controlled AI Agent Engine** | **COMPLETE & VERIFIED** | Autonomous conversational AI agent engine (`AiAgentModule`) layered over Day 9 security tools as an untrusted caller. Features dynamic prompt builder with workspace identity, multi-turn sliding window conversation memory (`conversations` & `messages`), autonomous tool-calling loop capped at `AI_MAX_TOOL_ITERATIONS`, anti-hallucination guardrails (unknown property specs remain unstated, LASRERA 5% commission strictly non-negotiable), OpenRouter integration with multi-model fallback array (`nex-agi/nex-n2.5-mini:free,qwen/qwen3.8-27b:free,liquid/lfm-2.5-2.6b:free`), zero-extra-LLM structured BANT qualification extraction persisted to `qualification_results`, token usage tracking in `audit_logs`, and chat endpoint `POST /api/v1/ai-agent/chat`. 12/12 automated tests passing (100%). |
+
 
 
 ---
@@ -1067,5 +1071,26 @@ The Pacia modular monolith backend resides in `/server` (NestJS 11 + Neon Postgr
   - Immutable lifecycle audit trail recorded directly in PostgreSQL `system_events` (`LeadWorkflowStarted` $\to$ `LeadWorkflowCompleted` / `LeadWorkflowFailed`).
   - Non-blocking lead ingestion: HTTP 201 returns immediately upon DB commit while workflow dispatches in the background.
   - **Verification**: `npm run test:queue` passing 8/8 (100%).
+- **Day 9 — Controlled AI Tools & Execution Engine (`modules/ai-tools`)**:
+  - Six controlled tool contracts (`search_properties`, `get_property`, `check_property_availability`, `get_property_price`, `get_company_policy`, `get_agent`).
+  - Strict inside-the-tool tenant authorization (prompt injection defense), parameter validation, source verification (`sourceVerification`), and durable compliance audit logging in PostgreSQL `audit_logs` (`actorType: 'ai_agent'`).
+  - REST endpoints: `GET /api/v1/ai-tools`, `POST /api/v1/ai-tools/execute`.
+  - CLI test harness: `npm run demo:tools`.
+  - **Verification**: `npm run test:ai-tools` passing 11/11 (100%).
+- **Day 10 — Controlled AI Agent Engine (`modules/ai-agent`)**:
+  - Autonomous conversational reasoning engine treating LLMs as untrusted callers restricted to Day 9 audited tools.
+  - Dynamic prompt builder with workspace brand identity, sliding-window conversation memory (`conversations` and `messages`), autonomous tool-calling loop capped at `AI_MAX_TOOL_ITERATIONS`, and strict anti-hallucination guardrails.
+  - OpenRouter integration with multi-model fallback array (`nex-agi/nex-n2.5-mini:free,qwen/qwen3.8-27b:free,liquid/lfm-2.5-2.6b:free`) to bypass community rate limits, plus deterministic `MockAiProvider` for offline testing.
+  - Zero-latency structured BANT extraction engine persisting lead qualification records into PostgreSQL `qualification_results`.
+  - Telemetry and token usage tracking logged to `audit_logs`.
+  - REST endpoint: `POST /api/v1/ai-agent/chat`.
+  - Interactive CLI simulator: `npm run demo:ai-agent`.
+  - **Verification**: `npm run test:ai-agent` passing 12/12 (100%).
+
+### Current Active Milestone:
+- **Day 11 — Deterministic Qualification & Scoring Layer (`modules/scoring` / `qualification`)**:
+  - Goal: Build deterministic qualification and scoring layer.
+  - Define qualification result structure, extract qualification signals, separate lead intent from AI confidence, implement deterministic 0–100 score calculation formula, store score factors in `lead_scores.factors`, store historical score audit snapshots, and generate recommended operational `next_action`.
+
 
 

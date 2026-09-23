@@ -17,12 +17,6 @@ export const NAVIGATION_SECTIONS: NavSection[] = [
         isAvailable: true,
       },
       {
-        title: "Properties",
-        href: "/properties",
-        iconName: "Building2",
-        isAvailable: true,
-      },
-      {
         title: "Calls",
         href: "/calls",
         iconName: "PhoneCall",
