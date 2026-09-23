@@ -12,7 +12,7 @@ export class PropertiesService {
   async getProperties(filters?: PropertyFilterParams): Promise<{ properties: Property[]; total: number }> {
     try {
       const queryParams = new URLSearchParams();
-      if (filters?.search) queryParams.set("search", filters.search);
+      if (filters?.search) queryParams.set("query", filters.search);
       if (filters?.availability && filters.availability !== "ALL") {
         queryParams.set("availability", filters.availability);
       }
@@ -22,8 +22,14 @@ export class PropertiesService {
 
       const queryString = queryParams.toString();
       const endpoint = "/api/v1/properties" + (queryString ? `?${queryString}` : "");
-      const response = await apiClient.get<{ properties: Property[]; total: number }>(endpoint);
+      const response = await apiClient.get<any>(endpoint);
 
+      if (response?.items) {
+        return {
+          properties: response.items,
+          total: response.total ?? response.items.length,
+        };
+      }
       if (response?.properties) {
         return response;
       }
@@ -63,7 +69,10 @@ export class PropertiesService {
    */
   async getPropertyById(id: string): Promise<Property | null> {
     try {
-      const response = await apiClient.get<{ property: Property }>("/api/v1/properties/" + id);
+      const response = await apiClient.get<any>("/api/v1/properties/" + id);
+      if (response?.id) {
+        return response as Property;
+      }
       if (response?.property) {
         return response.property;
       }
@@ -73,6 +82,30 @@ export class PropertiesService {
 
     const found = inMemoryProperties.find((p) => p.id === id);
     return found ? JSON.parse(JSON.stringify(found)) : null;
+  }
+
+  /**
+   * Health check abstraction: GET /api/v1/properties/health
+   */
+  async checkHealth(providerId?: string) {
+    const q = providerId ? `?providerId=${providerId}` : "";
+    return apiClient.get<any>(`/api/v1/properties/health${q}`);
+  }
+
+  /**
+   * Real-time availability check: GET /api/v1/properties/:id/availability
+   */
+  async checkAvailability(propertyId: string, unitId?: string) {
+    const q = unitId ? `?unitId=${unitId}` : "";
+    return apiClient.get<any>(`/api/v1/properties/${propertyId}/availability${q}`);
+  }
+
+  /**
+   * Real-time pricing & fee breakdown: GET /api/v1/properties/:id/price
+   */
+  async getPrice(propertyId: string, paymentPlan?: string) {
+    const q = paymentPlan ? `?paymentPlan=${paymentPlan}` : "";
+    return apiClient.get<any>(`/api/v1/properties/${propertyId}/price${q}`);
   }
 }
 
