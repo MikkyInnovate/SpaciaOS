@@ -31,8 +31,7 @@ export class RedisConnectionService
     const baseOptions: RedisOptions = {
       maxRetriesPerRequest: null,
       enableReadyCheck: false,
-      connectTimeout: 2000,
-      enableOfflineQueue: false,
+      connectTimeout: 5000,
       retryStrategy: (times) => {
         // Stop retrying after 2 attempts in test to fail fast
         if (this.envService.nodeEnv === "test" && times > 2) {
@@ -43,9 +42,18 @@ export class RedisConnectionService
     };
 
     if (this.envService.redisUrl) {
-      return {
-        ...baseOptions,
-      };
+      try {
+        const parsed = new URL(this.envService.redisUrl);
+        return {
+          ...baseOptions,
+          host: parsed.hostname,
+          port: parseInt(parsed.port || (parsed.protocol === "rediss:" ? "6380" : "6379"), 10),
+          password: parsed.password ? decodeURIComponent(parsed.password) : undefined,
+          tls: parsed.protocol === "rediss:" ? {} : undefined,
+        };
+      } catch (err: any) {
+        this.logger.error(`Failed to parse REDIS_URL: ${err.message}`);
+      }
     }
 
     return {

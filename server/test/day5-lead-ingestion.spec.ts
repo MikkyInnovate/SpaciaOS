@@ -509,8 +509,8 @@ async function runDay5LeadIngestionTests() {
     // CLEANUP: Destroy ephemeral test workspaces & cascade records
     // -------------------------------------------------------------------------
     console.log("Cleaning up ephemeral test workspaces...");
-    await db.delete(schema.workspaces).where(eq(schema.workspaces.id, ws1)).catch(() => {});
-    await db.delete(schema.workspaces).where(eq(schema.workspaces.id, ws2)).catch(() => {});
+    await db.delete(schema.workspaces).where(eq(schema.workspaces.id, ws1)).catch(() => { });
+    await db.delete(schema.workspaces).where(eq(schema.workspaces.id, ws2)).catch(() => { });
     await app.close();
     await pool.end();
     console.log("  ✓ Ephemeral test workspaces cleaned up successfully");
