@@ -1047,4 +1047,25 @@ Day 14 consolidates and connects all operational layers into the first complete,
 3. Place feature-specific components inside their respective `@/features/<feature>/components` directory rather than polluting `@/components/ui`.
 4. Ensure all interactive elements (buttons, inputs, selects, drawers) have clear accessible labels and keyboard focus states.
 
+---
+
+## 28. Backend Architecture & Milestones (`/server`)
+
+The Pacia modular monolith backend resides in `/server` (NestJS 11 + Neon PostgreSQL + Drizzle ORM + BullMQ + Redis). Full technical documentation and verification runbooks are recorded in [`server/README.md`](server/README.md).
+
+### Recent Backend Milestones:
+- **Day 7 — Property Adapter Layer (`features/properties`)**:
+  - Provider-agnostic adapter boundary (`IPropertyAdapter`) insulating AI and business logic from underlying PMS/MLS storage systems.
+  - Native database adapter (`SpaciaNativePropertyAdapter`) and reference store (`MockPmsPropertyAdapter`).
+  - Real-time search, availability checks, commercial fee breakdowns, and database health probes with strict multi-tenant isolation.
+  - **Verification**: `npm run test:properties` passing 8/8 (100%).
+- **Day 8 — BullMQ & Redis Asynchronous Workflow Infrastructure (`modules/queue`)**:
+  - Production-grade asynchronous workflow execution engine using BullMQ and Redis (Upstash / Cloud / Local).
+  - Minimal domain payload contract (`NewLeadWorkflowPayload`) on the `lead-workflows` queue (`process-new-lead` job).
+  - Centralized retry policy: 3 attempts with exponential backoff ($1\text{s} \to 2\text{s} \to 4\text{s}$).
+  - Strict duplicate protection via deterministic `jobId`: `lead_wf_${workspaceId}_${leadId}`.
+  - Immutable lifecycle audit trail recorded directly in PostgreSQL `system_events` (`LeadWorkflowStarted` $\to$ `LeadWorkflowCompleted` / `LeadWorkflowFailed`).
+  - Non-blocking lead ingestion: HTTP 201 returns immediately upon DB commit while workflow dispatches in the background.
+  - **Verification**: `npm run test:queue` passing 8/8 (100%).
+
 
