@@ -25,6 +25,7 @@
     "test:qualification": "NODE_ENV=test AI_PROVIDER=mock ts-node test/day11-qualification-scoring.spec.ts",
     "test:vapi": "NODE_ENV=test AI_PROVIDER=mock VAPI_PROVIDER=mock ts-node test/day12-vapi-telephony.spec.ts",
     "test:followup": "NODE_ENV=test AI_PROVIDER=mock VAPI_PROVIDER=mock ts-node test/day13-followup-handoff.spec.ts",
+    "test:day14": "NODE_ENV=test AI_PROVIDER=mock VAPI_PROVIDER=mock ts-node test/day14-end-to-end-loop.spec.ts",
     "demo:tools": "ts-node scripts/demo-tools.ts",
     "demo:ai-agent": "ts-node scripts/demo-ai-agent.ts",
     "demo:handoff": "NODE_ENV=test AI_PROVIDER=mock VAPI_PROVIDER=mock ts-node scripts/demo-handoff.ts"

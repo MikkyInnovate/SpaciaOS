@@ -888,4 +888,30 @@ Implement an autonomous follow-up workflow and human handoff engine. Enforces st
    - **Automated Test Suite**: `npm run test:followup` (`server/test/day13-followup-handoff.spec.ts`) — 7/7 tests passed (100%).
    - **Interactive Live Demo**: `npm run demo:handoff` (`server/scripts/demo-handoff.ts`) — complete 7-step lifecycle simulation passed (Code 0).
 
+---
+
+# Day 14: End-to-End Autonomous Sales Loop Integration & Validation
+
+## Objective
+Validate and harden the complete end-to-end backend sales loop across all 10 operational stages of the Spacia sales engine without introducing new architectural abstractions:
+
+$$\text{Capture} \longrightarrow \text{Outbox Event} \longrightarrow \text{Workflow Queue} \longrightarrow \text{Converse (AI)} \longrightarrow \text{Property Grounding} \longrightarrow \text{BANT Extraction} \longrightarrow \text{Deterministic Score} \longrightarrow \text{Voice Call Dispatch} \longrightarrow \text{Webhook \& Transcript} \longrightarrow \text{Follow-Up \& Broker Takeover}$$
+
+## Summary of Validated Stages
+1. **Stage 1 — Capture (`LeadsIngestService`)**: Ingests luxury prospect with Nigerian phone format (`080...`), normalizes to E.164 (`+234...`), initializes `status: "New"`, `managementMode: "ai_autonomous"`, `isAiStopped: false`.
+2. **Stage 2 — Transactional Outbox (`LeadWorkflowQueueService`)**: Atomically commits durable `NewLead` system event to PostgreSQL `system_events` with emitted status.
+3. **Stage 3 — Workflow Queue (`BullMQQueueService`)**: Dispatches `NewLeadWorkflowPayload` with deterministic deduplicated job ID (`lead_wf_${workspaceId}_${leadId}`).
+4. **Stages 4 & 5 — AI Conversation & Property Grounding (`AiOrchestratorService`)**: Autonomous conversational reasoning loop with Day 9 property search tool execution, brand injection, LASRERA guardrails, and sliding-window dialogue persistence.
+5. **Stage 6 — BANT Extraction (`StructuredExtractionService`)**: In-memory rule extraction persisting buyer intent (`luxury_relocation`), timeline window (`< 30 days`), and verified liquidity to `qualification_results`.
+6. **Stage 7 — Deterministic Scoring Engine (`LeadScoringService`)**: 5-dimension BANT+ evaluation scoring lead as **HOT (92/100)** with explainable breakdown in `lead_scores`.
+7. **Stage 8 — Vapi Outbound Voice Call (`CallsService`)**: Pre-action state validation and outbound telephony dispatch via `VapiTelephonyProvider` (`recordingState: "processing"`).
+8. **Stage 9 — Telephony Ingestion & Synchronized Transcript (`VapiWebhookService`)**: Idempotent webhook handling, talk ratio computation, call outcome update (`viewing_booked`), and transcript turns stored in `transcripts` table.
+9. **Stage 10 — Follow-Up Scheduling & 1-Click Takeover (`FollowUpsModule` / `HandoffService`)**: Schedules autonomous follow-up touchpoint, executes 1-click human broker takeover (`managementMode: "human_managed"`, `isAiStopped: true`), generates structured `HandoffContext`, and asserts strict pre-action lockout blocking subsequent autonomous calls or follow-ups.
+
+## Automated Verification & Test Suite
+- **Command**: `npm run test:day14`
+- **File**: `server/test/day14-end-to-end-loop.spec.ts`
+- **Result**: `ALL 10 STAGES OF THE PACIA SALES LOOP PASSED END-TO-END (100%)` live against Neon PostgreSQL.
+
+
 
