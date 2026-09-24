@@ -1081,18 +1081,27 @@ The Pacia modular monolith backend resides in `/server` (NestJS 11 + Neon Postgr
   - **Verification**: `npm run test:ai-tools` passing 11/11 (100%).
 - **Day 10 — Controlled AI Agent Engine (`modules/ai-agent`)**:
   - Autonomous conversational reasoning engine treating LLMs as untrusted callers restricted to Day 9 audited tools.
-  - Dynamic prompt builder with workspace brand identity, sliding-window conversation memory (`conversations` and `messages`), autonomous tool-calling loop capped at `AI_MAX_TOOL_ITERATIONS`, and strict anti-hallucination guardrails.
-  - OpenRouter integration with multi-model fallback array (`nex-agi/nex-n2.5-mini:free,qwen/qwen3.8-27b:free,liquid/lfm-2.5-2.6b:free`) to bypass community rate limits, plus deterministic `MockAiProvider` for offline testing.
-  - Zero-latency structured BANT extraction engine persisting lead qualification records into PostgreSQL `qualification_results`.
-  - Telemetry and token usage tracking logged to `audit_logs`.
-  - REST endpoint: `POST /api/v1/ai-agent/chat`.
-  - Interactive CLI simulator: `npm run demo:ai-agent`.
   - **Verification**: `npm run test:ai-agent` passing 12/12 (100%).
+- **Day 11 — Lead Qualification & Underwriting Engine (`modules/leads/services`)**:
+  - Deterministic BANT+ lead scoring engine evaluating 5 dimensions with explainable score logs in `lead_scores`.
+  - **Verification**: `npm run test:qualification` passing 100%.
+- **Day 12 — Vapi AI Voice Telephony & Webhook Engine (`modules/calls`)**:
+  - Outbound voice call dispatching, idempotent webhook processing, structured outcome classifications, and synchronized transcript turns in Neon DB.
+  - **Verification**: `npm run test:vapi` passing 100%.
+- **Day 13 — Autonomous Follow-Up & Human Handoff Engine (`modules/follow-ups`)**:
+  - Strict communication states, 1-click broker takeover, HandoffContext synthesis, and inviolable pre-action lockout.
+  - **Verification**: `npm run test:followup` and `npm run demo:handoff` passing 100%.
+- **Day 14 — End-to-End Sales Loop Integration & 23-Checkpoint Audit**:
+  - Complete 10-stage autonomous sales loop validated and verified live against Neon PostgreSQL.
+  - Full 23-checkpoint system audit passing 23/23 (100%).
+  - **Verification**: `npm run test:day14` and `npm run test:checkpoint-audit` passing 100%.
 
-### Current Active Milestone:
-- **Day 11 — Deterministic Qualification & Scoring Layer (`modules/scoring` / `qualification`)**:
-  - Goal: Build deterministic qualification and scoring layer.
-  - Define qualification result structure, extract qualification signals, separate lead intent from AI confidence, implement deterministic 0–100 score calculation formula, store score factors in `lead_scores.factors`, store historical score audit snapshots, and generate recommended operational `next_action`.
+### Next Milestone:
+- **Day 15 — Calendar Booking & In-Person Inspection Scheduling Engine (`modules/appointments`)**:
+  - Frontend: Appointment UI, viewing management drawer, calendar connection screens (Google Calendar, Microsoft, Cal.com, Native Availability).
+  - Backend: Calendar provider abstraction (`ICalendarProvider`), collision prevention, slot resolution, controlled AI tool `book_property_inspection`.
+  - Integration: Live appointment booking contract and bidirectional synchronization.
+
 
 
 

@@ -909,9 +909,50 @@ $$\text{Capture} \longrightarrow \text{Outbox Event} \longrightarrow \text{Workf
 9. **Stage 10 — Follow-Up Scheduling & 1-Click Takeover (`FollowUpsModule` / `HandoffService`)**: Schedules autonomous follow-up touchpoint, executes 1-click human broker takeover (`managementMode: "human_managed"`, `isAiStopped: true`), generates structured `HandoffContext`, and asserts strict pre-action lockout blocking subsequent autonomous calls or follow-ups.
 
 ## Automated Verification & Test Suite
-- **Command**: `npm run test:day14`
-- **File**: `server/test/day14-end-to-end-loop.spec.ts`
-- **Result**: `ALL 10 STAGES OF THE PACIA SALES LOOP PASSED END-TO-END (100%)` live against Neon PostgreSQL.
+- **10-Stage E2E Loop**: `npm run test:day14` (`server/test/day14-end-to-end-loop.spec.ts`) — 10/10 stages passed (100%).
+- **23-Checkpoint System Audit**: `npm run test:checkpoint-audit` (`server/test/day14-checkpoint-audit.spec.ts`) — 23/23 checkpoints verified (100%):
+  1. Workspace Isolation ✔
+  2. Authentication & Tenant Context ✔
+  3. RBAC Foundation & Role Hierarchy ✔
+  4. Lead Intake Path & Phone Normalization ✔
+  5. Duplicate Lead Detection & Cross-Tenant Independence ✔
+  6. Lead Database Persistence & Conformance ✔
+  7. Lead List Querying & Tenant Scoping ✔
+  8. Lead Detail Dossier Assembly ✔
+  9. Property Abstraction Layer ✔
+  10. Verified Property Retrieval ✔
+  11. Queue Infrastructure & Error Visibility ✔
+  12. AI Provider Abstraction (OpenRouter/Mock) ✔
+  13. Inside-the-Tool Authorization & Audit Logging ✔
+  14. Structured BANT Qualification Persistence ✔
+  15. Deterministic Lead Scoring Engine (0-100 BANT+) ✔
+  16. Outbound Vapi Voice Call Dispatch ✔
+  17. Call Record Schema & Association in Neon ✔
+  18. Synchronized Transcript Storage ✔
+  19. Call Synthesis & Outcome Persistence ✔
+  20. Autonomous Follow-Up Scheduling Foundation ✔
+  21. 1-Click Human Broker Takeover & Handoff Context ✔
+  22. Inviolable Pre-Action Lockout Guard ✔
+  23. Command Center Operational Visibility Data ✔
+
+---
+
+# Day 15: Calendar Booking & In-Person Inspection Scheduling Engine
+
+## Objective
+Implement an enterprise-grade appointment and calendar booking engine (`AppointmentsModule`). Features provider-agnostic calendar abstraction (`ICalendarProvider`: Native Broker Availability, Google Calendar, Cal.com), double-booking collision prevention, slot resolution, controlled AI tool `book_property_inspection`, and full bidirectional synchronization with frontend inspection management.
+
+## Planned Deliverables
+1. **Domain Schema & Repository (`appointments`, `calendar_connections`)**: Storing confirmed inspections, broker assignments, inspection attendees, gate access tokens, and OAuth metadata.
+2. **Provider Abstraction Layer (`CalendarAdapterService`)**: Supporting multi-provider calendar integration with resilient native fallback.
+3. **Controlled AI Tool (`book_property_inspection`)**: Grounded booking tool with inside-the-tool tenant authorization and slot validation.
+4. **REST Endpoints**:
+   - `GET /api/v1/appointments`: List appointments with status and date filtering.
+   - `POST /api/v1/appointments`: Direct broker inspection booking.
+   - `GET /api/v1/appointments/slots`: Real-time broker availability resolution.
+   - `GET /api/v1/calendar/connections`: Active calendar integration statuses.
+5. **Automated Verification**: `npm run test:appointments`.
+
 
 
 
