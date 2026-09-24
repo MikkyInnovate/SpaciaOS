@@ -54,21 +54,7 @@ export function AppointmentCard({
     new Date().toDateString() === startDate.toDateString();
 
   return (
-    <Card className="overflow-hidden border border-stone-200/80 bg-white transition-all hover:border-emerald-700/30 hover:shadow-md">
-      {/* Top Accent Strip */}
-      <div
-        className={cn(
-          "h-1.5 w-full",
-          appointment.status === "confirmed"
-            ? "bg-emerald-600"
-            : appointment.status === "scheduled"
-            ? "bg-amber-500"
-            : appointment.status === "completed"
-            ? "bg-stone-400"
-            : "bg-rose-500"
-        )}
-      />
-
+    <Card className="border border-stone-200/80 bg-white shadow-2xs transition-all hover:border-stone-300 hover:shadow-sm">
       <CardContent className="p-5">
         <div className="flex flex-col gap-4">
           {/* Header with Date/Time & Status */}
