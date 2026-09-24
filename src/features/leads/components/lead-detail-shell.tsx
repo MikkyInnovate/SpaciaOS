@@ -24,6 +24,7 @@ import {
   InitiateCallDialog,
   type Call,
 } from "@/features/calls";
+import { BookInspectionModal } from "@/features/appointments";
 import type { Property } from "@/features/properties";
 import type { Lead, LeadStatus, FollowUpSchedule, LossDetails } from "../types";
 import {
@@ -92,6 +93,7 @@ export function LeadDetailShell({
   const [connectedCalls, setConnectedCalls] = React.useState<Call[]>([]);
   const [isLoadingCalls, setIsLoadingCalls] = React.useState(false);
   const [isInitiateCallOpen, setIsInitiateCallOpen] = React.useState(false);
+  const [isBookInspectionOpen, setIsBookInspectionOpen] = React.useState(false);
   const [selectedCallForCockpit, setSelectedCallForCockpit] = React.useState<Call | null>(null);
   const [prevLeadId, setPrevLeadId] = React.useState<string | undefined>(lead?.id);
 
@@ -365,6 +367,16 @@ export function LeadDetailShell({
                     <span>WhatsApp</span>
                   </a>
                 )}
+
+                <button
+                  type="button"
+                  onClick={() => setIsBookInspectionOpen(true)}
+                  className="inline-flex items-center gap-1.5 h-7 px-2.5 rounded-md border border-[#0d4a36]/30 bg-[#0d4a36]/5 text-[#0d4a36] hover:bg-[#0d4a36]/10 text-xs font-semibold transition-colors cursor-pointer"
+                  title="Schedule Property Viewing"
+                >
+                  <Building className="h-3 w-3 text-[#0d4a36]" />
+                  <span>Book Inspection</span>
+                </button>
               </div>
             </div>
           </div>
@@ -738,6 +750,24 @@ export function LeadDetailShell({
             setConnectedCalls((prev) => [newCall, ...prev]);
             toast.success("Voice Session Active", {
               description: `Vapi call with ${lead.name} recorded and added to timeline.`,
+            });
+          }}
+        />
+      )}
+
+      {/* Day 15: Property Inspection Booking Dialog */}
+      {lead && (
+        <BookInspectionModal
+          open={isBookInspectionOpen}
+          onOpenChange={setIsBookInspectionOpen}
+          leadId={lead.id}
+          leadName={lead.name}
+          leadPhone={lead.phone}
+          propertyId={lead.propertyId || "prop_default"}
+          propertyTitle={lead.propertyTitle}
+          onBookingSuccess={(newApt) => {
+            toast.success("Inspection Confirmed", {
+              description: `Viewing scheduled for ${newApt.propertyTitle}. Gate pass: ${newApt.gatePassCode || "Generated"}.`,
             });
           }}
         />
