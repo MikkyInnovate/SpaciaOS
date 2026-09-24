@@ -22,8 +22,12 @@
     "test:queue": "ts-node test/day8-queue-infrastructure.spec.ts",
     "test:ai-tools": "ts-node test/day9-controlled-ai-tools.spec.ts",
     "test:ai-agent": "NODE_ENV=test AI_PROVIDER=mock ts-node test/day10-ai-agent.spec.ts",
+    "test:qualification": "NODE_ENV=test AI_PROVIDER=mock ts-node test/day11-qualification-scoring.spec.ts",
+    "test:vapi": "NODE_ENV=test AI_PROVIDER=mock VAPI_PROVIDER=mock ts-node test/day12-vapi-telephony.spec.ts",
+    "test:followup": "NODE_ENV=test AI_PROVIDER=mock VAPI_PROVIDER=mock ts-node test/day13-followup-handoff.spec.ts",
     "demo:tools": "ts-node scripts/demo-tools.ts",
-    "demo:ai-agent": "ts-node scripts/demo-ai-agent.ts"
+    "demo:ai-agent": "ts-node scripts/demo-ai-agent.ts",
+    "demo:handoff": "NODE_ENV=test AI_PROVIDER=mock VAPI_PROVIDER=mock ts-node scripts/demo-handoff.ts"
   },
   "dependencies": {
     "@clerk/backend": "^3.18.1",

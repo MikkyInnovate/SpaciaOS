@@ -33,6 +33,9 @@ export const callRecordingStateEnum = pgEnum("call_recording_state", [
   "no_audio",
 ]);
 
+export type CallOutcome = (typeof callOutcomeEnum.enumValues)[number];
+export type CallRecordingState = (typeof callRecordingStateEnum.enumValues)[number];
+
 export const calls = pgTable(
   "calls",
   {
@@ -44,7 +47,7 @@ export const calls = pgTable(
     propertyId: uuid("property_id"),
     leadName: varchar("lead_name", { length: 255 }).notNull(),
     leadPhone: varchar("lead_phone", { length: 50 }).notNull(),
-    outcome: callOutcomeEnum("outcome").notNull().default("qualified"),
+    outcome: callOutcomeEnum("outcome"),
     recordingState: callRecordingStateEnum("recording_state")
       .notNull()
       .default("ready"),

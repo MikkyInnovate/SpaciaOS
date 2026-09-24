@@ -60,14 +60,14 @@ export interface Call {
   propertyLocation: string;
   declaredBudget: string;
   targetPrice?: string;
-  score: number;
-  scoreCategory: "HOT" | "WARM" | "COLD";
-  outcome: CallOutcome;
+  score: number | null;
+  scoreCategory: "HOT" | "WARM" | "COLD" | null;
+  outcome: CallOutcome | null;
   recordingState: CallRecordingState;
   recordingUrl?: string;
   audioDurationSeconds: number;
   metrics: CallMetrics;
-  summary: CallSummary;
+  summary: CallSummary | null;
   transcript: CallTranscriptTurn[];
   createdAt: string;
   relativeTime: string;

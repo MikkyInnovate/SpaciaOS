@@ -2,6 +2,8 @@ import {
   pgTable,
   varchar,
   text,
+  integer,
+  jsonb,
   timestamp,
   uuid,
   pgEnum,
@@ -55,6 +57,11 @@ export const priorityLevelEnum = pgEnum("priority_level", [
   "routine",
 ]);
 
+export type FollowUpChannel = (typeof followUpChannelEnum.enumValues)[number];
+export type FollowUpCadence = (typeof followUpCadenceEnum.enumValues)[number];
+export type FollowUpStatus = (typeof followUpStatusEnum.enumValues)[number];
+export type PriorityLevel = (typeof priorityLevelEnum.enumValues)[number];
+
 export const followUps = pgTable(
   "follow_ups",
   {
@@ -70,6 +77,9 @@ export const followUps = pgTable(
     priority: priorityLevelEnum("priority").notNull().default("scheduled"),
     directive: text("directive"),
     notes: text("notes"),
+    attemptCount: integer("attempt_count").notNull().default(0),
+    maxAttempts: integer("max_attempts").notNull().default(3),
+    metadata: jsonb("metadata").default({}),
     completedAt: timestamp("completed_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()

@@ -18,6 +18,12 @@ export const envSchema = z.object({
   AI_PROVIDER: z.enum(["openrouter", "mock"]).default("mock"),
   AI_MAX_TOOL_ITERATIONS: z.coerce.number().default(5),
   AI_CONTEXT_WINDOW_SIZE: z.coerce.number().default(10),
+  VAPI_API_KEY: z.string().optional(),
+  VAPI_BASE_URL: z.string().default("https://api.vapi.ai"),
+  VAPI_PHONE_NUMBER_ID: z.string().optional(),
+  VAPI_ASSISTANT_ID: z.string().optional(),
+  VAPI_WEBHOOK_SECRET: z.string().optional(),
+  VAPI_PROVIDER: z.enum(["vapi", "mock"]).default("mock"),
 });
 
 export type EnvConfig = z.infer<typeof envSchema>;

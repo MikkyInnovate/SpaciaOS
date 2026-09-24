@@ -50,7 +50,7 @@ export function CallList({
         call.leadName.toLowerCase().includes(q) ||
         call.propertyTitle.toLowerCase().includes(q) ||
         call.propertyLocation.toLowerCase().includes(q) ||
-        call.summary.synthesis.toLowerCase().includes(q);
+        Boolean(call.summary?.synthesis?.toLowerCase().includes(q));
 
       return matchesOutcome && matchesSearch;
     });
@@ -212,10 +212,10 @@ export function CallList({
                       <TableCell className="py-2.5 whitespace-nowrap">
                         <div className="flex items-center gap-1 text-stone-700 font-mono">
                           <Clock className="h-3 w-3 text-stone-400" />
-                          <span>{call.metrics.durationFormatted}</span>
+                          <span>{call.metrics?.durationFormatted || "0m 0s"}</span>
                         </div>
                         <div className="text-[10px] text-stone-400 font-mono">
-                          P: {call.metrics.talkRatio.prospectPercent}% | AI: {call.metrics.talkRatio.aiPercent}%
+                          P: {call.metrics?.talkRatio?.prospectPercent ?? 50}% | AI: {call.metrics?.talkRatio?.aiPercent ?? 50}%
                         </div>
                       </TableCell>
 
@@ -228,9 +228,11 @@ export function CallList({
                       <TableCell className="py-2.5 max-w-[200px] lg:max-w-[260px]">
                         <p
                           className="truncate text-xs text-stone-600 font-normal"
-                          title={call.summary.synthesis}
+                          title={call.summary?.synthesis || "Synthesis pending"}
                         >
-                          {call.summary.synthesis}
+                          {call.summary?.synthesis || (
+                            <span className="italic text-stone-400">Synthesis pending...</span>
+                          )}
                         </p>
                       </TableCell>
 

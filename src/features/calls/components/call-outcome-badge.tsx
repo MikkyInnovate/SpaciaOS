@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils/cn";
 import type { CallOutcome } from "../types";
 
 export interface CallOutcomeBadgeProps {
-  outcome: CallOutcome;
+  outcome?: CallOutcome | null;
   className?: string;
   size?: "xs" | "sm" | "md";
   withDot?: boolean;
@@ -48,13 +48,19 @@ const OUTCOME_CONFIG: Record<CallOutcome, OutcomeStyleConfig> = {
   },
 };
 
+const DEFAULT_PENDING_CONFIG: OutcomeStyleConfig = {
+  label: "In Progress",
+  badgeClass: "border-stone-200/80 bg-stone-50 text-stone-600",
+  dotClass: "bg-stone-400 animate-pulse",
+};
+
 export function CallOutcomeBadge({
   outcome,
   className,
   size = "sm",
   withDot = true,
 }: CallOutcomeBadgeProps) {
-  const config = OUTCOME_CONFIG[outcome] || OUTCOME_CONFIG.qualified;
+  const config = (outcome && OUTCOME_CONFIG[outcome]) || DEFAULT_PENDING_CONFIG;
 
   const sizeStyles = {
     xs: "text-[10px] px-1.5 py-0.5 gap-1",

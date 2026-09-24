@@ -814,3 +814,78 @@ All endpoints prefixed with `/api/v1/ai-agent` and guarded by `ClerkAuthGuard`, 
   12. `Zero Silent Fallback`: Verified OpenRouter failures throw explicit HTTP errors and never secretly switch to mock.
 - **Result**: `ALL DAY 10 CONTROLLED AI AGENT TESTS PASSED (12/12 - 100%)`.
 
+---
+
+# Day 11: Real Estate BANT+ Qualification & Underwriting Engine
+
+## Objective
+Implement an explainable, deterministic lead scoring and qualification underwriting engine for real estate inquiries. Scores leads on a normalized 0–100 scale categorized into HOT (80–100), WARM (50–79), and COLD (<50), computing 5 weighted BANT dimensions (Budget, Authority, Need, Timeline, Property Fit) with transparent catalyst bonuses and risk deductions.
+
+## Summary of Completed Work
+1. **`LeadScoringService` (`src/modules/leads/services/lead-scoring.service.ts`)**:
+   - Calculates weighted dimensional scores: Budget (30%), Authority (20%), Need (20%), Timeline (15%), Property Fit (15%).
+   - Generates an explainable breakdown listing positive catalysts (e.g. proof of funds, all-cash liquidity) and risk factors (e.g. financing contingency, unaligned timeline).
+   - Atomically persists scoring runs to `lead_scores` table and updates `leads.score`, `leads.scoreCategory`, and `leads.status`.
+2. **REST Endpoints**:
+   - `POST /api/v1/leads/:id/score`: Triggers deterministic scoring evaluation.
+   - `GET /api/v1/leads/:id/scores`: Retrieves historical scoring audit trail for a lead.
+3. **Automated Verification**:
+   - Command: `npm run test:qualification` (`server/test/day11-qualification-scoring.spec.ts`)
+   - Result: All tests passed 100% against live Neon PostgreSQL.
+
+---
+
+# Day 12: Connect Vapi AI Voice Telephony Engine
+
+## Objective
+Integrate Vapi voice AI telephony for outbound lead calling and resilient inbound webhook processing. Enables real-time outbound call dispatching, idempotent webhook ingestion, structured call outcome classification, talk ratio computation, and durable audio recording/transcript storage.
+
+## Summary of Completed Work
+1. **`CallsService` & `CallsModule` (`src/modules/calls/`)**:
+   - `initiateCall`: Dispatches outbound calls through `VapiTelephonyProvider` while enforcing tenant isolation and lead verification.
+   - `listCalls`, `getCallById`: Retrieves calls with paginated filtering by outcome, recording state, duration, and score.
+2. **`VapiWebhookService` (`src/modules/calls/services/vapi-webhook.service.ts`)**:
+   - Handles `status-update`, `speech-update`, `transcript`, and `end-of-call-report` webhook events from Vapi.
+   - Idempotent processing: Uses `idempotency_keys` table and call state transitions (`queued` ➡️ `in-progress` ➡️ `completed`/`failed`).
+   - Stores duration, call outcomes (`viewing_booked`, `qualified`, `callback_requested`, `nurture`, `voicemail`, `escalated_takeover`), synchronized transcript turns, and audio recording references in Neon PostgreSQL.
+3. **Environment & Provider Architecture**:
+   - Supports `VAPI_PROVIDER=vapi` (live Vapi REST API) and `VAPI_PROVIDER=mock` (deterministic test fixture).
+4. **Automated Verification**:
+   - Command: `npm run test:vapi` (`server/test/day12-vapi-telephony.spec.ts`)
+   - Result: All tests passed 100% against live Neon PostgreSQL.
+
+---
+
+# Day 13: Autonomous Follow-Up & Human Handoff Engine
+
+## Objective
+Implement an autonomous follow-up workflow and human handoff engine. Enforces strict communication states (`AI_ACTIVE`, `HUMAN_HANDOFF`, `HUMAN_MANAGED`), stop conditions, maximum-attempt guardrails, structured handoff context generation, and an inviolable real-time database guard guaranteeing zero autonomous communication leaks after human broker takeover.
+
+## Summary of Completed Work
+1. **Communication State Machine**:
+   - **`AI_ACTIVE`**: Lead is autonomously nurtured via scheduled voice calls or messaging cadences.
+   - **`HUMAN_HANDOFF`**: Triggered when a prospect demands pricing/discounts beyond authority, raises complex legal objections, or requests human intervention. Automatically synthesizes structured `HandoffContext` and alerts brokers.
+   - **`HUMAN_MANAGED`**: Activated via 1-click human broker takeover. Sets `isAiStopped: true`, locks out AI operations, and atomically purges pending jobs.
+2. **Inviolable Pre-Action Real-Time Guards**:
+   - In `FollowUpWorkflowService.executeFollowUpAction`: Queries live PostgreSQL immediately prior to executing any touchpoint. If `lead.managementMode === "human_managed"` or `lead.isAiStopped === true`, halts execution and cancels the job.
+   - In `CallsService.initiateCall`: Rejects outbound AI voice calls on human-managed leads with `400 Bad Request (LEAD_HUMAN_MANAGED)`.
+   - In `FollowUpsService.scheduleFollowUp`: Rejects new follow-up scheduling on human-managed leads.
+3. **Stop Conditions & Maximum-Attempt Guardrails**:
+   - Stop conditions evaluate: `HUMAN_TAKEOVER`, `TERMINAL_DISPOSITION` (`lost`/`nurture`), `VIEWING_BOOKED`, and `MAX_ATTEMPTS_REACHED`.
+   - Capped at configurable `maxAttempts` (default 3, up to 10). Reaching the ceiling halts the sequence and transitions the lead to human review.
+4. **Structured `HandoffContext` Generation**:
+   - `HandoffService.generateHandoffContext`: Synthesizes catalyst reasons, verbatim prospect quotes, unresolved objections, and recommended broker protocols.
+5. **REST Endpoints**:
+   - `POST /api/v1/leads/:id/takeover`: 1-click broker takeover (transitions to `HUMAN_MANAGED`, cancels pending follow-ups).
+   - `POST /api/v1/leads/:id/escalate`: Triggers escalation to `HUMAN_HANDOFF`.
+   - `POST /api/v1/leads/:id/stop-ai`: Emergency AI killswitch.
+   - `POST /api/v1/leads/:id/resume-ai`: Restores lead to `AI_ACTIVE`.
+   - `POST /api/v1/leads/:id/follow-ups`: Schedules an autonomous touchpoint.
+   - `GET /api/v1/leads/:id/follow-ups`: Retrieves lead follow-up history.
+   - `POST /api/v1/follow-ups/:id/execute`: Executes follow-up with real-time pre-action check.
+   - `POST /api/v1/follow-ups/:id/cancel`: Manually cancels scheduled follow-up.
+6. **Automated Verification & Interactive Testbench**:
+   - **Automated Test Suite**: `npm run test:followup` (`server/test/day13-followup-handoff.spec.ts`) — 7/7 tests passed (100%).
+   - **Interactive Live Demo**: `npm run demo:handoff` (`server/scripts/demo-handoff.ts`) — complete 7-step lifecycle simulation passed (Code 0).
+
+

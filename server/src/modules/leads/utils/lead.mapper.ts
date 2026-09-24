@@ -114,22 +114,27 @@ export function toLeadDetailDto(
   let bantBreakdown = meta.bantBreakdown;
   if (score) {
     const factors = (score.factors || {}) as Record<string, any>;
+    const notes = (factors.notes || {}) as Record<string, any>;
     bantBreakdown = {
-      budgetScore: score.budgetScore ?? 20,
-      budgetNote: factors.budgetNote || "Declared budget alignment verified",
-      authorityScore: score.authorityScore ?? 20,
-      authorityNote: factors.authorityNote || "Sole decision maker confirmed",
+      budgetScore: score.budgetScore ?? 25,
+      budgetNote: notes.budgetNote || factors.budgetNote || "Declared budget alignment verified",
+      authorityScore: score.authorityScore ?? 15,
+      authorityNote: notes.authorityNote || factors.authorityNote || "Sole decision maker confirmed",
       needScore: score.needScore ?? 20,
-      needNote: factors.needNote || "Primary luxury residential requirement",
+      needNote: notes.needNote || factors.needNote || "Primary luxury residential requirement",
       timelineScore: score.timelineScore ?? 20,
-      timelineNote: factors.timelineNote || "Ready to transact within 30 days",
-      propertyFitScore: score.propertyFitScore ?? 20,
-      propertyFitNote: factors.propertyFitNote || "High criteria match against inventory",
+      timelineNote: notes.timelineNote || factors.timelineNote || "Ready to transact within 30 days",
+      propertyFitScore: score.propertyFitScore ?? 15,
+      propertyFitNote: notes.propertyFitNote || factors.propertyFitNote || "High criteria match against inventory",
     };
   }
 
   let qualificationProfile = meta.qualificationProfile;
   if (qualification) {
+    const scoreFactors = (score?.factors || {}) as Record<string, any>;
+    const positiveFactors = scoreFactors.positiveFactors || meta.positiveFactors || [];
+    const riskFactors = scoreFactors.riskFactors || meta.riskFactors || [];
+
     qualificationProfile = {
       confidenceScore: qualification.confidenceScore,
       buyerIntent: qualification.buyerIntent,
@@ -148,9 +153,9 @@ export function toLeadDetailDto(
       },
       objections: qualification.objections || [],
       explainableBreakdown: {
-        baseScore: qualification.confidenceScore,
-        positiveFactors: [],
-        riskFactors: [],
+        baseScore: score?.score ?? qualification.confidenceScore,
+        positiveFactors,
+        riskFactors,
       },
     };
   }

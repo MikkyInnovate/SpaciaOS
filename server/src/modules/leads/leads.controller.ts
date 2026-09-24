@@ -87,4 +87,31 @@ export class LeadsController {
   ) {
     return this.leadsService.getLeadActivities(tenant, id, page, limit);
   }
+
+  /**
+   * Retrieves append-only score history for a lead.
+   */
+  @Get(":id/scores")
+  @RequirePermissions("leads:read")
+  async getLeadScoreHistory(
+    @CurrentTenant() tenant: TenantContext,
+    @Param("id", new ParseUUIDPipe()) id: string
+  ) {
+    return this.leadsService.getLeadScoreHistory(tenant, id);
+  }
+
+  /**
+   * Triggers deterministic server-side re-scoring on a lead.
+   */
+  @Post(":id/score")
+  @HttpCode(HttpStatus.OK)
+  @RequirePermissions("leads:write")
+  async scoreLead(
+    @CurrentTenant() tenant: TenantContext,
+    @Param("id", new ParseUUIDPipe()) id: string,
+    @Body() body?: { dialogue?: Array<{ role: string; content: string | null }>; toolTraces?: Array<{ toolName: string; parameters?: any; success?: boolean }> }
+  ) {
+    return this.leadsService.scoreLead(tenant, id, body?.dialogue, body?.toolTraces);
+  }
 }
+

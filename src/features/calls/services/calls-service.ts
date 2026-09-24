@@ -1,3 +1,4 @@
+import { apiClient } from "@/lib/api/client";
 import { MOCK_CALLS } from "../data/mock-calls";
 import type { Call, CallFilters } from "../types";
 
@@ -9,6 +10,37 @@ class CallsService {
   private calls: Call[] = [...MOCK_CALLS];
 
   async getCalls(filters?: CallFilters): Promise<Call[]> {
+    try {
+      const queryParams = new URLSearchParams();
+      if (filters?.outcome && filters.outcome !== "ALL") {
+        queryParams.set("outcome", filters.outcome);
+      }
+      if (filters?.sortBy === "duration") {
+        queryParams.set("sortBy", "durationSeconds");
+        queryParams.set("sortOrder", filters.sortOrder || "desc");
+      } else if (filters?.sortBy === "score") {
+        queryParams.set("sortBy", "callScore");
+        queryParams.set("sortOrder", filters.sortOrder || "desc");
+      }
+      queryParams.set("limit", "50");
+
+      const queryString = queryParams.toString();
+      const endpoint = "/api/v1/calls" + (queryString ? "?" + queryString : "");
+
+      const response = await apiClient.get<{ calls: Call[]; total: number }>(endpoint);
+      if (response && Array.isArray((response as any).calls)) {
+        const backendCalls = (response as any).calls as Call[];
+        if (backendCalls.length > 0) {
+          const realIds = new Set(backendCalls.map((c) => c.id));
+          const nonDupeMocks = this.calls.filter((c) => !realIds.has(c.id));
+          this.calls = [...backendCalls, ...nonDupeMocks];
+          return this.calls;
+        }
+      }
+    } catch (err) {
+      console.warn("Could not fetch calls from backend, using local cache:", err);
+    }
+
     let result = [...this.calls];
 
     if (filters?.searchTerm && filters.searchTerm.trim()) {
@@ -19,7 +51,7 @@ class CallsService {
           c.propertyTitle.toLowerCase().includes(q) ||
           c.propertyLocation.toLowerCase().includes(q) ||
           c.leadPhone.includes(q) ||
-          c.summary.synthesis.toLowerCase().includes(q)
+          Boolean(c.summary?.synthesis?.toLowerCase().includes(q))
       );
     }
 
@@ -32,18 +64,20 @@ class CallsService {
     }
 
     if (filters?.minScore !== undefined) {
-      result = result.filter((c) => c.score >= filters.minScore!);
+      result = result.filter((c) => (c.score ?? 0) >= filters.minScore!);
     }
 
     if (filters?.sortBy === "duration") {
       result.sort((a, b) =>
         filters.sortOrder === "asc"
-          ? a.metrics.durationSeconds - b.metrics.durationSeconds
-          : b.metrics.durationSeconds - a.metrics.durationSeconds
+          ? (a.metrics?.durationSeconds || 0) - (b.metrics?.durationSeconds || 0)
+          : (b.metrics?.durationSeconds || 0) - (a.metrics?.durationSeconds || 0)
       );
     } else if (filters?.sortBy === "score") {
       result.sort((a, b) =>
-        filters.sortOrder === "asc" ? a.score - b.score : b.score - a.score
+        filters.sortOrder === "asc"
+          ? (a.score ?? 0) - (b.score ?? 0)
+          : (b.score ?? 0) - (a.score ?? 0)
       );
     } else {
       // Default: Most recent first
@@ -56,6 +90,21 @@ class CallsService {
   }
 
   async getCallById(id: string): Promise<Call | null> {
+    try {
+      const response = await apiClient.get<Call>(`/api/v1/calls/${id}`);
+      if (response && response.id) {
+        // update local cache
+        const idx = this.calls.findIndex((c) => c.id === response.id);
+        if (idx >= 0) {
+          this.calls[idx] = response;
+        } else {
+          this.calls.unshift(response);
+        }
+        return response;
+      }
+    } catch (err) {
+      console.warn(`Could not fetch call '${id}' from backend:`, err);
+    }
     const found = this.calls.find((c) => c.id === id);
     return found || null;
   }
@@ -133,7 +182,26 @@ class CallsService {
     score?: number;
     scoreCategory?: "HOT" | "WARM" | "COLD";
     persona?: string;
+    customPrompt?: string;
   }): Promise<Call> {
+    // If we have a valid leadId (UUID format), attempt real backend initiation first
+    if (params.leadId && params.leadId.includes("-")) {
+      try {
+        const payload = {
+          leadId: params.leadId,
+          persona: params.persona || "Victoria (Senior Luxury Closer)",
+          customPrompt: params.customPrompt,
+        };
+        const realCall = await apiClient.post<Call>("/api/v1/calls", payload);
+        if (realCall && realCall.id) {
+          this.calls.unshift(realCall);
+          return realCall;
+        }
+      } catch (err: any) {
+        console.warn("Backend call initiation failed, falling back to simulated session:", err);
+      }
+    }
+
     await new Promise((r) => setTimeout(r, 100));
 
     const callId = createUniqueId("call");
@@ -230,6 +298,48 @@ class CallsService {
 
     this.calls.unshift(newCall);
     return newCall;
+  }
+
+  async sendEndOfCallWebhook(params: {
+    vapiCallId: string;
+    leadName?: string;
+    leadPhone?: string;
+    propertyTitle?: string;
+    duration?: number;
+    transcript?: string;
+    summary?: string;
+    structuredData?: Record<string, any>;
+  }): Promise<any> {
+    try {
+      return await apiClient.post("/api/v1/calls/webhook/vapi", {
+        message: {
+          type: "end-of-call-report",
+          call: {
+            id: params.vapiCallId,
+            status: "ended",
+            endedReason: "customer-ended-call",
+            duration: params.duration || 135,
+            recordingUrl: "https://api.vapi.ai/recordings/demo-recording.mp3",
+            transcript:
+              params.transcript ||
+              `AI: Good day ${params.leadName || "prospect"}, reaching out from Spacia regarding ${params.propertyTitle || "the luxury villa"}.\nProspect: Hello! Yes, I saw the listing. I have a budget of ₦1.5 Billion and would like to inspect the property this weekend.\nAI: Wonderful! I have reserved Saturday at 11 AM for your private tour.`,
+            summary:
+              params.summary ||
+              `Prospect confirmed interest in ${params.propertyTitle || "development"}. Budget confirmed, requested weekend private inspection.`,
+            analysis: {
+              structuredData: params.structuredData || {
+                budget: "₦1.5 Billion",
+                intent: "purchase",
+                timeline: "immediate",
+                decisionMaker: true,
+              },
+            },
+          },
+        },
+      });
+    } catch (err) {
+      console.warn("Webhook delivery failed:", err);
+    }
   }
 }
 

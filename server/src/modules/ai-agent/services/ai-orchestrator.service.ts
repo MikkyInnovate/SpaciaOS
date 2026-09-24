@@ -256,7 +256,9 @@ export class AiOrchestratorService {
     const qualification = await this.structuredExtraction.extractAndPersist(
       tenant.workspaceId,
       dto.leadId,
-      activeMessages
+      activeMessages,
+      undefined,
+      executedTraces
     );
 
     // 7. Durable AI Usage Audit Logging

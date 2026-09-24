@@ -8,6 +8,7 @@ import { LeadsService } from "./leads.service";
 import { LeadIdempotencyService } from "./services/lead-idempotency.service";
 import { LeadDeduplicationService } from "./services/lead-deduplication.service";
 import { LeadWorkflowQueueService } from "./services/lead-workflow-queue.service";
+import { LeadScoringService } from "./services/lead-scoring.service";
 
 @Module({
   imports: [WorkspacesModule, QueueModule],
@@ -18,6 +19,7 @@ import { LeadWorkflowQueueService } from "./services/lead-workflow-queue.service
     LeadIdempotencyService,
     LeadDeduplicationService,
     LeadWorkflowQueueService,
+    LeadScoringService,
   ],
   exports: [
     LeadsIngestService,
@@ -25,6 +27,7 @@ import { LeadWorkflowQueueService } from "./services/lead-workflow-queue.service
     LeadIdempotencyService,
     LeadDeduplicationService,
     LeadWorkflowQueueService,
+    LeadScoringService,
   ],
 })
 export class LeadsModule {}

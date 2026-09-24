@@ -15,6 +15,9 @@ import { PropertiesModule } from "./modules/properties/properties.module";
 import { QueueModule } from "./modules/queue/queue.module";
 import { AiToolsModule } from "./modules/ai-tools/ai-tools.module";
 import { AiAgentModule } from "./modules/ai-agent/ai-agent.module";
+import { CallsModule } from "./modules/calls/calls.module";
+import { FollowUpsModule } from "./modules/follow-ups/follow-ups.module";
+import { AppController } from "./app.controller";
 
 @Module({
   imports: [
@@ -30,7 +33,10 @@ import { AiAgentModule } from "./modules/ai-agent/ai-agent.module";
     QueueModule,
     AiToolsModule,
     AiAgentModule,
+    CallsModule,
+    FollowUpsModule,
   ],
+  controllers: [AppController],
   providers: [
     {
       provide: APP_GUARD,

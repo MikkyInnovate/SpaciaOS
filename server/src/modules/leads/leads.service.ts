@@ -21,6 +21,7 @@ import {
   toLeadDetailDto,
   toLeadActivityDto,
 } from "./utils/lead.mapper";
+import { LeadScoringService } from "./services/lead-scoring.service";
 
 @Injectable()
 export class LeadsService {
@@ -28,7 +29,8 @@ export class LeadsService {
 
   constructor(
     @Inject(DRIZZLE_DATABASE)
-    private readonly db: DrizzleDb
+    private readonly db: DrizzleDb,
+    private readonly leadScoringService: LeadScoringService
   ) {}
 
   /**
@@ -440,4 +442,90 @@ export class LeadsService {
       total,
     };
   }
+
+  /**
+   * Retrieves append-only score history for a lead.
+   * Throws 404 if lead is not found in the active workspace.
+   */
+  async getLeadScoreHistory(
+    tenant: TenantContext,
+    id: string
+  ) {
+    const [lead] = await this.db
+      .select({ id: schema.leads.id })
+      .from(schema.leads)
+      .where(
+        and(
+          eq(schema.leads.id, id),
+          eq(schema.leads.workspaceId, tenant.workspaceId)
+        )
+      )
+      .limit(1);
+
+    if (!lead) {
+      throw new NotFoundException({
+        code: "LEAD_NOT_FOUND",
+        message: `Lead with ID '${id}' was not found in this workspace.`,
+      });
+    }
+
+    const history = await this.leadScoringService.getScoreHistory(
+      tenant.workspaceId,
+      id
+    );
+
+    return {
+      leadId: id,
+      workspaceId: tenant.workspaceId,
+      totalEntries: history.length,
+      history,
+    };
+  }
+
+  /**
+   * Deterministically evaluates and updates the score for a lead on demand.
+   * Throws 404 if lead is not found in the active workspace.
+   */
+  async scoreLead(
+    tenant: TenantContext,
+    id: string,
+    dialogue?: Array<{ role: string; content: string | null }>,
+    executedTools?: Array<{ toolName: string; parameters?: any; success?: boolean }>
+  ) {
+    const [lead] = await this.db
+      .select()
+      .from(schema.leads)
+      .where(
+        and(
+          eq(schema.leads.id, id),
+          eq(schema.leads.workspaceId, tenant.workspaceId)
+        )
+      )
+      .limit(1);
+
+    if (!lead) {
+      throw new NotFoundException({
+        code: "LEAD_NOT_FOUND",
+        message: `Lead with ID '${id}' was not found in this workspace.`,
+      });
+    }
+
+    const conversationHistory =
+      dialogue && dialogue.length > 0
+        ? dialogue
+        : [
+            {
+              role: "user",
+              content: `${lead.inboundNotes || ""} ${lead.budget ? "Budget " + lead.budget : ""} ${lead.locationPreference || ""}`.trim() || lead.name,
+            },
+          ];
+
+    return this.leadScoringService.evaluateAndPersist(
+      tenant.workspaceId,
+      id,
+      conversationHistory,
+      executedTools || []
+    );
+  }
 }
+

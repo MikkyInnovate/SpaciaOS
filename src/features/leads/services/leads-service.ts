@@ -57,6 +57,28 @@ function createUniqueId(prefix: string): string {
  * All mock data is clearly isolated behind this adapter.
  */
 
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+function isUuid(id: string): boolean {
+  return UUID_REGEX.test(id);
+}
+
+const LEAD_ALIAS_MAP: Record<string, string> = {
+  lead_adeleke: "lead_01",
+  lead_jenkins: "lead_02",
+  lead_babatunde: "lead_03",
+  lead_eze: "lead_04",
+  lead_okafor: "lead_05",
+  lead_yusuf: "lead_06",
+  lead_bakare: "lead_07",
+  lead_nwosu: "lead_08",
+  lead_adesina: "lead_09",
+};
+
+function resolveLeadId(id: string): string {
+  if (!id) return "lead_01";
+  return LEAD_ALIAS_MAP[id] || id;
+}
+
 // In-memory mock session store for client-side state transitions
 const inMemoryMockLeads: Lead[] = JSON.parse(JSON.stringify(MOCK_LEADS));
 
@@ -94,26 +116,86 @@ class LeadsService {
    * Fetches a single lead by its ID.
    */
   async getLeadById(id: string): Promise<Lead | null> {
-    const response = await apiClient.get<Lead | { lead: Lead }>("/api/v1/leads/" + id);
-    if (!response) return null;
-    if ("lead" in response && (response as any).lead) {
-      return (response as any).lead;
+    if (isUuid(id)) {
+      try {
+        const response = await apiClient.get<Lead | { lead: Lead }>("/api/v1/leads/" + id);
+        if (response) {
+          if ("lead" in response && (response as any).lead) {
+            return (response as any).lead;
+          }
+          return response as Lead;
+        }
+      } catch (err) {
+        console.warn(`Could not fetch lead '${id}' from API, using fallback:`, err);
+      }
     }
-    return response as Lead;
+    const targetId = resolveLeadId(id);
+    const found =
+      inMemoryMockLeads.find((l) => l.id === id || l.id === targetId) ||
+      MOCK_LEADS.find((l) => l.id === id || l.id === targetId);
+    return found ? JSON.parse(JSON.stringify(found)) : null;
   }
 
   /**
    * Proposed contract: Update lead lifecycle status.
    */
   async updateLeadStatus(id: string, newStatus: LeadStatus, note?: string): Promise<Lead> {
-    const response = await apiClient.patch<Lead | { lead: Lead }>(`/api/v1/leads/${id}/status`, {
-      status: newStatus,
-      note,
-    });
-    if ("lead" in response && (response as any).lead) {
-      return (response as any).lead;
+    if (isUuid(id)) {
+      try {
+        const response = await apiClient.patch<Lead | { lead: Lead }>(`/api/v1/leads/${id}/status`, {
+          status: newStatus,
+          note,
+        });
+        if (response) {
+          if ("lead" in response && (response as any).lead) {
+            return (response as any).lead;
+          }
+          return response as Lead;
+        }
+      } catch (err) {
+        console.warn(`Backend updateLeadStatus failed for lead ${id}, applying local update:`, err);
+      }
     }
-    return response as Lead;
+
+    // Local fallback for mock leads or offline backend
+    const isHuman = newStatus === "Human Managed";
+    const targetId = resolveLeadId(id);
+    const index = inMemoryMockLeads.findIndex((l) => l.id === id || l.id === targetId);
+    if (index !== -1) {
+      const current = inMemoryMockLeads[index];
+      const updated: Lead = {
+        ...current,
+        status: newStatus,
+        managementMode: isHuman ? "human_managed" : current.managementMode,
+        isAiStopped: isHuman ? true : current.isAiStopped,
+      };
+      inMemoryMockLeads[index] = updated;
+      return JSON.parse(JSON.stringify(updated));
+    }
+
+    const fallbackLead = MOCK_LEADS.find((l) => l.id === id || l.id === targetId);
+    if (fallbackLead) {
+      const updated: Lead = {
+        ...fallbackLead,
+        status: newStatus,
+        managementMode: isHuman ? "human_managed" : fallbackLead.managementMode,
+        isAiStopped: isHuman ? true : fallbackLead.isAiStopped,
+      };
+      inMemoryMockLeads.push(updated);
+      return JSON.parse(JSON.stringify(updated));
+    }
+
+    // Synthesize fallback to prevent UI crash
+    const synthesized: Lead = {
+      ...MOCK_LEADS[0],
+      id,
+      name: id.replace("lead_", "").replace(/^\w/, (c) => c.toUpperCase()) + " (Lead)",
+      status: newStatus,
+      managementMode: isHuman ? "human_managed" : "ai_autonomous",
+      isAiStopped: isHuman ? true : false,
+    };
+    inMemoryMockLeads.push(synthesized);
+    return synthesized;
   }
 
   /**
@@ -123,22 +205,40 @@ class LeadsService {
     id: string,
     activityData: Omit<LeadActivity, "id">
   ): Promise<LeadActivity> {
-    const response = await apiClient.post<LeadActivity | { activity: LeadActivity }>(
-      `/api/v1/leads/${id}/activities`,
-      {
-        type: activityData.type,
-        title: activityData.title,
-        description: activityData.description,
-        channel: activityData.channel,
-        metadata: activityData.meta,
+    if (isUuid(id)) {
+      try {
+        const response = await apiClient.post<LeadActivity | { activity: LeadActivity }>(
+          `/api/v1/leads/${id}/activities`,
+          {
+            type: activityData.type,
+            title: activityData.title,
+            description: activityData.description,
+            channel: activityData.channel,
+            metadata: activityData.meta,
+          }
+        );
+        if (response) {
+          if ("activity" in response && (response as any).activity) {
+            return (response as any).activity;
+          }
+          return response as LeadActivity;
+        }
+      } catch (err) {
+        console.warn(`Backend addLeadActivity failed for lead ${id}:`, err);
       }
-    );
-    if ("activity" in response && (response as any).activity) {
-      return (response as any).activity;
     }
-    return response as LeadActivity;
-  }
 
+    const activity: LeadActivity = {
+      id: createUniqueId("act"),
+      ...activityData,
+      timestamp: "Just now",
+    };
+    const index = inMemoryMockLeads.findIndex((l) => l.id === id);
+    if (index !== -1) {
+      inMemoryMockLeads[index].activities = [activity, ...(inMemoryMockLeads[index].activities || [])];
+    }
+    return activity;
+  }
 
   /**
    * Human broker seizes direct control of the lead, pausing AI automation.
@@ -148,6 +248,17 @@ class LeadsService {
     brokerName = "Marcus Vance",
     reason = "Manual broker takeover initiated"
   ): Promise<Lead> {
+    if (isUuid(id)) {
+      try {
+        const res = await apiClient.post<any>(`/api/v1/leads/${id}/takeover`, {
+          brokerName,
+          reason,
+        });
+        if (res?.lead) return res.lead;
+      } catch (err) {
+        console.warn(`Backend takeoverLead failed for lead ${id}:`, err);
+      }
+    }
     return this.updateLeadStatus(id, "Human Managed", `${reason} (Broker: ${brokerName})`);
   }
 
@@ -155,6 +266,14 @@ class LeadsService {
    * Pauses autonomous AI actions without claiming lead.
    */
   async stopAI(id: string, reason = "Broker paused autonomous AI automation"): Promise<Lead> {
+    if (isUuid(id)) {
+      try {
+        const res = await apiClient.post<any>(`/api/v1/leads/${id}/stop-ai`, { reason });
+        if (res?.lead) return res.lead;
+      } catch (err) {
+        console.warn(`Backend stopAI failed for lead ${id}:`, err);
+      }
+    }
     return this.updateLeadStatus(id, "Human Managed", reason);
   }
 
@@ -162,6 +281,14 @@ class LeadsService {
    * Resumes autonomous AI engine for this lead.
    */
   async resumeAI(id: string): Promise<Lead> {
+    if (isUuid(id)) {
+      try {
+        const res = await apiClient.post<any>(`/api/v1/leads/${id}/resume-ai`);
+        if (res?.lead) return res.lead;
+      } catch (err) {
+        console.warn(`Backend resumeAI failed for lead ${id}:`, err);
+      }
+    }
     return this.updateLeadStatus(id, "In Conversation", "Autonomous AI automation resumed");
   }
 
@@ -184,16 +311,25 @@ class LeadsService {
    * Marks lead as Lost with structured reason classification.
    */
   async markLost(id: string, lossDetails: LossDetails): Promise<Lead> {
-    const response = await apiClient.patch<Lead | { lead: Lead }>(`/api/v1/leads/${id}/status`, {
-      status: "Lost",
-      note: lossDetails.notes,
-      lossReason: lossDetails.reason,
-      lossNotes: lossDetails.notes,
-    });
-    if ("lead" in response && (response as any).lead) {
-      return (response as any).lead;
+    if (isUuid(id)) {
+      try {
+        const response = await apiClient.patch<Lead | { lead: Lead }>(`/api/v1/leads/${id}/status`, {
+          status: "Lost",
+          note: lossDetails.notes,
+          lossReason: lossDetails.reason,
+          lossNotes: lossDetails.notes,
+        });
+        if (response) {
+          if ("lead" in response && (response as any).lead) {
+            return (response as any).lead;
+          }
+          return response as Lead;
+        }
+      } catch (err) {
+        console.warn(`Backend markLost failed for lead ${id}:`, err);
+      }
     }
-    return response as Lead;
+    return this.updateLeadStatus(id, "Lost", lossDetails.notes);
   }
 
   /**

@@ -77,4 +77,28 @@ export class EnvService {
   get aiContextWindowSize(): number {
     return this.configService.get("AI_CONTEXT_WINDOW_SIZE", { infer: true });
   }
+
+  get vapiApiKey(): string | undefined {
+    return this.configService.get("VAPI_API_KEY", { infer: true });
+  }
+
+  get vapiBaseUrl(): string {
+    return this.configService.get("VAPI_BASE_URL", { infer: true });
+  }
+
+  get vapiPhoneNumberId(): string | undefined {
+    return this.configService.get("VAPI_PHONE_NUMBER_ID", { infer: true });
+  }
+
+  get vapiAssistantId(): string | undefined {
+    return this.configService.get("VAPI_ASSISTANT_ID", { infer: true });
+  }
+
+  get vapiWebhookSecret(): string | undefined {
+    return this.configService.get("VAPI_WEBHOOK_SECRET", { infer: true });
+  }
+
+  get vapiProvider(): "vapi" | "mock" {
+    return this.configService.get("VAPI_PROVIDER", { infer: true });
+  }
 }
