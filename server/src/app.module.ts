@@ -17,6 +17,7 @@ import { AiToolsModule } from "./modules/ai-tools/ai-tools.module";
 import { AiAgentModule } from "./modules/ai-agent/ai-agent.module";
 import { CallsModule } from "./modules/calls/calls.module";
 import { FollowUpsModule } from "./modules/follow-ups/follow-ups.module";
+import { AppointmentsModule } from "./modules/appointments/appointments.module";
 import { AppController } from "./app.controller";
 
 @Module({
@@ -35,6 +36,7 @@ import { AppController } from "./app.controller";
     AiAgentModule,
     CallsModule,
     FollowUpsModule,
+    AppointmentsModule,
   ],
   controllers: [AppController],
   providers: [

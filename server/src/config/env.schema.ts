@@ -24,6 +24,9 @@ export const envSchema = z.object({
   VAPI_ASSISTANT_ID: z.string().optional(),
   VAPI_WEBHOOK_SECRET: z.string().optional(),
   VAPI_PROVIDER: z.enum(["vapi", "mock"]).default("mock"),
+  GOOGLE_CALENDAR_CLIENT_ID: z.string().optional(),
+  GOOGLE_CALENDAR_CLIENT_SECRET: z.string().optional(),
+  GOOGLE_CALENDAR_REDIRECT_URI: z.string().optional(),
 });
 
 export type EnvConfig = z.infer<typeof envSchema>;

@@ -1,6 +1,7 @@
-import { Module } from "@nestjs/common";
+import { Module, forwardRef } from "@nestjs/common";
 import { DatabaseModule } from "../../database/database.module";
 import { PropertiesModule } from "../properties/properties.module";
+import { AppointmentsModule } from "../appointments/appointments.module";
 import { AiToolsController } from "./ai-tools.controller";
 import { AiToolExecutorService } from "./services/ai-tool-executor.service";
 import { CompanyPolicyService } from "./services/company-policy.service";
@@ -10,9 +11,10 @@ import { CheckPropertyAvailabilityTool } from "./tools/check-property-availabili
 import { GetPropertyPriceTool } from "./tools/get-property-price.tool";
 import { GetCompanyPolicyTool } from "./tools/get-company-policy.tool";
 import { GetAgentTool } from "./tools/get-agent.tool";
+import { BookPropertyInspectionTool } from "./tools/book-property-inspection.tool";
 
 @Module({
-  imports: [DatabaseModule, PropertiesModule],
+  imports: [DatabaseModule, PropertiesModule, AppointmentsModule],
   controllers: [AiToolsController],
   providers: [
     CompanyPolicyService,
@@ -22,6 +24,7 @@ import { GetAgentTool } from "./tools/get-agent.tool";
     GetPropertyPriceTool,
     GetCompanyPolicyTool,
     GetAgentTool,
+    BookPropertyInspectionTool,
     AiToolExecutorService,
   ],
   exports: [
@@ -33,6 +36,7 @@ import { GetAgentTool } from "./tools/get-agent.tool";
     GetPropertyPriceTool,
     GetCompanyPolicyTool,
     GetAgentTool,
+    BookPropertyInspectionTool,
   ],
 })
 export class AiToolsModule {}

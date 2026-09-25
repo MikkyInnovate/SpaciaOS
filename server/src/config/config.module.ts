@@ -9,7 +9,7 @@ import { EnvService } from "./env.service";
     NestConfigModule.forRoot({
       isGlobal: true,
       validate: validateEnv,
-      envFilePath: [".env", ".env.local"],
+      envFilePath: [".env", ".env.local", "server/.env", "server/.env.local"],
     }),
   ],
   providers: [EnvService],

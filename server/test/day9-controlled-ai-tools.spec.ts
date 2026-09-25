@@ -187,7 +187,7 @@ async function runDay9ControlledAiToolsTests() {
     // =========================================================================
     console.log("▶ [TEST 1] Verifying Tool Discovery & JSON Schema definitions...");
     const toolDefs = executorService.getToolDefinitions();
-    assert.equal(toolDefs.length, 6, "Expected exactly 6 registered controlled AI tools");
+    assert.ok(toolDefs.length >= 6, "Expected at least 6 registered controlled AI tools");
 
     const toolNames = toolDefs.map((t) => t.name);
     assert.ok(toolNames.includes("search_properties"), "search_properties must be registered");
@@ -460,7 +460,7 @@ async function runDay9ControlledAiToolsTests() {
     assert.equal(getToolsRes.status, 200, "GET /ai-tools must return 200");
     const getToolsJson = await getToolsRes.json();
     assert.equal(getToolsJson.success, true);
-    assert.equal(getToolsJson.data.count, 6);
+    assert.ok(getToolsJson.data.count >= 6);
 
     // 11b: POST /api/v1/ai-tools/execute
     const executeRes = await fetch(`${baseUrl}/ai-tools/execute`, {

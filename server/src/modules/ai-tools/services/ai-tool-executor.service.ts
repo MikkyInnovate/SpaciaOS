@@ -19,6 +19,7 @@ import { CheckPropertyAvailabilityTool } from "../tools/check-property-availabil
 import { GetPropertyPriceTool } from "../tools/get-property-price.tool";
 import { GetCompanyPolicyTool } from "../tools/get-company-policy.tool";
 import { GetAgentTool } from "../tools/get-agent.tool";
+import { BookPropertyInspectionTool } from "../tools/book-property-inspection.tool";
 import { DRIZZLE_DATABASE, DrizzleDb } from "../../../database/database.provider";
 import * as schema from "../../../database/schema";
 
@@ -44,7 +45,8 @@ export class AiToolExecutorService {
     private readonly checkAvailabilityTool: CheckPropertyAvailabilityTool,
     private readonly getPriceTool: GetPropertyPriceTool,
     private readonly getCompanyPolicyTool: GetCompanyPolicyTool,
-    private readonly getAgentTool: GetAgentTool
+    private readonly getAgentTool: GetAgentTool,
+    private readonly bookInspectionTool: BookPropertyInspectionTool
   ) {
     this.registerTools([
       this.searchPropertiesTool,
@@ -53,6 +55,7 @@ export class AiToolExecutorService {
       this.getPriceTool,
       this.getCompanyPolicyTool,
       this.getAgentTool,
+      this.bookInspectionTool,
     ]);
   }
 

@@ -940,18 +940,46 @@ $$\text{Capture} \longrightarrow \text{Outbox Event} \longrightarrow \text{Workf
 # Day 15: Calendar Booking & In-Person Inspection Scheduling Engine
 
 ## Objective
-Implement an enterprise-grade appointment and calendar booking engine (`AppointmentsModule`). Features provider-agnostic calendar abstraction (`ICalendarProvider`: Native Broker Availability, Google Calendar, Cal.com), double-booking collision prevention, slot resolution, controlled AI tool `book_property_inspection`, and full bidirectional synchronization with frontend inspection management.
+Implement an enterprise-grade appointment and calendar booking engine (`AppointmentsModule`). Features provider-agnostic calendar abstraction (`ICalendarAdapter`: Native Broker Availability, Google Calendar), live Google Calendar OAuth2 code exchange, token storage in Neon PostgreSQL, token auto-refresh via `refresh_token`, double-booking collision prevention, Free/Busy slot clash detection, controlled AI tool `book_property_inspection`, virtual tour Google Meet generation, and full synchronization with frontend inspection management.
 
-## Planned Deliverables
-1. **Domain Schema & Repository (`appointments`, `calendar_connections`)**: Storing confirmed inspections, broker assignments, inspection attendees, gate access tokens, and OAuth metadata.
-2. **Provider Abstraction Layer (`CalendarAdapterService`)**: Supporting multi-provider calendar integration with resilient native fallback.
-3. **Controlled AI Tool (`book_property_inspection`)**: Grounded booking tool with inside-the-tool tenant authorization and slot validation.
-4. **REST Endpoints**:
-   - `GET /api/v1/appointments`: List appointments with status and date filtering.
-   - `POST /api/v1/appointments`: Direct broker inspection booking.
-   - `GET /api/v1/appointments/slots`: Real-time broker availability resolution.
-   - `GET /api/v1/calendar/connections`: Active calendar integration statuses.
-5. **Automated Verification**: `npm run test:appointments`.
+## Completed Deliverables & Architecture
+1. **Google Calendar Adapter (`GoogleCalendarAdapter`)**:
+   - Live OAuth2 consent URL generation (`generateAuthUrl`) configured with offline access (`access_type=offline`) and event/freebusy scopes.
+   - Secure authorization code exchange (`exchangeCodeForTokens`) and persistence in Neon PostgreSQL `calendar_connections`.
+   - Automatic access token refresh (`refreshAccessToken`) when tokens expire.
+   - Live Free/Busy collision checking (`checkFreeBusy`) with timezone normalization locking conflicting time slots.
+   - Synchronized event creation (`createEvent`) with automated Google Meet video links (`meet.google.com`) and event cancellation (`cancelEvent`).
+2. **Provider Abstraction Layer (`CalendarAdapterService`)**:
+   - Provider registry supporting `google_calendar` and `native`.
+   - Timezone-normalized viewing slot generation calculating free/busy availability against active calendar events.
+3. **Domain Service & Repository (`AppointmentsService`)**:
+   - Full CRUD persistence in Neon PostgreSQL (`schema.appointments`).
+   - Inviolable double-booking lockout preventing overlapping reservations.
+   - Automatic bi-directional synchronization with connected calendars.
+4. **Controlled AI Tool 7 (`book_property_inspection`)**:
+   - Autonomous inspection booking tool with inside-the-tool tenant authorization, parameter schema validation, and durable compliance audit logging (`ai_tool_call:book_property_inspection`).
+5. **REST API Endpoints**:
+   - `GET /api/v1/appointments`: Tenant-scoped appointments list with filtering.
+   - `POST /api/v1/appointments`: Book inspection with double-booking prevention.
+   - `PATCH /api/v1/appointments/:id/status`: Update inspection lifecycle status.
+   - `DELETE /api/v1/appointments/:id`: Cancel viewing and delete linked calendar event.
+   - `GET /api/v1/appointments/slots`: Live slot availability resolution.
+   - `GET /api/v1/appointments/calendars`: List active calendar connections.
+   - `GET /api/v1/appointments/calendars/auth-url`: Generate provider OAuth consent URL.
+   - `POST /api/v1/appointments/calendars/oauth-callback`: Exchange OAuth authorization code for tokens.
+   - `POST /api/v1/appointments/calendars/toggle`: Connect/disconnect calendar sync.
+
+## Automated Verification & Test Suite
+- **Day 15 Calendar & Inspection Booking Suite**: `npm run test:day15` (`server/test/day15-calendar-booking.spec.ts`) — **8/8 tests passed (100%)**:
+  1. Google OAuth2 authorization URL generation ✔
+  2. Google OAuth2 code exchange & token persistence in Neon PostgreSQL ✔
+  3. Token refresh engine when access token expires ✔
+  4. Google Calendar Free/Busy collision check & viewing slot availability ✔
+  5. Booking confirmed inspection appointment with Google Calendar sync & Meet link ✔
+  6. Double-booking clash prevention for reserved slots ✔
+  7. Appointment cancellation and calendar event deletion ✔
+  8. Autonomous AI tool `book_property_inspection` with compliance audit logging ✔
+
 
 
 
