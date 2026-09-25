@@ -5,12 +5,12 @@ import { Container } from "@/components/layout/container";
 import { PageHeader } from "@/components/layout/page-header";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Appointment,
   appointmentsService,
   AppointmentCard,
+  AppointmentFiltersBar,
   BookInspectionModal,
   CalendarConnectionsPanel,
 } from "@/features/appointments";
@@ -18,7 +18,6 @@ import { useWorkspace } from "@/lib/context/workspace-context";
 import {
   CalendarDays,
   Plus,
-  Search,
   RefreshCw,
   Sparkles,
   CalendarCheck,
@@ -26,15 +25,15 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { toast } from "sonner";
-import { cn } from "@/lib/utils/cn";
 
 export default function AppointmentsPage() {
   const { currentWorkspace } = useWorkspace();
 
-  const [appointments, setAppointments] = React.useState<Appointment[]>([]);
+  const [allAppointments, setAllAppointments] = React.useState<Appointment[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
   const [searchQuery, setSearchQuery] = React.useState("");
   const [statusFilter, setStatusFilter] = React.useState<string>("ALL");
+  const [formatFilter, setFormatFilter] = React.useState<string>("ALL");
   const [activeTab, setActiveTab] = React.useState("schedule");
 
   // Modals
@@ -43,17 +42,14 @@ export default function AppointmentsPage() {
   const fetchAppointments = React.useCallback(async () => {
     setIsLoading(true);
     try {
-      const data = await appointmentsService.getAppointments({
-        status: statusFilter,
-        search: searchQuery,
-      });
-      setAppointments(data);
+      const data = await appointmentsService.getAppointments();
+      setAllAppointments(data);
     } catch (err: any) {
       toast.error("Failed to load appointments");
     } finally {
       setIsLoading(false);
     }
-  }, [statusFilter, searchQuery]);
+  }, []);
 
   React.useEffect(() => {
     fetchAppointments();
@@ -61,14 +57,47 @@ export default function AppointmentsPage() {
 
   const handleStatusChange = async (id: string, newStatus: any) => {
     const updated = await appointmentsService.updateStatus(id, newStatus);
-    setAppointments((prev) =>
+    setAllAppointments((prev) =>
       prev.map((a) => (a.id === id ? { ...a, status: newStatus } : a))
     );
   };
 
-  const confirmedCount = appointments.filter((a) => a.status === "confirmed").length;
-  const scheduledCount = appointments.filter((a) => a.status === "scheduled").length;
-  const completedCount = appointments.filter((a) => a.status === "completed").length;
+  // Filtered Appointments
+  const filteredAppointments = React.useMemo(() => {
+    return allAppointments.filter((apt) => {
+      // Status filter
+      if (statusFilter !== "ALL" && apt.status !== statusFilter) {
+        return false;
+      }
+      // Format filter
+      if (formatFilter !== "ALL" && apt.meetingType !== formatFilter) {
+        return false;
+      }
+      // Search query
+      if (searchQuery.trim().length > 0) {
+        const query = searchQuery.toLowerCase();
+        const matchesName = apt.leadName.toLowerCase().includes(query);
+        const matchesPhone = apt.leadPhone.toLowerCase().includes(query);
+        const matchesProperty = apt.propertyTitle.toLowerCase().includes(query);
+        const matchesLocation = apt.location.toLowerCase().includes(query);
+        const matchesBroker = apt.assignedBrokerName.toLowerCase().includes(query);
+        if (!matchesName && !matchesPhone && !matchesProperty && !matchesLocation && !matchesBroker) {
+          return false;
+        }
+      }
+      return true;
+    });
+  }, [allAppointments, statusFilter, formatFilter, searchQuery]);
+
+  const handleResetFilters = () => {
+    setSearchQuery("");
+    setStatusFilter("ALL");
+    setFormatFilter("ALL");
+  };
+
+  const confirmedCount = allAppointments.filter((a) => a.status === "confirmed").length;
+  const scheduledCount = allAppointments.filter((a) => a.status === "scheduled").length;
+  const completedCount = allAppointments.filter((a) => a.status === "completed").length;
 
   return (
     <Container size="lg" className="space-y-6 pb-12">
@@ -107,7 +136,7 @@ export default function AppointmentsPage() {
             <CalendarDays className="h-4 w-4 text-stone-400" />
           </div>
           <div className="mt-1 font-mono text-2xl font-bold text-stone-900">
-            {appointments.length}
+            {allAppointments.length}
           </div>
           <div className="mt-1 text-[11px] text-stone-400">All recorded inspections</div>
         </Card>
@@ -151,7 +180,7 @@ export default function AppointmentsPage() {
         <TabsList className="bg-stone-100 p-1 border border-stone-200/80">
           <TabsTrigger value="schedule" className="text-xs font-medium data-[state=active]:bg-white data-[state=active]:text-[#0d4a36] data-[state=active]:shadow-2xs cursor-pointer">
             <CalendarDays className="h-3.5 w-3.5 mr-1.5" />
-            Inspection Schedule ({appointments.length})
+            Inspection Schedule ({allAppointments.length})
           </TabsTrigger>
           <TabsTrigger value="calendars" className="text-xs font-medium data-[state=active]:bg-white data-[state=active]:text-[#0d4a36] data-[state=active]:shadow-2xs cursor-pointer">
             <Sparkles className="h-3.5 w-3.5 mr-1.5" />
@@ -161,37 +190,18 @@ export default function AppointmentsPage() {
 
         {/* TAB 1: Inspection Schedule */}
         <TabsContent value="schedule" className="space-y-4 outline-none">
-          {/* Filters Bar */}
-          <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-stone-200 bg-white p-3 shadow-2xs">
-            <div className="flex items-center gap-2 flex-1 min-w-[200px] max-w-md">
-              <Search className="h-4 w-4 text-stone-400 shrink-0" />
-              <Input
-                placeholder="Search by prospect, property, location, or broker..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="h-8 text-xs border-0 bg-transparent focus-visible:ring-0 shadow-none px-0"
-              />
-            </div>
-
-            {/* Status Filter Chips */}
-            <div className="flex items-center gap-1.5 overflow-x-auto text-xs">
-              {(["ALL", "confirmed", "scheduled", "completed", "cancelled"] as const).map((st) => (
-                <button
-                  key={st}
-                  type="button"
-                  onClick={() => setStatusFilter(st)}
-                  className={cn(
-                    "rounded-md px-2.5 py-1 font-medium capitalize transition cursor-pointer",
-                    statusFilter === st
-                      ? "bg-[#0d4a36] text-white shadow-2xs"
-                      : "bg-stone-50 text-stone-600 hover:bg-stone-100"
-                  )}
-                >
-                  {st === "ALL" ? "All Statuses" : st.replace("_", " ")}
-                </button>
-              ))}
-            </div>
-          </div>
+          {/* Design System Search & Filter Bar */}
+          <AppointmentFiltersBar
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            statusFilter={statusFilter}
+            onStatusChange={setStatusFilter}
+            formatFilter={formatFilter}
+            onFormatChange={setFormatFilter}
+            onReset={handleResetFilters}
+            totalCount={allAppointments.length}
+            filteredCount={filteredAppointments.length}
+          />
 
           {/* Appointments Grid */}
           {isLoading ? (
@@ -200,25 +210,37 @@ export default function AppointmentsPage() {
                 <div key={n} className="h-64 rounded-xl border border-stone-200 bg-stone-50/50 animate-pulse" />
               ))}
             </div>
-          ) : appointments.length === 0 ? (
+          ) : filteredAppointments.length === 0 ? (
             <Card className="p-12 text-center border-dashed border-stone-300">
               <CalendarDays className="h-10 w-10 text-stone-300 mx-auto" />
               <h4 className="mt-3 text-sm font-semibold text-stone-800">No Viewings Found</h4>
               <p className="mt-1 text-xs text-stone-500 max-w-sm mx-auto">
                 No property inspections match the selected filters. Schedule a new viewing or adjust your search.
               </p>
-              <Button
-                size="sm"
-                onClick={() => setIsBookModalOpen(true)}
-                className="mt-4 bg-[#0d4a36] text-white text-xs h-8 cursor-pointer"
-              >
-                <Plus className="h-3.5 w-3.5 mr-1" />
-                Schedule Inspection
-              </Button>
+              <div className="mt-4 flex items-center justify-center gap-2">
+                {(searchQuery || statusFilter !== "ALL" || formatFilter !== "ALL") && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={handleResetFilters}
+                    className="text-xs h-8 cursor-pointer"
+                  >
+                    Reset Filters
+                  </Button>
+                )}
+                <Button
+                  size="sm"
+                  onClick={() => setIsBookModalOpen(true)}
+                  className="bg-[#0d4a36] text-white text-xs h-8 cursor-pointer"
+                >
+                  <Plus className="h-3.5 w-3.5 mr-1" />
+                  Schedule Inspection
+                </Button>
+              </div>
             </Card>
           ) : (
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              {appointments.map((apt) => (
+              {filteredAppointments.map((apt) => (
                 <AppointmentCard
                   key={apt.id}
                   appointment={apt}
