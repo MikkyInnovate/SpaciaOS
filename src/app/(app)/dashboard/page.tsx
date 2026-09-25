@@ -349,12 +349,16 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Primary Cockpit Question 2: "What Happened Today?" & Confirmed Viewings */}
-      <div className="grid gap-6 md:grid-cols-2 items-start pt-1">
+      {/* What Happened Today? - Full Width Operations Feed */}
+      <div className="w-full pt-2">
         <OperationsActivityFeed
           feed={activityFeed}
           onInspectLead={handleInspectById}
         />
+      </div>
+
+      {/* Confirmed Viewings - Full Width Section */}
+      <div className="w-full pt-2">
         <UpcomingViewingsList viewings={MOCK_UPCOMING_VIEWINGS} />
       </div>
 
