@@ -13,11 +13,13 @@ import { ScoreIndicator } from "@/components/ui/score-indicator";
 import { EmptyState } from "@/components/shared/empty-state";
 import { Button } from "@/components/ui/button";
 import type { DashboardLead } from "../types";
-import { MapPin, Phone, ArrowUpRight, SplitSquareVertical, X } from "lucide-react";
+import { cn } from "@/lib/utils/cn";
+import { MapPin, Phone, ChevronRight, SplitSquareVertical, X } from "lucide-react";
 
 export interface LeadIntakeTableProps {
   leads: DashboardLead[];
   onTakeLead?: (lead: DashboardLead) => void;
+  selectedLeadId?: string | null;
   isSplitView?: boolean;
   onToggleSplit?: () => void;
   hideViewAll?: boolean;
@@ -26,6 +28,7 @@ export interface LeadIntakeTableProps {
 export function LeadIntakeTable({
   leads,
   onTakeLead,
+  selectedLeadId,
   isSplitView,
   onToggleSplit,
   hideViewAll = false,
@@ -111,19 +114,26 @@ export function LeadIntakeTable({
           ) : (
             leads.map((lead) => {
               const isHot = lead.scoreCategory === "HOT";
+              const isSelected = selectedLeadId === lead.id;
 
               return (
-                <TableRow key={lead.id} className="group">
+                <TableRow
+                  key={lead.id}
+                  className={cn(
+                    "group transition-colors",
+                    isSelected ? "bg-stone-50 border-l-2 border-l-stone-900" : ""
+                  )}
+                >
                   {/* Prospect Details */}
                   <TableCell>
                     <div className="flex flex-col min-w-0">
-                      <Link
-                        href={`/leads?id=${lead.id}`}
-                        className="font-semibold text-stone-900 text-sm hover:underline hover:text-[#0d4a36] transition-colors"
+                      <button
+                        type="button"
                         onClick={() => onTakeLead?.(lead)}
+                        className="font-semibold text-stone-900 text-sm hover:underline hover:text-[#0d4a36] transition-colors text-left cursor-pointer"
                       >
                         {lead.name}
-                      </Link>
+                      </button>
                       <div className="flex items-center gap-1.5 text-xs text-stone-500 mt-0.5">
                         <Phone className="h-3 w-3 text-stone-400" />
                         <span className="tabular-nums">{lead.phone}</span>
@@ -169,18 +179,16 @@ export function LeadIntakeTable({
                   {/* Human Takeover Action */}
                   <TableCell className="text-right whitespace-nowrap">
                     <Button
-                      asChild
                       size="sm"
-                      variant={isHot ? "default" : "outline"}
-                      className="h-7 px-2.5 text-xs gap-1 whitespace-nowrap cursor-pointer"
+                      variant={isSelected ? "secondary" : isHot ? "default" : "outline"}
+                      className={cn(
+                        "h-7 px-2.5 text-xs gap-1 whitespace-nowrap cursor-pointer",
+                        isSelected && "bg-stone-900 text-white hover:bg-stone-800"
+                      )}
+                      onClick={() => onTakeLead?.(lead)}
                     >
-                      <Link
-                        href={`/leads?id=${lead.id}`}
-                        onClick={() => onTakeLead?.(lead)}
-                      >
-                        <span>{isHot ? "Take Lead" : "Inspect"}</span>
-                        <ArrowUpRight className="h-3.5 w-3.5 shrink-0" />
-                      </Link>
+                      <span>{isSelected ? "Inspecting" : "Inspect"}</span>
+                      <ChevronRight className="h-3.5 w-3.5 shrink-0" />
                     </Button>
                   </TableCell>
                 </TableRow>

@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { DashboardLead, DashboardAICallEvent } from "../types";
@@ -14,6 +15,7 @@ import {
   Mail,
   Sparkles,
   UserCheck,
+  ArrowUpRight,
 } from "lucide-react";
 
 export interface LeadDossierPanelProps {
@@ -57,30 +59,44 @@ export function LeadDossierPanel({ lead, onClose, onTakeover, callEvent }: LeadD
           </div>
         </div>
 
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-7 w-7 text-stone-400 hover:text-stone-700 -mr-1 -mt-1"
-          onClick={onClose}
-          aria-label="Close panel"
-        >
-          <X className="h-4 w-4" />
-        </Button>
+        <div className="flex items-center gap-1.5 -mr-1 -mt-1">
+          <Button
+            asChild
+            size="sm"
+            variant="outline"
+            className="h-7 px-2 text-xs gap-1 text-stone-700 bg-white hover:bg-stone-50 border-stone-200 shadow-2xs cursor-pointer"
+          >
+            <Link href={`/leads?id=${lead.id}`}>
+              <span>Full Details</span>
+              <ArrowUpRight className="h-3.5 w-3.5 text-stone-400" />
+            </Link>
+          </Button>
+
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7 text-stone-400 hover:text-stone-700"
+            onClick={onClose}
+            aria-label="Close panel"
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
 
       {/* Quick Human Takeover Actions Bar */}
       <div className="flex items-center justify-between border-b border-border px-4 py-2.5 bg-stone-50/20">
-        <div className="flex items-center gap-2 text-xs text-stone-600">
-          <span className="font-medium text-stone-900">{lead.propertyTitle}</span>
-          <span className="text-stone-400">•</span>
-          <span className="font-semibold text-stone-900 tabular-nums">{lead.budget}</span>
+        <div className="flex items-center gap-2 text-xs text-stone-600 min-w-0">
+          <span className="font-medium text-stone-900 truncate">{lead.propertyTitle}</span>
+          <span className="text-stone-400 shrink-0">•</span>
+          <span className="font-semibold text-stone-900 tabular-nums shrink-0">{lead.budget}</span>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           <Button
             size="sm"
             variant="default"
-            className="h-7 px-3 text-xs gap-1.5 bg-stone-900 hover:bg-stone-800 text-white"
+            className="h-7 px-3 text-xs gap-1.5 bg-stone-900 hover:bg-stone-800 text-white cursor-pointer"
             onClick={() => onTakeover(lead)}
           >
             <UserCheck className="h-3.5 w-3.5" />
@@ -253,6 +269,24 @@ export function LeadDossierPanel({ lead, onClose, onTakeover, callEvent }: LeadD
             <QualificationPanel lead={lead as unknown as Lead} />
           </div>
         )}
+      </div>
+
+      {/* Footer Linking to Full Lead Page */}
+      <div className="flex items-center justify-between border-t border-border px-4 py-2.5 bg-stone-50/80">
+        <span className="text-xs text-stone-500">
+          Full underwriting &amp; activity timeline
+        </span>
+        <Button
+          asChild
+          size="sm"
+          variant="outline"
+          className="h-7 px-2.5 text-xs gap-1 bg-white hover:bg-stone-100 text-stone-800 border-stone-200 font-medium cursor-pointer shadow-2xs"
+        >
+          <Link href={`/leads?id=${lead.id}`}>
+            <span>View Full Details</span>
+            <ArrowUpRight className="h-3.5 w-3.5 text-stone-500" />
+          </Link>
+        </Button>
       </div>
     </div>
   );

@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Container } from "@/components/layout/container";
 import { PageHeader } from "@/components/layout/page-header";
@@ -8,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { useWorkspace } from "@/lib/context/workspace-context";
 import { StatMetricCard } from "@/features/dashboard/components/stat-metric-card";
 import { LeadIntakeTable } from "@/features/dashboard/components/lead-intake-table";
+import { LeadDossierPanel } from "@/features/dashboard/components/lead-dossier-panel";
 import { OperationsActivityFeed } from "@/features/dashboard/components/operations-activity-feed";
 import { UpcomingViewingsList } from "@/features/dashboard/components/upcoming-viewings-list";
 import { PipelineFunnel } from "@/features/dashboard/components/pipeline-funnel";
@@ -36,11 +38,14 @@ import {
   Download,
   Loader2,
   RefreshCw,
+  X,
+  ArrowUpRight,
 } from "lucide-react";
 
 export default function DashboardPage() {
   const router = useRouter();
   const { currentWorkspace } = useWorkspace();
+  const [selectedLead, setSelectedLead] = React.useState<DashboardLead | null>(null);
   const [takeoverBanner, setTakeoverBanner] = React.useState<string | null>(null);
   const [isExporting, setIsExporting] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(true);
@@ -136,11 +141,21 @@ export default function DashboardPage() {
   };
 
   const handleInspectLead = (lead: DashboardLead) => {
-    router.push(`/leads?id=${lead.id}`);
+    setSelectedLead((prev) => (prev?.id === lead.id ? null : lead));
   };
 
   const handleInspectById = (leadId: string) => {
-    router.push(`/leads?id=${leadId}`);
+    const found = leadsList.find((l) => l.id === leadId);
+    if (found) {
+      setSelectedLead(found);
+    } else {
+      const mockFound = MOCK_DASHBOARD_LEADS.find((l) => l.id === leadId);
+      if (mockFound) {
+        setSelectedLead(mockFound);
+      } else if (leadsList[0]) {
+        setSelectedLead(leadsList[0]);
+      }
+    }
   };
 
   const handleTakeover = (lead: DashboardLead) => {
@@ -289,13 +304,65 @@ export default function DashboardPage() {
       </div>
 
 
-      {/* Lead Qualification Feed Area (Full Width) */}
-      <div className="w-full">
-        <LeadIntakeTable
-          leads={leadsList}
-          onTakeLead={handleInspectLead}
-        />
-      </div>
+      {/* Lead Qualification Feed Area with Interactive Split Dossier on Inspect */}
+      {selectedLead ? (
+        <div className="space-y-3">
+          <div className="flex items-center justify-between text-xs text-stone-500 px-1">
+            <span className="font-medium text-stone-700">
+              Inspecting Lead: <strong className="text-stone-900">{selectedLead.name}</strong> • AI Call Transcript &amp; BANT Dossier
+            </span>
+            <div className="flex items-center gap-2">
+              <Button
+                asChild
+                size="sm"
+                variant="outline"
+                className="h-7 text-xs bg-white text-stone-700 hover:bg-stone-50 gap-1.5 shadow-2xs cursor-pointer"
+              >
+                <Link href={`/leads?id=${selectedLead.id}`}>
+                  <span>Open Full Lead Page</span>
+                  <ArrowUpRight className="h-3.5 w-3.5 text-stone-400" />
+                </Link>
+              </Button>
+
+              <button
+                type="button"
+                onClick={() => setSelectedLead(null)}
+                className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md border border-stone-200 bg-white text-stone-600 hover:text-stone-900 hover:bg-stone-100 shadow-2xs font-medium text-xs transition-colors cursor-pointer"
+              >
+                <X className="h-3.5 w-3.5 text-stone-500" />
+                <span>Close Split</span>
+              </button>
+            </div>
+          </div>
+
+          <div className="grid gap-6 lg:grid-cols-12 items-start">
+            <div className="lg:col-span-7 overflow-x-auto">
+              <LeadIntakeTable
+                leads={leadsList}
+                selectedLeadId={selectedLead.id}
+                onTakeLead={handleInspectLead}
+                isSplitView={true}
+                onToggleSplit={() => setSelectedLead(null)}
+              />
+            </div>
+            <div className="lg:col-span-5">
+              <LeadDossierPanel
+                lead={selectedLead}
+                onClose={() => setSelectedLead(null)}
+                onTakeover={handleTakeover}
+              />
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="w-full">
+          <LeadIntakeTable
+            leads={leadsList}
+            onTakeLead={handleInspectLead}
+            isSplitView={false}
+          />
+        </div>
+      )}
 
       {/* What Happened Today? - Full Width Operations Feed */}
       <div className="w-full pt-2">
