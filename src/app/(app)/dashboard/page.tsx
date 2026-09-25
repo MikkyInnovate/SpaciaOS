@@ -1,13 +1,13 @@
 "use client";
 
 import * as React from "react";
+import { useRouter } from "next/navigation";
 import { Container } from "@/components/layout/container";
 import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
 import { useWorkspace } from "@/lib/context/workspace-context";
 import { StatMetricCard } from "@/features/dashboard/components/stat-metric-card";
 import { LeadIntakeTable } from "@/features/dashboard/components/lead-intake-table";
-import { LeadDossierPanel } from "@/features/dashboard/components/lead-dossier-panel";
 import { OperationsActivityFeed } from "@/features/dashboard/components/operations-activity-feed";
 import { UpcomingViewingsList } from "@/features/dashboard/components/upcoming-viewings-list";
 import { PipelineFunnel } from "@/features/dashboard/components/pipeline-funnel";
@@ -34,16 +34,13 @@ import {
   CalendarCheck,
   Building2,
   Download,
-  X,
   Loader2,
   RefreshCw,
 } from "lucide-react";
 
 export default function DashboardPage() {
+  const router = useRouter();
   const { currentWorkspace } = useWorkspace();
-  const [selectedLead, setSelectedLead] = React.useState<DashboardLead | null>(
-    MOCK_DASHBOARD_LEADS[0]
-  );
   const [takeoverBanner, setTakeoverBanner] = React.useState<string | null>(null);
   const [isExporting, setIsExporting] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(true);
@@ -139,22 +136,11 @@ export default function DashboardPage() {
   };
 
   const handleInspectLead = (lead: DashboardLead) => {
-    setSelectedLead(lead);
+    router.push(`/leads?id=${lead.id}`);
   };
 
   const handleInspectById = (leadId: string) => {
-    const found = leadsList.find((l) => l.id === leadId);
-    if (found) {
-      setSelectedLead(found);
-    } else {
-      // Find in mock leads
-      const mockFound = MOCK_DASHBOARD_LEADS.find((l) => l.id === leadId);
-      if (mockFound) {
-        setSelectedLead(mockFound);
-      } else if (leadsList[0]) {
-        setSelectedLead(leadsList[0]);
-      }
-    }
+    router.push(`/leads?id=${leadId}`);
   };
 
   const handleTakeover = (lead: DashboardLead) => {
@@ -303,51 +289,13 @@ export default function DashboardPage() {
       </div>
 
 
-      {/* Lead Qualification Feed & Inspector Area */}
-      {selectedLead ? (
-        <div className="space-y-3">
-          <div className="flex items-center justify-between text-xs text-stone-500 px-1">
-            <span className="font-medium text-stone-700">
-              Inspecting Lead: <strong className="text-stone-900">{selectedLead.name}</strong> • AI Call Transcript & BANT Dossier
-            </span>
-            <button
-              type="button"
-              onClick={() => setSelectedLead(null)}
-              className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md border border-stone-200 bg-white text-stone-600 hover:text-stone-900 hover:bg-stone-100 shadow-2xs font-medium text-xs transition-colors cursor-pointer"
-            >
-              <X className="h-3.5 w-3.5 text-stone-500" />
-              <span>Close Dossier</span>
-            </button>
-          </div>
-
-          <div className="grid gap-6 lg:grid-cols-12 items-start">
-            <div className="lg:col-span-7 overflow-x-auto">
-              <LeadIntakeTable
-                leads={leadsList}
-                onTakeLead={handleInspectLead}
-                isSplitView={true}
-                onToggleSplit={() => setSelectedLead(null)}
-              />
-            </div>
-            <div className="lg:col-span-5">
-              <LeadDossierPanel
-                lead={selectedLead}
-                onClose={() => setSelectedLead(null)}
-                onTakeover={handleTakeover}
-              />
-            </div>
-          </div>
-        </div>
-      ) : (
-        <div className="w-full">
-          <LeadIntakeTable
-            leads={leadsList}
-            onTakeLead={handleInspectLead}
-            isSplitView={false}
-            onToggleSplit={() => setSelectedLead(leadsList[0] || MOCK_DASHBOARD_LEADS[0])}
-          />
-        </div>
-      )}
+      {/* Lead Qualification Feed Area (Full Width) */}
+      <div className="w-full">
+        <LeadIntakeTable
+          leads={leadsList}
+          onTakeLead={handleInspectLead}
+        />
+      </div>
 
       {/* What Happened Today? - Full Width Operations Feed */}
       <div className="w-full pt-2">

@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useSearchParams } from "next/navigation";
 import { Container } from "@/components/layout/container";
 import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
@@ -21,8 +22,11 @@ import { exportLeadsToCSV } from "@/lib/utils/export-csv";
 import { Download, Loader2, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 
-export default function LeadsPage() {
+function LeadsPageContent() {
   const { currentWorkspace, isLoading: isWorkspaceLoading } = useWorkspace();
+  const searchParams = useSearchParams();
+  const targetLeadId =
+    searchParams.get("id") || searchParams.get("selected") || searchParams.get("leadId");
 
   // Filter state
   const [filters, setFilters] = React.useState<LeadFilterParams>({
@@ -41,6 +45,27 @@ export default function LeadsPage() {
   // Selected lead for detail inspection drawer
   const [selectedLead, setSelectedLead] = React.useState<Lead | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = React.useState(false);
+
+  // Auto-open detail drawer if targetLeadId is provided in search params
+  React.useEffect(() => {
+    if (!targetLeadId) return;
+
+    // Check if target lead is already loaded in leads array
+    const matched = leads.find((l) => l.id === targetLeadId);
+    if (matched) {
+      setSelectedLead(matched);
+      setIsDrawerOpen(true);
+      return;
+    }
+
+    // Otherwise, fetch target lead directly by ID
+    leadsService.getLeadById(targetLeadId).then((fetched) => {
+      if (fetched) {
+        setSelectedLead(fetched);
+        setIsDrawerOpen(true);
+      }
+    });
+  }, [targetLeadId, leads]);
 
   // Day 14: Lead Intake Modal
   const [isIntakeOpen, setIsIntakeOpen] = React.useState(false);
@@ -362,5 +387,13 @@ export default function LeadsPage() {
           }}
         />
       </Container>
+  );
+}
+
+export default function LeadsPage() {
+  return (
+    <React.Suspense fallback={<div className="min-h-screen" />}>
+      <LeadsPageContent />
+    </React.Suspense>
   );
 }

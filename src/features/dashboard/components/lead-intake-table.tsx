@@ -117,9 +117,13 @@ export function LeadIntakeTable({
                   {/* Prospect Details */}
                   <TableCell>
                     <div className="flex flex-col min-w-0">
-                      <span className="font-semibold text-stone-900 text-sm">
+                      <Link
+                        href={`/leads?id=${lead.id}`}
+                        className="font-semibold text-stone-900 text-sm hover:underline hover:text-[#0d4a36] transition-colors"
+                        onClick={() => onTakeLead?.(lead)}
+                      >
                         {lead.name}
-                      </span>
+                      </Link>
                       <div className="flex items-center gap-1.5 text-xs text-stone-500 mt-0.5">
                         <Phone className="h-3 w-3 text-stone-400" />
                         <span className="tabular-nums">{lead.phone}</span>
@@ -165,13 +169,18 @@ export function LeadIntakeTable({
                   {/* Human Takeover Action */}
                   <TableCell className="text-right whitespace-nowrap">
                     <Button
+                      asChild
                       size="sm"
                       variant={isHot ? "default" : "outline"}
-                      className="h-7 px-2.5 text-xs gap-1 whitespace-nowrap"
-                      onClick={() => onTakeLead?.(lead)}
+                      className="h-7 px-2.5 text-xs gap-1 whitespace-nowrap cursor-pointer"
                     >
-                      <span>{isHot ? "Take Lead" : "Inspect"}</span>
-                      <ArrowUpRight className="h-3.5 w-3.5 shrink-0" />
+                      <Link
+                        href={`/leads?id=${lead.id}`}
+                        onClick={() => onTakeLead?.(lead)}
+                      >
+                        <span>{isHot ? "Take Lead" : "Inspect"}</span>
+                        <ArrowUpRight className="h-3.5 w-3.5 shrink-0" />
+                      </Link>
                     </Button>
                   </TableCell>
                 </TableRow>

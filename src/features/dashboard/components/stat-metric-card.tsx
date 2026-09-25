@@ -87,25 +87,25 @@ export function StatMetricCard({
           </div>
         </div>
 
-        <div className="mt-2.5 flex items-baseline gap-2">
-          <span className="font-display text-2xl font-bold tracking-tight text-stone-900 tabular-nums">
+        <div className="mt-2 flex items-center gap-2">
+          <span className="font-display text-2xl font-bold tracking-tight text-stone-900 tabular-nums leading-none">
             {value}
           </span>
           {trend && (
             <span
               className={cn(
-                "inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[11px] font-semibold tabular-nums border",
+                "inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[11px] font-semibold tabular-nums border leading-none shrink-0",
                 trend.isPositive !== false ? styles.trend : "text-rose-700 bg-rose-50 border-rose-200"
               )}
             >
-              <TrendingUp className="h-3 w-3" />
-              {trend.value}
+              <TrendingUp className="h-3 w-3 shrink-0" />
+              <span>{trend.value}</span>
             </span>
           )}
           {badge && (
             <span
               className={cn(
-                "rounded-md px-1.5 py-0.5 text-[10px] font-semibold border",
+                "inline-flex items-center rounded-md px-1.5 py-0.5 text-[10px] font-semibold border leading-none shrink-0",
                 styles.badge
               )}
             >
