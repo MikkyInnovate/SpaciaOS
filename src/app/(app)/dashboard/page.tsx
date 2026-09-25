@@ -8,7 +8,6 @@ import { useWorkspace } from "@/lib/context/workspace-context";
 import { StatMetricCard } from "@/features/dashboard/components/stat-metric-card";
 import { LeadIntakeTable } from "@/features/dashboard/components/lead-intake-table";
 import { LeadDossierPanel } from "@/features/dashboard/components/lead-dossier-panel";
-import { AttentionCockpit } from "@/features/dashboard/components/attention-cockpit";
 import { OperationsActivityFeed } from "@/features/dashboard/components/operations-activity-feed";
 import { UpcomingViewingsList } from "@/features/dashboard/components/upcoming-viewings-list";
 import { PipelineFunnel } from "@/features/dashboard/components/pipeline-funnel";
@@ -324,11 +323,6 @@ export default function DashboardPage() {
         />
       </div>
 
-      {/* Primary Cockpit Question 1: "What Requires Attention?" */}
-      <AttentionCockpit
-        items={attentionItems}
-        onInspectLead={handleInspectById}
-      />
 
       {/* Lead Qualification Feed & Inspector Area */}
       {selectedLead ? (
