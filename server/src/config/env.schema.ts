@@ -28,7 +28,8 @@ export const envSchema = z.object({
   GOOGLE_CALENDAR_CLIENT_SECRET: z.string().optional(),
   GOOGLE_CALENDAR_REDIRECT_URI: z.string().optional(),
   RESEND_API_KEY: z.string().optional(),
-  RESEND_FROM_EMAIL: z.string().default("Spacia Viewings <notifications@spacia.io>"),
+  RESEND_FROM_EMAIL: z.string().default("Spacia Concierge <onboarding@resend.dev>"),
+  RESEND_TEST_RECIPIENT: z.string().optional(),
   NOTIFICATION_PROVIDER: z.enum(["resend", "mock"]).default("mock"),
 });
 

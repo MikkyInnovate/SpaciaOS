@@ -43,7 +43,9 @@ export class ResendNotificationAdapter {
   async sendEmail(
     options: SendEmailOptions
   ): Promise<{ id: string; status: NotificationDeliveryStatus }> {
-    const toRecipients = Array.isArray(options.to) ? options.to : [options.to];
+    const rawRecipients = Array.isArray(options.to) ? options.to : [options.to];
+    const testRecipient = this.configService.get<string>("RESEND_TEST_RECIPIENT");
+    const toRecipients = testRecipient && testRecipient.trim().length > 0 ? [testRecipient.trim()] : rawRecipients;
     const fromAddress = options.from || this.defaultFrom;
 
     if (!this.isMockMode && this.resendClient) {
@@ -58,24 +60,24 @@ export class ResendNotificationAdapter {
         });
 
         if (error) {
-          this.logger.error(`[Resend Error] Failed to send email to ${toRecipients.join(", ")}: ${error.message}`);
-          throw new Error(`Resend dispatch failure: ${error.message}`);
+          this.logger.warn(`[Notifications Engine] Delivery error to ${toRecipients.join(", ")}: ${error.message}`);
+          throw new Error(`Dispatch failure: ${error.message}`);
         }
 
         const messageId = data?.id || `resend_${randomUUID()}`;
-        this.logger.log(`[Resend Sent] Message [${messageId}] delivered to ${toRecipients.join(", ")}`);
+        this.logger.log(`[Notifications Engine] Message [${messageId}] delivered to ${toRecipients.join(", ")} (Subject: "${options.subject}")`);
         return { id: messageId, status: "delivered" };
       } catch (err) {
-        this.logger.error(`[Resend Exception] Falling back to recorded delivery: ${(err as Error).message}`);
-        // Return gracefully so flow is never blocked
-        return { id: `resend_err_${randomUUID().slice(0, 8)}`, status: "failed" };
+        this.logger.error(`[Notifications Engine] Live dispatch exception: ${(err as Error).message}`);
+        // Return gracefully so appointment creation is never blocked
+        return { id: `notif_err_${randomUUID().slice(0, 8)}`, status: "failed" };
       }
     }
 
     // Deterministic Mock Mode
     const mockId = `resend_mock_${randomUUID().replace(/-/g, "").slice(0, 16)}`;
     this.logger.log(
-      `[Resend MOCK] Simulated email to [${toRecipients.join(", ")}] — Subject: "${options.subject}" (MsgID: ${mockId})`
+      `[Notifications Engine] Simulated dispatch to [${toRecipients.join(", ")}] — Subject: "${options.subject}" (MsgID: ${mockId})`
     );
 
     return { id: mockId, status: "mock_delivered" };

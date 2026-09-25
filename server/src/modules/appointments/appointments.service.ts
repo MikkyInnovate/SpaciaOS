@@ -167,11 +167,17 @@ export class AppointmentsService {
           const leadsById = new Map(leadRows.map((row) => [row.id, row]));
           const propertiesById = new Map(propertyRows.map((row) => [row.id, row]));
 
+          const memList = this.appointments.get(wsId) || [];
           list = dbAppointments.map((a) => {
             const lead = a.leadId ? leadsById.get(a.leadId) : undefined;
             const property = a.propertyId ? propertiesById.get(a.propertyId) : undefined;
             const titleLead = a.title.includes("(") ? a.title.split("(")[1].replace(")", "").trim() : "";
             const titleProperty = a.title.includes("-") ? a.title.split("-")[0].trim() : a.title;
+            const memMatch = memList.find((m) => m.id === a.id);
+            const notesReason = a.notes?.startsWith("Cancellation Reason: ")
+              ? a.notes.replace("Cancellation Reason: ", "")
+              : undefined;
+
             return {
               id: a.id,
               workspaceId: a.workspaceId,
@@ -186,11 +192,12 @@ export class AppointmentsService {
               assignedBrokerName: "Ade Admin (Senior Luxury Closer)",
               startTime: a.scheduledStartAt.toISOString(),
               endTime: a.scheduledEndAt.toISOString(),
-              status: a.status as any,
+              status: (memMatch?.status || a.status) as any,
               meetingType: (a.type === "virtual_tour" ? "virtual_tour" : "in_person_viewing") as any,
               location: a.location,
               meetingUrl: a.meetingUrl || undefined,
               notes: a.notes || undefined,
+              cancelledReason: memMatch?.cancelledReason || notesReason,
               referenceCode: `SP-BK-${a.id.slice(-6).toUpperCase()}`,
               calendarProvider: "google_calendar" as const,
               calendarEventId: `cal_evt_${a.id}`,
@@ -212,7 +219,25 @@ export class AppointmentsService {
       list = list.filter((a) => a.leadId === filters.leadId);
     }
     if (filters?.status && filters.status !== "ALL") {
-      list = list.filter((a) => a.status === filters.status);
+      const targetStatus = filters.status;
+      if (targetStatus === "UPCOMING" || targetStatus === "upcoming") {
+        const nowThreshold = Date.now() - 4 * 60 * 60 * 1000;
+        list = list.filter(
+          (a) =>
+            (a.status === "scheduled" || a.status === "confirmed") &&
+            new Date(a.endTime).getTime() >= nowThreshold
+        );
+      } else if (targetStatus === "rescheduled") {
+        list = list.filter(
+          (a) =>
+            a.status === "rescheduled" ||
+            (a.status === "cancelled" &&
+              (a.cancelledReason?.toLowerCase().includes("resched") ||
+                a.notes?.toLowerCase().includes("resched")))
+        );
+      } else {
+        list = list.filter((a) => a.status === targetStatus);
+      }
     }
     if (filters?.search?.trim()) {
       const term = filters.search.toLowerCase();
@@ -494,10 +519,11 @@ export class AppointmentsService {
     // Persist status update in Neon DB
     if (this.db) {
       try {
+        const dbStatus = dto.status === "rescheduled" ? "cancelled" : (dto.status as any);
         await this.db
           .update(schema.appointments)
           .set({
-            status: dto.status as any,
+            status: dbStatus,
             updatedAt: new Date(),
           })
           .where(
@@ -511,8 +537,8 @@ export class AppointmentsService {
       }
     }
 
-    // Cancel on external calendar if status is cancelled
-    if (dto.status === "cancelled" && appointment.calendarEventId) {
+    // Cancel on external calendar if status is cancelled or rescheduled
+    if ((dto.status === "cancelled" || dto.status === "rescheduled") && appointment.calendarEventId) {
       await this.calendarAdapter.cancelEvent(wsId, appointment.calendarEventId);
     }
 
