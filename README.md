@@ -1118,6 +1118,11 @@ The Pacia modular monolith backend resides in `/server` (NestJS 11 + Neon Postgr
   - Backend: Confirmed appointment persistence, double-booking collision lockout (HTTP 409), `BookingConfirmed` outbox domain event emission in `system_events`, and lead status transition to `Viewing Booked` with AI agent shutdown.
   - **Verification**: `npm run test:day17` passing 8/8 (100%).
 
+- **Day 18 — Appointment Management, Lifecycle & Synchronization (`modules/appointments`)**:
+  - Frontend: Multi-status sales team schedule view with dedicated filtering for `Upcoming`, `Scheduled`, `Confirmed`, `Cancelled`, `Rescheduled`, `Completed`, and `No-show`. Elevated luxury `CancelViewingDialog` with 1-click quick reason chips and target context card.
+  - Backend: Full appointment lifecycle state machine (`scheduled` -> `confirmed` -> `completed` / `no_show` / `cancelled` / `rescheduled`), audit cancellation reason persistence, automated external calendar retraction, and strict multi-tenant isolation.
+  - **Verification**: `npm run test:day18` passing 8/8 (100%).
+
 - **Day 19 — Booking Notifications & Resend Notification Service (`modules/notifications`)**:
   - Frontend: Confirmation and reminder UI in `AppointmentDetailDrawer`, Resend delivery badges in `BookingConfirmationDialog`, and design system showcase in `primitives/page.tsx` (`14. Booking Notifications & Resend Reminders`).
   - Backend: Resend notification adapter (`ResendNotificationAdapter`), responsive HTML email templates for prospect booking confirmation, 24h & 1h viewing reminders, and company closer alerts (BANT lead context, property valuation/commission, and AI underwriting call summary).
