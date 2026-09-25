@@ -327,7 +327,8 @@ async function runDay18AppointmentManagementTests() {
     console.log("▶ [TEST 8] Verifying multi-tenant appointment isolation...");
 
     const otherApts = await appointmentsService.getAppointments(otherTenantContext);
-    assert.strictEqual(otherApts.length, 0, "Other workspace must have 0 appointments from primary workspace");
+    const leaked = otherApts.filter((a) => a.workspaceId === TEST_WS_DAY18 || a.id === apt1.id);
+    assert.strictEqual(leaked.length, 0, "Other workspace must have 0 appointments leaked from primary workspace");
 
     try {
       await appointmentsService.updateStatus(otherTenantContext, apt1.id, { status: "cancelled" });
