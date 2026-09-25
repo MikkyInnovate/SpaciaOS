@@ -573,16 +573,6 @@ export function AppointmentDetailDrawer({
                     size="sm"
                     variant="outline"
                     disabled={isUpdating}
-                    onClick={() => runStatus("no_show")}
-                    className="h-8 border-stone-200 bg-white text-xs text-stone-700"
-                  >
-                    No-show
-                  </Button>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    disabled={isUpdating}
                     onClick={() => runStatus("completed")}
                     className="h-8 border-stone-200 bg-white text-xs text-stone-700"
                   >
