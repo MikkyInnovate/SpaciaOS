@@ -57,29 +57,15 @@ export function LeadDossierPanel({ lead, onClose, onTakeover, callEvent }: LeadD
           </div>
         </div>
 
-        <div className="flex items-center gap-1.5 -mr-1 -mt-1">
-          <Button
-            asChild
-            size="sm"
-            variant="outline"
-            className="h-7 px-2 text-xs gap-1 text-stone-700 bg-white hover:bg-stone-50 border-stone-200 shadow-2xs cursor-pointer"
-          >
-            <Link href={`/leads?id=${lead.id}&tab=qualification`}>
-              <span>Full Details</span>
-              <ArrowUpRight className="h-3.5 w-3.5 text-stone-400" />
-            </Link>
-          </Button>
-
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-7 w-7 text-stone-400 hover:text-stone-700"
-            onClick={onClose}
-            aria-label="Close panel"
-          >
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-7 w-7 text-stone-400 hover:text-stone-700 -mr-1 -mt-1"
+          onClick={onClose}
+          aria-label="Close panel"
+        >
+          <X className="h-4 w-4" />
+        </Button>
       </div>
 
       {/* Quick Human Takeover Actions Bar */}
@@ -251,50 +237,8 @@ export function LeadDossierPanel({ lead, onClose, onTakeover, callEvent }: LeadD
                 </>
               )}
             </div>
-
-            {/* Quick Qualification Dossier Callout Banner */}
-            <div className="rounded-lg border border-stone-200 bg-stone-50/70 p-3 flex items-center justify-between shadow-2xs">
-              <div className="space-y-0.5 min-w-0 pr-2">
-                <div className="flex items-center gap-1.5 text-xs font-semibold text-stone-900">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-600 shrink-0" />
-                  <span>Autonomous Qualification Dossier</span>
-                </div>
-                <p className="text-[11px] text-stone-500 truncate">
-                  Score: <strong className="text-stone-800">{lead.score}/100</strong> • Intent: <strong className="text-stone-800">{lead.intent || "Purchase"}</strong> • Budget: <strong className="text-stone-800">{lead.budget}</strong>
-                </p>
-              </div>
-              <Button
-                asChild
-                size="sm"
-                variant="outline"
-                className="h-7 px-2.5 text-xs gap-1 bg-white hover:bg-stone-50 text-stone-800 border-stone-300 font-medium shrink-0 cursor-pointer shadow-2xs"
-              >
-                <Link href={`/leads?id=${lead.id}&tab=qualification`}>
-                  <span>Open Dossier</span>
-                  <ArrowUpRight className="h-3 w-3 text-stone-500" />
-                </Link>
-              </Button>
-            </div>
           </div>
         </div>
-
-      {/* Footer Linking to Full Lead Page */}
-      <div className="flex items-center justify-between border-t border-border px-4 py-2.5 bg-stone-50/80">
-        <span className="text-xs text-stone-500">
-          Full underwriting &amp; activity timeline
-        </span>
-        <Button
-          asChild
-          size="sm"
-          variant="outline"
-          className="h-7 px-2.5 text-xs gap-1 bg-white hover:bg-stone-100 text-stone-800 border-stone-200 font-medium cursor-pointer shadow-2xs"
-        >
-          <Link href={`/leads?id=${lead.id}&tab=qualification`}>
-            <span>View Full Details</span>
-            <ArrowUpRight className="h-3.5 w-3.5 text-stone-500" />
-          </Link>
-        </Button>
-      </div>
     </div>
   );
 }

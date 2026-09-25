@@ -304,30 +304,16 @@ export default function DashboardPage() {
         <div className="space-y-3">
           <div className="flex items-center justify-between text-xs text-stone-500 px-1">
             <span className="font-medium text-stone-700">
-              Inspecting Lead: <strong className="text-stone-900">{selectedLead.name}</strong> • AI Call Transcript &amp; BANT Dossier
+              Inspecting Lead: <strong className="text-stone-900">{selectedLead.name}</strong> • AI Call Transcript
             </span>
-            <div className="flex items-center gap-2">
-              <Button
-                asChild
-                size="sm"
-                variant="outline"
-                className="h-7 text-xs bg-white text-stone-700 hover:bg-stone-50 gap-1.5 shadow-2xs cursor-pointer"
-              >
-                <Link href={`/leads?id=${selectedLead.id}`}>
-                  <span>Open Full Lead Page</span>
-                  <ArrowUpRight className="h-3.5 w-3.5 text-stone-400" />
-                </Link>
-              </Button>
-
-              <button
-                type="button"
-                onClick={() => setSelectedLead(null)}
-                className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md border border-stone-200 bg-white text-stone-600 hover:text-stone-900 hover:bg-stone-100 shadow-2xs font-medium text-xs transition-colors cursor-pointer"
-              >
-                <X className="h-3.5 w-3.5 text-stone-500" />
-                <span>Close Split</span>
-              </button>
-            </div>
+            <button
+              type="button"
+              onClick={() => setSelectedLead(null)}
+              className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md border border-stone-200 bg-white text-stone-600 hover:text-stone-900 hover:bg-stone-100 shadow-2xs font-medium text-xs transition-colors cursor-pointer"
+            >
+              <X className="h-3.5 w-3.5 text-stone-500" />
+              <span>Close Split</span>
+            </button>
           </div>
 
           <div className="grid gap-6 lg:grid-cols-12 items-start">
