@@ -366,7 +366,7 @@ async function runDay18AppointmentManagementTests() {
   }
 }
 
-runDay18AppointmentManagementTests().catch((err) => {
-  console.error("\n❌ DAY 18 TEST FAILED:", err);
+runDay18AppointmentManagementTests().catch((err: any) => {
+  console.error("\n❌ DAY 18 TEST FAILED:", err.stack || err.message || err.error || err);
   process.exit(1);
 });

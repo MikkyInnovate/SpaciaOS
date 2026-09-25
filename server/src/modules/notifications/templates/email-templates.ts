@@ -40,7 +40,7 @@ function wrapLuxuryEmail(title: string, bodyContent: string): string {
       ${bodyContent}
     </div>
     <div class="footer">
-      <p style="margin: 0 0 6px 0;">Spacia Sales Command Center • Automated Luxury Concierge</p>
+      <p style="margin: 0 0 6px 0;">Spacia • Private Wealth &amp; Luxury Real Estate</p>
       <p style="margin: 0;">This communication is confidential and intended solely for the recipient.</p>
     </div>
   </div>

@@ -1047,6 +1047,41 @@ Implement the complete inspection booking execution pipeline: confirming reserva
 
 ---
 
+# Day 18: Appointment Management, Lifecycle & Synchronization
+
+## Objective
+Implement complete appointment lifecycle management for the sales and operations team, providing unified multi-status inspection visibility (Upcoming, Scheduled, Confirmed, Cancelled, Rescheduled, Completed, No-show), audit reason logging, and external calendar synchronization with automatic event retraction.
+
+## Completed Deliverables & Architecture
+1. **Sales Team Multi-Status Visibility**:
+   - Filter chips and backend query support for all 7 statuses: `Upcoming`, `Scheduled`, `Confirmed`, `Cancelled`, `Rescheduled`, `Completed`, and `No-show`.
+   - Dynamic `UPCOMING` resolution (filters active viewings within upcoming time windows).
+   - `Rescheduled` tracking (tracks both status and closure of prior inspection appointments).
+2. **Appointment Lifecycle State Machine**:
+   - `scheduled` -> `confirmed` (closer confirmation)
+   - `confirmed` -> `completed` (conducted property inspection)
+   - `confirmed` -> `no_show` (client failed to attend)
+   - `confirmed` / `scheduled` -> `cancelled` (mandatory reason capture & DB audit logging)
+   - Rescheduling lifecycle: closure of prior inspection + booking of new slot.
+3. **Calendar Synchronization & Retraction**:
+   - Synchronization with Google Calendar, Outlook, and Cal.com adapters.
+   - Retraction/cancellation of external calendar events upon inspection cancellation or rescheduling.
+4. **Multi-Tenant Workspace Isolation**:
+   - Strict workspace tenancy boundaries preventing cross-tenant appointment retrieval or status updates.
+
+## Automated Verification & Test Suite
+- **Day 18 Appointment Management Suite**: `npm run test:day18` (`server/test/day18-appointment-management.spec.ts`) — **8/8 tests passed (100%)**:
+  1. Creation of baseline appointments across time slots ✔
+  2. Lifecycle transition: `scheduled` -> `confirmed` ✔
+  3. Lifecycle transition: `confirmed` -> `completed` ✔
+  4. Lifecycle transition: `confirmed` -> `no_show` ✔
+  5. Lifecycle transition: `cancelled` with reason & calendar retraction ✔
+  6. Rescheduling workflow: prior viewing closed + new viewing booked ✔
+  7. Sales team visibility across all 7 statuses ✔
+  8. Multi-tenant appointment isolation ✔
+
+---
+
 # Day 19: Booking Notifications & Resend Notification Service
 
 ## Objective

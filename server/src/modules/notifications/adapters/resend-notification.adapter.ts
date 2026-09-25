@@ -19,7 +19,7 @@ export class ResendNotificationAdapter {
     const provider = this.configService.get<string>("NOTIFICATION_PROVIDER") || "mock";
     this.defaultFrom =
       this.configService.get<string>("RESEND_FROM_EMAIL") ||
-      "Spacia Concierge <onboarding@resend.dev>";
+      "Spacia <onboarding@resend.dev>";
 
     if (apiKey && apiKey.trim().length > 0 && provider === "resend") {
       this.resendClient = new Resend(apiKey.trim());
