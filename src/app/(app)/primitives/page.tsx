@@ -50,6 +50,10 @@ import {
   Lightbulb,
   FileQuestion,
   CheckCircle2,
+  Mail,
+  Bell,
+  BellRing,
+  User,
 } from "lucide-react";
 import {
   BuyerIntentBadge,
@@ -85,7 +89,13 @@ import {
   CallSummaryCard,
   MOCK_CALLS,
 } from "@/features/calls";
-import { AvailabilitySelector, type ViewingSlot } from "@/features/appointments";
+import {
+  AvailabilitySelector,
+  appointmentsService,
+  NotificationPreviewDialog,
+  type ViewingSlot,
+  type Appointment,
+} from "@/features/appointments";
 
 interface SampleLead {
   id: string;
@@ -283,6 +293,37 @@ export default function PrimitivesShowcasePage() {
     d.setDate(d.getDate() + 2);
     return d.toISOString().split("T")[0];
   });
+
+  // 14. Notifications & Reminders State (Day 19 Deliverable)
+  const [reminderDispatched, setReminderDispatched] = React.useState<string | null>(null);
+  const [isSendingPrimitiveReminder, setIsSendingPrimitiveReminder] = React.useState(false);
+  const [primitivePreviewOpen, setPrimitivePreviewOpen] = React.useState(false);
+
+  const primitiveMockAppointment: Appointment = React.useMemo(() => ({
+    id: "apt_primitive_demo",
+    workspaceId: "ws_demo",
+    leadId: "lead_01_danjuma",
+    leadName: "Alhaji Danjuma",
+    leadPhone: "+234 803 999 8877",
+    leadScore: 94,
+    leadScoreCategory: "HOT",
+    propertyId: "prop_banana_villa",
+    propertyTitle: "The Grand Waterfront Villa",
+    propertyLocation: "Zone A, Banana Island, Ikoyi, Lagos",
+    propertyPrice: "₦950,000,000",
+    assignedBrokerId: "broker_ade",
+    assignedBrokerName: "Ade Admin (Senior Luxury Closer)",
+    startTime: new Date(Date.now() + 86400000 * 2).toISOString(),
+    endTime: new Date(Date.now() + 86400000 * 2 + 3600000).toISOString(),
+    status: "confirmed",
+    meetingType: "vip_private_showing",
+    location: "Zone A, Banana Island, Ikoyi, Lagos",
+    gatePassCode: "BI-9942-VIP",
+    notes: "VIP Inspection. High liquid prospect. Gate pass auto-issued. Prepare high-gloss legal title brochure.",
+    calendarProvider: "google_calendar",
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  }), []);
 
   // DataTable columns definition
   const columns: ColumnDef<SampleLead>[] = [
@@ -1873,6 +1914,128 @@ export default function PrimitivesShowcasePage() {
       </Card>
 
       {/* ========================================================================= */}
+      {/* 14. BOOKING NOTIFICATIONS & RESEND REMINDERS (DAY 19 DELIVERABLE) */}
+      {/* ========================================================================= */}
+      <Card className="border-border bg-white shadow-2xs">
+        <CardHeader className="p-4 border-b border-stone-100">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Mail className="h-4 w-4 text-[#0d4a36]" />
+              <CardTitle className="text-sm font-semibold text-stone-900">
+                14. Booking Notifications & Resend Reminders
+              </CardTitle>
+            </div>
+            <Badge variant="outline" className="text-[10px] text-emerald-800 border-emerald-200 bg-emerald-50">
+              Resend Delivery Engine
+            </Badge>
+          </div>
+          <CardDescription className="text-xs text-stone-500 mt-1">
+            Multi-party inspection notifications: prospect confirmation, 24h/1h viewing reminders, and company AI briefing alerts.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="p-4 space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Prospect Notification Card */}
+            <div className="rounded-xl border border-stone-200 bg-stone-50/50 p-3.5 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-stone-800 flex items-center gap-1.5">
+                  <User className="h-3.5 w-3.5 text-[#0d4a36]" />
+                  <span>Prospect Notification Channel</span>
+                </span>
+                <Badge className="bg-emerald-100 text-emerald-800 hover:bg-emerald-100 text-[10px]">
+                  Delivered
+                </Badge>
+              </div>
+              <p className="text-[11px] text-stone-500">
+                Includes branded luxury walkthrough confirmation, assigned closer contact, Google Meet video bridge, and one-click calendar invitation.
+              </p>
+              <div className="flex flex-wrap items-center gap-2 pt-1">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={isSendingPrimitiveReminder}
+                  onClick={async () => {
+                    setIsSendingPrimitiveReminder(true);
+                    try {
+                      await appointmentsService.sendViewingReminder("demo_apt_01", "24h");
+                      setReminderDispatched("24h viewing reminder dispatched via Resend to prospect");
+                      toast.success("24h Viewing Reminder Dispatched via Resend");
+                    } finally {
+                      setIsSendingPrimitiveReminder(false);
+                    }
+                  }}
+                  className="h-7 gap-1.5 text-xs bg-white border-stone-200 text-stone-700 hover:bg-stone-50 cursor-pointer shadow-2xs"
+                >
+                  <Bell className="h-3 w-3 text-amber-600" />
+                  <span>Dispatch 24h Reminder</span>
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={isSendingPrimitiveReminder}
+                  onClick={async () => {
+                    setIsSendingPrimitiveReminder(true);
+                    try {
+                      await appointmentsService.sendViewingReminder("demo_apt_01", "1h");
+                      setReminderDispatched("1h urgent viewing reminder dispatched via Resend to prospect");
+                      toast.success("1h Urgent Viewing Reminder Dispatched via Resend");
+                    } finally {
+                      setIsSendingPrimitiveReminder(false);
+                    }
+                  }}
+                  className="h-7 gap-1.5 text-xs bg-white border-stone-200 text-stone-700 hover:bg-stone-50 cursor-pointer shadow-2xs"
+                >
+                  <BellRing className="h-3 w-3 text-rose-600" />
+                  <span>Dispatch 1h Urgent Reminder</span>
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setPrimitivePreviewOpen(true)}
+                  className="h-7 gap-1.5 text-xs bg-white border-stone-200 text-[#0d4a36] hover:bg-stone-50 cursor-pointer shadow-2xs"
+                >
+                  <Mail className="h-3 w-3" />
+                  <span>Preview Email Templates</span>
+                </Button>
+              </div>
+            </div>
+
+            {/* Company Underwriting Alert Card */}
+            <div className="rounded-xl border border-stone-200 bg-stone-50/50 p-3.5 space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-stone-800 flex items-center gap-1.5">
+                  <Sparkles className="h-3.5 w-3.5 text-amber-600" />
+                  <span>Company / Closer Alert Channel</span>
+                </span>
+                <Badge className="bg-[#0d4a36] text-white hover:bg-[#0a3829] text-[10px]">
+                  Internal Briefing
+                </Badge>
+              </div>
+              <p className="text-[11px] text-stone-500">
+                Dispatches high-stakes sales intelligence to senior closer: BANT liquidity score (HOT 94/100), asking valuation (₦950M), projected commission (₦47.5M), and AI negotiation synthesis.
+              </p>
+              <div className="rounded-md border border-stone-200/80 bg-white p-2 text-[11px] text-stone-600 space-y-1 font-mono">
+                <div>Recipient: <span className="font-semibold text-stone-900">closers@spacia.io</span></div>
+                <div>Status: <span className="text-emerald-700 font-semibold">Active & Synced</span></div>
+              </div>
+            </div>
+          </div>
+
+          {reminderDispatched && (
+            <div className="rounded-lg border border-emerald-200 bg-emerald-50/60 p-3 flex items-center justify-between text-xs">
+              <span className="font-semibold text-emerald-950 flex items-center gap-1.5">
+                <CheckCircle2 className="h-4 w-4 text-emerald-700" />
+                <span>{reminderDispatched}</span>
+              </span>
+              <Badge className="bg-[#0d4a36] text-white text-[10px]">
+                Delivered
+              </Badge>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* ========================================================================= */}
       {/* DIALOG & DRAWER INSTANCES */}
       {/* ========================================================================= */}
       <ConfirmDialog
@@ -1937,6 +2100,12 @@ export default function PrimitivesShowcasePage() {
           </div>
         </DetailDrawer>
       )}
+
+      <NotificationPreviewDialog
+        open={primitivePreviewOpen}
+        onOpenChange={setPrimitivePreviewOpen}
+        appointment={primitiveMockAppointment}
+      />
     </Container>
   );
 }

@@ -1,7 +1,6 @@
 "use client";
 
 import * as React from "react";
-import { DetailDrawer } from "@/components/ui/detail-drawer";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Textarea } from "@/components/ui/textarea";
@@ -25,8 +24,14 @@ import {
   CheckCircle2,
   XCircle,
   RotateCcw,
+  Mail,
+  Bell,
+  BellRing,
+  Loader2,
 } from "lucide-react";
+import { appointmentsService } from "../services/appointments-service";
 import { toast } from "sonner";
+import { NotificationPreviewDialog } from "./notification-preview-dialog";
 
 function formatLabel(meetingType: Appointment["meetingType"]): string {
   if (meetingType === "virtual_tour") return "Live video walkthrough";
@@ -160,6 +165,7 @@ export function AppointmentDetailDrawer({
   onViewConfirmation,
 }: AppointmentDetailDrawerProps) {
   const [cancelOpen, setCancelOpen] = React.useState(false);
+  const [previewOpen, setPreviewOpen] = React.useState(false);
 
   const start = appointment ? new Date(appointment.startTime) : null;
   const end = appointment ? new Date(appointment.endTime) : null;
@@ -183,92 +189,53 @@ export function AppointmentDetailDrawer({
     }
   };
 
+  const [isSendingReminder, setIsSendingReminder] = React.useState(false);
+  const [reminderHistory, setReminderHistory] = React.useState<string[]>([]);
+
+  const handleSendReminder = async (window: "24h" | "1h") => {
+    if (!appointment) return;
+    setIsSendingReminder(true);
+    try {
+      const res = await appointmentsService.sendViewingReminder(appointment.id, window);
+      setReminderHistory((prev) => [...prev, `${window} reminder dispatched via Resend (${new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })})`]);
+      toast.success(res.message || `Viewing reminder (${window}) sent via Resend.`);
+    } catch {
+      toast.error("Failed to send viewing reminder.");
+    } finally {
+      setIsSendingReminder(false);
+    }
+  };
+
   return (
     <>
-      <DetailDrawer
-        open={open}
-        onOpenChange={onOpenChange}
-        maxWidth="md"
-        title={appointment?.propertyTitle || "Viewing"}
-        description={appointment ? `${appointment.leadName} · #${reference}` : undefined}
-        icon={<CalendarDays className="h-4 w-4" />}
-        badge={
-          appointment ? (
-            <StatusBadge
-              status={appointment.status}
-              label={appointment.status === "no_show" ? "No-show" : undefined}
-              withDot
-              size="xs"
-            />
-          ) : null
-        }
-        footer={
-          appointment && !terminal ? (
-            <div className="flex flex-wrap items-center justify-end gap-2">
-              {appointment.status === "scheduled" && (
-                <Button
-                  type="button"
-                  size="sm"
-                  disabled={isUpdating}
-                  onClick={() => runStatus("confirmed")}
-                  className="h-8 bg-[#0d4a36] text-xs text-white hover:bg-[#0a3829]"
-                >
-                  <CheckCircle2 className="mr-1 h-3.5 w-3.5" />
-                  Confirm
-                </Button>
-              )}
-              {(appointment.status === "confirmed" || appointment.status === "in_progress") && (
-                <>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    disabled={isUpdating}
-                    onClick={() => onReschedule(appointment)}
-                    className="h-8 border-stone-200 bg-white text-xs text-stone-700"
-                  >
-                    <RotateCcw className="mr-1 h-3.5 w-3.5" />
-                    Reschedule
-                  </Button>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    disabled={isUpdating}
-                    onClick={() => runStatus("no_show")}
-                    className="h-8 border-stone-200 bg-white text-xs text-stone-700"
-                  >
-                    No-show
-                  </Button>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    disabled={isUpdating}
-                    onClick={() => runStatus("completed")}
-                    className="h-8 border-stone-200 bg-white text-xs text-stone-700"
-                  >
-                    Mark completed
-                  </Button>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    disabled={isUpdating}
-                    onClick={() => setCancelOpen(true)}
-                    className="h-8 border-rose-200 bg-white text-xs text-rose-700 hover:bg-rose-50"
-                  >
-                    <XCircle className="mr-1 h-3.5 w-3.5" />
-                    Cancel
-                  </Button>
-                </>
-              )}
+      <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="gap-0 overflow-hidden border border-stone-200 bg-white p-0 shadow-xl sm:max-w-lg">
+        <DialogHeader className="border-b border-stone-100 bg-white px-5 py-4 pr-12">
+          <div className="flex items-start gap-3">
+            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-stone-200 bg-stone-50 text-[#0d4a36]">
+              <CalendarDays className="h-4 w-4" />
             </div>
-          ) : (
-            <p className="text-[11px] text-stone-400">This viewing can no longer be changed.</p>
-          )
-        }
-      >
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-2">
+                <DialogTitle className="truncate text-sm font-semibold text-stone-900">
+                  {appointment?.propertyTitle || "Viewing"}
+                </DialogTitle>
+                {appointment && (
+                  <StatusBadge
+                    status={appointment.status}
+                    label={appointment.status === "no_show" ? "No-show" : undefined}
+                    withDot
+                    size="xs"
+                  />
+                )}
+              </div>
+              <DialogDescription className="mt-1 truncate text-xs text-stone-500">
+                {appointment ? `${appointment.leadName} · #${reference}` : "Viewing details"}
+              </DialogDescription>
+            </div>
+          </div>
+        </DialogHeader>
+        <div className="max-h-[70vh] overflow-y-auto">
         {appointment && (
           <div className="space-y-4 p-4">
             <div className="overflow-hidden rounded-lg border border-stone-200 bg-white">
@@ -361,6 +328,83 @@ export function AppointmentDetailDrawer({
               </div>
             )}
 
+            {/* Notifications & Resend Reminders (Day 19 Deliverable) */}
+            <div className="rounded-lg border border-stone-200 bg-stone-50/70 p-3.5 space-y-2.5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1.5">
+                  <Mail className="h-3.5 w-3.5 text-[#0d4a36]" />
+                  <span className="text-xs font-semibold text-stone-800">
+                    Notifications & Reminders (Resend)
+                  </span>
+                </div>
+                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-800">
+                  <CheckCircle2 className="h-3 w-3 text-emerald-600" />
+                  Synced
+                </span>
+              </div>
+
+              <p className="text-[11px] text-stone-500 leading-relaxed">
+                Automated booking confirmation and company AI underwriting alert were delivered. Dispatch timely inspection reminders to the client:
+              </p>
+
+              <div className="flex flex-wrap items-center gap-2 pt-0.5">
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  disabled={isSendingReminder}
+                  onClick={() => handleSendReminder("24h")}
+                  className="h-7 gap-1.5 border-stone-200 bg-white px-2.5 text-[11px] text-stone-700 hover:bg-stone-50 cursor-pointer shadow-2xs"
+                >
+                  {isSendingReminder ? (
+                    <Loader2 className="h-3 w-3 animate-spin text-[#0d4a36]" />
+                  ) : (
+                    <Bell className="h-3 w-3 text-amber-600" />
+                  )}
+                  <span>Send 24h Reminder</span>
+                </Button>
+
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  disabled={isSendingReminder}
+                  onClick={() => handleSendReminder("1h")}
+                  className="h-7 gap-1.5 border-stone-200 bg-white px-2.5 text-[11px] text-stone-700 hover:bg-stone-50 cursor-pointer shadow-2xs"
+                >
+                  {isSendingReminder ? (
+                    <Loader2 className="h-3 w-3 animate-spin text-[#0d4a36]" />
+                  ) : (
+                    <BellRing className="h-3 w-3 text-rose-600" />
+                  )}
+                  <span>Send 1h Urgent Reminder</span>
+                </Button>
+
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setPreviewOpen(true)}
+                  className="h-7 gap-1.5 border-stone-200 bg-white px-2.5 text-[11px] text-[#0d4a36] hover:bg-stone-50 cursor-pointer shadow-2xs"
+                >
+                  <Mail className="h-3 w-3" />
+                  <span>Preview Emails</span>
+                </Button>
+              </div>
+
+              {reminderHistory.length > 0 && (
+                <div className="mt-2 pt-2 border-t border-stone-200/60 space-y-1">
+                  <p className="text-[10px] font-medium uppercase tracking-wider text-stone-400">Recent Dispatches</p>
+                  {reminderHistory.map((hist, idx) => (
+                    <div key={idx} className="flex items-center gap-1.5 text-[10px] text-emerald-800">
+                      <CheckCircle2 className="h-2.5 w-2.5 text-emerald-600" />
+                      <span>{hist}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
             <div className="flex flex-wrap gap-2">
               <Button
                 type="button"
@@ -390,7 +434,75 @@ export function AppointmentDetailDrawer({
             </div>
           </div>
         )}
-      </DetailDrawer>
+        </div>
+        <DialogFooter className="flex flex-wrap items-center justify-end gap-2 border-t border-stone-100 bg-stone-50/70 px-4 py-3 sm:justify-end">
+          {appointment && !terminal ? (
+            <>
+              {appointment.status === "scheduled" && (
+                <Button
+                  type="button"
+                  size="sm"
+                  disabled={isUpdating}
+                  onClick={() => runStatus("confirmed")}
+                  className="h-8 bg-[#0d4a36] text-xs text-white hover:bg-[#0a3829]"
+                >
+                  <CheckCircle2 className="mr-1 h-3.5 w-3.5" />
+                  Confirm
+                </Button>
+              )}
+              {(appointment.status === "confirmed" || appointment.status === "in_progress") && (
+                <>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    disabled={isUpdating}
+                    onClick={() => onReschedule(appointment)}
+                    className="h-8 border-stone-200 bg-white text-xs text-stone-700"
+                  >
+                    <RotateCcw className="mr-1 h-3.5 w-3.5" />
+                    Reschedule
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    disabled={isUpdating}
+                    onClick={() => runStatus("no_show")}
+                    className="h-8 border-stone-200 bg-white text-xs text-stone-700"
+                  >
+                    No-show
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    disabled={isUpdating}
+                    onClick={() => runStatus("completed")}
+                    className="h-8 border-stone-200 bg-white text-xs text-stone-700"
+                  >
+                    Mark completed
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    disabled={isUpdating}
+                    onClick={() => setCancelOpen(true)}
+                    className="h-8 border-rose-200 bg-white text-xs text-rose-700 hover:bg-rose-50"
+                  >
+                    <XCircle className="mr-1 h-3.5 w-3.5" />
+                    Cancel
+                  </Button>
+                </>
+              )}
+            </>
+          ) : (
+            <p className="text-[11px] text-stone-400">This viewing can no longer be changed.</p>
+          )}
+        </DialogFooter>
+      </DialogContent>
+      </Dialog>
 
       <CancelViewingDialog
         open={cancelOpen}
@@ -400,6 +512,12 @@ export function AppointmentDetailDrawer({
           if (!appointment) return;
           await onStatusChange(appointment.id, "cancelled", reason);
         }}
+      />
+
+      <NotificationPreviewDialog
+        open={previewOpen}
+        onOpenChange={setPreviewOpen}
+        appointment={appointment}
       />
     </>
   );

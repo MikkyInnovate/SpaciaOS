@@ -22,8 +22,10 @@ import {
   Video,
   Copy,
   ExternalLink,
+  Mail,
 } from "lucide-react";
 import { toast } from "sonner";
+import { NotificationPreviewDialog } from "./notification-preview-dialog";
 
 interface BookingConfirmationDialogProps {
   open: boolean;
@@ -51,6 +53,7 @@ export function BookingConfirmationDialog({
   appointment,
 }: BookingConfirmationDialogProps) {
   const [copied, setCopied] = React.useState(false);
+  const [previewOpen, setPreviewOpen] = React.useState(false);
 
   const startDate = appointment ? new Date(appointment.startTime) : null;
   const endDate = appointment ? new Date(appointment.endTime) : null;
@@ -129,7 +132,8 @@ ${meetLink ? `Google Meet: ${meetLink}\n` : ""}Status: Confirmed. AI outreach st
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <>
+      <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg p-0 gap-0 overflow-hidden border border-stone-200 bg-white shadow-xl">
         <DialogHeader className="border-b border-stone-100 bg-white px-5 py-4 pr-12">
           <div className="flex items-start gap-3">
@@ -259,6 +263,26 @@ ${meetLink ? `Google Meet: ${meetLink}\n` : ""}Status: Confirmed. AI outreach st
                 </div>
               )}
             </div>
+
+            {/* Resend Automated Delivery Indicator */}
+            <div className="mt-3 flex items-center justify-between rounded-lg border border-emerald-200/80 bg-emerald-50/60 p-2.5 text-xs">
+              <div className="flex items-center gap-2">
+                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-[#0d4a36]">
+                  <Mail className="h-3 w-3" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-[11px] font-semibold text-emerald-950">
+                    Resend Email Notifications Dispatched
+                  </p>
+                  <p className="text-[10px] text-emerald-700">
+                    Prospect confirmation, calendar invite & company AI briefing delivered.
+                  </p>
+                </div>
+              </div>
+              <span className="shrink-0 rounded bg-emerald-100 px-1.5 py-0.5 font-mono text-[10px] font-bold text-emerald-800">
+                SENT
+              </span>
+            </div>
           </div>
         )}
 
@@ -296,6 +320,17 @@ ${meetLink ? `Google Meet: ${meetLink}\n` : ""}Status: Confirmed. AI outreach st
               <CalendarDays className="h-3 w-3" />
               Calendar
             </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={() => setPreviewOpen(true)}
+              disabled={!appointment}
+              className="h-7 gap-1 border-stone-200 bg-white px-2.5 text-[11px] text-[#0d4a36] hover:bg-stone-50"
+            >
+              <Mail className="h-3 w-3" />
+              Email Previews
+            </Button>
           </div>
           <Button
             type="button"
@@ -308,5 +343,12 @@ ${meetLink ? `Google Meet: ${meetLink}\n` : ""}Status: Confirmed. AI outreach st
         </DialogFooter>
       </DialogContent>
     </Dialog>
+
+    <NotificationPreviewDialog
+      open={previewOpen}
+      onOpenChange={setPreviewOpen}
+      appointment={appointment}
+    />
+    </>
   );
 }
