@@ -26,13 +26,12 @@ import { MOCK_LEADS } from "@/features/leads/data/mock-leads";
 import { DatePicker } from "@/components/ui/date-picker";
 import {
   CalendarDays,
-  Clock,
-  MapPin,
   Building2,
   User,
   CheckCircle2,
-  Sparkles,
   Loader2,
+  MapPin,
+  Clock,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils/cn";
@@ -246,7 +245,7 @@ export function BookInspectionModal({
                 <DatePicker
                   value={selectedDate}
                   minDate={new Date()}
-                  onChange={(dateStr) => setSelectedDate(dateStr)}
+                  onChange={(dateStr: string) => setSelectedDate(dateStr)}
                 />
               </div>
             </div>
