@@ -264,7 +264,7 @@ ${meetLink ? `Google Meet: ${meetLink}\n` : ""}Status: Confirmed. AI outreach st
               )}
             </div>
 
-            {/* Resend Automated Delivery Indicator */}
+            {/* Automated Delivery Indicator */}
             <div className="mt-3 flex items-center justify-between rounded-lg border border-emerald-200/80 bg-emerald-50/60 p-2.5 text-xs">
               <div className="flex items-center gap-2">
                 <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-[#0d4a36]">
@@ -272,7 +272,7 @@ ${meetLink ? `Google Meet: ${meetLink}\n` : ""}Status: Confirmed. AI outreach st
                 </div>
                 <div className="min-w-0">
                   <p className="text-[11px] font-semibold text-emerald-950">
-                    Resend Email Notifications Dispatched
+                    Automated Email Notifications Dispatched
                   </p>
                   <p className="text-[10px] text-emerald-700">
                     Prospect confirmation, calendar invite & company AI briefing delivered.

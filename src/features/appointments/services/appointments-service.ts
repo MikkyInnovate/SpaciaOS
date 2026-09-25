@@ -395,7 +395,7 @@ class AppointmentsService {
     }
     return {
       success: true,
-      message: `Viewing reminder (${window}) dispatched successfully via Resend.`,
+      message: `Viewing reminder (${window}) dispatched successfully.`,
     };
   }
 

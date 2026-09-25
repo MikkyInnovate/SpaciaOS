@@ -1914,7 +1914,7 @@ export default function PrimitivesShowcasePage() {
       </Card>
 
       {/* ========================================================================= */}
-      {/* 14. BOOKING NOTIFICATIONS & RESEND REMINDERS (DAY 19 DELIVERABLE) */}
+      {/* 14. BOOKING NOTIFICATIONS & VIEWING REMINDERS */}
       {/* ========================================================================= */}
       <Card className="border-border bg-white shadow-2xs">
         <CardHeader className="p-4 border-b border-stone-100">
@@ -1922,11 +1922,11 @@ export default function PrimitivesShowcasePage() {
             <div className="flex items-center gap-2">
               <Mail className="h-4 w-4 text-[#0d4a36]" />
               <CardTitle className="text-sm font-semibold text-stone-900">
-                14. Booking Notifications & Resend Reminders
+                14. Booking Notifications &amp; Viewing Reminders
               </CardTitle>
             </div>
             <Badge variant="outline" className="text-[10px] text-emerald-800 border-emerald-200 bg-emerald-50">
-              Resend Delivery Engine
+              Notification Engine
             </Badge>
           </div>
           <CardDescription className="text-xs text-stone-500 mt-1">
@@ -1958,8 +1958,8 @@ export default function PrimitivesShowcasePage() {
                     setIsSendingPrimitiveReminder(true);
                     try {
                       await appointmentsService.sendViewingReminder("demo_apt_01", "24h");
-                      setReminderDispatched("24h viewing reminder dispatched via Resend to prospect");
-                      toast.success("24h Viewing Reminder Dispatched via Resend");
+                      setReminderDispatched("24h viewing reminder dispatched to prospect");
+                      toast.success("24h Viewing Reminder Dispatched");
                     } finally {
                       setIsSendingPrimitiveReminder(false);
                     }
@@ -1977,8 +1977,8 @@ export default function PrimitivesShowcasePage() {
                     setIsSendingPrimitiveReminder(true);
                     try {
                       await appointmentsService.sendViewingReminder("demo_apt_01", "1h");
-                      setReminderDispatched("1h urgent viewing reminder dispatched via Resend to prospect");
-                      toast.success("1h Urgent Viewing Reminder Dispatched via Resend");
+                      setReminderDispatched("1h urgent viewing reminder dispatched to prospect");
+                      toast.success("1h Urgent Viewing Reminder Dispatched");
                     } finally {
                       setIsSendingPrimitiveReminder(false);
                     }

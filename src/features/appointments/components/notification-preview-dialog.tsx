@@ -74,7 +74,7 @@ export function NotificationPreviewDialog({
     setIsSending(true);
     try {
       const res = await appointmentsService.sendViewingReminder(appointment.id, reminderWindow);
-      toast.success(res.message || `Viewing reminder (${reminderWindow}) dispatched via Resend.`);
+      toast.success(res.message || `Viewing reminder (${reminderWindow}) dispatched.`);
     } catch {
       toast.error("Failed to send reminder notification.");
     } finally {
@@ -97,15 +97,15 @@ export function NotificationPreviewDialog({
               </div>
               <div>
                 <DialogTitle className="text-sm font-semibold text-stone-900">
-                  Resend Email Notification Previews
+                  Email Notification Previews
                 </DialogTitle>
                 <DialogDescription className="text-xs text-stone-500">
-                  Day 19 multi-party automated delivery engine &amp; viewings lifecycle
+                  Automated concierge delivery engine &amp; viewings lifecycle
                 </DialogDescription>
               </div>
             </div>
             <Badge variant="outline" className="border-emerald-200 bg-emerald-50 text-[10px] text-emerald-800 font-mono">
-              Resend Verified
+              Automated Concierge
             </Badge>
           </div>
         </DialogHeader>
@@ -270,7 +270,7 @@ export function NotificationPreviewDialog({
                   className="h-8 gap-1.5 bg-[#0d4a36] text-xs text-white hover:bg-[#0a3829]"
                 >
                   <Send className="h-3 w-3" />
-                  <span>{isSending ? "Sending..." : `Dispatch ${reminderWindow} Via Resend`}</span>
+                  <span>{isSending ? "Sending..." : `Dispatch ${reminderWindow} Reminder`}</span>
                 </Button>
               </div>
 
