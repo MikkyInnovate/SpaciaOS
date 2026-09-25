@@ -205,9 +205,9 @@ export default function AppointmentsPage() {
 
           {/* Appointments Grid */}
           {isLoading ? (
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
               {[1, 2, 3, 4].map((n) => (
-                <div key={n} className="h-64 rounded-xl border border-stone-200 bg-stone-50/50 animate-pulse" />
+                <div key={n} className="h-40 rounded-xl border border-stone-200 bg-stone-50/50 animate-pulse" />
               ))}
             </div>
           ) : filteredAppointments.length === 0 ? (
@@ -239,7 +239,7 @@ export default function AppointmentsPage() {
               </div>
             </Card>
           ) : (
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
               {filteredAppointments.map((apt) => (
                 <AppointmentCard
                   key={apt.id}
