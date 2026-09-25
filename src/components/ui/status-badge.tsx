@@ -159,6 +159,10 @@ function resolveVariantForStatus(status: string): StatusBadgeVariant {
       return "viewing";
     case "in conversation":
       return "inConversation";
+    case "rescheduled":
+    case "no_show":
+    case "no-show":
+      return "warning";
     case "cancelled":
     case "lost":
     case "disqualified":

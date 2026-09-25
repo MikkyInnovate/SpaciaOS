@@ -92,9 +92,7 @@ import {
 import {
   AvailabilitySelector,
   appointmentsService,
-  NotificationPreviewDialog,
   type ViewingSlot,
-  type Appointment,
 } from "@/features/appointments";
 
 interface SampleLead {
@@ -297,33 +295,6 @@ export default function PrimitivesShowcasePage() {
   // 14. Notifications & Reminders State (Day 19 Deliverable)
   const [reminderDispatched, setReminderDispatched] = React.useState<string | null>(null);
   const [isSendingPrimitiveReminder, setIsSendingPrimitiveReminder] = React.useState(false);
-  const [primitivePreviewOpen, setPrimitivePreviewOpen] = React.useState(false);
-
-  const primitiveMockAppointment: Appointment = React.useMemo(() => ({
-    id: "apt_primitive_demo",
-    workspaceId: "ws_demo",
-    leadId: "lead_01_danjuma",
-    leadName: "Alhaji Danjuma",
-    leadPhone: "+234 803 999 8877",
-    leadScore: 94,
-    leadScoreCategory: "HOT",
-    propertyId: "prop_banana_villa",
-    propertyTitle: "The Grand Waterfront Villa",
-    propertyLocation: "Zone A, Banana Island, Ikoyi, Lagos",
-    propertyPrice: "₦950,000,000",
-    assignedBrokerId: "broker_ade",
-    assignedBrokerName: "Ade Admin (Senior Luxury Closer)",
-    startTime: new Date(Date.now() + 86400000 * 2).toISOString(),
-    endTime: new Date(Date.now() + 86400000 * 2 + 3600000).toISOString(),
-    status: "confirmed",
-    meetingType: "vip_private_showing",
-    location: "Zone A, Banana Island, Ikoyi, Lagos",
-    gatePassCode: "BI-9942-VIP",
-    notes: "VIP Inspection. High liquid prospect. Gate pass auto-issued. Prepare high-gloss legal title brochure.",
-    calendarProvider: "google_calendar",
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  }), []);
 
   // DataTable columns definition
   const columns: ColumnDef<SampleLead>[] = [
@@ -1988,15 +1959,6 @@ export default function PrimitivesShowcasePage() {
                   <BellRing className="h-3 w-3 text-rose-600" />
                   <span>Dispatch 1h Urgent Reminder</span>
                 </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => setPrimitivePreviewOpen(true)}
-                  className="h-7 gap-1.5 text-xs bg-white border-stone-200 text-[#0d4a36] hover:bg-stone-50 cursor-pointer shadow-2xs"
-                >
-                  <Mail className="h-3 w-3" />
-                  <span>Preview Email Templates</span>
-                </Button>
               </div>
             </div>
 
@@ -2100,12 +2062,6 @@ export default function PrimitivesShowcasePage() {
           </div>
         </DetailDrawer>
       )}
-
-      <NotificationPreviewDialog
-        open={primitivePreviewOpen}
-        onOpenChange={setPrimitivePreviewOpen}
-        appointment={primitiveMockAppointment}
-      />
     </Container>
   );
 }

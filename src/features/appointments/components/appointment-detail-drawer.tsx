@@ -34,7 +34,6 @@ import {
 import { cn } from "@/lib/utils/cn";
 import { appointmentsService } from "../services/appointments-service";
 import { toast } from "sonner";
-import { NotificationPreviewDialog } from "./notification-preview-dialog";
 
 function formatLabel(meetingType: Appointment["meetingType"]): string {
   if (meetingType === "virtual_tour") return "Live video walkthrough";
@@ -272,7 +271,6 @@ export function AppointmentDetailDrawer({
   onViewConfirmation,
 }: AppointmentDetailDrawerProps) {
   const [cancelOpen, setCancelOpen] = React.useState(false);
-  const [previewOpen, setPreviewOpen] = React.useState(false);
 
   const start = appointment ? new Date(appointment.startTime) : null;
   const end = appointment ? new Date(appointment.endTime) : null;
@@ -486,17 +484,6 @@ export function AppointmentDetailDrawer({
                   )}
                   <span>Send 1h Urgent Reminder</span>
                 </Button>
-
-                <Button
-                  type="button"
-                  size="sm"
-                  variant="outline"
-                  onClick={() => setPreviewOpen(true)}
-                  className="h-7 gap-1.5 border-stone-200 bg-white px-2.5 text-[11px] text-[#0d4a36] hover:bg-stone-50 cursor-pointer shadow-2xs"
-                >
-                  <Mail className="h-3 w-3" />
-                  <span>Preview Emails</span>
-                </Button>
               </div>
 
               {reminderHistory.length > 0 && (
@@ -619,12 +606,6 @@ export function AppointmentDetailDrawer({
           if (!appointment) return;
           await onStatusChange(appointment.id, "cancelled", reason);
         }}
-      />
-
-      <NotificationPreviewDialog
-        open={previewOpen}
-        onOpenChange={setPreviewOpen}
-        appointment={appointment}
       />
     </>
   );

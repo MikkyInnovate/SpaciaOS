@@ -25,7 +25,6 @@ import {
   Mail,
 } from "lucide-react";
 import { toast } from "sonner";
-import { NotificationPreviewDialog } from "./notification-preview-dialog";
 
 interface BookingConfirmationDialogProps {
   open: boolean;
@@ -53,7 +52,6 @@ export function BookingConfirmationDialog({
   appointment,
 }: BookingConfirmationDialogProps) {
   const [copied, setCopied] = React.useState(false);
-  const [previewOpen, setPreviewOpen] = React.useState(false);
 
   const startDate = appointment ? new Date(appointment.startTime) : null;
   const endDate = appointment ? new Date(appointment.endTime) : null;
@@ -132,8 +130,7 @@ ${meetLink ? `Google Meet: ${meetLink}\n` : ""}Status: Confirmed. AI outreach st
   };
 
   return (
-    <>
-      <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg p-0 gap-0 overflow-hidden border border-stone-200 bg-white shadow-xl">
         <DialogHeader className="border-b border-stone-100 bg-white px-5 py-4 pr-12">
           <div className="flex items-start gap-3">
@@ -320,17 +317,6 @@ ${meetLink ? `Google Meet: ${meetLink}\n` : ""}Status: Confirmed. AI outreach st
               <CalendarDays className="h-3 w-3" />
               Calendar
             </Button>
-            <Button
-              type="button"
-              size="sm"
-              variant="outline"
-              onClick={() => setPreviewOpen(true)}
-              disabled={!appointment}
-              className="h-7 gap-1 border-stone-200 bg-white px-2.5 text-[11px] text-[#0d4a36] hover:bg-stone-50"
-            >
-              <Mail className="h-3 w-3" />
-              Email Previews
-            </Button>
           </div>
           <Button
             type="button"
@@ -343,12 +329,5 @@ ${meetLink ? `Google Meet: ${meetLink}\n` : ""}Status: Confirmed. AI outreach st
         </DialogFooter>
       </DialogContent>
     </Dialog>
-
-    <NotificationPreviewDialog
-      open={previewOpen}
-      onOpenChange={setPreviewOpen}
-      appointment={appointment}
-    />
-    </>
   );
 }

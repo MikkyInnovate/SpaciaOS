@@ -26,12 +26,14 @@ export interface AppointmentFiltersBarProps {
   filteredCount: number;
 }
 
-const STATUS_CHIPS: Array<{ label: string; value: AppointmentStatus | "ALL" }> = [
+const STATUS_CHIPS: Array<{ label: string; value: string }> = [
   { label: "All Statuses", value: "ALL" },
-  { label: "Confirmed", value: "confirmed" },
+  { label: "Upcoming", value: "UPCOMING" },
   { label: "Scheduled", value: "scheduled" },
-  { label: "Completed", value: "completed" },
+  { label: "Confirmed", value: "confirmed" },
   { label: "Cancelled", value: "cancelled" },
+  { label: "Rescheduled", value: "rescheduled" },
+  { label: "Completed", value: "completed" },
   { label: "No-show", value: "no_show" },
 ];
 

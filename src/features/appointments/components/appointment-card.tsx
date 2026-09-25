@@ -94,8 +94,19 @@ export function AppointmentCard({
             </div>
 
             <StatusBadge
-              status={appointment.status}
-              label={appointment.status === "no_show" ? "No-show" : undefined}
+              status={
+                appointment.status === "cancelled" && appointment.cancelledReason === "Rescheduled"
+                  ? "Rescheduled"
+                  : appointment.status
+              }
+              label={
+                appointment.status === "no_show"
+                  ? "No-show"
+                  : appointment.status === "rescheduled" ||
+                    (appointment.status === "cancelled" && appointment.cancelledReason === "Rescheduled")
+                  ? "Rescheduled"
+                  : undefined
+              }
               withDot
               size="xs"
             />

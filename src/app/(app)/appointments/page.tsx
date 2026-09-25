@@ -116,8 +116,22 @@ export default function AppointmentsPage() {
   const filteredAppointments = React.useMemo(() => {
     return allAppointments.filter((apt) => {
       // Status filter
-      if (statusFilter !== "ALL" && apt.status !== statusFilter) {
-        return false;
+      if (statusFilter !== "ALL") {
+        if (statusFilter === "UPCOMING") {
+          const isUpcoming =
+            (apt.status === "scheduled" || apt.status === "confirmed") &&
+            new Date(apt.endTime).getTime() >= Date.now() - 1000 * 60 * 60 * 4;
+          if (!isUpcoming) return false;
+        } else if (statusFilter === "rescheduled") {
+          const isRescheduled =
+            apt.status === "rescheduled" ||
+            (apt.status === "cancelled" &&
+              (apt.cancelledReason?.toLowerCase().includes("resched") ||
+                apt.notes?.toLowerCase().includes("resched")));
+          if (!isRescheduled) return false;
+        } else if (apt.status !== statusFilter) {
+          return false;
+        }
       }
       // Format filter
       if (formatFilter !== "ALL" && apt.meetingType !== formatFilter) {
