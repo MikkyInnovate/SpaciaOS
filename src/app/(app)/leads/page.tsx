@@ -67,6 +67,8 @@ function LeadsPageContent() {
     });
   }, [targetLeadId, leads]);
 
+  const tabParam = searchParams.get("tab") as "overview" | "qualification" | "calls" | "timeline" | "supervision" | null;
+
   // Day 14: Lead Intake Modal
   const [isIntakeOpen, setIsIntakeOpen] = React.useState(false);
 
@@ -362,6 +364,7 @@ function LeadsPageContent() {
           lead={selectedLead}
           open={isDrawerOpen}
           onOpenChange={setIsDrawerOpen}
+          defaultTab={tabParam || "overview"}
           onStatusChange={handleStatusChange}
           onAddNote={handleAddNote}
           onTakeover={handleTakeover}

@@ -58,6 +58,7 @@ export interface LeadDetailShellProps {
   lead: Lead | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  defaultTab?: CommandCenterTab;
   onStatusChange?: (leadId: string, newStatus: LeadStatus) => Promise<void> | void;
   onAddNote?: (leadId: string, noteText: string, imageUrl?: string) => Promise<void> | void;
   onTakeover?: (leadId: string, brokerName?: string, reason?: string) => Promise<void> | void;
@@ -75,6 +76,7 @@ export function LeadDetailShell({
   lead,
   open,
   onOpenChange,
+  defaultTab,
   onStatusChange,
   onAddNote,
   onTakeover,
@@ -88,7 +90,7 @@ export function LeadDetailShell({
   isLoading = false,
 }: LeadDetailShellProps) {
   const [copiedPhone, setCopiedPhone] = React.useState(false);
-  const [activeTab, setActiveTab] = React.useState<CommandCenterTab>("overview");
+  const [activeTab, setActiveTab] = React.useState<CommandCenterTab>(defaultTab || "overview");
   const [selectedPropertyForSpecs, setSelectedPropertyForSpecs] = React.useState<Property | null>(null);
   const [connectedCalls, setConnectedCalls] = React.useState<Call[]>([]);
   const [isLoadingCalls, setIsLoadingCalls] = React.useState(false);
@@ -104,8 +106,14 @@ export function LeadDetailShell({
     setPrevLeadId(lead?.id);
     setSelectedPropertyForSpecs(null);
     setSelectedCallForCockpit(null);
-    setActiveTab("overview");
+    setActiveTab(defaultTab || "overview");
   }
+
+  React.useEffect(() => {
+    if (defaultTab) {
+      setActiveTab(defaultTab);
+    }
+  }, [defaultTab]);
 
   // Fetch linked Vapi voice calls whenever lead changes or drawer opens
   React.useEffect(() => {
