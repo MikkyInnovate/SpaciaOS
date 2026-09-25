@@ -1108,9 +1108,25 @@ The Pacia modular monolith backend resides in `/server` (NestJS 11 + Neon Postgr
   - Autonomous AI: Controlled AI tool `book_property_inspection` registered in `AiToolExecutorService` with inside-the-tool tenant isolation, slot booking, and compliance audit trail in `audit_logs`.
   - **Verification**: `npm run test:day15` passing 8/8 (100%).
 
+- **Day 16 — Availability Retrieval & Real Available Slot (`modules/appointments`)**:
+  - Frontend: `AvailabilitySelector` component with live datepicker, synchronized slot badges, Google Calendar sync state, and real available slot indicators.
+  - Backend: Availability engine calculating clash-free slots against internal bookings and external Google Calendar busy intervals with Sunday lockout and multi-tenant isolation.
+  - **Verification**: `npm run test:day16` passing 7/7 (100%).
+
+- **Day 17 — Booking Confirmation & Domain Event Execution (`modules/appointments`)**:
+  - Frontend: `BookingConfirmationDialog` with reference code, Google Meet link, WhatsApp invite generator, and calendar export.
+  - Backend: Confirmed appointment persistence, double-booking collision lockout (HTTP 409), `BookingConfirmed` outbox domain event emission in `system_events`, and lead status transition to `Viewing Booked` with AI agent shutdown.
+  - **Verification**: `npm run test:day17` passing 8/8 (100%).
+
+- **Day 19 — Booking Notifications & Resend Notification Service (`modules/notifications`)**:
+  - Frontend: Confirmation and reminder UI in `AppointmentDetailDrawer`, Resend delivery badges in `BookingConfirmationDialog`, and design system showcase in `primitives/page.tsx` (`14. Booking Notifications & Resend Reminders`).
+  - Backend: Resend notification adapter (`ResendNotificationAdapter`), responsive HTML email templates for prospect booking confirmation, 24h & 1h viewing reminders, and company closer alerts (BANT lead context, property valuation/commission, and AI underwriting call summary).
+  - Integration: Automatic multi-party dispatch upon appointment creation and on-demand reminder dispatching with Neon PostgreSQL audit persistence in `notifications`.
+  - **Verification**: `npm run test:day19` passing 8/8 (100%).
+
 ### Next Milestone:
-- **Day 16 — Production Hardening & Multi-Channel Deployment**:
-  - Webhook edge authentication, distributed rate limiting, end-to-end multi-tenant observability, and load-tested concurrent booking workflows.
+- **Day 20 — Advanced AI Negotiation & Multi-Channel Deployment**:
+  - Autonomous counter-offer analysis, high-concurrency booking load testing, and webhook edge security.
 
 
 
