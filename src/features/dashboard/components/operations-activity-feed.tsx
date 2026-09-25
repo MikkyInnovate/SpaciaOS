@@ -16,6 +16,8 @@ import {
   Clock,
   ExternalLink,
   Activity,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 
@@ -24,11 +26,14 @@ export interface OperationsActivityFeedProps {
   onInspectLead?: (leadId: string) => void;
 }
 
+const INITIAL_LIMIT = 5;
+
 export function OperationsActivityFeed({
   feed,
   onInspectLead,
 }: OperationsActivityFeedProps) {
   const [filter, setFilter] = React.useState<"all" | "calls" | "viewings" | "notifications">("all");
+  const [showAll, setShowAll] = React.useState(false);
 
   const filteredFeed = React.useMemo(() => {
     if (filter === "all") return feed;
@@ -37,6 +42,11 @@ export function OperationsActivityFeed({
     if (filter === "notifications") return feed.filter((f) => f.type === "notification_sent");
     return feed;
   }, [feed, filter]);
+
+  const visibleFeed = React.useMemo(() => {
+    if (showAll) return filteredFeed;
+    return filteredFeed.slice(0, INITIAL_LIMIT);
+  }, [filteredFeed, showAll]);
 
   const formatRelativeTime = (timestamp: string) => {
     try {
@@ -110,7 +120,7 @@ export function OperationsActivityFeed({
                 <Activity className="h-4 w-4" aria-hidden="true" />
               </div>
               <CardTitle className="font-display text-base font-bold text-stone-900">
-                What Happened Today?
+                History
               </CardTitle>
               <span className="flex items-center gap-1 text-[11px] font-medium text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-600 animate-pulse" />
@@ -122,67 +132,47 @@ export function OperationsActivityFeed({
             </CardDescription>
           </div>
 
-          {/* Feed Filter Buttons */}
-          <div className="flex items-center gap-1 text-xs">
-            <button
-              type="button"
-              onClick={() => setFilter("all")}
-              className={cn(
-                "px-2.5 py-1 rounded-md font-medium text-xs transition-colors shrink-0 cursor-pointer",
-                filter === "all"
-                  ? "bg-stone-900 text-white shadow-2xs"
-                  : "bg-white text-stone-600 border border-stone-200 hover:bg-stone-50"
-              )}
-            >
-              All ({feed.length})
-            </button>
-            <button
-              type="button"
-              onClick={() => setFilter("calls")}
-              className={cn(
-                "px-2.5 py-1 rounded-md font-medium text-xs transition-colors shrink-0 cursor-pointer",
-                filter === "calls"
-                  ? "bg-indigo-700 text-white shadow-2xs"
-                  : "bg-white text-indigo-700 border border-indigo-200 hover:bg-indigo-50"
-              )}
-            >
-              Calls
-            </button>
-            <button
-              type="button"
-              onClick={() => setFilter("viewings")}
-              className={cn(
-                "px-2.5 py-1 rounded-md font-medium text-xs transition-colors shrink-0 cursor-pointer",
-                filter === "viewings"
-                  ? "bg-emerald-700 text-white shadow-2xs"
-                  : "bg-white text-emerald-700 border border-emerald-200 hover:bg-emerald-50"
-              )}
-            >
-              Viewings
-            </button>
-            <button
-              type="button"
-              onClick={() => setFilter("notifications")}
-              className={cn(
-                "px-2.5 py-1 rounded-md font-medium text-xs transition-colors shrink-0 cursor-pointer",
-                filter === "notifications"
-                  ? "bg-sky-700 text-white shadow-2xs"
-                  : "bg-white text-sky-700 border border-sky-200 hover:bg-sky-50"
-              )}
-            >
-              Emails
-            </button>
+          {/* Design System Segmented Filter Bar */}
+          <div className="flex items-center gap-1 bg-stone-100 p-1 rounded-lg border border-stone-200/80">
+            {(
+              [
+                { label: `All (${feed.length})`, value: "all" },
+                { label: "Calls", value: "calls" },
+                { label: "Viewings", value: "viewings" },
+                { label: "Emails", value: "notifications" },
+              ] as const
+            ).map((tab) => {
+              const isSelected = filter === tab.value;
+              return (
+                <button
+                  key={tab.value}
+                  type="button"
+                  onClick={() => {
+                    setFilter(tab.value);
+                    setShowAll(false);
+                  }}
+                  className={cn(
+                    "px-3 py-1 rounded-md text-xs font-medium transition-all select-none whitespace-nowrap cursor-pointer",
+                    isSelected
+                      ? "bg-white text-stone-900 font-semibold shadow-2xs border border-stone-200/60"
+                      : "text-stone-600 hover:text-stone-900 hover:bg-stone-200/60"
+                  )}
+                >
+                  {tab.label}
+                </button>
+              );
+            })}
           </div>
         </div>
       </CardHeader>
 
       <CardContent className="p-4 sm:p-5 divide-y divide-stone-100">
-        {filteredFeed.length === 0 ? (
+        {visibleFeed.length === 0 ? (
           <div className="py-8 text-center text-xs text-stone-500">
-            No events found for this filter today.
+            No events found for this filter.
           </div>
         ) : (
-          filteredFeed.map((item) => {
+          visibleFeed.map((item) => {
             const meta = getEventMeta(item.type);
             const Icon = meta.icon;
 
@@ -250,6 +240,30 @@ export function OperationsActivityFeed({
               </div>
             );
           })
+        )}
+
+        {/* Show All / Show Less Toggle Button */}
+        {filteredFeed.length > INITIAL_LIMIT && (
+          <div className="pt-3">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowAll(!showAll)}
+              className="w-full text-xs font-medium text-stone-700 hover:bg-stone-50 border-stone-200/80 gap-1.5 cursor-pointer shadow-2xs"
+            >
+              {showAll ? (
+                <>
+                  <ChevronUp className="h-3.5 w-3.5 text-stone-500" />
+                  <span>Show Less</span>
+                </>
+              ) : (
+                <>
+                  <ChevronDown className="h-3.5 w-3.5 text-stone-500" />
+                  <span>Show All ({filteredFeed.length})</span>
+                </>
+              )}
+            </Button>
+          </div>
         )}
 
         <div className="pt-3 flex items-center justify-between gap-2">
