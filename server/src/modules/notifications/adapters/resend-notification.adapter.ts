@@ -19,15 +19,21 @@ export class ResendNotificationAdapter {
     const provider = this.configService.get<string>("NOTIFICATION_PROVIDER") || "mock";
     this.defaultFrom =
       this.configService.get<string>("RESEND_FROM_EMAIL") ||
-      "Spacia Viewings <notifications@spacia.io>";
+      "Spacia Concierge <onboarding@resend.dev>";
 
-    if (apiKey && provider !== "mock") {
-      this.resendClient = new Resend(apiKey);
+    if (apiKey && apiKey.trim().length > 0 && provider === "resend") {
+      this.resendClient = new Resend(apiKey.trim());
       this.isMockMode = false;
-      this.logger.log("[Resend Adapter] Initialized live Resend provider");
+      this.logger.log("[Notifications Engine] Initialized live Resend provider for real email dispatch");
     } else {
       this.isMockMode = true;
-      this.logger.log("[Resend Adapter] Initialized deterministic mock provider (MOCK_MODE=true)");
+      if (provider === "resend" && (!apiKey || apiKey.trim().length === 0)) {
+        this.logger.warn(
+          "[Notifications Engine] NOTIFICATION_PROVIDER is set to 'resend' but RESEND_API_KEY is not configured. Running in safe simulation fallback."
+        );
+      } else {
+        this.logger.log("[Notifications Engine] Initialized deterministic mock provider (simulation mode)");
+      }
     }
   }
 
