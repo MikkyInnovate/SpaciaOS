@@ -1044,9 +1044,145 @@ Day 14 consolidates and connects all operational layers into the first complete,
 
 ---
 
-## 26. Git Workflow & Branching Conventions
+## 26. Day 15 — Calendar Booking & Appointments Scheduling Hub (`/appointments`)
+
+Day 15 establishes the production-grade inspection scheduling dashboard, dual-tab appointment operations, and connected calendar management:
+
+```text
+src/features/appointments/
+├── components/
+│   ├── appointment-card.tsx            # Compact luxury inspection summary card
+│   ├── appointment-filters-bar.tsx     # Status filter chips, format selector & search
+│   ├── book-inspection-modal.tsx       # 4-stage booking modal with client & property pickers
+│   └── calendar-connections-panel.tsx  # Google Calendar OAuth connection & sync status
+├── services/
+│   └── appointments-service.ts         # Centralized client SDK with optimistic fallback
+└── types/
+    └── index.ts                        # Strictly typed appointment, slot, and calendar contracts
+```
+
+### 1. Appointments Command Center (`/appointments`)
+- **Executive Metric Strip**: Real-time KPI summary tracking `Total Viewings`, `Confirmed`, `Pending Confirmation`, and `Completion Rate`.
+- **Dual Tab Architecture**: Seamless navigation between operational viewing schedules (`Upcoming Viewings`) and external calendar integrations (`Connected Calendars`).
+- **Standard Search & Filter Bar**: Instant multi-field filtering across prospect names, property titles, locations, and inspection formats (`In-Person Showing` vs `Virtual Tour`).
+
+### 2. Google Calendar OAuth Synchronization (`CalendarConnectionsPanel`)
+- **Real-Time Connection States**: Displays live Google Calendar connection status (`Connected`, `Primary Calendar`, `Last Synced`).
+- **OAuth Handshake Support**: Detects OAuth redirect query params (`?tab=calendars&code=`) and triggers seamless authorization token exchange.
+- **Free/Busy Collision Guard**: Visual indicator confirming active external Google Calendar clash prevention across sales closer schedules.
+
+### 3. Inspection Booking Modal (`BookInspectionModal`)
+- **Client / Lead Selection**: Auto-complete dropdown displaying prospect name, phone, email, and live BANT qualification scores (`HOT 94/100`).
+- **Target Property Selector**: Listing picker showing property title, location, and formatted pricing (`₦950,000,000`).
+- **Notification Destination**: Pre-hydrates client email with editable override for inspection confirmations and reminders.
+
+---
+
+## 27. Day 16 — Availability Retrieval & Slot Selection Engine (`AvailabilitySelector`)
+
+Day 16 delivers real-time Free/Busy interval querying from connected Google Calendars and Neon PostgreSQL appointments:
+
+### 1. Interactive Slot Selection Component (`AvailabilitySelector`)
+- **Calendar Day Navigator**: Datepicker with weekday intelligence, automatic weekend handling, and non-operating day lockout (Sundays).
+- **Three-Tier Slot Statuses**:
+  - `Open`: Emerald badge (`Open`) indicating verified availability across both internal and external calendars.
+  - `Booked`: Stone badge (`Booked`) indicating an existing confirmed inspection for the target property.
+  - `External Clash`: Amber badge (`Clash`) detailing external Google Calendar busy intervals (e.g., *"External Board Meeting (Google Calendar)"*).
+- **Broker Assignment Attribution**: Indicates the assigned luxury closer and inspection window duration (`10:00 AM – 12:00 PM`).
+
+### 2. Design System Showcase (`/primitives` Section 13)
+- Fully interactive workbench allowing developers to test slot conflict simulation, calendar date shifts, and live availability resolution.
+
+---
+
+## 28. Day 17 — Booking Confirmation & Domain Event Execution (`BookingConfirmationDialog`)
+
+Day 17 delivers the elevated post-booking modal, domain event emission, and external calendar synchronization:
+
+### 1. Booking Confirmation Dialog (`BookingConfirmationDialog`)
+- **Reference Code Generator**: Canonical booking code format (`#SP-BK-D89A12`) for gate clearance and customer support tracking.
+- **Google Meet Bridge**: Instant 1-click video join button with copy-to-clipboard action for remote virtual walkthroughs.
+- **WhatsApp Invitation Dispatch**: Formats and triggers pre-composed luxury inspection invitations with property specs, closer on-site details, and gate clearance codes.
+- **Calendar Export**: 1-click `.ics` download and direct Google Calendar event generation.
+
+### 2. Sales Loop & AI Agent Shutdown
+- Confirmed bookings trigger the `BookingConfirmed` transactional outbox event.
+- Automatically transitions the prospect to `"Viewing Booked"` status and stops autonomous AI outreach to prevent conflicting follow-up communication.
+
+---
+
+## 29. Day 18 — Appointment Management, Multi-Status Lifecycle & Supervision
+
+Day 18 provides complete operational lifecycle management across all viewing stages:
+
+### 1. Seven-Status Sales Team Visibility
+- Filter chips and tabs for all 7 standard viewing statuses:
+  - `Upcoming`: Active inspections occurring within the forward-looking operational window.
+  - `Scheduled`: Newly created bookings awaiting final client re-confirmation.
+  - `Confirmed`: Fully locked inspections with calendar events and closer assigned.
+  - `Cancelled`: Retracted viewings with documented cancellation reasons.
+  - `Rescheduled`: Prior bookings closed in favor of an updated date/time slot.
+  - `Completed`: Successfully finished walkthroughs ready for commercial underwriting/negotiation.
+  - `No-show`: Documented client absences for re-engagement or nurture sequences.
+
+### 2. Slide-Out Inspection Dossier (`AppointmentDetailDrawer`)
+- **Property Briefing**: High-resolution image, listing title, location, and verified valuation.
+- **Prospect Profile**: Client contact methods, qualification category, and 1-click deep link to full lead dossier (`/leads`).
+- **Closer Allocation**: Assigned senior luxury closer profile and estate security gate pass passcodes.
+- **Lifecycle Transition Actions**: 1-click triggers to confirm viewings, mark completed, initiate rescheduling, or cancel viewings.
+
+### 3. Elevated Luxury Cancellation Dialog (`CancelViewingDialog`)
+- **Quick-Reason Chips**: 1-click preset cancellation reasons:
+  - *Client requested cancellation*
+  - *Broker scheduling conflict*
+  - *Price negotiation paused*
+  - *Property under contract*
+- **Audit Context Capture**: Required notes field to ensure full audit trails for compliance.
+- **External Retraction**: Automatically cancels the corresponding event on connected Google Calendars and updates database records with multi-tenant isolation.
+
+### 4. Seamless Rescheduling Flow
+- 1-click reschedule closes the previous appointment as `"Rescheduled"` and pre-hydrates lead and property context into `BookInspectionModal` for instantaneous re-booking.
+
+---
+
+## 30. Day 19 — Booking Notifications & Resend Reminders UI
+
+Day 19 delivers multi-party notification controls, live delivery telemetry, and email dispatch integration:
+
+```text
+src/
+├── features/appointments/
+│   ├── components/
+│   │   ├── appointment-detail-drawer.tsx  # In-drawer 24h & 1h reminder dispatch controls
+│   │   ├── booking-confirmation-dialog.tsx # Live Resend delivery badges for prospect & closer
+│   │   └── book-inspection-modal.tsx       # Dynamic notification email field
+│   └── services/
+│       └── appointments-service.ts         # Client SDK sendViewingReminder() integration
+└── app/(app)/primitives/page.tsx           # Section 14 interactive notification workbench
+```
+
+### 1. In-Drawer Notification Controls (`AppointmentDetailDrawer`)
+- **Notification Destination Preview**: Highlights client email address with inline edit action to verify target recipient before triggering dispatches.
+- **On-Demand Reminder Triggers**:
+  - **"Send 24h Reminder"**: Delivers branded 24-hour advance inspection briefing with Google Calendar add links and estate gate pass code.
+  - **"Send 1h Urgent Reminder"**: Dispatches the urgent 1-hour inspection reminder with attendance confirmation actions.
+- **Live Dispatch Telemetry**: "Recent Dispatches" audit list displaying timestamped delivery confirmations directly in the drawer.
+
+### 2. Multi-Party Booking Dispatch Telemetry
+- Upon creating an appointment, the system automatically triggers multi-party dispatch:
+  - **Prospect Confirmation**: Delivers responsive HTML email with viewing time, gate pass, closer contact, and 1-click Google Calendar add link.
+  - **Company Deal Alert**: Dispatches high-stakes sales intelligence to `closers@spacia.io` containing BANT lead score (e.g. `HOT 94/100`), asking valuation, estimated broker commission, and AI call underwriting summary.
+- Both delivery statuses are mirrored in `BookingConfirmationDialog` with real-time delivery badges.
+
+### 3. Primitives Workbench (`/primitives` Section 14)
+- Interactive testing sandbox for simulating 24h and 1h reminders with real-time toast feedback and `"Delivered"` verification pills.
+
+---
+
+## 31. Git Workflow & Branching Conventions
 
 - **Dedicated Frontend Branch**: All Day 1 through Day 14 frontend foundation code resides on the `frontend` branch.
+- **Feature Branches**: Day 15 through Day 19 unified full-stack code resides on `feature/backend-foundation`.
 - **Protected `main` Branch**: The `main` branch is reserved for verified releases and backend-integrated milestones.
 - **Branch Naming Conventions**:
   - `feat/feature-name` for new user-facing capabilities
@@ -1056,7 +1192,7 @@ Day 14 consolidates and connects all operational layers into the first complete,
 
 ---
 
-## 27. Contribution & Development Guidelines
+## 32. Contribution & Development Guidelines
 
 1. Always run `npm run lint` and `npm run type-check` before committing. Zero errors and zero warnings are required.
 2. Keep pages server-rendered where possible; designate `"use client"` only when user interaction, state, or browser APIs are required.
@@ -1065,7 +1201,7 @@ Day 14 consolidates and connects all operational layers into the first complete,
 
 ---
 
-## 28. Backend Architecture & Milestones (`/server`)
+## 33. Backend Architecture & Milestones (`/server`)
 
 The Pacia modular monolith backend resides in `/server` (NestJS 11 + Neon PostgreSQL + Drizzle ORM + BullMQ + Redis). Full technical documentation and verification runbooks are recorded in [`server/README.md`](server/README.md).
 
