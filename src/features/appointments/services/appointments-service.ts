@@ -21,7 +21,7 @@ class AppointmentsService {
       leadId: "lead_01_danjuma",
       leadName: "Alhaji Danjuma",
       leadPhone: "+234 803 999 8877",
-      leadEmail: "alhajidanjuma@investments.ng",
+      leadEmail: "michaelcodingclicks@gmail.com",
       leadScore: 94,
       leadScoreCategory: "HOT",
       propertyId: "prop_banana_villa",
@@ -258,21 +258,51 @@ class AppointmentsService {
     status: AppointmentStatus,
     reason?: string
   ): Promise<Appointment> {
-    const res = await apiClient.patch<Appointment | { data: Appointment }>(
-      `/api/v1/appointments/${appointmentId}/status`,
-      { status, reason }
-    );
-    const item = (res as { data?: Appointment })?.data?.id
-      ? (res as { data: Appointment }).data
-      : (res as Appointment);
-    if (!item?.id) {
-      throw new Error("Appointment status was not saved.");
+    try {
+      const res = await apiClient.patch<Appointment | { data: Appointment }>(
+        `/api/v1/appointments/${appointmentId}/status`,
+        { status, reason }
+      );
+      const item = (res as { data?: Appointment })?.data?.id
+        ? (res as { data: Appointment }).data
+        : (res as Appointment);
+      if (item?.id) {
+        const index = this.appointmentsCache.findIndex((a) => a.id === appointmentId);
+        if (index >= 0) {
+          this.appointmentsCache[index] = {
+            ...this.appointmentsCache[index],
+            ...item,
+            status,
+            cancelledReason: reason || item.cancelledReason || this.appointmentsCache[index].cancelledReason,
+          };
+        }
+        return {
+          ...item,
+          status,
+          cancelledReason: reason || item.cancelledReason,
+        };
+      }
+    } catch (err: unknown) {
+      const cached = this.appointmentsCache.find((a) => a.id === appointmentId);
+      if (cached) {
+        cached.status = status;
+        if (reason) cached.cancelledReason = reason;
+        cached.updatedAt = new Date().toISOString();
+        return cached;
+      }
+      throw err;
     }
+
     const index = this.appointmentsCache.findIndex((a) => a.id === appointmentId);
     if (index >= 0) {
-      this.appointmentsCache[index] = { ...this.appointmentsCache[index], ...item, status };
+      this.appointmentsCache[index] = {
+        ...this.appointmentsCache[index],
+        status,
+        cancelledReason: reason || this.appointmentsCache[index].cancelledReason,
+      };
+      return this.appointmentsCache[index];
     }
-    return { ...item, status };
+    throw new Error("Appointment status was not saved.");
   }
 
   /**

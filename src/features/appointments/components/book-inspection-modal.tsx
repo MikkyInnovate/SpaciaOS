@@ -188,9 +188,9 @@ export function BookInspectionModal({
         </DialogHeader>
 
         {/* Form Body */}
-        <div className="max-h-[68vh] overflow-y-auto p-5 space-y-4">
+        <div className="max-h-[68vh] overflow-y-auto p-6 space-y-4.5">
           {/* Client & Property Selectors */}
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
             {/* Select Client / Lead */}
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-stone-700 flex items-center gap-1.5">
@@ -205,7 +205,7 @@ export function BookInspectionModal({
                   if (matched?.email) setClientEmail(matched.email);
                 }}
               >
-                <SelectTrigger className="bg-white text-xs h-9 border-stone-200">
+                <SelectTrigger className="bg-white text-xs min-h-[50px] h-auto py-2 px-3 border-stone-200 [&>span]:line-clamp-none [&>span]:flex-1 text-left">
                   <SelectValue placeholder="Select Client" />
                 </SelectTrigger>
                 <SelectContent className="max-h-60">
@@ -231,15 +231,15 @@ export function BookInspectionModal({
                 <span>Target Listing</span>
               </label>
               <Select value={selectedPropertyId} onValueChange={setSelectedPropertyId}>
-                <SelectTrigger className="bg-white text-xs h-9 border-stone-200">
+                <SelectTrigger className="bg-white text-xs min-h-[50px] h-auto py-2 px-3 border-stone-200 [&>span]:line-clamp-none [&>span]:flex-1 text-left">
                   <SelectValue placeholder="Select Property" />
                 </SelectTrigger>
                 <SelectContent className="max-h-56">
                   {MOCK_PROPERTIES.map((prop) => (
-                    <SelectItem key={prop.id} value={prop.id} className="text-xs">
-                      <div className="flex flex-col">
+                    <SelectItem key={prop.id} value={prop.id} className="text-xs py-2">
+                      <div className="flex flex-col text-left">
                         <span className="font-medium text-stone-900">{prop.title}</span>
-                        <span className="text-[10px] text-stone-400">{prop.location} • {prop.formattedPrice}</span>
+                        <span className="text-[10px] text-stone-400 mt-0.5">{prop.location} • {prop.formattedPrice}</span>
                       </div>
                     </SelectItem>
                   ))}
