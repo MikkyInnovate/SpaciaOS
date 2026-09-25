@@ -30,6 +30,7 @@
     "test:day15": "NODE_ENV=test AI_PROVIDER=mock CALENDAR_PROVIDER=mock ts-node test/day15-calendar-booking.spec.ts",
     "test:day16": "NODE_ENV=test AI_PROVIDER=mock CALENDAR_PROVIDER=mock ts-node test/day16-availability-retrieval.spec.ts",
     "test:day17": "NODE_ENV=test AI_PROVIDER=mock CALENDAR_PROVIDER=mock ts-node test/day17-booking-confirmation.spec.ts",
+    "test:day19": "NODE_ENV=test NOTIFICATION_PROVIDER=mock CALENDAR_PROVIDER=mock ts-node test/day19-notifications.spec.ts",
     "demo:tools": "ts-node scripts/demo-tools.ts",
     "demo:ai-agent": "ts-node scripts/demo-ai-agent.ts",
     "demo:handoff": "NODE_ENV=test AI_PROVIDER=mock VAPI_PROVIDER=mock ts-node scripts/demo-handoff.ts"
@@ -48,6 +49,7 @@
     "drizzle-orm": "^0.40.0",
     "ioredis": "^5.4.1",
     "reflect-metadata": "^0.2.2",
+    "resend": "^6.29.0",
     "rxjs": "^7.8.2",
     "ws": "^8.18.1",
     "zod": "^3.24.2"

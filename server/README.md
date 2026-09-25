@@ -1045,6 +1045,47 @@ Implement the complete inspection booking execution pipeline: confirming reserva
   7. Retrieval of confirmed viewing in tenant appointments list ✔
   8. Booked lead status transition to `Viewing Booked` and AI agent shutdown ✔
 
+---
+
+# Day 19: Booking Notifications & Resend Notification Service
+
+## Objective
+Implement an enterprise-grade multi-party notification engine using Resend for property inspection bookings. Delivers branded confirmation emails and scheduled viewing reminders to prospective buyers, and automated high-stakes briefing digests to the company closer team (with BANT qualification scores, property valuation, commission, and AI call sentiment).
+
+## Completed Deliverables & Architecture
+1. **Resend Notification Provider Adapter (`ResendNotificationAdapter`)**:
+   - Live email dispatch via official `resend` SDK with fallback simulation mode for offline/test environments (`NOTIFICATION_PROVIDER=mock`).
+   - Configurable through `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, and `NOTIFICATION_PROVIDER`.
+2. **Prospect Notification Workflows**:
+   - **Booking Confirmation & Viewing Details**: Responsive luxury HTML email detailing appointment window, property address, assigned luxury closer, gate access pass, and Google Meet video bridge.
+   - **Scheduled Viewing Reminders**: Automated 24-hour and 1-hour inspection reminders with attendance confirmation triggers and rescheduling directives.
+3. **Company / Closer Briefing Digest (`company_new_appointment`)**:
+   - Instant dispatch to internal sales closer team (`closers@spacia.io`).
+   - Rich 4-part intelligence dossier:
+     - **BANT Lead Context**: Hot/warm rating (e.g. HOT 94/100), outright purchasing budget, transaction timeline, decision authority readiness, and motivation catalyst.
+     - **Property Context**: Listing title, zone address, asking valuation, and LASRERA-compliant broker commission (e.g. 5% = ₦47,500,000).
+     - **AI Underwriting & Call Synthesis**: Buyer sentiment (bullish/cautious), key qualified requirements (Governor's Consent, 24/7 power grid), resolved inquiries, and strategic walkthrough closing directives.
+     - **Meeting Schedule**: Exact date, time, and assigned lead closer.
+4. **Neon PostgreSQL Audit Persistence**:
+   - Persistent storage in `notifications` table (`type`, `title`, `message`, `entity_type`, `entity_id`, `metadata`, `workspace_id`).
+   - Strict multi-tenant workspace isolation with zero cross-tenant notification leakage.
+5. **Frontend Confirmation / Reminder UI**:
+   - Integrated into `AppointmentDetailDrawer` with live "Send 24h Reminder" and "Send 1h Urgent Reminder" action controls.
+   - Confirmation dialog status indicator displaying real-time Resend dispatch delivery.
+   - Design system component showcase in `primitives/page.tsx` (`14. Booking Notifications & Resend Reminders`).
+
+## Automated Verification & Test Suite
+- **Day 19 Notification Suite**: `npm run test:day19` (`server/test/day19-notifications.spec.ts`) — **8/8 tests passed (100%)**:
+  1. Prospect booking confirmation & viewing details dispatch ✔
+  2. Prospect viewing reminder dispatch (24h & 1h) ✔
+  3. Company new appointment alert with BANT lead context ✔
+  4. Company alert property context & broker commission calculation ✔
+  5. Company alert AI underwriting synthesis & buyer sentiment ✔
+  6. Automatic multi-party dispatch on appointment creation ✔
+  7. Neon PostgreSQL audit logging in `notifications` table ✔
+  8. Multi-tenant workspace notification isolation ✔
+
+
 
 
 

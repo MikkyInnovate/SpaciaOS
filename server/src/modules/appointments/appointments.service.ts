@@ -14,6 +14,8 @@ import * as schema from "../../database/schema";
 import { eq, and, inArray } from "drizzle-orm";
 import { randomUUID } from "crypto";
 
+import { NotificationsService } from "../notifications/notifications.service";
+
 @Injectable()
 export class AppointmentsService {
   private readonly logger = new Logger(AppointmentsService.name);
@@ -23,7 +25,8 @@ export class AppointmentsService {
 
   constructor(
     private readonly calendarAdapter: CalendarAdapterService,
-    @Optional() @Inject(DRIZZLE_DATABASE) private readonly db?: DrizzleDb
+    @Optional() @Inject(DRIZZLE_DATABASE) private readonly db?: DrizzleDb,
+    @Optional() private readonly notificationsService?: NotificationsService
   ) {
     this.initDefaultAppointments("default");
   }
@@ -399,6 +402,31 @@ export class AppointmentsService {
         }
       } catch (err) {
         this.logger.warn(`Could not persist appointment to DB (isolated test workspace): ${(err as Error).message}`);
+      }
+    }
+
+    // Dispatch Day 19 Booking Notifications (Prospect Confirmation + Company Alert)
+    if (this.notificationsService) {
+      try {
+        await this.notificationsService.dispatchBookingNotifications(wsId, {
+          appointmentId: aptId,
+          referenceCode,
+          leadId: dto.leadId,
+          leadName,
+          leadEmail: identity.leadEmail,
+          leadPhone: identity.leadPhone,
+          propertyId: dto.propertyId,
+          propertyTitle,
+          propertyLocation: identity.location,
+          startTime: startTime.toISOString(),
+          endTime: endTime.toISOString(),
+          meetingType: dto.meetingType,
+          meetingUrl: calendarSync.meetingLink,
+          assignedBrokerName: "Ade Admin (Senior Luxury Closer)",
+          notes: dto.notes,
+        });
+      } catch (notifErr) {
+        this.logger.warn(`Failed to dispatch booking notifications: ${(notifErr as Error).message}`);
       }
     }
 

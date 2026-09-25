@@ -5,9 +5,10 @@ import { CalendarAdapterService } from "./calendar-adapter.service";
 import { NativeCalendarAdapter } from "./adapters/native-calendar.adapter";
 import { GoogleCalendarAdapter } from "./adapters/google-calendar.adapter";
 import { DatabaseModule } from "../../database/database.module";
+import { NotificationsModule } from "../notifications/notifications.module";
 
 @Module({
-  imports: [DatabaseModule],
+  imports: [DatabaseModule, NotificationsModule],
   controllers: [AppointmentsController],
   providers: [
     AppointmentsService,
