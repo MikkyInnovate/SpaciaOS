@@ -143,34 +143,17 @@ class AppointmentsService {
         "/api/v1/appointments" + (qs ? `?${qs}` : "")
       );
       if (Array.isArray(res)) {
+        this.appointmentsCache = res;
         return res;
       }
       if (res && typeof res === "object" && Array.isArray((res as any).data)) {
+        this.appointmentsCache = (res as any).data;
         return (res as any).data;
       }
-    } catch {
-      // Fall back to local state
+      return [];
+    } catch (err) {
+      throw err;
     }
-
-    let filtered = [...this.appointmentsCache];
-    if (filters?.leadId) {
-      filtered = filtered.filter((a) => a.leadId === filters.leadId);
-    }
-    if (filters?.status && filters.status !== "ALL") {
-      filtered = filtered.filter((a) => a.status === filters.status);
-    }
-    if (filters?.search?.trim()) {
-      const term = filters.search.toLowerCase();
-      filtered = filtered.filter(
-        (a) =>
-          a.leadName.toLowerCase().includes(term) ||
-          a.propertyTitle.toLowerCase().includes(term) ||
-          a.location.toLowerCase().includes(term) ||
-          a.assignedBrokerName.toLowerCase().includes(term)
-      );
-    }
-
-    return filtered;
   }
 
   /**
@@ -178,7 +161,7 @@ class AppointmentsService {
    */
   async getAvailableSlots(propertyId: string, date: Date): Promise<ViewingSlot[]> {
     try {
-      const dateStr = date.toISOString().split("T")[0];
+      const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
       const res = await apiClient.get<ViewingSlot[] | { data: ViewingSlot[] }>(
         `/api/v1/appointments/slots?propertyId=${propertyId}&date=${dateStr}`
       );
@@ -190,6 +173,10 @@ class AppointmentsService {
       }
     } catch {
       // Fall back to generated slots
+    }
+
+    if (date.getDay() === 0) {
+      return [];
     }
 
     const times = ["10:00 AM", "11:30 AM", "01:00 PM", "02:30 PM", "04:00 PM", "05:30 PM"];
@@ -206,7 +193,6 @@ class AppointmentsService {
         formattedTime: `${t} – ${new Date(slotEnd).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`,
         formattedDate: date.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" }),
         isAvailable: idx !== 2, // 1:00 PM marked as booked
-        brokerName: "Ade Admin (Luxury Closer)",
         reasonUnavailable: idx === 2 ? "Already booked with VIP buyer" : undefined,
       };
     });
@@ -221,11 +207,11 @@ class AppointmentsService {
       id: `apt_${Date.now()}`,
       workspaceId: "ws_default",
       leadId: payload.leadId,
-      leadName: "VIP Inbound Buyer",
-      leadPhone: "+234 800 000 0000",
+      leadName: payload.leadName || "Prospect",
+      leadPhone: payload.leadPhone || "",
       propertyId: payload.propertyId,
-      propertyTitle: "Luxury Residence",
-      propertyLocation: payload.location || "Banana Island, Lagos",
+      propertyTitle: payload.propertyTitle || "Property inspection",
+      propertyLocation: payload.location || "Lagos, Nigeria",
       assignedBrokerId: payload.assignedBrokerId || "broker_ade",
       assignedBrokerName: "Ade Admin",
       startTime: payload.startTime,
@@ -249,8 +235,12 @@ class AppointmentsService {
           return item;
         }
       }
-    } catch {
-      // Fall back
+    } catch (err: unknown) {
+      const apiErr = err as { statusCode?: number; status?: number; message?: string };
+      if (apiErr?.statusCode === 409 || apiErr?.status === 409) {
+        throw err;
+      }
+      // Fall back if offline or dev mode
     }
 
     this.appointmentsCache.unshift(newApt);
@@ -258,15 +248,28 @@ class AppointmentsService {
   }
 
   /**
-   * Update appointment status
+   * Persist a lifecycle change. Throws when the server does not save it.
    */
-  async updateStatus(appointmentId: string, status: AppointmentStatus): Promise<Appointment> {
-    const apt = this.appointmentsCache.find((a) => a.id === appointmentId);
-    if (apt) {
-      apt.status = status;
-      apt.updatedAt = new Date().toISOString();
+  async updateStatus(
+    appointmentId: string,
+    status: AppointmentStatus,
+    reason?: string
+  ): Promise<Appointment> {
+    const res = await apiClient.patch<Appointment | { data: Appointment }>(
+      `/api/v1/appointments/${appointmentId}/status`,
+      { status, reason }
+    );
+    const item = (res as { data?: Appointment })?.data?.id
+      ? (res as { data: Appointment }).data
+      : (res as Appointment);
+    if (!item?.id) {
+      throw new Error("Appointment status was not saved.");
     }
-    return apt!;
+    const index = this.appointmentsCache.findIndex((a) => a.id === appointmentId);
+    if (index >= 0) {
+      this.appointmentsCache[index] = { ...this.appointmentsCache[index], ...item, status };
+    }
+    return { ...item, status };
   }
 
   /**

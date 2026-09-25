@@ -8,10 +8,13 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Appointment,
+  AppointmentStatus,
   appointmentsService,
   AppointmentCard,
   AppointmentFiltersBar,
+  AppointmentDetailDrawer,
   BookInspectionModal,
+  BookingConfirmationDialog,
   CalendarConnectionsPanel,
 } from "@/features/appointments";
 import { useWorkspace } from "@/lib/context/workspace-context";
@@ -31,6 +34,11 @@ export default function AppointmentsPage() {
 
   const [allAppointments, setAllAppointments] = React.useState<Appointment[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
+  const [loadError, setLoadError] = React.useState<string | null>(null);
+  const [selectedAppointment, setSelectedAppointment] = React.useState<Appointment | null>(null);
+  const [isDetailOpen, setIsDetailOpen] = React.useState(false);
+  const [pendingId, setPendingId] = React.useState<string | null>(null);
+  const [rescheduleFrom, setRescheduleFrom] = React.useState<Appointment | null>(null);
   const [searchQuery, setSearchQuery] = React.useState("");
   const [statusFilter, setStatusFilter] = React.useState<string>("ALL");
   const [formatFilter, setFormatFilter] = React.useState<string>("ALL");
@@ -38,14 +46,23 @@ export default function AppointmentsPage() {
 
   // Modals
   const [isBookModalOpen, setIsBookModalOpen] = React.useState(false);
+  const [confirmedAppointment, setConfirmedAppointment] = React.useState<Appointment | null>(null);
+  const [isConfirmationOpen, setIsConfirmationOpen] = React.useState(false);
 
   const fetchAppointments = React.useCallback(async () => {
     setIsLoading(true);
     try {
       const data = await appointmentsService.getAppointments();
       setAllAppointments(data);
-    } catch (err: any) {
-      toast.error("Failed to load appointments");
+      setLoadError(null);
+      setSelectedAppointment((current) => {
+        if (!current) return current;
+        return data.find((item) => item.id === current.id) || current;
+      });
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Could not load appointments.";
+      setAllAppointments([]);
+      setLoadError(message);
     } finally {
       setIsLoading(false);
     }
@@ -65,11 +82,34 @@ export default function AppointmentsPage() {
     }
   }, []);
 
-  const handleStatusChange = async (id: string, newStatus: any) => {
-    const updated = await appointmentsService.updateStatus(id, newStatus);
-    setAllAppointments((prev) =>
-      prev.map((a) => (a.id === id ? { ...a, status: newStatus } : a))
-    );
+  const handleStatusChange = async (id: string, newStatus: AppointmentStatus, reason?: string) => {
+    setPendingId(id);
+    try {
+      const updated = await appointmentsService.updateStatus(id, newStatus, reason);
+      setAllAppointments((prev) =>
+        prev.map((item) => (item.id === id ? { ...item, ...updated, status: newStatus, cancelledReason: reason || item.cancelledReason } : item))
+      );
+      setSelectedAppointment((current) =>
+        current?.id === id ? { ...current, ...updated, status: newStatus, cancelledReason: reason || current.cancelledReason } : current
+      );
+      if (newStatus === "confirmed") toast.success("Viewing confirmed.");
+      if (newStatus === "completed") toast.success("Viewing marked completed.");
+      if (newStatus === "no_show") toast.success("Viewing marked as a no-show.");
+      if (newStatus === "cancelled") toast.success(reason === "Rescheduled" ? "Previous viewing closed." : "Viewing cancelled.");
+    } finally {
+      setPendingId(null);
+    }
+  };
+
+  const openSchedule = () => {
+    setRescheduleFrom(null);
+    setIsBookModalOpen(true);
+  };
+
+  const openReschedule = (appointment: Appointment) => {
+    setRescheduleFrom(appointment);
+    setIsDetailOpen(false);
+    setIsBookModalOpen(true);
   };
 
   // Filtered Appointments
@@ -128,7 +168,7 @@ export default function AppointmentsPage() {
 
             <Button
               size="sm"
-              onClick={() => setIsBookModalOpen(true)}
+              onClick={openSchedule}
               className="h-8.5 gap-1.5 bg-[#0d4a36] text-white hover:bg-[#0a3829] text-xs shadow-2xs font-medium cursor-pointer"
             >
               <Plus className="h-3.5 w-3.5" />
@@ -220,6 +260,20 @@ export default function AppointmentsPage() {
                 <div key={n} className="h-40 rounded-xl border border-stone-200 bg-stone-50/50 animate-pulse" />
               ))}
             </div>
+          ) : loadError ? (
+            <Card className="p-12 text-center border-dashed border-stone-300">
+              <CalendarDays className="h-10 w-10 text-stone-300 mx-auto" />
+              <h4 className="mt-3 text-sm font-semibold text-stone-800">Schedule unavailable</h4>
+              <p className="mt-1 text-xs text-stone-500 max-w-sm mx-auto">{loadError}</p>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={fetchAppointments}
+                className="mt-4 h-8 text-xs"
+              >
+                Try again
+              </Button>
+            </Card>
           ) : filteredAppointments.length === 0 ? (
             <Card className="p-12 text-center border-dashed border-stone-300">
               <CalendarDays className="h-10 w-10 text-stone-300 mx-auto" />
@@ -240,7 +294,7 @@ export default function AppointmentsPage() {
                 )}
                 <Button
                   size="sm"
-                  onClick={() => setIsBookModalOpen(true)}
+                  onClick={openSchedule}
                   className="bg-[#0d4a36] text-white text-xs h-8 cursor-pointer"
                 >
                   <Plus className="h-3.5 w-3.5 mr-1" />
@@ -254,7 +308,16 @@ export default function AppointmentsPage() {
                 <AppointmentCard
                   key={apt.id}
                   appointment={apt}
+                  isUpdating={pendingId === apt.id}
+                  onOpen={(selected) => {
+                    setSelectedAppointment(selected);
+                    setIsDetailOpen(true);
+                  }}
                   onStatusChange={handleStatusChange}
+                  onViewConfirmation={(selectedApt) => {
+                    setConfirmedAppointment(selectedApt);
+                    setIsConfirmationOpen(true);
+                  }}
                 />
               ))}
             </div>
@@ -270,8 +333,52 @@ export default function AppointmentsPage() {
       {/* Booking Modal */}
       <BookInspectionModal
         open={isBookModalOpen}
-        onOpenChange={setIsBookModalOpen}
-        onBookingSuccess={() => fetchAppointments()}
+        onOpenChange={(next) => {
+          setIsBookModalOpen(next);
+          if (!next) setRescheduleFrom(null);
+        }}
+        leadId={rescheduleFrom?.leadId}
+        leadName={rescheduleFrom?.leadName}
+        leadPhone={rescheduleFrom?.leadPhone}
+        propertyId={rescheduleFrom?.propertyId}
+        propertyTitle={rescheduleFrom?.propertyTitle}
+        onBookingSuccess={async (newApt) => {
+          const previous = rescheduleFrom;
+          if (previous) {
+            try {
+              await handleStatusChange(previous.id, "cancelled", "Rescheduled");
+            } catch (err) {
+              const message = err instanceof Error ? err.message : "The new viewing was booked, but the previous one could not be closed.";
+              toast.error(message);
+            }
+          }
+          await fetchAppointments();
+          if (newApt) {
+            setConfirmedAppointment(newApt);
+            setIsConfirmationOpen(true);
+          }
+          setRescheduleFrom(null);
+        }}
+      />
+
+      <AppointmentDetailDrawer
+        open={isDetailOpen}
+        onOpenChange={setIsDetailOpen}
+        appointment={selectedAppointment}
+        isUpdating={pendingId === selectedAppointment?.id}
+        onStatusChange={handleStatusChange}
+        onReschedule={openReschedule}
+        onViewConfirmation={(selectedApt) => {
+          setConfirmedAppointment(selectedApt);
+          setIsConfirmationOpen(true);
+        }}
+      />
+
+      {/* Booking Confirmation Flow Dialog */}
+      <BookingConfirmationDialog
+        open={isConfirmationOpen}
+        onOpenChange={setIsConfirmationOpen}
+        appointment={confirmedAppointment}
       />
     </Container>
   );

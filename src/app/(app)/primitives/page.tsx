@@ -49,6 +49,7 @@ import {
   CalendarClock,
   Lightbulb,
   FileQuestion,
+  CheckCircle2,
 } from "lucide-react";
 import {
   BuyerIntentBadge,
@@ -84,6 +85,7 @@ import {
   CallSummaryCard,
   MOCK_CALLS,
 } from "@/features/calls";
+import { AvailabilitySelector, type ViewingSlot } from "@/features/appointments";
 
 interface SampleLead {
   id: string;
@@ -273,6 +275,14 @@ export default function PrimitivesShowcasePage() {
       toast.error("Failed to reschedule follow-up");
     }
   };
+
+  // 13. Availability Selector State (Day 16)
+  const [testAvailabilitySlot, setTestAvailabilitySlot] = React.useState<any>(null);
+  const [testAvailabilityDate, setTestAvailabilityDate] = React.useState<string>(() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 2);
+    return d.toISOString().split("T")[0];
+  });
 
   // DataTable columns definition
   const columns: ColumnDef<SampleLead>[] = [
@@ -1806,6 +1816,59 @@ export default function PrimitivesShowcasePage() {
               </div>
             </div>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* ========================================================================= */}
+      {/* 13. AVAILABILITY SELECTOR & REAL AVAILABLE SLOT PRIMITIVE (DAY 16) */}
+      {/* ========================================================================= */}
+      <Card className="border-border bg-white shadow-2xs">
+        <CardHeader className="p-4 border-b border-stone-100">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <CalendarClock className="h-4 w-4 text-[#0d4a36]" />
+              <CardTitle className="text-sm font-semibold text-stone-900">
+                13. Availability Selector & Real Available Slot (Day 16)
+              </CardTitle>
+            </div>
+            <Badge variant="outline" className="text-[10px] text-emerald-800 border-emerald-200 bg-emerald-50">
+              Google Calendar Free/Busy Engine
+            </Badge>
+          </div>
+          <CardDescription className="text-xs text-stone-500 mt-1">
+            Real-time viewing slot calculation checking internal booking collisions and external Google Calendar busy intervals.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="p-4 space-y-4">
+          <AvailabilitySelector
+            propertyId="prop_lekki_01"
+            selectedDate={testAvailabilityDate}
+            onDateChange={setTestAvailabilityDate}
+            selectedSlotId={testAvailabilitySlot?.id}
+            onSelectSlot={(slot: ViewingSlot) => {
+              setTestAvailabilitySlot(slot);
+              toast.success("Real Available Slot Selected!", {
+                description: `${slot.formattedTime} on ${slot.formattedDate} (${slot.brokerName || "Assigned Broker"})`,
+              });
+            }}
+          />
+
+          {testAvailabilitySlot && (
+            <div className="rounded-lg border border-emerald-200 bg-emerald-50/60 p-3.5 flex items-center justify-between text-xs">
+              <div className="space-y-0.5">
+                <span className="font-semibold text-emerald-950 flex items-center gap-1.5">
+                  <CheckCircle2 className="h-4 w-4 text-emerald-700" />
+                  <span>Selected Inspection Window: {testAvailabilitySlot.formattedTime}</span>
+                </span>
+                <p className="text-[11px] text-emerald-800">
+                  Date: {testAvailabilitySlot.formattedDate} • Broker: {testAvailabilitySlot.brokerName || "Ade Admin"}
+                </p>
+              </div>
+              <Badge className="bg-[#0d4a36] text-white hover:bg-[#0a3829] text-[10px]">
+                Real Available Slot
+              </Badge>
+            </div>
+          )}
         </CardContent>
       </Card>
 

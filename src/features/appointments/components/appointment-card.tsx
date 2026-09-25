@@ -5,8 +5,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/ui/status-badge";
-import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { Appointment } from "../types";
+import { Appointment, AppointmentStatus } from "../types";
+import { CancelViewingDialog } from "./appointment-detail-drawer";
 import {
   CalendarDays,
   MapPin,
@@ -14,18 +14,25 @@ import {
   ShieldCheck,
   CheckCircle2,
   Share2,
+  ExternalLink,
 } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { toast } from "sonner";
 
 interface AppointmentCardProps {
   appointment: Appointment;
-  onStatusChange?: (id: string, newStatus: any) => void;
+  isUpdating?: boolean;
+  onOpen?: (appointment: Appointment) => void;
+  onStatusChange?: (id: string, newStatus: AppointmentStatus, reason?: string) => Promise<void> | void;
+  onViewConfirmation?: (appointment: Appointment) => void;
 }
 
 export function AppointmentCard({
   appointment,
+  isUpdating = false,
+  onOpen,
   onStatusChange,
+  onViewConfirmation,
 }: AppointmentCardProps) {
   const [isCancelConfirmOpen, setIsCancelConfirmOpen] = React.useState(false);
   const startDate = new Date(appointment.startTime);
@@ -64,7 +71,10 @@ export function AppointmentCard({
 
   return (
     <>
-      <Card className="border border-stone-200/80 bg-white shadow-2xs transition-all hover:border-stone-300 hover:shadow-sm">
+      <Card
+        className="cursor-pointer border border-stone-200/80 bg-white shadow-2xs transition-all hover:border-stone-300 hover:shadow-sm"
+        onClick={() => onOpen?.(appointment)}
+      >
         <CardContent className="p-4 space-y-3">
           {/* Top Row: Date & Time, Status */}
           <div className="flex items-center justify-between gap-2">
@@ -85,6 +95,7 @@ export function AppointmentCard({
 
             <StatusBadge
               status={appointment.status}
+              label={appointment.status === "no_show" ? "No-show" : undefined}
               withDot
               size="xs"
             />
@@ -144,25 +155,38 @@ export function AppointmentCard({
           </div>
 
           {/* Actions Footer */}
-          <div className="flex items-center justify-between gap-2 border-t border-stone-100 pt-2.5">
-            <button
-              type="button"
-              onClick={handleCopyWhatsAppInvite}
-              className="flex items-center gap-1 text-[11px] font-medium text-stone-600 hover:text-stone-900 transition cursor-pointer"
-            >
-              <Share2 className="h-3 w-3 text-stone-400" />
-              <span>Copy WhatsApp Invite</span>
-            </button>
+          <div className="flex items-center justify-between gap-2 border-t border-stone-100 pt-2.5" onClick={(event) => event.stopPropagation()}>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={handleCopyWhatsAppInvite}
+                className="flex items-center gap-1 text-[11px] font-medium text-stone-600 hover:text-stone-900 transition cursor-pointer"
+              >
+                <Share2 className="h-3 w-3 text-stone-400" />
+                <span>WhatsApp Invite</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => onViewConfirmation?.(appointment)}
+                className="flex items-center gap-1 text-[11px] font-medium text-[#0d4a36] hover:text-[#093829] transition cursor-pointer"
+              >
+                <ExternalLink className="h-3 w-3" />
+                <span>Confirmation</span>
+              </button>
+            </div>
 
             <div className="flex items-center gap-1.5">
               {appointment.status === "scheduled" && (
                 <Button
                   size="sm"
                   variant="outline"
+                  disabled={isUpdating}
                   className="h-6.5 text-[11px] text-emerald-700 border-emerald-200 hover:bg-emerald-50 px-2 cursor-pointer"
                   onClick={() => {
-                    onStatusChange?.(appointment.id, "confirmed");
-                    toast.success(`Viewing with ${appointment.leadName} confirmed`);
+                    Promise.resolve(onStatusChange?.(appointment.id, "confirmed")).catch((err: unknown) => {
+                      toast.error(err instanceof Error ? err.message : "The status was not saved.");
+                    });
                   }}
                 >
                   <CheckCircle2 className="h-3 w-3 mr-1" />
@@ -173,19 +197,22 @@ export function AppointmentCard({
                 <Button
                   size="sm"
                   variant="outline"
+                  disabled={isUpdating}
                   className="h-6.5 text-[11px] text-stone-600 hover:bg-stone-100 px-2 cursor-pointer"
                   onClick={() => {
-                    onStatusChange?.(appointment.id, "completed");
-                    toast.success("Viewing marked as completed");
+                    Promise.resolve(onStatusChange?.(appointment.id, "completed")).catch((err: unknown) => {
+                      toast.error(err instanceof Error ? err.message : "The status was not saved.");
+                    });
                   }}
                 >
                   Mark Completed
                 </Button>
               )}
-              {appointment.status !== "cancelled" && appointment.status !== "completed" && (
+              {appointment.status !== "cancelled" && appointment.status !== "completed" && appointment.status !== "no_show" && (
                 <Button
                   size="sm"
                   variant="ghost"
+                  disabled={isUpdating}
                   className="h-6.5 text-[11px] text-stone-400 hover:text-rose-600 hover:bg-rose-50 px-1.5 cursor-pointer"
                   onClick={() => setIsCancelConfirmOpen(true)}
                 >
@@ -198,17 +225,12 @@ export function AppointmentCard({
       </Card>
 
       {/* Confirmation Dialog before cancelling */}
-      <ConfirmDialog
+      <CancelViewingDialog
         open={isCancelConfirmOpen}
         onOpenChange={setIsCancelConfirmOpen}
-        title="Cancel Viewing Appointment?"
-        description={`Are you sure you want to cancel the inspection for "${appointment.propertyTitle}" with ${appointment.leadName}? This will notify the client and release the calendar slot.`}
-        confirmText="Yes, Cancel Appointment"
-        cancelText="Keep Appointment"
-        variant="destructive"
-        onConfirm={() => {
-          onStatusChange?.(appointment.id, "cancelled");
-          toast.info("Viewing appointment cancelled");
+        appointment={appointment}
+        onConfirm={async (reason) => {
+          await onStatusChange?.(appointment.id, "cancelled", reason);
         }}
       />
     </>

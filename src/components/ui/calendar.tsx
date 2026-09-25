@@ -10,6 +10,8 @@ export interface CalendarProps {
   className?: string;
   minDate?: Date;
   maxDate?: Date;
+  /** Weekdays that cannot be selected. 0 is Sunday. */
+  disabledWeekdays?: number[];
 }
 
 const MONTH_NAMES = [
@@ -35,6 +37,7 @@ export function Calendar({
   className,
   minDate,
   maxDate,
+  disabledWeekdays = [],
 }: CalendarProps) {
   const [viewDate, setViewDate] = React.useState<Date>(
     () => selectedDate || new Date()
@@ -160,7 +163,10 @@ export function Calendar({
         {cells.map((cell, idx) => {
           const isSelected = isSameDay(selectedDate, cell.date);
           const isToday = isSameDay(new Date(), cell.date);
-          const isDisabled = isBeforeMin(cell.date) || isAfterMax(cell.date);
+          const isDisabled =
+            isBeforeMin(cell.date) ||
+            isAfterMax(cell.date) ||
+            disabledWeekdays.includes(cell.date.getDay());
 
           return (
             <button

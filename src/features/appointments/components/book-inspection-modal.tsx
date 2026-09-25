@@ -21,9 +21,9 @@ import {
 } from "@/components/ui/select";
 import { appointmentsService } from "../services/appointments-service";
 import { ViewingSlot, CreateAppointmentPayload } from "../types";
+import { AvailabilitySelector } from "./availability-selector";
 import { MOCK_PROPERTIES } from "@/features/properties/data/mock-properties";
 import { MOCK_LEADS } from "@/features/leads/data/mock-leads";
-import { DatePicker } from "@/components/ui/date-picker";
 import {
   CalendarDays,
   Building2,
@@ -87,16 +87,17 @@ export function BookInspectionModal({
   const [selectedDate, setSelectedDate] = React.useState<string>(() => {
     const d = new Date();
     d.setDate(d.getDate() + 1);
-    return d.toISOString().split("T")[0];
+    if (d.getDay() === 0) d.setDate(d.getDate() + 1);
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${d.getFullYear()}-${month}-${day}`;
   });
 
-  const [availableSlots, setAvailableSlots] = React.useState<ViewingSlot[]>([]);
-  const [selectedSlotId, setSelectedSlotId] = React.useState<string>("");
+  const [selectedSlot, setSelectedSlot] = React.useState<ViewingSlot | null>(null);
   const [meetingType, setMeetingType] = React.useState<string>("in_person_viewing");
   const [assignedBroker, setAssignedBroker] = React.useState<string>("broker_ade");
   const [location, setLocation] = React.useState<string>("");
   const [notes, setNotes] = React.useState<string>("");
-  const [isLoadingSlots, setIsLoadingSlots] = React.useState(false);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
   // Sync initial props
@@ -112,26 +113,8 @@ export function BookInspectionModal({
     }
   }, [activeProperty]);
 
-  // Fetch slots on date / property change
-  React.useEffect(() => {
-    if (!open) return;
-    setIsLoadingSlots(true);
-    const dateObj = new Date(selectedDate);
-    appointmentsService
-      .getAvailableSlots(selectedPropertyId, dateObj)
-      .then((slots) => {
-        setAvailableSlots(slots);
-        const firstAvailable = slots.find((s) => s.isAvailable);
-        if (firstAvailable) {
-          setSelectedSlotId(firstAvailable.id);
-        }
-      })
-      .finally(() => setIsLoadingSlots(false));
-  }, [open, selectedDate, selectedPropertyId]);
-
   const handleBook = async () => {
-    const chosenSlot = availableSlots.find((s) => s.id === selectedSlotId);
-    if (!chosenSlot) {
+    if (!selectedSlot || !selectedSlot.isAvailable) {
       toast.error("Please select an available viewing time slot.");
       return;
     }
@@ -140,10 +123,13 @@ export function BookInspectionModal({
     try {
       const payload: CreateAppointmentPayload = {
         leadId: activeLead.id,
+        leadName: activeLead.name,
+        leadPhone: activeLead.phone,
         propertyId: activeProperty.id,
+        propertyTitle: activeProperty.title,
         assignedBrokerId: assignedBroker,
-        startTime: chosenSlot.startTime,
-        endTime: chosenSlot.endTime,
+        startTime: selectedSlot.startTime,
+        endTime: selectedSlot.endTime,
         meetingType: meetingType as any,
         location: location || activeProperty.location,
         notes,
@@ -151,7 +137,7 @@ export function BookInspectionModal({
 
       const newApt = await appointmentsService.createAppointment(payload);
       toast.success("Booking Successful!", {
-        description: `Property inspection scheduled with ${activeLead.name} for ${new Date(chosenSlot.startTime).toLocaleDateString()} (${chosenSlot.formattedTime || "Scheduled viewing"}).`,
+        description: `Property inspection scheduled with ${activeLead.name} for ${new Date(selectedSlot.startTime).toLocaleDateString()} (${selectedSlot.formattedTime || "Scheduled viewing"}).`,
         duration: 5000,
       });
       onBookingSuccess?.(newApt);
@@ -234,62 +220,19 @@ export function BookInspectionModal({
             </div>
           </div>
 
-          {/* Date & Time Slot Selection */}
-          <div className="rounded-lg border border-stone-200/80 bg-stone-50/50 p-3.5 space-y-3">
-            <div className="flex items-center justify-between gap-2">
-              <label className="text-xs font-semibold text-stone-800 flex items-center gap-1.5 shrink-0">
-                <CalendarDays className="h-3.5 w-3.5 text-stone-500" />
-                <span>Select Inspection Date</span>
-              </label>
-              <div className="w-48">
-                <DatePicker
-                  value={selectedDate}
-                  minDate={new Date()}
-                  onChange={(dateStr: string) => setSelectedDate(dateStr)}
-                />
-              </div>
-            </div>
-
-            {/* Slots Grid */}
-            <div className="space-y-1.5">
-              <div className="text-[11px] font-medium text-stone-500">Available Broker Slots</div>
-              {isLoadingSlots ? (
-                <div className="flex items-center justify-center p-5 text-xs text-stone-400 bg-white rounded-md border border-stone-200/60">
-                  <Loader2 className="h-3.5 w-3.5 animate-spin mr-2 text-stone-400" />
-                  Checking calendar availability...
-                </div>
-              ) : (
-                <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-                  {availableSlots.map((slot) => (
-                    <button
-                      key={slot.id}
-                      type="button"
-                      disabled={!slot.isAvailable}
-                      onClick={() => setSelectedSlotId(slot.id)}
-                      className={cn(
-                        "flex flex-col items-start p-2.5 rounded-lg border text-left transition-all text-xs cursor-pointer",
-                        !slot.isAvailable
-                          ? "border-stone-200 bg-stone-100/60 text-stone-400 cursor-not-allowed opacity-60"
-                          : selectedSlotId === slot.id
-                          ? "border-[#0d4a36] bg-emerald-50/60 text-[#0d4a36] font-semibold ring-1 ring-[#0d4a36] shadow-2xs"
-                          : "border-stone-200 bg-white hover:border-stone-300 hover:bg-stone-50 text-stone-800"
-                      )}
-                    >
-                      <div className="flex items-center justify-between w-full">
-                        <span>{slot.formattedTime.split("–")[0]}</span>
-                        {selectedSlotId === slot.id && (
-                          <CheckCircle2 className="h-3.5 w-3.5 text-[#0d4a36]" />
-                        )}
-                      </div>
-                      <span className="text-[10px] text-stone-400 mt-0.5">
-                        {slot.isAvailable ? "Available" : "Booked"}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
+          {/* Live Broker Availability Selector */}
+          <AvailabilitySelector
+            propertyId={selectedPropertyId}
+            brokerId={assignedBroker}
+            selectedDate={selectedDate}
+            onDateChange={(dateStr) => {
+              setSelectedDate(dateStr);
+              setSelectedSlot(null);
+            }}
+            selectedSlotId={selectedSlot?.id}
+            onSelectSlot={(slot) => setSelectedSlot(slot)}
+            disabled={isSubmitting}
+          />
 
           {/* Meeting Format & Assigned Broker */}
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -366,7 +309,7 @@ export function BookInspectionModal({
             type="button"
             size="sm"
             onClick={handleBook}
-            disabled={isSubmitting || !selectedSlotId}
+            disabled={isSubmitting || !selectedSlot}
             className="bg-[#0d4a36] hover:bg-[#0a3829] text-white text-xs h-8 shadow-2xs font-medium gap-1.5"
           >
             {isSubmitting ? (

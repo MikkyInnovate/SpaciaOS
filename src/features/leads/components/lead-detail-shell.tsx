@@ -24,7 +24,7 @@ import {
   InitiateCallDialog,
   type Call,
 } from "@/features/calls";
-import { BookInspectionModal } from "@/features/appointments";
+import { BookInspectionModal, BookingConfirmationDialog, type Appointment } from "@/features/appointments";
 import type { Property } from "@/features/properties";
 import type { Lead, LeadStatus, FollowUpSchedule, LossDetails } from "../types";
 import {
@@ -94,6 +94,8 @@ export function LeadDetailShell({
   const [isLoadingCalls, setIsLoadingCalls] = React.useState(false);
   const [isInitiateCallOpen, setIsInitiateCallOpen] = React.useState(false);
   const [isBookInspectionOpen, setIsBookInspectionOpen] = React.useState(false);
+  const [confirmedAppointment, setConfirmedAppointment] = React.useState<Appointment | null>(null);
+  const [isConfirmationOpen, setIsConfirmationOpen] = React.useState(false);
   const [selectedCallForCockpit, setSelectedCallForCockpit] = React.useState<Call | null>(null);
   const [prevLeadId, setPrevLeadId] = React.useState<string | undefined>(lead?.id);
 
@@ -755,20 +757,31 @@ export function LeadDetailShell({
         />
       )}
 
-      {/* Day 15: Property Inspection Booking Dialog */}
+      {/* Day 15 & 17: Property Inspection Booking Dialog & Confirmation Flow */}
       {lead && (
-        <BookInspectionModal
-          open={isBookInspectionOpen}
-          onOpenChange={setIsBookInspectionOpen}
-          leadId={lead.id}
-          leadName={lead.name}
-          leadPhone={lead.phone}
-          propertyId={lead.propertyId || "prop_default"}
-          propertyTitle={lead.propertyTitle}
-          onBookingSuccess={(_newApt) => {
-            // Handled with Booking Successful toast in BookInspectionModal
-          }}
-        />
+        <>
+          <BookInspectionModal
+            open={isBookInspectionOpen}
+            onOpenChange={setIsBookInspectionOpen}
+            leadId={lead.id}
+            leadName={lead.name}
+            leadPhone={lead.phone}
+            propertyId={lead.propertyId || "prop_default"}
+            propertyTitle={lead.propertyTitle}
+            onBookingSuccess={(newApt) => {
+              if (newApt) {
+                setConfirmedAppointment(newApt);
+                setIsConfirmationOpen(true);
+              }
+            }}
+          />
+
+          <BookingConfirmationDialog
+            open={isConfirmationOpen}
+            onOpenChange={setIsConfirmationOpen}
+            appointment={confirmedAppointment}
+          />
+        </>
       )}
     </DetailDrawer>
   );

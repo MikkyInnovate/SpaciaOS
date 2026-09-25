@@ -15,6 +15,8 @@ export interface DatePickerProps {
   placeholder?: string;
   className?: string;
   disabled?: boolean;
+  /** Weekdays that cannot be selected. 0 is Sunday. */
+  disabledWeekdays?: number[];
 }
 
 export function DatePicker({
@@ -25,6 +27,7 @@ export function DatePicker({
   placeholder = "Select date",
   className,
   disabled = false,
+  disabledWeekdays,
 }: DatePickerProps) {
   const [open, setOpen] = React.useState(false);
 
@@ -83,6 +86,7 @@ export function DatePicker({
           onSelectDate={handleSelect}
           minDate={minDate}
           maxDate={maxDate}
+          disabledWeekdays={disabledWeekdays}
         />
       </PopoverContent>
     </Popover>

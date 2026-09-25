@@ -58,6 +58,9 @@ export interface Appointment {
   notes?: string;
   calendarEventId?: string;
   calendarProvider?: CalendarProviderType;
+  meetingUrl?: string;
+  referenceCode?: string;
+  shareableSummary?: string;
   cancelledReason?: string;
   rescheduledFromId?: string;
   createdAt: string;
@@ -101,6 +104,9 @@ export interface CreateAppointmentPayload {
   location?: string;
   notes?: string;
   generateGatePass?: boolean;
+  leadName?: string;
+  leadPhone?: string;
+  propertyTitle?: string;
 }
 
 export interface AppointmentsFilterState {

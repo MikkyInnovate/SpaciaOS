@@ -32,6 +32,7 @@ const STATUS_CHIPS: Array<{ label: string; value: AppointmentStatus | "ALL" }> =
   { label: "Scheduled", value: "scheduled" },
   { label: "Completed", value: "completed" },
   { label: "Cancelled", value: "cancelled" },
+  { label: "No-show", value: "no_show" },
 ];
 
 const FORMAT_OPTIONS: Array<{ label: string; value: MeetingType | "ALL" }> = [
