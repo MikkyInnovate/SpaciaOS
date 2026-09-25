@@ -12,8 +12,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
-import { Switch } from "@/components/ui/switch";
 import {
   Select,
   SelectContent,
@@ -23,15 +21,15 @@ import {
 } from "@/components/ui/select";
 import { appointmentsService } from "../services/appointments-service";
 import { ViewingSlot, CreateAppointmentPayload } from "../types";
+import { MOCK_PROPERTIES } from "@/features/properties/data/mock-properties";
+import { MOCK_LEADS } from "@/features/leads/data/mock-leads";
 import {
   CalendarDays,
   Clock,
   MapPin,
-  Building,
+  Building2,
   User,
-  ShieldCheck,
   CheckCircle2,
-  Key,
   Sparkles,
   Loader2,
 } from "lucide-react";
@@ -52,13 +50,40 @@ interface BookInspectionModalProps {
 export function BookInspectionModal({
   open,
   onOpenChange,
-  leadId = "lead_default",
-  leadName = "VIP Prospect",
-  leadPhone = "+234 800 000 0000",
-  propertyId = "prop_banana_villa",
-  propertyTitle = "The Grand Waterfront Villa — Banana Island",
+  leadId: initialLeadId,
+  leadName: initialLeadName,
+  leadPhone: initialLeadPhone,
+  propertyId: initialPropertyId,
+  propertyTitle: initialPropertyTitle,
   onBookingSuccess,
 }: BookInspectionModalProps) {
+  // Selected Lead State
+  const [selectedLeadId, setSelectedLeadId] = React.useState<string>(
+    initialLeadId || MOCK_LEADS[0]?.id || "lead_01"
+  );
+  
+  // Selected Property State
+  const [selectedPropertyId, setSelectedPropertyId] = React.useState<string>(
+    initialPropertyId || MOCK_PROPERTIES[0]?.id || "prop_lekki_01"
+  );
+
+  const activeLead = React.useMemo(() => {
+    return MOCK_LEADS.find((l) => l.id === selectedLeadId) || {
+      id: selectedLeadId,
+      name: initialLeadName || "Select Client",
+      phone: initialLeadPhone || "",
+    };
+  }, [selectedLeadId, initialLeadName, initialLeadPhone]);
+
+  const activeProperty = React.useMemo(() => {
+    return MOCK_PROPERTIES.find((p) => p.id === selectedPropertyId) || {
+      id: selectedPropertyId,
+      title: initialPropertyTitle || "Select Property",
+      location: "Lagos, Nigeria",
+      formattedPrice: "",
+    };
+  }, [selectedPropertyId, initialPropertyTitle]);
+
   const [selectedDate, setSelectedDate] = React.useState<string>(() => {
     const d = new Date();
     d.setDate(d.getDate() + 1);
@@ -69,19 +94,31 @@ export function BookInspectionModal({
   const [selectedSlotId, setSelectedSlotId] = React.useState<string>("");
   const [meetingType, setMeetingType] = React.useState<string>("in_person_viewing");
   const [assignedBroker, setAssignedBroker] = React.useState<string>("broker_ade");
-  const [location, setLocation] = React.useState<string>("Zone A Private Gate, Banana Island, Ikoyi");
-  const [generateGatePass, setGenerateGatePass] = React.useState<boolean>(true);
+  const [location, setLocation] = React.useState<string>("");
   const [notes, setNotes] = React.useState<string>("");
   const [isLoadingSlots, setIsLoadingSlots] = React.useState(false);
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
-  // Fetch slots on date change
+  // Sync initial props
+  React.useEffect(() => {
+    if (initialLeadId) setSelectedLeadId(initialLeadId);
+    if (initialPropertyId) setSelectedPropertyId(initialPropertyId);
+  }, [initialLeadId, initialPropertyId, open]);
+
+  // Update location when property changes
+  React.useEffect(() => {
+    if (activeProperty?.location) {
+      setLocation(activeProperty.location);
+    }
+  }, [activeProperty]);
+
+  // Fetch slots on date / property change
   React.useEffect(() => {
     if (!open) return;
     setIsLoadingSlots(true);
     const dateObj = new Date(selectedDate);
     appointmentsService
-      .getAvailableSlots(propertyId, dateObj)
+      .getAvailableSlots(selectedPropertyId, dateObj)
       .then((slots) => {
         setAvailableSlots(slots);
         const firstAvailable = slots.find((s) => s.isAvailable);
@@ -90,7 +127,7 @@ export function BookInspectionModal({
         }
       })
       .finally(() => setIsLoadingSlots(false));
-  }, [open, selectedDate, propertyId]);
+  }, [open, selectedDate, selectedPropertyId]);
 
   const handleBook = async () => {
     const chosenSlot = availableSlots.find((s) => s.id === selectedSlotId);
@@ -102,19 +139,20 @@ export function BookInspectionModal({
     setIsSubmitting(true);
     try {
       const payload: CreateAppointmentPayload = {
-        leadId,
-        propertyId,
+        leadId: activeLead.id,
+        propertyId: activeProperty.id,
         assignedBrokerId: assignedBroker,
         startTime: chosenSlot.startTime,
         endTime: chosenSlot.endTime,
         meetingType: meetingType as any,
-        location,
+        location: location || activeProperty.location,
         notes,
-        generateGatePass,
       };
 
       const newApt = await appointmentsService.createAppointment(payload);
-      toast.success(`Inspection scheduled successfully for ${new Date(chosenSlot.startTime).toLocaleDateString()}!`);
+      toast.success(
+        `Inspection scheduled with ${activeLead.name} for ${new Date(chosenSlot.startTime).toLocaleDateString()}!`
+      );
       onBookingSuccess?.(newApt);
       onOpenChange(false);
     } catch (err: any) {
@@ -126,62 +164,98 @@ export function BookInspectionModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-xl border-stone-200 bg-[#fbfbf9] p-0 overflow-hidden">
-        {/* Header */}
-        <div className="bg-[#0d4a36] px-6 py-4 text-white">
-          <div className="flex items-center gap-2">
-            <CalendarDays className="h-5 w-5 text-emerald-300" />
-            <span className="text-xs font-semibold uppercase tracking-wider text-emerald-200">
-              Inspection Scheduling
-            </span>
+      <DialogContent className="sm:max-w-xl p-0 gap-0 overflow-hidden border border-stone-200 bg-white shadow-xl">
+        {/* Standard Clean Header */}
+        <DialogHeader className="p-5 pb-4 border-b border-stone-100 bg-white">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-stone-200 bg-stone-50 text-[#0d4a36]">
+              <CalendarDays className="h-5 w-5" />
+            </div>
+            <div>
+              <DialogTitle className="text-base font-semibold text-stone-900">
+                Schedule Property Inspection
+              </DialogTitle>
+              <DialogDescription className="text-xs text-stone-500">
+                Select client, listing, and inspection time slot with real-time broker sync.
+              </DialogDescription>
+            </div>
           </div>
-          <DialogTitle className="mt-1 text-xl font-bold text-white">
-            Schedule Property Viewing
-          </DialogTitle>
-          <DialogDescription className="text-xs text-emerald-100/80">
-            Book an in-person viewing with real-time broker clash detection and gate clearance.
-          </DialogDescription>
-        </div>
+        </DialogHeader>
 
         {/* Form Body */}
-        <div className="max-h-[70vh] overflow-y-auto p-6 space-y-5">
-          {/* Prospect & Property Context */}
+        <div className="max-h-[68vh] overflow-y-auto p-5 space-y-4">
+          {/* Client & Property Selectors */}
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <div className="rounded-lg border border-stone-200 bg-white p-3">
-              <div className="text-[11px] font-medium text-stone-400 uppercase">Prospect</div>
-              <div className="font-semibold text-stone-900">{leadName}</div>
-              <div className="text-xs text-stone-500">{leadPhone}</div>
+            {/* Select Client / Lead */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-stone-700 flex items-center gap-1.5">
+                <User className="h-3.5 w-3.5 text-[#0d4a36]" />
+                <span>Client / Prospect</span>
+              </label>
+              <Select value={selectedLeadId} onValueChange={setSelectedLeadId}>
+                <SelectTrigger className="bg-white text-xs h-9 border-stone-200">
+                  <SelectValue placeholder="Select Client" />
+                </SelectTrigger>
+                <SelectContent className="max-h-56">
+                  {MOCK_LEADS.map((lead) => (
+                    <SelectItem key={lead.id} value={lead.id} className="text-xs">
+                      <div className="flex items-center justify-between w-full gap-2">
+                        <span className="font-medium text-stone-900">{lead.name}</span>
+                        <span className="text-[11px] text-stone-400">{lead.phone}</span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
-            <div className="rounded-lg border border-stone-200 bg-white p-3">
-              <div className="text-[11px] font-medium text-stone-400 uppercase">Target Listing</div>
-              <div className="truncate font-semibold text-stone-900">{propertyTitle}</div>
-              <div className="text-xs text-emerald-800 font-medium">Verified Property</div>
+            {/* Select Target Property */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-stone-700 flex items-center gap-1.5">
+                <Building2 className="h-3.5 w-3.5 text-[#0d4a36]" />
+                <span>Target Listing</span>
+              </label>
+              <Select value={selectedPropertyId} onValueChange={setSelectedPropertyId}>
+                <SelectTrigger className="bg-white text-xs h-9 border-stone-200">
+                  <SelectValue placeholder="Select Property" />
+                </SelectTrigger>
+                <SelectContent className="max-h-56">
+                  {MOCK_PROPERTIES.map((prop) => (
+                    <SelectItem key={prop.id} value={prop.id} className="text-xs">
+                      <div className="flex flex-col">
+                        <span className="font-medium text-stone-900">{prop.title}</span>
+                        <span className="text-[10px] text-stone-400">{prop.location} • {prop.formattedPrice}</span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
-          {/* Date & Slot Picker */}
-          <div className="space-y-3">
+          {/* Date & Time Slot Selection */}
+          <div className="rounded-lg border border-stone-200/80 bg-stone-50/50 p-3.5 space-y-3">
             <div className="flex items-center justify-between">
-              <label className="text-xs font-bold uppercase tracking-wider text-stone-600">
-                1. Select Inspection Date
+              <label className="text-xs font-semibold text-stone-800 flex items-center gap-1.5">
+                <CalendarDays className="h-3.5 w-3.5 text-stone-500" />
+                <span>Select Inspection Date</span>
               </label>
               <Input
                 type="date"
                 value={selectedDate}
                 min={new Date().toISOString().split("T")[0]}
                 onChange={(e) => setSelectedDate(e.target.value)}
-                className="w-44 h-8 text-xs bg-white border-stone-300 font-medium"
+                className="w-40 h-8 text-xs bg-white border-stone-300 font-medium"
               />
             </div>
 
             {/* Slots Grid */}
             <div className="space-y-1.5">
-              <div className="text-xs font-medium text-stone-500">Available Time Slots</div>
+              <div className="text-[11px] font-medium text-stone-500">Available Broker Slots</div>
               {isLoadingSlots ? (
-                <div className="flex items-center justify-center p-6 text-xs text-stone-400">
-                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                  Checking broker availability across calendar...
+                <div className="flex items-center justify-center p-5 text-xs text-stone-400 bg-white rounded-md border border-stone-200/60">
+                  <Loader2 className="h-3.5 w-3.5 animate-spin mr-2 text-stone-400" />
+                  Checking calendar availability...
                 </div>
               ) : (
                 <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
@@ -192,18 +266,18 @@ export function BookInspectionModal({
                       disabled={!slot.isAvailable}
                       onClick={() => setSelectedSlotId(slot.id)}
                       className={cn(
-                        "flex flex-col items-start p-2.5 rounded-lg border text-left transition-all text-xs",
+                        "flex flex-col items-start p-2.5 rounded-lg border text-left transition-all text-xs cursor-pointer",
                         !slot.isAvailable
                           ? "border-stone-200 bg-stone-100/60 text-stone-400 cursor-not-allowed opacity-60"
                           : selectedSlotId === slot.id
-                          ? "border-emerald-700 bg-emerald-50 text-emerald-950 font-semibold ring-2 ring-emerald-700/20 shadow-sm"
-                          : "border-stone-200 bg-white hover:border-emerald-600 hover:bg-stone-50 text-stone-800"
+                          ? "border-[#0d4a36] bg-emerald-50/60 text-[#0d4a36] font-semibold ring-1 ring-[#0d4a36] shadow-2xs"
+                          : "border-stone-200 bg-white hover:border-stone-300 hover:bg-stone-50 text-stone-800"
                       )}
                     >
                       <div className="flex items-center justify-between w-full">
                         <span>{slot.formattedTime.split("–")[0]}</span>
                         {selectedSlotId === slot.id && (
-                          <CheckCircle2 className="h-3.5 w-3.5 text-emerald-700" />
+                          <CheckCircle2 className="h-3.5 w-3.5 text-[#0d4a36]" />
                         )}
                       </div>
                       <span className="text-[10px] text-stone-400 mt-0.5">
@@ -216,19 +290,19 @@ export function BookInspectionModal({
             </div>
           </div>
 
-          {/* Meeting Configuration */}
+          {/* Meeting Format & Assigned Broker */}
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-stone-700">Meeting Format</label>
+              <label className="text-xs font-medium text-stone-700">Viewing Format</label>
               <Select value={meetingType} onValueChange={setMeetingType}>
-                <SelectTrigger className="bg-white text-xs h-9">
+                <SelectTrigger className="bg-white text-xs h-9 border-stone-200">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="in_person_viewing">In-Person Property Viewing</SelectItem>
-                  <SelectItem value="vip_private_showing">VIP Private Showing</SelectItem>
-                  <SelectItem value="virtual_tour">Live Video Tour</SelectItem>
-                  <SelectItem value="office_consultation">Brokerage Consultation</SelectItem>
+                  <SelectItem value="in_person_viewing">In-Person Property Walkthrough</SelectItem>
+                  <SelectItem value="vip_private_showing">Private VIP Showing</SelectItem>
+                  <SelectItem value="virtual_tour">Live Video Walkthrough</SelectItem>
+                  <SelectItem value="office_consultation">Office Briefing & Title Review</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -236,11 +310,11 @@ export function BookInspectionModal({
             <div className="space-y-1.5">
               <label className="text-xs font-medium text-stone-700">Assigned Host Broker</label>
               <Select value={assignedBroker} onValueChange={setAssignedBroker}>
-                <SelectTrigger className="bg-white text-xs h-9">
+                <SelectTrigger className="bg-white text-xs h-9 border-stone-200">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="broker_ade">Ade Admin (Senior Luxury Closer)</SelectItem>
+                  <SelectItem value="broker_ade">Ade Admin (Senior Closer)</SelectItem>
                   <SelectItem value="broker_victoria">Victoria Okon (Senior Partner)</SelectItem>
                   <SelectItem value="broker_femi">Femi Davies (Ikoyi Specialist)</SelectItem>
                 </SelectContent>
@@ -248,77 +322,61 @@ export function BookInspectionModal({
             </div>
           </div>
 
-          {/* Location & Gate Pass Toggle */}
-          <div className="space-y-3">
-            <div className="space-y-1.5">
-              <label className="text-xs font-medium text-stone-700">Viewing Location / Meeting Point</label>
-              <Input
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-                placeholder="e.g. Zone A Security Gate, Banana Island"
-                className="bg-white text-xs h-9"
-              />
-            </div>
+          {/* Meeting Point / Address */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium text-stone-700 flex items-center gap-1.5">
+              <MapPin className="h-3.5 w-3.5 text-stone-400" />
+              <span>Inspection Location / Meeting Point</span>
+            </label>
+            <Input
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              placeholder="e.g. Property address or sales office meeting point"
+              className="bg-white text-xs h-9 border-stone-200"
+            />
+          </div>
 
-            {/* Gate Pass Switch */}
-            <div className="flex items-center justify-between rounded-lg border border-emerald-200/60 bg-emerald-50/50 p-3">
-              <div className="flex items-start gap-2.5">
-                <Key className="h-4 w-4 text-emerald-700 mt-0.5" />
-                <div>
-                  <div className="text-xs font-semibold text-emerald-950">
-                    Generate VIP Security Gate Pass
-                  </div>
-                  <div className="text-[11px] text-emerald-800/80">
-                    Auto-generates estate gate clearance token & QR pass for prospect.
-                  </div>
-                </div>
-              </div>
-              <Switch
-                checked={generateGatePass}
-                onCheckedChange={setGenerateGatePass}
-              />
-            </div>
-
-            {/* Special Directives / Notes */}
-            <div className="space-y-1.5">
-              <label className="text-xs font-medium text-stone-700">Internal Broker Directives</label>
-              <Textarea
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                placeholder="Special notes (e.g. VIP client, prepare survey deed and payment plan schedules)"
-                className="bg-white text-xs min-h-[60px]"
-              />
-            </div>
+          {/* Internal Directives / Notes */}
+          <div className="space-y-1.5">
+            <label className="text-xs font-medium text-stone-700">Broker Notes & Directives</label>
+            <Textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Special instructions (e.g. client arriving with architect, prepare title deed document copies)..."
+              className="bg-white text-xs min-h-[60px] border-stone-200"
+            />
           </div>
         </div>
 
-        {/* Footer */}
-        <DialogFooter className="bg-stone-50 px-6 py-3 border-t border-stone-200 flex justify-between">
+        {/* Clean Standard Dialog Footer */}
+        <DialogFooter className="p-4 bg-stone-50/70 border-t border-stone-100 flex items-center justify-between">
           <Button
             type="button"
             variant="outline"
+            size="sm"
             onClick={() => onOpenChange(false)}
             disabled={isSubmitting}
-            className="text-xs"
+            className="text-xs text-stone-700 bg-white hover:bg-stone-50 h-8"
           >
             Cancel
           </Button>
 
           <Button
             type="button"
+            size="sm"
             onClick={handleBook}
             disabled={isSubmitting || !selectedSlotId}
-            className="bg-[#0d4a36] text-white hover:bg-[#0d4a36]/90 text-xs font-medium"
+            className="bg-[#0d4a36] hover:bg-[#0a3829] text-white text-xs h-8 shadow-2xs font-medium gap-1.5"
           >
             {isSubmitting ? (
               <>
-                <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />
-                Confirming Slot...
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                <span>Scheduling...</span>
               </>
             ) : (
               <>
-                <CalendarDays className="h-3.5 w-3.5 mr-1.5" />
-                Schedule Inspection
+                <CalendarDays className="h-3.5 w-3.5" />
+                <span>Schedule Inspection</span>
               </>
             )}
           </Button>

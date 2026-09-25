@@ -13,12 +13,7 @@ import {
   MapPin,
   User,
   ShieldCheck,
-  Key,
   CheckCircle2,
-  XCircle,
-  QrCode,
-  Sparkles,
-  Phone,
   Building2,
   Share2,
 } from "lucide-react";
@@ -28,13 +23,11 @@ import { toast } from "sonner";
 interface AppointmentCardProps {
   appointment: Appointment;
   onStatusChange?: (id: string, newStatus: any) => void;
-  onViewGatePass?: (appointment: Appointment) => void;
 }
 
 export function AppointmentCard({
   appointment,
   onStatusChange,
-  onViewGatePass,
 }: AppointmentCardProps) {
   const [isCancelConfirmOpen, setIsCancelConfirmOpen] = React.useState(false);
   const startDate = new Date(appointment.startTime);
@@ -54,6 +47,22 @@ export function AppointmentCard({
 
   const isToday =
     new Date().toDateString() === startDate.toDateString();
+
+  const handleCopyWhatsAppInvite = () => {
+    const text = `🏡 *Property Inspection Confirmation — Spacia*\n\n` +
+      `*Client:* ${appointment.leadName}\n` +
+      `*Property:* ${appointment.propertyTitle}\n` +
+      `*Date:* ${formattedDate}\n` +
+      `*Time:* ${formattedTime}\n` +
+      `*Meeting Location:* ${appointment.location}\n` +
+      `*Assigned Broker:* ${appointment.assignedBrokerName}\n\n` +
+      `Please let us know if you require directions before arrival.`;
+    
+    if (typeof navigator !== "undefined" && navigator.clipboard) {
+      navigator.clipboard.writeText(text);
+      toast.success("WhatsApp inspection invite copied to clipboard!");
+    }
+  };
 
   return (
     <>
@@ -164,28 +173,16 @@ export function AppointmentCard({
               </div>
             </div>
 
-            {/* Gate Pass & Notes Footer */}
+            {/* Footer with WhatsApp Invite & Status Actions */}
             <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-stone-100">
-              {appointment.gatePassCode ? (
-                <button
-                  type="button"
-                  onClick={() => onViewGatePass?.(appointment)}
-                  className="flex items-center gap-1.5 rounded-md border border-emerald-200 bg-emerald-50/80 px-2.5 py-1 text-xs font-medium text-emerald-800 transition hover:bg-emerald-100"
-                >
-                  <Key className="h-3.5 w-3.5 text-emerald-600" />
-                  <span>Gate Pass: <strong>{appointment.gatePassCode}</strong></span>
-                  <QrCode className="h-3.5 w-3.5 text-emerald-600 ml-1" />
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => onViewGatePass?.(appointment)}
-                  className="flex items-center gap-1.5 text-xs text-stone-500 hover:text-emerald-700"
-                >
-                  <Key className="h-3.5 w-3.5" />
-                  <span>Generate Security Gate Pass</span>
-                </button>
-              )}
+              <button
+                type="button"
+                onClick={handleCopyWhatsAppInvite}
+                className="flex items-center gap-1.5 rounded-md border border-stone-200 bg-stone-50 px-2.5 py-1 text-xs font-medium text-stone-700 transition hover:bg-stone-100 hover:text-stone-900 cursor-pointer"
+              >
+                <Share2 className="h-3.5 w-3.5 text-stone-500" />
+                <span>Copy WhatsApp Invite</span>
+              </button>
 
               {/* Quick Action Controls */}
               <div className="flex items-center gap-1.5">
@@ -193,7 +190,7 @@ export function AppointmentCard({
                   <Button
                     size="sm"
                     variant="outline"
-                    className="h-7 text-xs text-emerald-700 border-emerald-200 hover:bg-emerald-50"
+                    className="h-7 text-xs text-emerald-700 border-emerald-200 hover:bg-emerald-50 cursor-pointer"
                     onClick={() => {
                       onStatusChange?.(appointment.id, "confirmed");
                       toast.success(`Viewing with ${appointment.leadName} confirmed`);
@@ -207,7 +204,7 @@ export function AppointmentCard({
                   <Button
                     size="sm"
                     variant="outline"
-                    className="h-7 text-xs text-stone-600 hover:bg-stone-100"
+                    className="h-7 text-xs text-stone-600 hover:bg-stone-100 cursor-pointer"
                     onClick={() => {
                       onStatusChange?.(appointment.id, "completed");
                       toast.success("Viewing marked as completed");
@@ -220,7 +217,7 @@ export function AppointmentCard({
                   <Button
                     size="sm"
                     variant="ghost"
-                    className="h-7 text-xs text-stone-400 hover:text-rose-600 hover:bg-rose-50"
+                    className="h-7 text-xs text-stone-400 hover:text-rose-600 hover:bg-rose-50 cursor-pointer"
                     onClick={() => setIsCancelConfirmOpen(true)}
                   >
                     Cancel

@@ -767,7 +767,7 @@ export function LeadDetailShell({
           propertyTitle={lead.propertyTitle}
           onBookingSuccess={(newApt) => {
             toast.success("Inspection Confirmed", {
-              description: `Viewing scheduled for ${newApt.propertyTitle}. Gate pass: ${newApt.gatePassCode || "Generated"}.`,
+              description: `Viewing scheduled for ${newApt.propertyTitle} on ${new Date(newApt.startTime).toLocaleDateString()}.`,
             });
           }}
         />
