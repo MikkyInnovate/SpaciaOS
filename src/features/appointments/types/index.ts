@@ -38,6 +38,7 @@ export interface Appointment {
   leadId: string;
   leadName: string;
   leadPhone: string;
+  leadEmail?: string;
   leadScore?: number;
   leadScoreCategory?: "HOT" | "WARM" | "COLD";
   propertyId: string;
@@ -106,6 +107,7 @@ export interface CreateAppointmentPayload {
   generateGatePass?: boolean;
   leadName?: string;
   leadPhone?: string;
+  leadEmail?: string;
   propertyTitle?: string;
 }
 

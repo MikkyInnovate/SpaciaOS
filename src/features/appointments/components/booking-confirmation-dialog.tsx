@@ -89,7 +89,7 @@ export function BookingConfirmationDialog({
 Reference: #${referenceCode}
 Listing: ${appointment.propertyTitle}
 Location: ${appointment.location}
-Client: ${appointment.leadName}${appointment.leadPhone ? ` (${appointment.leadPhone})` : ""}
+Client: ${appointment.leadName}${appointment.leadEmail ? ` (${appointment.leadEmail})` : ""}${appointment.leadPhone ? ` [${appointment.leadPhone}]` : ""}
 Date: ${formattedDate}
 Time: ${formattedTime}
 Format: ${formatLabel(appointment.meetingType)}
@@ -211,6 +211,9 @@ ${meetLink ? `Google Meet: ${meetLink}\n` : ""}Status: Confirmed. AI outreach st
                     </span>
                     <span className="min-w-0">
                       <span className="block truncate text-xs font-semibold text-stone-900">{appointment.leadName}</span>
+                      {appointment.leadEmail && (
+                        <span className="block truncate text-[11px] font-medium text-[#0d4a36]">{appointment.leadEmail}</span>
+                      )}
                       {appointment.leadPhone && (
                         <span className="block font-mono text-[11px] text-stone-500 tabular-nums">{appointment.leadPhone}</span>
                       )}

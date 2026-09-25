@@ -21,6 +21,7 @@ class AppointmentsService {
       leadId: "lead_01_danjuma",
       leadName: "Alhaji Danjuma",
       leadPhone: "+234 803 999 8877",
+      leadEmail: "alhajidanjuma@investments.ng",
       leadScore: 94,
       leadScoreCategory: "HOT",
       propertyId: "prop_banana_villa",
@@ -49,6 +50,7 @@ class AppointmentsService {
       leadId: "lead_02_adeleke",
       leadName: "Chief Adeleke",
       leadPhone: "+234 802 345 6789",
+      leadEmail: "chief.adeleke@ventureholdings.ng",
       leadScore: 92,
       leadScoreCategory: "HOT",
       propertyId: "prop_eko_atlantic",
@@ -76,6 +78,7 @@ class AppointmentsService {
       leadId: "lead_03_jenkins",
       leadName: "Sarah Jenkins",
       leadPhone: "+234 812 345 6789",
+      leadEmail: "sarah.jenkins@gmail.com",
       leadScore: 84,
       leadScoreCategory: "WARM",
       propertyId: "prop_bourdillon",
@@ -382,12 +385,26 @@ class AppointmentsService {
    */
   async sendViewingReminder(
     appointmentId: string,
-    window: "24h" | "1h" = "24h"
+    window: "24h" | "1h" = "24h",
+    appointmentDetails?: {
+      leadName?: string;
+      leadEmail?: string;
+      propertyTitle?: string;
+      propertyLocation?: string;
+      scheduledStartAt?: string;
+    }
   ): Promise<{ success: boolean; message: string }> {
     try {
       const res = await apiClient.post<{ success: boolean; message: string }>(
         `/api/v1/notifications/appointments/${appointmentId}/remind`,
-        { window }
+        {
+          window,
+          leadName: appointmentDetails?.leadName,
+          leadEmail: appointmentDetails?.leadEmail,
+          propertyTitle: appointmentDetails?.propertyTitle,
+          propertyLocation: appointmentDetails?.propertyLocation,
+          scheduledStartAt: appointmentDetails?.scheduledStartAt,
+        }
       );
       if (res) return res;
     } catch {

@@ -301,8 +301,22 @@ export function AppointmentDetailDrawer({
     if (!appointment) return;
     setIsSendingReminder(true);
     try {
-      const res = await appointmentsService.sendViewingReminder(appointment.id, window);
-      setReminderHistory((prev) => [...prev, `${window} reminder dispatched (${new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })})`]);
+      const res = await appointmentsService.sendViewingReminder(
+        appointment.id,
+        window,
+        {
+          leadName: appointment.leadName,
+          leadEmail: appointment.leadEmail,
+          propertyTitle: appointment.propertyTitle,
+          propertyLocation: appointment.propertyLocation || appointment.location,
+          scheduledStartAt: appointment.startTime,
+        }
+      );
+      const recipientText = appointment.leadEmail ? ` to ${appointment.leadEmail}` : "";
+      setReminderHistory((prev) => [
+        ...prev,
+        `${window} reminder dispatched${recipientText} (${new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })})`,
+      ]);
       toast.success(res.message || `Viewing reminder (${window}) sent.`);
     } catch {
       toast.error("Failed to send viewing reminder.");
@@ -401,6 +415,12 @@ export function AppointmentDetailDrawer({
                     Client
                   </dt>
                   <dd className="mt-1 text-xs font-semibold text-stone-900">{appointment.leadName}</dd>
+                  {appointment.leadEmail && (
+                    <dd className="mt-0.5 flex items-center gap-1 text-[11px] font-medium text-[#0d4a36]">
+                      <Mail className="h-3 w-3 shrink-0" />
+                      <span className="truncate">{appointment.leadEmail}</span>
+                    </dd>
+                  )}
                   {appointment.leadPhone && (
                     <dd className="font-mono text-[11px] text-stone-500 tabular-nums">{appointment.leadPhone}</dd>
                   )}
@@ -460,7 +480,8 @@ export function AppointmentDetailDrawer({
               </div>
 
               <p className="text-[11px] text-stone-500 leading-relaxed">
-                Automated booking confirmation and company AI underwriting alert were delivered. Dispatch timely inspection reminders to the client:
+                Automated booking confirmation and company AI underwriting alert were delivered. Dispatch timely inspection reminders to{" "}
+                <span className="font-semibold text-stone-800">{appointment.leadEmail || appointment.leadName}</span>:
               </p>
 
               <div className="flex flex-wrap items-center gap-2 pt-0.5">

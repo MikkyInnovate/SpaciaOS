@@ -32,6 +32,7 @@ import {
   Loader2,
   MapPin,
   Clock,
+  Mail,
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils/cn";
@@ -42,6 +43,7 @@ interface BookInspectionModalProps {
   leadId?: string;
   leadName?: string;
   leadPhone?: string;
+  leadEmail?: string;
   propertyId?: string;
   propertyTitle?: string;
   onBookingSuccess?: (appointment: any) => void;
@@ -53,6 +55,7 @@ export function BookInspectionModal({
   leadId: initialLeadId,
   leadName: initialLeadName,
   leadPhone: initialLeadPhone,
+  leadEmail: initialLeadEmail,
   propertyId: initialPropertyId,
   propertyTitle: initialPropertyTitle,
   onBookingSuccess,
@@ -68,12 +71,26 @@ export function BookInspectionModal({
   );
 
   const activeLead = React.useMemo(() => {
-    return MOCK_LEADS.find((l) => l.id === selectedLeadId) || {
+    const found = MOCK_LEADS.find((l) => l.id === selectedLeadId);
+    if (found) return found;
+    return {
       id: selectedLeadId,
       name: initialLeadName || "Select Client",
       phone: initialLeadPhone || "",
+      email: initialLeadEmail || "client@spacia.io",
     };
-  }, [selectedLeadId, initialLeadName, initialLeadPhone]);
+  }, [selectedLeadId, initialLeadName, initialLeadPhone, initialLeadEmail]);
+
+  // Client Email State for real-time notification routing
+  const [clientEmail, setClientEmail] = React.useState<string>(
+    initialLeadEmail || activeLead.email || ""
+  );
+
+  React.useEffect(() => {
+    if (activeLead?.email) {
+      setClientEmail(activeLead.email);
+    }
+  }, [activeLead]);
 
   const activeProperty = React.useMemo(() => {
     return MOCK_PROPERTIES.find((p) => p.id === selectedPropertyId) || {
@@ -125,6 +142,7 @@ export function BookInspectionModal({
         leadId: activeLead.id,
         leadName: activeLead.name,
         leadPhone: activeLead.phone,
+        leadEmail: clientEmail.trim() || (activeLead as any).email || undefined,
         propertyId: activeProperty.id,
         propertyTitle: activeProperty.title,
         assignedBrokerId: assignedBroker,
@@ -179,16 +197,26 @@ export function BookInspectionModal({
                 <User className="h-3.5 w-3.5 text-[#0d4a36]" />
                 <span>Client / Prospect</span>
               </label>
-              <Select value={selectedLeadId} onValueChange={setSelectedLeadId}>
+              <Select
+                value={selectedLeadId}
+                onValueChange={(val) => {
+                  setSelectedLeadId(val);
+                  const matched = MOCK_LEADS.find((l) => l.id === val);
+                  if (matched?.email) setClientEmail(matched.email);
+                }}
+              >
                 <SelectTrigger className="bg-white text-xs h-9 border-stone-200">
                   <SelectValue placeholder="Select Client" />
                 </SelectTrigger>
-                <SelectContent className="max-h-56">
+                <SelectContent className="max-h-60">
                   {MOCK_LEADS.map((lead) => (
-                    <SelectItem key={lead.id} value={lead.id} className="text-xs">
-                      <div className="flex items-center justify-between w-full gap-2">
-                        <span className="font-medium text-stone-900">{lead.name}</span>
-                        <span className="text-[11px] text-stone-400">{lead.phone}</span>
+                    <SelectItem key={lead.id} value={lead.id} className="text-xs py-2 cursor-pointer">
+                      <div className="flex flex-col text-left">
+                        <div className="flex items-center gap-2">
+                          <span className="font-semibold text-stone-900">{lead.name}</span>
+                          <span className="text-[10px] text-stone-400 font-mono">{lead.phone}</span>
+                        </div>
+                        <span className="text-[11px] text-[#0d4a36] font-medium mt-0.5">{lead.email}</span>
                       </div>
                     </SelectItem>
                   ))}
@@ -218,6 +246,24 @@ export function BookInspectionModal({
                 </SelectContent>
               </Select>
             </div>
+          </div>
+
+          {/* Client Notification Email (Confirmation & Reminder Destination) */}
+          <div className="space-y-1.5 rounded-lg border border-stone-200/80 bg-stone-50/70 p-3">
+            <label className="text-xs font-semibold text-stone-800 flex items-center justify-between">
+              <span className="flex items-center gap-1.5">
+                <Mail className="h-3.5 w-3.5 text-[#0d4a36]" />
+                <span>Client Notification Email</span>
+              </span>
+              <span className="text-[10px] text-stone-500 font-normal">Receives booking confirmation &amp; reminders</span>
+            </label>
+            <Input
+              type="email"
+              value={clientEmail}
+              onChange={(e) => setClientEmail(e.target.value)}
+              placeholder="e.g. michael.a@gmail.com"
+              className="bg-white text-xs h-8.5 border-stone-200 text-stone-900 font-mono placeholder:text-stone-400"
+            />
           </div>
 
           {/* Live Broker Availability Selector */}
