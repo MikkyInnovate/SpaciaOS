@@ -43,7 +43,7 @@ export class AppointmentsService {
           leadId: "lead_01_danjuma",
           leadName: "Alhaji Danjuma",
           leadPhone: "+234 803 999 8877",
-          leadEmail: "alhajidanjuma@investments.ng",
+          leadEmail: "michaelcodingclicks@gmail.com",
           leadScore: 94,
           leadScoreCategory: "HOT",
           propertyId: "prop_banana_villa",
@@ -208,6 +208,11 @@ export class AppointmentsService {
               updatedAt: a.updatedAt.toISOString(),
             };
           });
+
+          // Sync database records back into memory store so updateStatus/slots find them
+          const dbIds = new Set(list.map((a) => a.id));
+          const nonDbItems = memList.filter((m) => !dbIds.has(m.id));
+          this.appointments.set(wsId, [...list, ...nonDbItems]);
         }
       } catch (err) {
         this.logger.warn(`Could not load appointments from DB: ${(err as Error).message}`);
@@ -508,7 +513,99 @@ export class AppointmentsService {
     this.initDefaultAppointments(wsId);
 
     const list = this.appointments.get(wsId) || [];
-    const appointment = list.find((a) => a.id === appointmentId);
+    let appointment = list.find((a) => a.id === appointmentId);
+
+    // Fallback: If not found in memory, query the database
+    if (!appointment && this.db) {
+      try {
+        const [dbApt] = await this.db
+          .select()
+          .from(schema.appointments)
+          .where(
+            and(
+              eq(schema.appointments.id, appointmentId),
+              eq(schema.appointments.workspaceId, wsId)
+            )
+          )
+          .limit(1);
+
+        if (dbApt) {
+          let leadName = "VIP Client";
+          let leadPhone = "";
+          let leadEmail: string | undefined;
+          let propertyTitle = dbApt.title.includes("-") ? dbApt.title.split("-")[0].trim() : dbApt.title;
+          let propertyLocation = dbApt.location;
+          let propertyPrice: string | undefined;
+
+          if (dbApt.leadId) {
+            const [lead] = await this.db
+              .select({ name: schema.leads.name, phone: schema.leads.phone, email: schema.leads.email })
+              .from(schema.leads)
+              .where(eq(schema.leads.id, dbApt.leadId))
+              .limit(1);
+            if (lead) {
+              leadName = lead.name;
+              leadPhone = lead.phone;
+              leadEmail = lead.email || undefined;
+            }
+          }
+
+          if (dbApt.propertyId) {
+            const [prop] = await this.db
+              .select({
+                title: schema.properties.title,
+                location: schema.properties.location,
+                formattedPrice: schema.properties.formattedPrice,
+              })
+              .from(schema.properties)
+              .where(eq(schema.properties.id, dbApt.propertyId))
+              .limit(1);
+            if (prop) {
+              propertyTitle = prop.title;
+              propertyLocation = prop.location || dbApt.location;
+              propertyPrice = prop.formattedPrice || undefined;
+            }
+          }
+
+          const notesReason = dbApt.notes?.includes("Cancellation Reason: ")
+            ? dbApt.notes.split("Cancellation Reason: ")[1].trim()
+            : undefined;
+
+          appointment = {
+            id: dbApt.id,
+            workspaceId: dbApt.workspaceId,
+            leadId: dbApt.leadId || "lead_unassigned",
+            leadName,
+            leadPhone,
+            leadEmail,
+            propertyId: dbApt.propertyId || "prop_default",
+            propertyTitle,
+            propertyLocation,
+            propertyPrice,
+            assignedBrokerId: dbApt.assignedAgentId || "broker_ade",
+            assignedBrokerName: "Ade Admin (Senior Luxury Closer)",
+            startTime: dbApt.scheduledStartAt.toISOString(),
+            endTime: dbApt.scheduledEndAt.toISOString(),
+            status: dbApt.status as any,
+            meetingType: (dbApt.type === "virtual_tour" ? "virtual_tour" : "in_person_viewing") as any,
+            location: dbApt.location,
+            meetingUrl: dbApt.meetingUrl || undefined,
+            notes: dbApt.notes || undefined,
+            cancelledReason: notesReason,
+            referenceCode: `SP-BK-${dbApt.id.slice(-6).toUpperCase()}`,
+            calendarProvider: "google_calendar",
+            calendarEventId: `cal_evt_${dbApt.id}`,
+            createdAt: dbApt.createdAt.toISOString(),
+            updatedAt: dbApt.updatedAt.toISOString(),
+          };
+
+          list.unshift(appointment);
+          this.appointments.set(wsId, list);
+        }
+      } catch (err) {
+        this.logger.warn(`Could not lookup appointment from DB: ${(err as Error).message}`);
+      }
+    }
 
     if (!appointment) {
       throw new NotFoundException(`Appointment [${appointmentId}] not found.`);
@@ -524,11 +621,17 @@ export class AppointmentsService {
     if (this.db) {
       try {
         const dbStatus = dto.status === "rescheduled" ? "cancelled" : (dto.status as any);
+        const reasonNote = dto.reason ? `Cancellation Reason: ${dto.reason}` : undefined;
+        const newNotes = reasonNote
+          ? (appointment.notes ? `${appointment.notes} | ${reasonNote}` : reasonNote)
+          : appointment.notes;
+
         await this.db
           .update(schema.appointments)
           .set({
             status: dbStatus,
             updatedAt: new Date(),
+            ...(reasonNote ? { notes: newNotes } : {}),
           })
           .where(
             and(

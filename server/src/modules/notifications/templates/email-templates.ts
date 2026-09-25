@@ -60,6 +60,17 @@ export function renderProspectBookingConfirmation(data: ProspectConfirmationData
   });
   const formattedTime = `${new Date(data.scheduledStartAt).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })} – ${new Date(data.scheduledEndAt).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}`;
 
+  const formatGcalDate = (d: string | Date) =>
+    new Date(d).toISOString().replace(/-|:|\.\d\d\d/g, "");
+  const gcalStart = formatGcalDate(data.scheduledStartAt);
+  const gcalEnd = formatGcalDate(data.scheduledEndAt);
+  const gcalTitle = encodeURIComponent(`Property Inspection: ${data.propertyTitle}`);
+  const gcalDetails = encodeURIComponent(
+    `Private Property Inspection with Spacia.\nBooking Reference: #${data.referenceCode}\nAssigned Closer: ${data.assignedBrokerName}\nFormat: ${data.meetingType.replace(/_/g, " ")}${data.gatePassCode ? `\nSecurity Pass: ${data.gatePassCode}` : ""}\nLocation: ${data.propertyLocation}${data.notes ? `\nNotes: ${data.notes}` : ""}`
+  );
+  const gcalLoc = encodeURIComponent(data.propertyLocation);
+  const gcalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${gcalTitle}&dates=${gcalStart}/${gcalEnd}&details=${gcalDetails}&location=${gcalLoc}`;
+
   const subject = `Confirmed: Private Viewing of ${data.propertyTitle} (${data.referenceCode})`;
 
   const bodyContent = `
@@ -97,10 +108,17 @@ export function renderProspectBookingConfirmation(data: ProspectConfirmationData
       </table>
     </div>
 
-    ${data.meetingUrl ? `
-    <div style="margin: 20px 0; text-align: center;">
-      <a href="${data.meetingUrl}" class="btn" target="_blank">Join Virtual Tour (Google Meet)</a>
-    </div>` : ""}
+    <div style="margin: 22px 0; text-align: center;">
+      <a href="${gcalUrl}" class="btn" target="_blank" style="background-color: #0d4a36; color: #ffffff; padding: 12px 22px; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 13px; display: inline-block; box-shadow: 0 1px 3px rgba(0,0,0,0.12);">
+        📅 Add Inspection to Google Calendar
+      </a>
+      ${data.meetingUrl ? `
+      <div style="margin-top: 10px;">
+        <a href="${data.meetingUrl}" target="_blank" style="color: #0d4a36; font-size: 13px; font-weight: 600; text-decoration: underline;">
+          Join Virtual Tour (Google Meet) &rarr;
+        </a>
+      </div>` : ""}
+    </div>
 
     <div class="card">
       <div class="section-title">Assigned Luxury Closer</div>
@@ -151,8 +169,29 @@ export function renderProspectViewingReminder(data: ProspectReminderData): { sub
       <a href="${data.meetingUrl}" class="btn" target="_blank">Access Virtual Inspection Room</a>
     </div>` : ""}
 
-    <div style="text-align: center; margin: 24px 0 12px 0;">
-      <a href="${data.confirmationActionUrl || "#"}" class="btn">I Will Be Attending</a>
+    ${(() => {
+      const formatGcalDate = (d: string | Date) =>
+        new Date(d).toISOString().replace(/-|:|\.\d\d\d/g, "");
+      const gcalStart = formatGcalDate(data.scheduledStartAt);
+      const gcalEnd = formatGcalDate(data.scheduledEndAt);
+      const gcalTitle = encodeURIComponent(`Inspection Reminder: ${data.propertyTitle}`);
+      const gcalDetails = encodeURIComponent(
+        `Upcoming Inspection with Spacia.\nRef: #${data.referenceCode}\nCloser: ${data.assignedBrokerName}\nLocation: ${data.propertyLocation}`
+      );
+      const gcalLoc = encodeURIComponent(data.propertyLocation);
+      const gcalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${gcalTitle}&dates=${gcalStart}/${gcalEnd}&details=${gcalDetails}&location=${gcalLoc}`;
+      return `
+      <div style="text-align: center; margin: 18px 0 12px 0;">
+        <a href="${gcalUrl}" class="btn" target="_blank" style="background-color: #0d4a36; color: #ffffff; padding: 10px 20px; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 12px; display: inline-block;">
+          📅 Add / View in Google Calendar
+        </a>
+      </div>`;
+    })()}
+
+    <div style="text-align: center; margin: 12px 0 12px 0;">
+      <a href="${data.confirmationActionUrl || "#"}" class="btn" style="background: transparent; border: 1px solid #0d4a36; color: #0d4a36; padding: 9px 18px; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 12px; display: inline-block;">
+        ✓ I Will Be Attending
+      </a>
     </div>
     <p style="text-align: center; font-size: 11px; color: #a8a29e; margin: 0;">Need to reschedule? Reply directly to this email or call your advisor.</p>
   `;

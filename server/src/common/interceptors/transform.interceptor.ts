@@ -27,15 +27,15 @@ export class TransformInterceptor<T>
         let message = "Operation completed successfully.";
         let data = res;
 
-        // If controller returned an object with explicit `message` and `data` properties
+        // If controller returned an object with explicit `data` and (`message` or `success`)
         if (
           res &&
           typeof res === "object" &&
           "data" in res &&
-          "message" in res
+          ("message" in res || "success" in res)
         ) {
-          message = res.message;
-          data = res.data;
+          message = (res as any).message || message;
+          data = (res as any).data;
         } else if (
           res &&
           typeof res === "object" &&

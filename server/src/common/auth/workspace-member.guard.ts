@@ -119,6 +119,15 @@ export class WorkspaceMemberGuard implements CanActivate {
     // Step 4: Verify workspace is provisioned in Neon
     let workspace = await this.workspacesRepo.findById(tenantContext.workspaceId);
     if (!workspace) {
+      const bySlug = await this.workspacesRepo.findBySlug(
+        tenantContext.orgSlug || tenantContext.workspaceId
+      );
+      if (bySlug) {
+        workspace = bySlug;
+        tenantContext.workspaceId = bySlug.id;
+      }
+    }
+    if (!workspace) {
       if (
         process.env.NODE_ENV === "development" ||
         process.env.ALLOW_MOCK_AUTH === "true"

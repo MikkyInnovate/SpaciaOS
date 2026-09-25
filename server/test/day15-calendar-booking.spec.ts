@@ -58,7 +58,9 @@ async function runDay15CalendarTests() {
 
   let testLeadId: string;
   let testPropertyId: string;
-  const targetDateStr = new Date(Date.now() + 86400000 * 2).toISOString().split("T")[0];
+  const targetDate = new Date(Date.now() + 86400000 * 2);
+  if (targetDate.getDay() === 0) targetDate.setDate(targetDate.getDate() + 1); // Avoid Sunday
+  const targetDateStr = targetDate.toISOString().split("T")[0];
 
   try {
     // -------------------------------------------------------------
