@@ -304,6 +304,12 @@ export class CalendarAdapterService {
     bookedIntervals: Array<{ start: Date; end: Date }> = []
   ): Promise<ViewingSlotEntity[]> {
     const normalizedDate = targetDateStr.includes("T") ? targetDateStr.split("T")[0] : targetDateStr;
+    const [year, month, day] = normalizedDate.split("-").map((part) => parseInt(part, 10));
+    const calendarDay = new Date(year, (month || 1) - 1, day || 1);
+    if (calendarDay.getDay() === 0) {
+      return [];
+    }
+
     const dayStartISO = `${normalizedDate}T00:00:00.000Z`;
     const dayEndISO = `${normalizedDate}T23:59:59.999Z`;
 

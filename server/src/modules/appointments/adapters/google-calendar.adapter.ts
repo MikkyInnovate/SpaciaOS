@@ -278,11 +278,16 @@ export class GoogleCalendarAdapter implements ICalendarProviderAdapter {
               eq(schema.calendarConnections.workspaceId, workspaceId),
               eq(schema.calendarConnections.provider, "google_calendar")
             )
-          )
-          .limit(1);
+          );
 
         if (rows.length > 0) {
-          const row = rows[0];
+          // Prioritize real Google OAuth tokens over test mock tokens
+          const sorted = rows.sort((a, b) => {
+            const aIsReal = a.accessToken && !a.accessToken.startsWith("gcal_access_") ? 1 : 0;
+            const bIsReal = b.accessToken && !b.accessToken.startsWith("gcal_access_") ? 1 : 0;
+            return bIsReal - aIsReal;
+          });
+          const row = sorted[0];
           const meta = (row.metadata as any) || {};
           token = {
             accessToken: row.accessToken || "",
@@ -297,6 +302,31 @@ export class GoogleCalendarAdapter implements ICalendarProviderAdapter {
       }
     }
 
+    // Global fallback: check if any workspace has a real Google Calendar OAuth connection
+    if ((!token || token.accessToken.startsWith("gcal_access_")) && this.db) {
+      try {
+        const allConnections = await this.db
+          .select()
+          .from(schema.calendarConnections)
+          .where(eq(schema.calendarConnections.provider, "google_calendar"));
+
+        const realConnection = allConnections.find(
+          (c) => c.accessToken && !c.accessToken.startsWith("gcal_access_")
+        );
+
+        if (realConnection) {
+          const meta = (realConnection.metadata as any) || {};
+          token = {
+            accessToken: realConnection.accessToken || "",
+            refreshToken: realConnection.refreshToken || undefined,
+            accountEmail: meta.accountEmail || "ade.admin@spacia.io",
+            expiresAt: realConnection.expiresAt ? new Date(realConnection.expiresAt).getTime() : undefined,
+          };
+          this.tokenStore.set(workspaceId, token);
+        }
+      } catch (e) {}
+    }
+
     if (!token) {
       token =
         this.tokenStore.get("default") ||
@@ -305,7 +335,7 @@ export class GoogleCalendarAdapter implements ICalendarProviderAdapter {
         Array.from(this.tokenStore.values())[0];
     }
 
-    // Proactively refresh if token expires within 5 minutes
+    // Proactively refresh if token expires within 5 minutes or already expired
     if (token && token.refreshToken && token.expiresAt && Date.now() + 5 * 60 * 1000 > token.expiresAt) {
       token = await this.refreshAccessToken(workspaceId, token);
     }

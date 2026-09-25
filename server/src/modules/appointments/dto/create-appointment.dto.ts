@@ -33,4 +33,20 @@ export class CreateAppointmentDto {
   @IsString()
   @IsOptional()
   notes?: string;
+
+  @IsString()
+  @IsOptional()
+  leadName?: string;
+
+  @IsString()
+  @IsOptional()
+  leadPhone?: string;
+
+  @IsString()
+  @IsOptional()
+  leadEmail?: string;
+
+  @IsString()
+  @IsOptional()
+  propertyTitle?: string;
 }

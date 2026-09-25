@@ -22,6 +22,7 @@ import { PromptBuilderService } from "./prompt-builder.service";
 import { ConversationMemoryService } from "./conversation-memory.service";
 import { StructuredExtractionService } from "./structured-extraction.service";
 import { ChatTurnDto } from "../dto/chat-turn.dto";
+import { and, eq } from "drizzle-orm";
 
 @Injectable()
 export class AiOrchestratorService {
@@ -51,6 +52,39 @@ export class AiOrchestratorService {
 
     if (!dto.message || !dto.message.trim()) {
       throw new BadRequestException("Message content cannot be empty.");
+    }
+
+    if (dto.leadId && this.isUuid(dto.leadId)) {
+      const [lead] = await this.db
+        .select({
+          id: schema.leads.id,
+          name: schema.leads.name,
+          status: schema.leads.status,
+          managementMode: schema.leads.managementMode,
+          isAiStopped: schema.leads.isAiStopped,
+        })
+        .from(schema.leads)
+        .where(
+          and(
+            eq(schema.leads.id, dto.leadId),
+            eq(schema.leads.workspaceId, tenant.workspaceId)
+          )
+        )
+        .limit(1);
+
+      if (
+        lead &&
+        (lead.isAiStopped ||
+          lead.status === "Viewing Booked" ||
+          lead.managementMode === "human_managed" ||
+          lead.managementMode === "lost" ||
+          lead.managementMode === "nurture")
+      ) {
+        throw new BadRequestException({
+          code: "LEAD_AI_STOPPED",
+          message: `AI agent is stopped for '${lead.name}'. A broker owns this lead (${lead.status}).`,
+        });
+      }
     }
 
     // 1. Thread & Conversation Memory Resolution
@@ -331,5 +365,9 @@ export class AiOrchestratorService {
         `Failed to record AI usage audit log in workspace [${tenant.workspaceId}]: ${err.message}`
       );
     }
+  }
+
+  private isUuid(value: string): boolean {
+    return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
   }
 }

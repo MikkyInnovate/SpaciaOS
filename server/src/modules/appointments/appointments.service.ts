@@ -1,4 +1,4 @@
-import { Inject, Injectable, Logger, NotFoundException, Optional } from "@nestjs/common";
+import { Inject, Injectable, Logger, NotFoundException, ConflictException, BadRequestException, Optional } from "@nestjs/common";
 import { TenantContext } from "../../common/tenant/tenant-context.interface";
 import {
   AppointmentEntity,
@@ -11,7 +11,7 @@ import { UpdateAppointmentStatusDto } from "./dto/update-appointment-status.dto"
 import { CalendarAdapterService } from "./calendar-adapter.service";
 import { DRIZZLE_DATABASE, DrizzleDb } from "../../database/database.provider";
 import * as schema from "../../database/schema";
-import { eq, and } from "drizzle-orm";
+import { eq, and, inArray } from "drizzle-orm";
 import { randomUUID } from "crypto";
 
 @Injectable()
@@ -138,29 +138,63 @@ export class AppointmentsService {
           .where(eq(schema.appointments.workspaceId, wsId));
 
         if (dbAppointments.length > 0) {
-          list = dbAppointments.map((a) => ({
-            id: a.id,
-            workspaceId: a.workspaceId,
-            leadId: a.leadId || "lead_unassigned",
-            leadName: a.title.includes("(") ? a.title.split("(")[1].replace(")", "").trim() : "VIP Client",
-            leadPhone: "+234 803 999 8877",
-            propertyId: a.propertyId || "prop_default",
-            propertyTitle: a.title.includes("-") ? a.title.split("-")[0].trim() : a.title,
-            propertyLocation: a.location,
-            assignedBrokerId: a.assignedAgentId || "broker_ade",
-            assignedBrokerName: "Ade Admin (Senior Luxury Closer)",
-            startTime: a.scheduledStartAt.toISOString(),
-            endTime: a.scheduledEndAt.toISOString(),
-            status: a.status as any,
-            meetingType: a.type as any,
-            location: a.location,
-            meetingUrl: a.meetingUrl || undefined,
-            notes: a.notes || undefined,
-            calendarProvider: "google_calendar",
-            calendarEventId: `cal_evt_${a.id}`,
-            createdAt: a.createdAt.toISOString(),
-            updatedAt: a.updatedAt.toISOString(),
-          }));
+          const leadIds = [...new Set(dbAppointments.map((a) => a.leadId).filter((id): id is string => !!id))];
+          const propertyIds = [...new Set(dbAppointments.map((a) => a.propertyId).filter((id): id is string => !!id))];
+          const leadRows = leadIds.length
+            ? await this.db
+                .select({
+                  id: schema.leads.id,
+                  name: schema.leads.name,
+                  phone: schema.leads.phone,
+                })
+                .from(schema.leads)
+                .where(and(eq(schema.leads.workspaceId, wsId), inArray(schema.leads.id, leadIds)))
+            : [];
+          const propertyRows = propertyIds.length
+            ? await this.db
+                .select({
+                  id: schema.properties.id,
+                  title: schema.properties.title,
+                  location: schema.properties.location,
+                  formattedPrice: schema.properties.formattedPrice,
+                })
+                .from(schema.properties)
+                .where(and(eq(schema.properties.workspaceId, wsId), inArray(schema.properties.id, propertyIds)))
+            : [];
+          const leadsById = new Map(leadRows.map((row) => [row.id, row]));
+          const propertiesById = new Map(propertyRows.map((row) => [row.id, row]));
+
+          list = dbAppointments.map((a) => {
+            const lead = a.leadId ? leadsById.get(a.leadId) : undefined;
+            const property = a.propertyId ? propertiesById.get(a.propertyId) : undefined;
+            const titleLead = a.title.includes("(") ? a.title.split("(")[1].replace(")", "").trim() : "";
+            const titleProperty = a.title.includes("-") ? a.title.split("-")[0].trim() : a.title;
+            return {
+              id: a.id,
+              workspaceId: a.workspaceId,
+              leadId: a.leadId || "lead_unassigned",
+              leadName: lead?.name || titleLead || "VIP Client",
+              leadPhone: lead?.phone || "",
+              propertyId: a.propertyId || "prop_default",
+              propertyTitle: property?.title || titleProperty,
+              propertyLocation: property?.location || a.location,
+              propertyPrice: property?.formattedPrice || undefined,
+              assignedBrokerId: a.assignedAgentId || "broker_ade",
+              assignedBrokerName: "Ade Admin (Senior Luxury Closer)",
+              startTime: a.scheduledStartAt.toISOString(),
+              endTime: a.scheduledEndAt.toISOString(),
+              status: a.status as any,
+              meetingType: (a.type === "virtual_tour" ? "virtual_tour" : "in_person_viewing") as any,
+              location: a.location,
+              meetingUrl: a.meetingUrl || undefined,
+              notes: a.notes || undefined,
+              referenceCode: `SP-BK-${a.id.slice(-6).toUpperCase()}`,
+              calendarProvider: "google_calendar" as const,
+              calendarEventId: `cal_evt_${a.id}`,
+              createdAt: a.createdAt.toISOString(),
+              updatedAt: a.updatedAt.toISOString(),
+            };
+          });
         }
       } catch (err) {
         this.logger.warn(`Could not load appointments from DB: ${(err as Error).message}`);
@@ -234,16 +268,42 @@ export class AppointmentsService {
       ? new Date(dto.endTime)
       : new Date(startTime.getTime() + 60 * 60 * 1000);
 
-    const leadName = (dto as any).leadName || "Alhaji Danjuma";
-    const propertyTitle = (dto as any).propertyTitle || "The Grand Waterfront Villa";
+    if (startTime.getDay() === 0) {
+      throw new BadRequestException(
+        "Inspections are not scheduled on Sundays. Choose a Monday to Saturday slot."
+      );
+    }
+
+    const identity = await this.resolveBookingIdentity(wsId, dto);
+    const leadName = identity.leadName;
+    const propertyTitle = identity.propertyTitle;
+
+    // Inviolable double-booking collision lockout: check if slot overlaps an existing booking
+    const existingAppointments = await this.getAppointments(tenant);
+    const hasCollision = existingAppointments.some(
+      (a) =>
+        a.status !== "cancelled" &&
+        (
+          (dto.propertyId && a.propertyId === dto.propertyId) ||
+          (propertyTitle && a.propertyTitle === propertyTitle) ||
+          (dto.assignedBrokerId && a.assignedBrokerId === dto.assignedBrokerId)
+        ) &&
+        new Date(a.startTime).getTime() < endTime.getTime() &&
+        new Date(a.endTime).getTime() > startTime.getTime()
+    );
+    if (hasCollision) {
+      throw new ConflictException(
+        "The selected viewing slot is already booked. Please choose another time slot."
+      );
+    }
 
     // Synchronize event with external calendar (Google Calendar)
     const calendarSync = await this.calendarAdapter.createCalendarEvent(wsId, {
       leadName,
-      leadEmail: (dto as any).leadEmail || "danjuma.investments@gmail.com",
-      leadPhone: (dto as any).leadPhone || "+234 803 999 8877",
+      leadEmail: identity.leadEmail || "prospect@spacia.io",
+      leadPhone: identity.leadPhone || "",
       propertyTitle,
-      location: dto.location || "Banana Island, Lagos",
+      location: identity.location,
       startTime: startTime.toISOString(),
       endTime: endTime.toISOString(),
       meetingType: dto.meetingType || "in_person_viewing",
@@ -252,22 +312,91 @@ export class AppointmentsService {
 
     const aptId = randomUUID();
 
+    const referenceCode = `SP-BK-${aptId.slice(-6).toUpperCase()}`;
+    const shareableSummary = `Property Inspection Confirmed for ${propertyTitle} on ${startTime.toLocaleDateString()} at ${startTime.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}. Assigned Closer: Ade Admin. Ref: #${referenceCode}`;
+
+    const isUuid = (str?: string) =>
+      !!str && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
+
     // Persist into Neon DB if available
     if (this.db) {
       try {
         await this.db.insert(schema.appointments).values({
           id: aptId,
           workspaceId: wsId,
+          leadId: isUuid(dto.leadId) ? dto.leadId : null,
+          propertyId: isUuid(dto.propertyId) ? dto.propertyId : null,
           title: `${propertyTitle} - Inspection (${leadName})`,
           type: (dto.meetingType === "virtual_tour" ? "virtual_tour" : "property_viewing") as any,
           status: "confirmed",
           scheduledStartAt: startTime,
           scheduledEndAt: endTime,
-          location: dto.location || "Banana Island, Lagos",
+          location: identity.location,
           meetingUrl: calendarSync.meetingLink,
           notes: dto.notes,
         });
         this.logger.log(`[Appointment DB] Persisted appointment [${aptId}] in PostgreSQL`);
+
+        await this.stopAgentAfterConfirmedViewing({
+          workspaceId: wsId,
+          leadId: dto.leadId,
+          appointmentId: aptId,
+          referenceCode,
+          propertyTitle,
+          startTime,
+          actorId: dto.assignedBrokerId || tenant.userId || "broker",
+        });
+
+        // Emit transactional outbox domain event: BookingConfirmed
+        try {
+          await this.db.insert(schema.systemEvents).values({
+            id: randomUUID(),
+            workspaceId: wsId,
+            eventName: "BookingConfirmed",
+            aggregateType: "appointment",
+            aggregateId: aptId,
+            payload: {
+              appointmentId: aptId,
+              leadId: dto.leadId,
+              leadName,
+              propertyId: dto.propertyId,
+              propertyTitle,
+              startTime: startTime.toISOString(),
+              endTime: endTime.toISOString(),
+              meetingType: dto.meetingType || "in_person_viewing",
+              calendarProvider: calendarSync.provider,
+              calendarEventId: calendarSync.calendarEventId,
+              meetingUrl: calendarSync.meetingLink,
+              referenceCode,
+            },
+            status: "emitted",
+          });
+          this.logger.log(`[Event Outbox] Emitted 'BookingConfirmed' event for appointment [${aptId}]`);
+        } catch (eventErr) {
+          this.logger.warn(`Could not emit system event: ${(eventErr as Error).message}`);
+        }
+
+        // Compliance audit logging
+        try {
+          await this.db.insert(schema.auditLogs).values({
+            id: randomUUID(),
+            workspaceId: wsId,
+            actorId: dto.assignedBrokerId || "broker_ade",
+            actorType: "user",
+            action: "appointment:confirmed",
+            resource: "appointment",
+            metadata: {
+              appointmentId: aptId,
+              propertyTitle,
+              startTime: startTime.toISOString(),
+              calendarProvider: calendarSync.provider,
+              referenceCode,
+            },
+          });
+          this.logger.log(`[Audit Log] Recorded 'appointment:confirmed' for [${aptId}]`);
+        } catch (auditErr) {
+          this.logger.warn(`Could not write audit log: ${(auditErr as Error).message}`);
+        }
       } catch (err) {
         this.logger.warn(`Could not persist appointment to DB (isolated test workspace): ${(err as Error).message}`);
       }
@@ -278,21 +407,23 @@ export class AppointmentsService {
       workspaceId: wsId,
       leadId: dto.leadId,
       leadName,
-      leadPhone: (dto as any).leadPhone || "+234 803 999 8877",
+      leadPhone: identity.leadPhone,
       propertyId: dto.propertyId,
       propertyTitle,
-      propertyLocation: dto.location || "Banana Island, Lagos",
+      propertyLocation: identity.location,
       assignedBrokerId: dto.assignedBrokerId || "broker_ade",
       assignedBrokerName: "Ade Admin (Senior Luxury Closer)",
       startTime: startTime.toISOString(),
       endTime: endTime.toISOString(),
       status: "confirmed",
       meetingType: dto.meetingType || "in_person_viewing",
-      location: dto.location || "Banana Island, Ikoyi",
+      location: identity.location,
       notes: dto.notes,
       calendarEventId: calendarSync.calendarEventId,
       calendarProvider: calendarSync.provider,
       meetingUrl: calendarSync.meetingLink,
+      referenceCode,
+      shareableSummary,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
@@ -412,5 +543,144 @@ export class AppointmentsService {
       token: tokenResp,
       connections,
     };
+  }
+
+  private isUuid(value?: string): boolean {
+    return !!value && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
+  }
+
+  /**
+   * Prefer the booked lead and property records over placeholder names.
+   */
+  private async resolveBookingIdentity(
+    workspaceId: string,
+    dto: CreateAppointmentDto
+  ): Promise<{ leadName: string; leadPhone: string; leadEmail?: string; propertyTitle: string; location: string }> {
+    let leadName = dto.leadName?.trim() || "";
+    let leadPhone = dto.leadPhone?.trim() || "";
+    let leadEmail = dto.leadEmail?.trim() || undefined;
+    let propertyTitle = dto.propertyTitle?.trim() || "";
+    let location = dto.location?.trim() || "";
+
+    if (this.db && this.isUuid(dto.leadId)) {
+      const [lead] = await this.db
+        .select({
+          name: schema.leads.name,
+          phone: schema.leads.phone,
+          email: schema.leads.email,
+          locationPreference: schema.leads.locationPreference,
+        })
+        .from(schema.leads)
+        .where(and(eq(schema.leads.id, dto.leadId), eq(schema.leads.workspaceId, workspaceId)))
+        .limit(1);
+      if (lead) {
+        leadName = leadName || lead.name;
+        leadPhone = leadPhone || lead.phone;
+        leadEmail = leadEmail || lead.email || undefined;
+        location = location || lead.locationPreference || "";
+      }
+    }
+
+    if (this.db && this.isUuid(dto.propertyId)) {
+      const [property] = await this.db
+        .select({
+          title: schema.properties.title,
+          location: schema.properties.location,
+        })
+        .from(schema.properties)
+        .where(and(eq(schema.properties.id, dto.propertyId), eq(schema.properties.workspaceId, workspaceId)))
+        .limit(1);
+      if (property) {
+        propertyTitle = propertyTitle || property.title;
+        location = location || property.location;
+      }
+    }
+
+    return {
+      leadName: leadName || "Prospect",
+      leadPhone,
+      leadEmail,
+      propertyTitle: propertyTitle || "Property inspection",
+      location: location || "Lagos, Nigeria",
+    };
+  }
+
+  /**
+   * A confirmed viewing ends autonomous outreach for that lead.
+   * Pending follow-ups are cancelled. Chat and outbound calls then refuse the lead.
+   */
+  private async stopAgentAfterConfirmedViewing(input: {
+    workspaceId: string;
+    leadId?: string;
+    appointmentId: string;
+    referenceCode: string;
+    propertyTitle: string;
+    startTime: Date;
+    actorId: string;
+  }): Promise<void> {
+    if (!this.db || !this.isUuid(input.leadId)) return;
+
+    try {
+      const [lead] = await this.db
+        .select({ id: schema.leads.id, status: schema.leads.status })
+        .from(schema.leads)
+        .where(and(eq(schema.leads.id, input.leadId!), eq(schema.leads.workspaceId, input.workspaceId)))
+        .limit(1);
+
+      if (!lead) return;
+
+      const reason = `Viewing booked for ${input.propertyTitle}. Ref #${input.referenceCode}.`;
+
+      await this.db
+        .update(schema.leads)
+        .set({
+          status: "Viewing Booked",
+          isAiStopped: true,
+          aiStoppedReason: reason,
+          nextAction: `Host the confirmed inspection. Ref #${input.referenceCode}.`,
+          updatedAt: new Date(),
+        })
+        .where(and(eq(schema.leads.id, input.leadId!), eq(schema.leads.workspaceId, input.workspaceId)));
+
+      await this.db
+        .update(schema.followUps)
+        .set({
+          status: "cancelled",
+          notes: `Cancelled because a viewing was booked (${input.referenceCode}).`,
+          updatedAt: new Date(),
+        })
+        .where(
+          and(
+            eq(schema.followUps.leadId, input.leadId!),
+            eq(schema.followUps.workspaceId, input.workspaceId),
+            eq(schema.followUps.status, "pending")
+          )
+        );
+
+      await this.db.insert(schema.leadEvents).values({
+        leadId: input.leadId!,
+        workspaceId: input.workspaceId,
+        type: "viewing_scheduled",
+        title: "Viewing booked — AI stopped",
+        description: `${reason} Previous status was '${lead.status}'.`,
+        channel: "calendar",
+        actorType: "system",
+        actorId: input.actorId,
+        metadata: {
+          appointmentId: input.appointmentId,
+          referenceCode: input.referenceCode,
+          previousStatus: lead.status,
+          startTime: input.startTime.toISOString(),
+        },
+      });
+
+      this.logger.log(
+        `[AI Stop] Lead [${input.leadId}] set to Viewing Booked after appointment [${input.appointmentId}].`
+      );
+    } catch (err) {
+      this.logger.warn(
+        `Viewing was saved but the lead could not be moved to Viewing Booked: ${(err as Error).message}`
+      );
+    }
   }
 }

@@ -67,14 +67,24 @@ export class CallsService {
       });
     }
 
-    // Strict Pre-Action Communication State Guard (Day 13)
-    if (lead.managementMode === "human_managed" || lead.isAiStopped) {
+    // Strict Pre-Action Communication State Guard (Day 13 + Day 17 viewing lock)
+    if (
+      lead.managementMode === "human_managed" ||
+      lead.isAiStopped ||
+      lead.status === "Viewing Booked"
+    ) {
+      const viewingBooked = lead.status === "Viewing Booked";
       this.logger.warn(
-        `InitiateCall blocked: Lead '${lead.name}' is in '${lead.managementMode}' mode (AI Stopped: ${lead.isAiStopped}). Autonomous calls forbidden.`
+        `InitiateCall blocked: Lead '${lead.name}' is in '${lead.managementMode}' mode (AI Stopped: ${lead.isAiStopped}, status: ${lead.status}). Autonomous calls forbidden.`
       );
       throw new BadRequestException({
-        code: "LEAD_HUMAN_MANAGED",
-        message: `Cannot initiate autonomous AI call: Lead '${lead.name}' is under direct human broker management.`,
+        code: lead.managementMode === "human_managed" ? "LEAD_HUMAN_MANAGED" : "LEAD_AI_STOPPED",
+        message:
+          lead.managementMode === "human_managed"
+            ? `Cannot initiate autonomous AI call: Lead '${lead.name}' is under direct human broker management.`
+            : viewingBooked
+              ? `Cannot initiate autonomous AI call: a viewing is already booked for '${lead.name}'.`
+              : `Cannot initiate autonomous AI call: AI is stopped for '${lead.name}'.`,
       });
     }
 

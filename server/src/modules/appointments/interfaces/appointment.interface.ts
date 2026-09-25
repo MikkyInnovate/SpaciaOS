@@ -50,6 +50,8 @@ export interface AppointmentEntity {
   meetingUrl?: string;
   calendarEventId?: string;
   calendarProvider?: CalendarProviderType;
+  referenceCode?: string;
+  shareableSummary?: string;
   cancelledReason?: string;
   rescheduledFromId?: string;
   createdAt: string;
