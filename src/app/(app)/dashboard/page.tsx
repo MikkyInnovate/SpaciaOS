@@ -37,7 +37,6 @@ import {
   Building2,
   Download,
   Loader2,
-  RefreshCw,
   X,
   ArrowUpRight,
 } from "lucide-react";
@@ -121,8 +120,15 @@ export default function DashboardPage() {
     }
   }, []);
 
+  // Initial load and automatic background polling every 10 seconds
   React.useEffect(() => {
     loadDashboardData();
+
+    const interval = setInterval(() => {
+      loadDashboardData(true);
+    }, 10000);
+
+    return () => clearInterval(interval);
   }, [loadDashboardData, currentWorkspace?.id]);
 
   const handleExport = () => {
@@ -179,17 +185,6 @@ export default function DashboardPage() {
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-600 shrink-0 animate-pulse" />
               <span>AI Core: Active</span>
             </div>
-
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => loadDashboardData(true)}
-              disabled={isRefreshing}
-              className="h-8 gap-1.5 text-xs text-stone-700 bg-white shadow-2xs whitespace-nowrap hover:bg-stone-50 cursor-pointer"
-            >
-              <RefreshCw className={`h-3.5 w-3.5 text-stone-400 shrink-0 ${isRefreshing ? "animate-spin" : ""}`} />
-              <span className="hidden sm:inline">Refresh</span>
-            </Button>
 
             <Button
               variant="outline"
