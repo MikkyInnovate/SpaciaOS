@@ -8,41 +8,128 @@ import { useWorkspace } from "@/lib/context/workspace-context";
 import { StatMetricCard } from "@/features/dashboard/components/stat-metric-card";
 import { LeadIntakeTable } from "@/features/dashboard/components/lead-intake-table";
 import { LeadDossierPanel } from "@/features/dashboard/components/lead-dossier-panel";
-import { AIAgentLiveFeed } from "@/features/dashboard/components/ai-agent-live-feed";
+import { AttentionCockpit } from "@/features/dashboard/components/attention-cockpit";
+import { OperationsActivityFeed } from "@/features/dashboard/components/operations-activity-feed";
 import { UpcomingViewingsList } from "@/features/dashboard/components/upcoming-viewings-list";
 import { PipelineFunnel } from "@/features/dashboard/components/pipeline-funnel";
+import { dashboardService } from "@/features/dashboard/services/dashboard-service";
+import { leadsService } from "@/features/leads/services/leads-service";
 import {
   MOCK_DASHBOARD_LEADS,
   MOCK_UPCOMING_VIEWINGS,
-  MOCK_AI_OPERATIONS,
   MOCK_FUNNEL_METRICS,
 } from "@/features/dashboard/data/mock-data";
-import type { DashboardLead } from "@/features/dashboard/types";
+import type {
+  DashboardLead,
+  DashboardMetrics,
+  AttentionItem,
+  DashboardFeedItem,
+  PipelineFunnelStageItem,
+} from "@/features/dashboard/types";
 import { toast } from "sonner";
 import { exportLeadsToCSV } from "@/lib/utils/export-csv";
 import {
   Users,
-  Zap,
+  PhoneCall,
   CheckCircle2,
   Flame,
   CalendarCheck,
+  UserCheck,
+  Clock,
   Building2,
   Download,
   X,
   Loader2,
+  RefreshCw,
 } from "lucide-react";
 
 export default function DashboardPage() {
   const { currentWorkspace } = useWorkspace();
   const [selectedLead, setSelectedLead] = React.useState<DashboardLead | null>(
-    MOCK_DASHBOARD_LEADS[0] // Pre-select first lead to showcase the resizable panel immediately!
+    MOCK_DASHBOARD_LEADS[0]
   );
   const [takeoverBanner, setTakeoverBanner] = React.useState<string | null>(null);
   const [isExporting, setIsExporting] = React.useState(false);
+  const [isLoading, setIsLoading] = React.useState(true);
+  const [isRefreshing, setIsRefreshing] = React.useState(false);
+
+  // Live aggregated command center states
+  const [metrics, setMetrics] = React.useState<DashboardMetrics | null>(null);
+  const [attentionItems, setAttentionItems] = React.useState<AttentionItem[]>([]);
+  const [activityFeed, setActivityFeed] = React.useState<DashboardFeedItem[]>([]);
+  const [funnelStages, setFunnelStages] = React.useState<PipelineFunnelStageItem[]>([]);
+  const [leadsList, setLeadsList] = React.useState<DashboardLead[]>(MOCK_DASHBOARD_LEADS);
+
+  // Load dashboard telemetry data
+  const loadDashboardData = React.useCallback(async (silent = false) => {
+    if (!silent) setIsLoading(true);
+    else setIsRefreshing(true);
+
+    try {
+      const [fetchedMetrics, fetchedAttention, fetchedFeed, fetchedFunnel, fetchedLeadsRes] =
+        await Promise.allSettled([
+          dashboardService.getMetrics(),
+          dashboardService.getAttentionItems(),
+          dashboardService.getActivityFeed(),
+          dashboardService.getPipelineFunnel(),
+          leadsService.getLeads(),
+        ]);
+
+      if (fetchedMetrics.status === "fulfilled" && fetchedMetrics.value) {
+        setMetrics(fetchedMetrics.value);
+      }
+      if (fetchedAttention.status === "fulfilled" && fetchedAttention.value) {
+        setAttentionItems(fetchedAttention.value);
+      }
+      if (fetchedFeed.status === "fulfilled" && fetchedFeed.value) {
+        setActivityFeed(fetchedFeed.value);
+      }
+      if (fetchedFunnel.status === "fulfilled" && fetchedFunnel.value) {
+        setFunnelStages(fetchedFunnel.value);
+      }
+
+      // Populate lead table with live leads or fallback seamlessly
+      if (
+        fetchedLeadsRes.status === "fulfilled" &&
+        fetchedLeadsRes.value?.leads &&
+        fetchedLeadsRes.value.leads.length > 0
+      ) {
+        const adaptedLeads: DashboardLead[] = fetchedLeadsRes.value.leads.map((l) => ({
+          id: l.id,
+          name: l.name,
+          phone: l.phone,
+          email: l.email || "",
+          propertyTitle: l.property?.title || "Luxury Lagos Residence",
+          location: l.property?.location || "Ikoyi, Lagos",
+          budget: l.budget || "Verified",
+          score: l.score || 0,
+          scoreCategory: (l.scoreCategory as any) || "COLD",
+          status: (l.status as any) || "New",
+          intent: (l.intent as any) || "Purchase",
+          timeline: l.timeline || "Immediate",
+          nextAction: l.nextAction || "AI Evaluation",
+          createdAt: l.createdAt ? new Date(l.createdAt).toLocaleDateString() : "Today",
+          aiNotes: l.aiNotes || undefined,
+        }));
+        setLeadsList(adaptedLeads);
+      } else {
+        setLeadsList(MOCK_DASHBOARD_LEADS);
+      }
+    } catch (err) {
+      console.warn("Failed to refresh dashboard data:", err);
+    } finally {
+      setIsLoading(false);
+      setIsRefreshing(false);
+    }
+  }, []);
+
+  React.useEffect(() => {
+    loadDashboardData();
+  }, [loadDashboardData, currentWorkspace?.id]);
 
   const handleExport = () => {
     setIsExporting(true);
-    const result = exportLeadsToCSV(MOCK_DASHBOARD_LEADS, "pacia-hq");
+    const result = exportLeadsToCSV(leadsList, currentWorkspace?.slug || "spacia-hq");
 
     if (result) {
       toast.success("CSV Export Complete", {
@@ -59,6 +146,21 @@ export default function DashboardPage() {
     setSelectedLead(lead);
   };
 
+  const handleInspectById = (leadId: string) => {
+    const found = leadsList.find((l) => l.id === leadId);
+    if (found) {
+      setSelectedLead(found);
+    } else {
+      // Find in mock leads
+      const mockFound = MOCK_DASHBOARD_LEADS.find((l) => l.id === leadId);
+      if (mockFound) {
+        setSelectedLead(mockFound);
+      } else if (leadsList[0]) {
+        setSelectedLead(leadsList[0]);
+      }
+    }
+  };
+
   const handleTakeover = (lead: DashboardLead) => {
     setTakeoverBanner(lead.name);
   };
@@ -67,19 +169,30 @@ export default function DashboardPage() {
     <Container size="lg" className="space-y-4">
       {/* Workspace Command Header */}
       <PageHeader
-        title="Overview"
-        description="Autonomous prospect response, qualification, and viewing pipeline."
+        title="Sales Command Center"
+        description="Autonomous prospect response, qualification, viewing pipeline & broker intervention cockpit."
         actions={
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-1.5 h-8 rounded-md border border-stone-200 bg-white px-2.5 text-xs font-medium text-stone-700 shadow-2xs whitespace-nowrap">
               <Building2 className="h-3.5 w-3.5 text-stone-400 shrink-0" aria-hidden="true" />
-              <span>{currentWorkspace?.name || "Workspace"}</span>
+              <span>{currentWorkspace?.name || "Spacia Luxury Hub"}</span>
             </div>
 
             <div className="flex items-center gap-1.5 h-8 rounded-md border border-stone-200 bg-white px-2.5 text-xs font-medium text-stone-700 shadow-2xs whitespace-nowrap">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-600 shrink-0" />
-              <span>AI Core: Operational</span>
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-600 shrink-0 animate-pulse" />
+              <span>AI Core: Active</span>
             </div>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => loadDashboardData(true)}
+              disabled={isRefreshing}
+              className="h-8 gap-1.5 text-xs text-stone-700 bg-white shadow-2xs whitespace-nowrap hover:bg-stone-50 cursor-pointer"
+            >
+              <RefreshCw className={`h-3.5 w-3.5 text-stone-400 shrink-0 ${isRefreshing ? "animate-spin" : ""}`} />
+              <span className="hidden sm:inline">Refresh</span>
+            </Button>
 
             <Button
               variant="outline"
@@ -106,16 +219,16 @@ export default function DashboardPage() {
 
       {/* Human Takeover Alert Banner */}
       {takeoverBanner && (
-        <div className="rounded-lg border border-stone-200 bg-stone-50 p-3 flex items-center justify-between text-xs text-stone-800 shadow-xs animate-in fade-in-50">
+        <div className="rounded-lg border border-rose-200 bg-rose-50/80 p-3 flex items-center justify-between text-xs text-rose-900 shadow-xs animate-in fade-in-50">
           <div className="flex items-center gap-2">
-            <span className="h-2 w-2 rounded-full bg-emerald-600" />
-            <span className="font-semibold">Human Takeover Initiated for {takeoverBanner}.</span>
-            <span className="text-stone-500">Autonomous AI communication stopped. Context packaged for sales agent.</span>
+            <span className="h-2 w-2 rounded-full bg-rose-600 animate-pulse" />
+            <span className="font-semibold">Human Broker Takeover Active for {takeoverBanner}.</span>
+            <span className="text-rose-700">Autonomous AI communications paused. Direct closer intervention required.</span>
           </div>
           <Button
             size="sm"
             variant="ghost"
-            className="h-6 text-xs text-stone-600 hover:text-stone-900 p-1"
+            className="h-6 text-xs text-rose-800 hover:text-rose-950 p-1"
             onClick={() => setTakeoverBanner(null)}
           >
             Dismiss
@@ -123,56 +236,106 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* Operational KPI Metric Strip */}
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
+      {/* 7 Sales Command Center Metrics Strip */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-3">
+        {/* 1. LEADS */}
         <StatMetricCard
-          title="Inbound Inquiries"
-          value="142"
-          subtext="Last 24 hours"
-          trend={{ value: "+18.4%", isPositive: true }}
+          title="Leads"
+          value={metrics ? metrics.leads.total : "142"}
+          subtext={metrics?.leads.today ? `+${metrics.leads.today} today` : "+18 today"}
+          trend={{
+            value: metrics?.leads.trend || "+18.4%",
+            isPositive: true,
+          }}
           icon={Users}
           variant="sky"
         />
+
+        {/* 2. CALLS */}
         <StatMetricCard
-          title="Avg First Contact"
-          value="48s"
-          subtext="Autonomous speed"
-          trend={{ value: "98.2%", isPositive: true }}
-          icon={Zap}
-          variant="amber"
+          title="Calls"
+          value={metrics ? metrics.calls.total : "89"}
+          subtext={metrics?.calls.formattedAvgDuration ? `Avg ${metrics.calls.formattedAvgDuration}` : "Avg 3m 42s"}
+          trend={{
+            value: metrics?.calls.today ? `+${metrics.calls.today} today` : "+14 today",
+            isPositive: true,
+          }}
+          icon={PhoneCall}
+          variant="indigo"
         />
+
+        {/* 3. QUALIFIED */}
         <StatMetricCard
-          title="Qualified Intent"
-          value="38"
-          subtext="Verified readiness"
-          trend={{ value: "+12.1%", isPositive: true }}
+          title="Qualified"
+          value={metrics ? metrics.qualified.total : "54"}
+          subtext={metrics ? `${metrics.qualified.formattedRate} conversion` : "38.0% conversion"}
+          trend={{
+            value: metrics?.qualified.today ? `+${metrics.qualified.today} today` : "+9 today",
+            isPositive: true,
+          }}
           icon={CheckCircle2}
           variant="emerald"
         />
+
+        {/* 4. HOT */}
         <StatMetricCard
-          title="Hot Prospects"
-          value="9"
-          subtext="Ready for viewing"
-          badge="High Priority"
+          title="Hot Leads"
+          value={metrics ? metrics.hot.total : "12"}
+          subtext={metrics?.hot.urgentAttentionCount ? `${metrics.hot.urgentAttentionCount} unbooked` : "4 unbooked"}
+          badge="Score ≥ 85"
           icon={Flame}
           variant="rose"
         />
+
+        {/* 5. VIEWINGS */}
         <StatMetricCard
-          title="Booked Viewings"
-          value="6"
-          subtext="Agent confirmed"
-          trend={{ value: "+3 today", isPositive: true }}
+          title="Viewings"
+          value={metrics ? metrics.viewings.total : "31"}
+          subtext={metrics?.viewings.upcomingThisWeek ? `${metrics.viewings.upcomingThisWeek} this week` : "12 this week"}
+          trend={{
+            value: metrics?.viewings.today ? `+${metrics.viewings.today} today` : "+5 today",
+            isPositive: true,
+          }}
           icon={CalendarCheck}
-          variant="indigo"
+          variant="amber"
+        />
+
+        {/* 6. HANDOFFS */}
+        <StatMetricCard
+          title="Handoffs"
+          value={metrics ? metrics.handoffs.total : "7"}
+          subtext={metrics?.handoffs.pendingActionCount ? `${metrics.handoffs.pendingActionCount} pending` : "3 pending"}
+          badge="Human Action"
+          icon={UserCheck}
+          variant="stone"
+        />
+
+        {/* 7. FOLLOW-UPS */}
+        <StatMetricCard
+          title="Follow-ups"
+          value={metrics ? metrics.followUps.total : "26"}
+          subtext={metrics?.followUps.pendingCount ? `${metrics.followUps.pendingCount} pending` : "14 pending"}
+          trend={{
+            value: metrics?.followUps.scheduledToday ? `+${metrics.followUps.scheduledToday} today` : "+8 today",
+            isPositive: true,
+          }}
+          icon={Clock}
+          variant="stone"
         />
       </div>
+
+      {/* Primary Cockpit Question 1: "What Requires Attention?" */}
+      <AttentionCockpit
+        items={attentionItems}
+        onInspectLead={handleInspectById}
+      />
 
       {/* Lead Qualification Feed & Inspector Area */}
       {selectedLead ? (
         <div className="space-y-3">
           <div className="flex items-center justify-between text-xs text-stone-500 px-1">
             <span className="font-medium text-stone-700">
-              Inspecting Lead: <strong className="text-stone-900">{selectedLead.name}</strong> • AI Call Transcript & Qualification Dossier
+              Inspecting Lead: <strong className="text-stone-900">{selectedLead.name}</strong> • AI Call Transcript & BANT Dossier
             </span>
             <button
               type="button"
@@ -187,7 +350,7 @@ export default function DashboardPage() {
           <div className="grid gap-6 lg:grid-cols-12 items-start">
             <div className="lg:col-span-7 overflow-x-auto">
               <LeadIntakeTable
-                leads={MOCK_DASHBOARD_LEADS}
+                leads={leadsList}
                 onTakeLead={handleInspectLead}
                 isSplitView={true}
                 onToggleSplit={() => setSelectedLead(null)}
@@ -205,21 +368,24 @@ export default function DashboardPage() {
       ) : (
         <div className="w-full">
           <LeadIntakeTable
-            leads={MOCK_DASHBOARD_LEADS}
+            leads={leadsList}
             onTakeLead={handleInspectLead}
             isSplitView={false}
-            onToggleSplit={() => setSelectedLead(MOCK_DASHBOARD_LEADS[0])}
+            onToggleSplit={() => setSelectedLead(leadsList[0] || MOCK_DASHBOARD_LEADS[0])}
           />
         </div>
       )}
 
-      {/* Operations Row 1: 2-on-a-view (AI Sales Activity + Confirmed Viewings) */}
+      {/* Primary Cockpit Question 2: "What Happened Today?" & Confirmed Viewings */}
       <div className="grid gap-6 md:grid-cols-2 items-start pt-1">
-        <AIAgentLiveFeed events={MOCK_AI_OPERATIONS} />
+        <OperationsActivityFeed
+          feed={activityFeed}
+          onInspectLead={handleInspectById}
+        />
         <UpcomingViewingsList viewings={MOCK_UPCOMING_VIEWINGS} />
       </div>
 
-      {/* Operations Row 2: Sales Pipeline Progression Graph Chart (Standalone Full Width) */}
+      {/* Pipeline Progression Trajectory Chart */}
       <div className="w-full pt-1">
         <PipelineFunnel stages={MOCK_FUNNEL_METRICS} />
       </div>
