@@ -31,6 +31,7 @@ export interface AppointmentEntity {
   leadId: string;
   leadName: string;
   leadPhone: string;
+  leadEmail?: string;
   leadScore?: number;
   leadScoreCategory?: "HOT" | "WARM" | "COLD";
   propertyId: string;

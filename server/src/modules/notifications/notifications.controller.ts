@@ -48,28 +48,37 @@ export class NotificationsController {
   async triggerReminder(
     @CurrentTenant() tenant: TenantContext,
     @Param("id") appointmentId: string,
-    @Body("window") window?: "24h" | "1h"
+    @Body()
+    body?: {
+      window?: "24h" | "1h";
+      leadName?: string;
+      leadEmail?: string;
+      propertyTitle?: string;
+      propertyLocation?: string;
+      scheduledStartAt?: string;
+    }
   ) {
     const wsId = tenant.workspaceId || "default";
-    // Construct reminder
+    const window = body?.window || "24h";
+    const cleanRef = appointmentId.replace(/[^a-zA-Z0-9]/g, "").slice(-6).toUpperCase();
     const result = await this.notificationsService.sendProspectViewingReminder(wsId, {
       appointmentId,
-      referenceCode: `SP-BK-${appointmentId.slice(-6).toUpperCase()}`,
-      leadName: "VIP Client",
-      leadEmail: "client@spacia.io",
-      propertyTitle: "Luxury Waterfront Villa",
-      propertyLocation: "Banana Island, Ikoyi, Lagos",
-      scheduledStartAt: new Date(Date.now() + 86400000).toISOString(),
+      referenceCode: `SP-BK-${cleanRef || "VIP001"}`,
+      leadName: body?.leadName || "VIP Client",
+      leadEmail: body?.leadEmail || "client@spacia.io",
+      propertyTitle: body?.propertyTitle || "Luxury Waterfront Villa",
+      propertyLocation: body?.propertyLocation || "Banana Island, Ikoyi, Lagos",
+      scheduledStartAt: body?.scheduledStartAt || new Date(Date.now() + 86400000).toISOString(),
       scheduledEndAt: new Date(Date.now() + 86400000 + 3600000).toISOString(),
       meetingType: "in_person_viewing",
       assignedBrokerName: "Ade Admin (Senior Luxury Closer)",
-      reminderWindow: window || "24h",
+      reminderWindow: window,
       gatePassCode: "BI-9942-VIP",
     });
 
     return {
       success: true,
-      message: `Viewing reminder (${window || "24h"}) dispatched successfully via Resend`,
+      message: `Viewing reminder (${window}) dispatched successfully via Resend`,
       notification: result,
     };
   }
