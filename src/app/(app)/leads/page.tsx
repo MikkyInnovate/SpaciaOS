@@ -267,9 +267,8 @@ export default function LeadsPage() {
   };
 
   return (
-    <div className="flex flex-col min-h-full pb-12 bg-[#fbfbfa]">
-      <Container className="space-y-6 pt-6">
-        {/* Page Header */}
+    <Container size="lg" className="space-y-4 pb-12">
+      {/* Page Header */}
         <PageHeader
           title="Lead Management"
           description={
@@ -363,6 +362,5 @@ export default function LeadsPage() {
           }}
         />
       </Container>
-    </div>
   );
 }

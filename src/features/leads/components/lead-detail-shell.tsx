@@ -765,10 +765,8 @@ export function LeadDetailShell({
           leadPhone={lead.phone}
           propertyId={lead.propertyId || "prop_default"}
           propertyTitle={lead.propertyTitle}
-          onBookingSuccess={(newApt) => {
-            toast.success("Inspection Confirmed", {
-              description: `Viewing scheduled for ${newApt.propertyTitle} on ${new Date(newApt.startTime).toLocaleDateString()}.`,
-            });
+          onBookingSuccess={(_newApt) => {
+            // Handled with Booking Successful toast in BookInspectionModal
           }}
         />
       )}

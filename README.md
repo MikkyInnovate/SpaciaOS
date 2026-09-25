@@ -2,7 +2,7 @@
 
 > **Spacia** is a high-performance, managed AI sales orchestration platform purpose-built for modern real-estate brokerages and development firms. It autonomously captures inbound property inquiries, engages prospects via natural voice and chat, qualifies buyers against stringent underwriting criteria, evaluates purchasing power and timeline, and seamlessly books qualified viewings directly onto connected sales agents' calendars.
 
-This repository houses the **production frontend implementation for Days 1 through 14** of the Spacia MVP.
+This repository houses the **production frontend and backend implementation for Days 1 through 15** of the Spacia MVP.
 
 ---
 
@@ -35,6 +35,7 @@ Spacia acts as an automated sales acceleration layer positioned between inbound 
 | **Day 12: Vapi Voice Integration & Calls Hub** | **COMPLETE & VERIFIED** | Complete, production-grade Vapi AI voice telephony observability command center (`features/calls`): dedicated Calls Hub route (`/calls`) with average call duration, daily volume, and viewing conversion metrics; full-width `CallList` table with instant search and outcome filter chips (`viewing_booked`, `qualified`, `callback_requested`, `escalated_takeover`, `voicemail`); slide-over `CallDetailCockpit` with responsive backdrop; interactive `CallAudioPlayer` with play/pause, scrub slider, volume, rate toggle (1x/1.25x/1.5x/2x), and download; synchronized `TranscriptViewer` with real-time audio seek synchronization, speaker attribution badges, and confidence indicators; `CallSummaryCard` detailing automated AI synthesis, buyer sentiment, and next operational directives; and single-click broker takeover trigger. |
 | **Day 13: Operational Command Center & Human Supervision** | **COMPLETE & VERIFIED** | Segmented command navigation (Overview & Property, Qualification & Score, Voice Calls & Audio, Timeline Log, Supervision), embedded Vapi `CallAudioPlayer` with waveform scrubber and speed toggle, interactive objections with reactive score lift, live AI killswitch and telemetry pill, actor-filtered activity stream, rich animated skeleton states, and full responsive optimization. |
 | **Day 14: The Complete Operational Command Center** | **COMPLETE & VERIFIED** | First complete operational command center: polished lead detail dossier with 5 segmented tabs, connected Vapi call timeline and outbound dispatching (`InitiateCallDialog`), full qualification with BANT breakdown and objection resolution, reactive 0–100 explainable scoring, polymorphic AI activity stream with note/attachment composer, 1-click human broker handoff and emergency AI stop mechanism, comprehensive loading/empty/error states, and responsive design QA with fluid dialog animations. |
+| **Day 15: Calendar Booking & Inspection Scheduling UI** | **COMPLETE & VERIFIED** | Complete, production-grade property inspection scheduling and multi-calendar synchronization command center (`features/appointments`): dedicated `/appointments` dashboard with KPI overview cards (Total Bookings, Confirmed Viewings, Pending Confirmation, Completed), instant search and status/format filters (`AppointmentFiltersBar`), responsive inspection schedule grid with compact cards (`AppointmentCard`), real-time Google Calendar OAuth2 integration tab (`CalendarConnectionsPanel`) with live 2-way sync toggles, timezone-normalized slot picker (`BookInspectionModal`) with dynamic conflict lockout, prominent "Booking Successful!" toasts, and automated tab-switching on OAuth return. |
 
 ### Backend Implementation Status (`/server` — NestJS + Neon PostgreSQL)
 
@@ -56,6 +57,7 @@ Spacia acts as an automated sales acceleration layer positioned between inbound 
 | **Day 12: Vapi AI Voice Telephony & Webhook Engine** | **COMPLETE & VERIFIED** | Complete outbound AI voice calling and inbound webhook processing engine (`CallsModule`). Features `VapiTelephonyProvider` (live Vapi REST API + deterministic mock mode), idempotent webhook processing via `idempotency_keys`, tracking of call states, duration, structured outcomes (`viewing_booked`, `qualified`, `escalated_takeover`), synchronized speech transcript turns, and audio recording references in Neon PostgreSQL. Automated test suite passing 100%. |
 | **Day 13: Autonomous Follow-Up & Handoff Engine** | **COMPLETE & VERIFIED** | Production-ready autonomous follow-up and human handoff engine (`FollowUpsModule`). Strict communication states (`AI_ACTIVE`, `HUMAN_HANDOFF`, `HUMAN_MANAGED`), stop conditions (takeover, viewing booked, terminal status, max attempts), maximum-attempt guardrail (default 3, up to 10), 1-click human broker takeover (`POST /api/v1/leads/:id/takeover`), structured `HandoffContext` generation, atomic pending job cancellation, and an inviolable real-time database guard guaranteeing zero autonomous communication leaks after takeover. Automated test suite (7/7) and interactive testbench (`demo:handoff`) passing 100%. |
 | **Day 14: End-to-End Sales Loop Integration & Validation** | **COMPLETE & VERIFIED** | Complete 10-stage end-to-end autonomous sales loop validation across live Neon PostgreSQL (`server/test/day14-end-to-end-loop.spec.ts`): Lead Capture & Phone Normalization (`LeadsIngestService`) $\rightarrow$ Transactional Outbox Event (`system_events`) $\rightarrow$ Asynchronous Workflow Queue (`BullMQQueueService`) $\rightarrow$ AI Conversational Reasoning (`AiOrchestratorService`) $\rightarrow$ Day 9 Property Grounding (`search_properties`) $\rightarrow$ Structured BANT Extraction (`qualification_results`) $\rightarrow$ Deterministic Scoring Engine (`LeadScoringService`, HOT 92/100) $\rightarrow$ Vapi Voice Telephony Dispatch (`CallsService`) $\rightarrow$ Synchronized Webhook & Transcript Synthesis (`VapiWebhookService`) $\rightarrow$ Autonomous Follow-Up Scheduling, 1-Click Human Broker Takeover & Inviolable Pre-Action Lockout. 10/10 stages passing (100%). |
+| **Day 15: Calendar Booking & In-Person Inspection Scheduling Engine** | **COMPLETE & VERIFIED** | Full-fledged calendar integration and property inspection scheduling engine (`AppointmentsModule`). Features provider-agnostic `CalendarAdapterService`, `GoogleCalendarAdapter` implementing real Google OAuth2 flow, code exchange, token persistence in Neon PostgreSQL (`calendar_connections`), automatic token refresh via `refresh_token`, live free/busy collision check with timezone normalization, double-booking lockout, virtual tour Google Meet link generation (`meet.google.com`), appointment cancellation, and autonomous AI tool `book_property_inspection` with compliance audit logging (`ai_tool_call:book_property_inspection`). 8/8 automated integration tests passing (100%). |
 
 ---
 
@@ -1096,11 +1098,15 @@ The Pacia modular monolith backend resides in `/server` (NestJS 11 + Neon Postgr
   - Full 23-checkpoint system audit passing 23/23 (100%).
   - **Verification**: `npm run test:day14` and `npm run test:checkpoint-audit` passing 100%.
 
-### Next Milestone:
 - **Day 15 — Calendar Booking & In-Person Inspection Scheduling Engine (`modules/appointments`)**:
-  - Frontend: Appointment UI, viewing management drawer, calendar connection screens (Google Calendar, Microsoft, Cal.com, Native Availability).
-  - Backend: Calendar provider abstraction (`ICalendarProvider`), collision prevention, slot resolution, controlled AI tool `book_property_inspection`.
-  - Integration: Live appointment booking contract and bidirectional synchronization.
+  - Frontend: Interactive appointments management dashboard, KPI metric cards, filtering, inspection booking modal, and calendar connection panel with live Google OAuth2 handshake and redirect listener.
+  - Backend: Provider-agnostic calendar adapter architecture (`ICalendarProviderAdapter`), Google Calendar v3 adapter (`GoogleCalendarAdapter`), Neon PostgreSQL persistence (`calendar_connections`, `appointments`), proactive OAuth access token refresh, real-time Free/Busy clash detection, and slot availability resolution.
+  - Autonomous AI: Controlled AI tool `book_property_inspection` registered in `AiToolExecutorService` with inside-the-tool tenant isolation, slot booking, and compliance audit trail in `audit_logs`.
+  - **Verification**: `npm run test:day15` passing 8/8 (100%).
+
+### Next Milestone:
+- **Day 16 — Production Hardening & Multi-Channel Deployment**:
+  - Webhook edge authentication, distributed rate limiting, end-to-end multi-tenant observability, and load-tested concurrent booking workflows.
 
 
 

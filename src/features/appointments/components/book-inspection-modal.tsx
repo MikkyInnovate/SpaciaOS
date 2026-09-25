@@ -151,9 +151,10 @@ export function BookInspectionModal({
       };
 
       const newApt = await appointmentsService.createAppointment(payload);
-      toast.success(
-        `Inspection scheduled with ${activeLead.name} for ${new Date(chosenSlot.startTime).toLocaleDateString()}!`
-      );
+      toast.success("Booking Successful!", {
+        description: `Property inspection scheduled with ${activeLead.name} for ${new Date(chosenSlot.startTime).toLocaleDateString()} (${chosenSlot.formattedTime || "Scheduled viewing"}).`,
+        duration: 5000,
+      });
       onBookingSuccess?.(newApt);
       onOpenChange(false);
     } catch (err: any) {

@@ -86,6 +86,23 @@ export default function RootLayout({
         className={`${inter.variable} ${manrope.variable} h-full antialiased`}
         suppressHydrationWarning
       >
+        <head>
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `
+                if (typeof window !== 'undefined') {
+                  window.addEventListener('unhandledrejection', function(event) {
+                    var r = event.reason;
+                    if (r && (r.code === 'failed_to_load_clerk_js' || (typeof r.message === 'string' && r.message.indexOf('Failed to load Clerk JS') !== -1))) {
+                      event.preventDefault();
+                      console.warn('[SpaciaOS] Clerk JS was blocked by browser ad blocker or network policy. Continuing in resilient development mode.');
+                    }
+                  });
+                }
+              `,
+            }}
+          />
+        </head>
         <body className="min-h-full flex flex-col font-sans bg-background text-foreground selection:bg-stone-200 selection:text-stone-900">
           {children}
           <Toaster position="top-right" richColors />

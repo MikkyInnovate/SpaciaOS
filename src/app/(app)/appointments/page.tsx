@@ -55,6 +55,16 @@ export default function AppointmentsPage() {
     fetchAppointments();
   }, [fetchAppointments]);
 
+  // Auto-switch to connected calendars tab if OAuth parameters are detected in URL
+  React.useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("code") || params.get("calendar") || params.get("tab") === "calendars") {
+        setActiveTab("calendars");
+      }
+    }
+  }, []);
+
   const handleStatusChange = async (id: string, newStatus: any) => {
     const updated = await appointmentsService.updateStatus(id, newStatus);
     setAllAppointments((prev) =>
