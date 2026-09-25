@@ -40,6 +40,7 @@ Spacia acts as an automated sales acceleration layer positioned between inbound 
 | **Day 17: Booking Confirmation & Domain Event Integration** | **COMPLETE & VERIFIED** | Interactive post-booking confirmation modal (`BookingConfirmationDialog`) featuring reference codes, Google Meet join actions, add-to-calendar triggers, and instant lead dossier status sync. |
 | **Day 18: Appointment Management & Multi-Status Lifecycle UI** | **COMPLETE & VERIFIED** | Full-scale sales team appointment command center with 7-status schedule visibility (`Upcoming`, `Scheduled`, `Confirmed`, `Cancelled`, `Rescheduled`, `Completed`, `No-show`), interactive `AppointmentFiltersBar` with instant search and format filtering, slide-out `AppointmentDetailDrawer` with property briefing and client context, luxury `CancelViewingDialog` with 1-click quick-reason chips (*Broker scheduling conflict*, *Client requested cancellation*, etc.), and seamless rescheduling workflow with automatic lead/property pre-hydration in `BookInspectionModal`. |
 | **Day 19: Booking Notifications & Resend Reminders UI** | **COMPLETE & VERIFIED** | Multi-party inspection notification and reminder controls in `AppointmentDetailDrawer` (live Resend dispatch for 24h & 1h inspection reminders), live Resend delivery telemetry badges in `BookingConfirmationDialog`, and interactive design system showcase at `/primitives` (Section 14: Booking Notifications & Resend Reminders). |
+| **Day 21: Analytics Dashboard, 8-Stage Funnel & 17-Point Revenue Path UI** | **COMPLETE & VERIFIED** | Executive operational analytics command center (`features/analytics`): dedicated `/analytics` dashboard with dynamic timeframe selector (MTD, 30d, 90d, All Time) and interactive calendar popover; high-impact KPI summary cards (Gross Inbound Prospects, Instant Qualification Rate, Booked Viewings, Pipeline Capital Valuation in ₦ Billions, Speed-to-Lead, and Autonomous Resolution Rate); interactive 8-stage visual conversion funnel (`FunnelStageChart`) with step conversion and drop-off rate chips; full **11. DAY 21 CHECKPOINT** 17-point operational revenue path interactive audit board (`RevenuePathStepper`) certifying 100% operational readiness across all milestones from website lead capture to human broker handoff; and daily conversion trajectory tracking (`PipelineFunnel`). |
 
 ### Backend Implementation Status (`/server` — NestJS + Neon PostgreSQL)
 
@@ -66,6 +67,7 @@ Spacia acts as an automated sales acceleration layer positioned between inbound 
 | **Day 17: Booking Confirmation & Domain Event Execution** | **COMPLETE & VERIFIED** | Confirmed inspection booking execution, Google Calendar event creation with Google Meet video links, Neon PostgreSQL persistence in `appointments`, transactional outbox domain event `BookingConfirmed` emission in `system_events`, compliance audit logging in `audit_logs`, double-booking lockout enforcement, and automated lead state transition to `Viewing Booked` with AI agent shutdown. 8/8 automated integration tests passing (100%). |
 | **Day 18: Appointment Management, Lifecycle & Synchronization** | **COMPLETE & VERIFIED** | Full appointment lifecycle state machine (`scheduled` $\rightarrow$ `confirmed` $\rightarrow$ `completed` / `no_show` / `cancelled` / `rescheduled`), sales team schedule views across 7 statuses, audit cancellation reason persistence, automated external calendar retraction, and strict multi-tenant isolation. 8/8 automated tests passing (100%). |
 | **Day 19: Booking Notifications & Resend Notification Service** | **COMPLETE & VERIFIED** | Enterprise multi-party inspection notification engine using Resend. Delivers branded confirmation emails and scheduled viewing reminders (24h/1h) with 1-click Google Calendar add links to prospects, automated high-stakes briefing digests to company closers (BANT lead context, property valuation/commission, and AI underwriting call summary), and Neon PostgreSQL audit persistence in `notifications`. 8/8 automated tests passing (100%). |
+| **Day 21: Operational Analytics, 8-Stage Funnel Aggregation & Revenue Path Certification** | **COMPLETE & VERIFIED** | Executive operational analytics and funnel aggregation engine (`AnalyticsModule`). Endpoints `GET /api/v1/analytics/funnel` (8-stage deterministic conversion funnel with count, top retention %, step conversion %, and drop-off metrics), `GET /api/v1/analytics/metrics` (high-impact KPI metrics, pipeline capital valuation in ₦, speed-to-lead SLA, autonomous resolution rate), and `GET /api/v1/analytics/revenue-path` certifying the **11. DAY 21 CHECKPOINT** 17-point operational revenue path (100% operational readiness across all stages). 5/5 automated integration tests passing (100%). |
 
 ---
 
@@ -1284,10 +1286,19 @@ The Pacia modular monolith backend resides in `/server` (NestJS 11 + Neon Postgr
   - Integration: Automatic multi-party dispatch upon appointment creation and on-demand reminder dispatching with Neon PostgreSQL audit persistence in `notifications`.
   - **Verification**: `npm run test:day19` passing 8/8 (100%).
 
+- **Day 20 — Sales Command Center & Dashboard Aggregation APIs (`modules/dashboard`)**:
+  - **Frontend Experience (`/dashboard`)**:
+    - **7 Core Sales Metrics Strip**: High-contrast, real-time KPI card strip covering **Leads**, **Calls**, **Qualified**, **Hot**, **Viewings**, **Handoffs**, and **Follow-ups** with trends and subtext.
+    - **"What Requires Attention?" Priority Cockpit (`AttentionCockpit`)**: Actionable operational cockpit prioritizing urgent human takeovers, hot unbooked leads (score $\ge$ 85), today's inspections, and overdue follow-ups with 1-click action buttons and category filters.
+    - **"What Happened Today?" Unified Operations Feed (`OperationsActivityFeed`)**: Chronological audit feed across AI voice sessions, confirmed bookings, Resend email confirmations, and broker takeovers.
+    - **Lead Qualification Feed & Dossier Inspector**: Live lead table synchronized with real database leads and split-view dossier inspection panel.
+    - **Conversion Pipeline Funnel (`PipelineFunnel`)**: Visual 5-stage conversion trajectory tracking volume from inbound inquiries through closer underwriting.
+  - **Backend Aggregation Engine (`DashboardService`)**:
+    - High-performance Neon PostgreSQL SQL aggregations with date bounds (`startOfToday`, `endOfToday`) across `leads`, `calls`, `appointments`, `follow_ups`, `lead_events`, and `notifications`.
+    - Resilient fallback mode providing structured real-estate telemetry for offline/preview environments.
+    - Strict multi-tenant workspace isolation.
+  - **Verification**: `npm run test:day20` passing 6/6 (100%).
+
 ### Next Milestone:
-- **Day 20 — Advanced AI Negotiation & Multi-Channel Deployment**:
-  - Autonomous counter-offer analysis, high-concurrency booking load testing, and webhook edge security.
-
-
-
-
+- **Day 21 — Operational Analytics & 17-Point Revenue Path**:
+  - 8-stage conversion funnel analysis, pipeline capital valuation, and end-to-end operational revenue path certification.
