@@ -152,8 +152,10 @@ function resolveVariantForStatus(status: string): StatusBadgeVariant {
     case "active":
     case "live":
       return "qualified";
+    case "scheduled":
     case "viewing booked":
     case "viewing requested":
+    case "viewing":
       return "viewing";
     case "in conversation":
       return "inConversation";
