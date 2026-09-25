@@ -29,12 +29,9 @@ import { toast } from "sonner";
 import { exportLeadsToCSV } from "@/lib/utils/export-csv";
 import {
   Users,
-  PhoneCall,
   CheckCircle2,
   Flame,
   CalendarCheck,
-  UserCheck,
-  Clock,
   Building2,
   Download,
   X,
@@ -235,13 +232,17 @@ export default function DashboardPage() {
         </div>
       )}
 
-      {/* 7 Sales Command Center Metrics Strip */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-3">
-        {/* 1. LEADS */}
+      {/* 4 Prioritized Command Center KPI Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* 1. INBOUND LEADS */}
         <StatMetricCard
-          title="Leads"
-          value={metrics ? metrics.leads.total : "142"}
-          subtext={metrics?.leads.today ? `+${metrics.leads.today} today` : "+18 today"}
+          title="Inbound Leads"
+          value={metrics ? metrics.leads.total : 142}
+          subtext={
+            metrics
+              ? `${metrics.leads.today} new inquiries today`
+              : "18 new inquiries today"
+          }
           trend={{
             value: metrics?.leads.trend || "+18.4%",
             isPositive: true,
@@ -250,76 +251,54 @@ export default function DashboardPage() {
           variant="sky"
         />
 
-        {/* 2. CALLS */}
+        {/* 2. QUALIFIED INTENT */}
         <StatMetricCard
-          title="Calls"
-          value={metrics ? metrics.calls.total : "89"}
-          subtext={metrics?.calls.formattedAvgDuration ? `Avg ${metrics.calls.formattedAvgDuration}` : "Avg 3m 42s"}
+          title="Qualified Intent"
+          value={metrics ? metrics.qualified.total : 54}
+          subtext={
+            metrics
+              ? `${metrics.qualified.formattedRate} conversion rate`
+              : "38.0% conversion rate"
+          }
           trend={{
-            value: metrics?.calls.today ? `+${metrics.calls.today} today` : "+14 today",
-            isPositive: true,
-          }}
-          icon={PhoneCall}
-          variant="indigo"
-        />
-
-        {/* 3. QUALIFIED */}
-        <StatMetricCard
-          title="Qualified"
-          value={metrics ? metrics.qualified.total : "54"}
-          subtext={metrics ? `${metrics.qualified.formattedRate} conversion` : "38.0% conversion"}
-          trend={{
-            value: metrics?.qualified.today ? `+${metrics.qualified.today} today` : "+9 today",
+            value: `+${metrics ? metrics.qualified.today : 9} today`,
             isPositive: true,
           }}
           icon={CheckCircle2}
           variant="emerald"
         />
 
-        {/* 4. HOT */}
+        {/* 3. HOT PROSPECTS */}
         <StatMetricCard
-          title="Hot Leads"
-          value={metrics ? metrics.hot.total : "12"}
-          subtext={metrics?.hot.urgentAttentionCount ? `${metrics.hot.urgentAttentionCount} unbooked` : "4 unbooked"}
+          title="Hot Prospects"
+          value={metrics ? metrics.hot.total : 12}
+          subtext={
+            metrics?.hot.urgentAttentionCount
+              ? `${metrics.hot.urgentAttentionCount} unbooked urgent`
+              : metrics?.handoffs.pendingActionCount
+              ? `${metrics.handoffs.pendingActionCount} pending takeovers`
+              : "High transaction intent"
+          }
           badge="Score ≥ 85"
           icon={Flame}
           variant="rose"
         />
 
-        {/* 5. VIEWINGS */}
+        {/* 4. BOOKED VIEWINGS */}
         <StatMetricCard
-          title="Viewings"
-          value={metrics ? metrics.viewings.total : "31"}
-          subtext={metrics?.viewings.upcomingThisWeek ? `${metrics.viewings.upcomingThisWeek} this week` : "12 this week"}
+          title="Booked Viewings"
+          value={metrics ? metrics.viewings.total : 31}
+          subtext={
+            metrics
+              ? `${metrics.viewings.upcomingThisWeek} upcoming this week`
+              : "12 upcoming this week"
+          }
           trend={{
-            value: metrics?.viewings.today ? `+${metrics.viewings.today} today` : "+5 today",
+            value: `+${metrics ? metrics.viewings.today : 5} today`,
             isPositive: true,
           }}
           icon={CalendarCheck}
           variant="amber"
-        />
-
-        {/* 6. HANDOFFS */}
-        <StatMetricCard
-          title="Handoffs"
-          value={metrics ? metrics.handoffs.total : "7"}
-          subtext={metrics?.handoffs.pendingActionCount ? `${metrics.handoffs.pendingActionCount} pending` : "3 pending"}
-          badge="Human Action"
-          icon={UserCheck}
-          variant="stone"
-        />
-
-        {/* 7. FOLLOW-UPS */}
-        <StatMetricCard
-          title="Follow-ups"
-          value={metrics ? metrics.followUps.total : "26"}
-          subtext={metrics?.followUps.pendingCount ? `${metrics.followUps.pendingCount} pending` : "14 pending"}
-          trend={{
-            value: metrics?.followUps.scheduledToday ? `+${metrics.followUps.scheduledToday} today` : "+8 today",
-            isPositive: true,
-          }}
-          icon={Clock}
-          variant="stone"
         />
       </div>
 
