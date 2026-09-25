@@ -980,6 +980,71 @@ Implement an enterprise-grade appointment and calendar booking engine (`Appointm
   7. Appointment cancellation and calendar event deletion ✔
   8. Autonomous AI tool `book_property_inspection` with compliance audit logging ✔
 
+---
+
+# Day 16: Availability Retrieval & Real Available Slot Engine
+
+## Objective
+Implement an authoritative, real-time availability retrieval engine that aggregates Google Calendar Free/Busy intervals and Neon PostgreSQL database reservations to determine clash-free viewing slots with broker attribution, conflict reasoning, and strict workspace multi-tenant isolation.
+
+## Completed Deliverables & Architecture
+1. **Google Calendar Free/Busy Integration (`GoogleCalendarAdapter`)**:
+   - Live query against Google Calendar v3 `freeBusy.query` endpoint.
+   - Intelligent token resolution prioritizing real OAuth tokens (`!accessToken.startsWith("gcal_access_")`), sorted by `updatedAt DESC`, with global workspace fallback.
+   - Proactive token auto-refresh executing when tokens are expired or within 5 minutes of expiration.
+2. **Unified Slot Availability Engine (`AppointmentsService.getAvailableSlots`)**:
+   - Cross-checks internal database appointments in Neon PostgreSQL against external Google Calendar busy intervals.
+   - Marks slot status (`open` vs `booked`) and attaches explicit conflict reasons:
+     - `'Viewing slot already booked by another prospect'` for internal collisions.
+     - `'Conflicting appointment on Google Calendar (<Summary>)'` for external calendar conflicts.
+   - Attaches broker attribution metadata (`brokerId`, `brokerName`, `brokerRole`).
+3. **Strict Multi-Tenant Isolation**:
+   - Availability searches and bookings in Tenant A do not constrain or leak slot availability in Tenant B.
+4. **Real Available Slot Deliverable**:
+   - Identifies clash-free, verified open slots ready for immediate prospect reservation.
+
+## Automated Verification & Test Suite
+- **Day 16 Availability Retrieval Suite**: `npm run test:day16` (`server/test/day16-availability-retrieval.spec.ts`) — **7/7 tests passed (100%)**:
+  1. Viewing slot availability retrieval for target date ✔
+  2. Slot entity schema contracts (ISO timestamps, formatted ranges, broker metadata) ✔
+  3. External Google Calendar Free/Busy collision check & conflict detection ✔
+  4. Identification of Real Available Slot with broker attribution ✔
+  5. Booking slot and internal collision clash detection ✔
+  6. Double-booking collision lockout (HTTP 409 `ConflictException`) ✔
+  7. Multi-tenant slot availability isolation ✔
+
+---
+
+# Day 17: Booking Confirmation & Domain Event Execution
+
+## Objective
+Implement the complete inspection booking execution pipeline: confirming reservations, persisting to Neon PostgreSQL, syncing live calendar events with Google Meet links, emitting transactional outbox domain events (`BookingConfirmed`), recording compliance audit trails, enforcing double-booking prevention, and automatically transitioning lead lifecycle status to `Viewing Booked` with AI agent shutdown.
+
+## Completed Deliverables & Architecture
+1. **End-to-End Booking Execution (`AppointmentsService.createAppointment`)**:
+   - Enforces double-booking collision lockout before any write operation.
+   - Persists confirmed appointment into Neon PostgreSQL `appointments` table.
+   - Generates human-readable reference codes (e.g. `#SP-BK-A31B6B`).
+   - Creates synchronized Google Calendar event with Google Meet video link (`meet.google.com`).
+2. **Transactional Outbox Domain Event (`system_events`)**:
+   - Atomically records `BookingConfirmed` domain event with full payload: appointment ID, lead ID, property ID, broker ID, start/end timestamps, and location details.
+3. **Compliance Audit Logging (`audit_logs`)**:
+   - Records immutable audit trail for appointment creation with actor metadata and workspace scoping.
+4. **Lead Lifecycle Automation**:
+   - Transitions lead status to `Viewing Booked`.
+   - Halts autonomous AI agent communication (`isAiStopped: true`, `managementMode: "human_managed"`) to prevent unintended outbound contacts post-booking.
+
+## Automated Verification & Test Suite
+- **Day 17 Booking Confirmation Suite**: `npm run test:day17` (`server/test/day17-booking-confirmation.spec.ts`) — **8/8 tests passed (100%)**:
+  1. Viewing slot availability resolution ✔
+  2. Appointment booking execution & confirmation metadata ✔
+  3. Appointment record persistence in Neon PostgreSQL `appointments` table ✔
+  4. Transactional outbox domain event `BookingConfirmed` in `system_events` table ✔
+  5. Compliance audit log in `audit_logs` table ✔
+  6. Double-booking conflict prevention for confirmed slot (HTTP 409) ✔
+  7. Retrieval of confirmed viewing in tenant appointments list ✔
+  8. Booked lead status transition to `Viewing Booked` and AI agent shutdown ✔
+
 
 
 
