@@ -23,6 +23,7 @@ import { appointmentsService } from "../services/appointments-service";
 import { ViewingSlot, CreateAppointmentPayload } from "../types";
 import { MOCK_PROPERTIES } from "@/features/properties/data/mock-properties";
 import { MOCK_LEADS } from "@/features/leads/data/mock-leads";
+import { DatePicker } from "@/components/ui/date-picker";
 import {
   CalendarDays,
   Clock,
@@ -235,18 +236,18 @@ export function BookInspectionModal({
 
           {/* Date & Time Slot Selection */}
           <div className="rounded-lg border border-stone-200/80 bg-stone-50/50 p-3.5 space-y-3">
-            <div className="flex items-center justify-between">
-              <label className="text-xs font-semibold text-stone-800 flex items-center gap-1.5">
+            <div className="flex items-center justify-between gap-2">
+              <label className="text-xs font-semibold text-stone-800 flex items-center gap-1.5 shrink-0">
                 <CalendarDays className="h-3.5 w-3.5 text-stone-500" />
                 <span>Select Inspection Date</span>
               </label>
-              <Input
-                type="date"
-                value={selectedDate}
-                min={new Date().toISOString().split("T")[0]}
-                onChange={(e) => setSelectedDate(e.target.value)}
-                className="w-40 h-8 text-xs bg-white border-stone-300 font-medium"
-              />
+              <div className="w-48">
+                <DatePicker
+                  value={selectedDate}
+                  minDate={new Date()}
+                  onChange={(dateStr) => setSelectedDate(dateStr)}
+                />
+              </div>
             </div>
 
             {/* Slots Grid */}

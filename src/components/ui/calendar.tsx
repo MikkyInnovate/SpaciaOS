@@ -33,11 +33,18 @@ export function Calendar({
   selectedDate,
   onSelectDate,
   className,
+  minDate,
+  maxDate,
 }: CalendarProps) {
-  // Default to the selected date's month or September 2026
   const [viewDate, setViewDate] = React.useState<Date>(
-    () => selectedDate || new Date(2026, 8, 9) // September 9, 2026
+    () => selectedDate || new Date()
   );
+
+  React.useEffect(() => {
+    if (selectedDate) {
+      setViewDate(selectedDate);
+    }
+  }, [selectedDate]);
 
   const year = viewDate.getFullYear();
   const month = viewDate.getMonth();
@@ -98,8 +105,22 @@ export function Calendar({
     );
   };
 
+  const isBeforeMin = (date: Date) => {
+    if (!minDate) return false;
+    const startOfMin = new Date(minDate.getFullYear(), minDate.getMonth(), minDate.getDate());
+    const startOfCurrent = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    return startOfCurrent < startOfMin;
+  };
+
+  const isAfterMax = (date: Date) => {
+    if (!maxDate) return false;
+    const startOfMax = new Date(maxDate.getFullYear(), maxDate.getMonth(), maxDate.getDate());
+    const startOfCurrent = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    return startOfCurrent > startOfMax;
+  };
+
   return (
-    <div className={cn("p-3 select-none w-[280px]", className)}>
+    <div className={cn("p-3 select-none w-[280px] bg-white rounded-xl", className)}>
       {/* Month & Year Header */}
       <div className="flex items-center justify-between pb-2 mb-1 border-b border-stone-100">
         <button
@@ -138,20 +159,25 @@ export function Calendar({
       <div className="grid grid-cols-7 gap-1 text-center text-xs">
         {cells.map((cell, idx) => {
           const isSelected = isSameDay(selectedDate, cell.date);
-          const isToday = isSameDay(new Date(2026, 8, 9), cell.date);
+          const isToday = isSameDay(new Date(), cell.date);
+          const isDisabled = isBeforeMin(cell.date) || isAfterMax(cell.date);
 
           return (
             <button
               key={idx}
               type="button"
+              disabled={isDisabled}
               onClick={() => {
-                if (onSelectDate) onSelectDate(cell.date);
+                if (!isDisabled && onSelectDate) onSelectDate(cell.date);
               }}
               className={cn(
-                "h-8 w-8 rounded-md flex items-center justify-center text-xs transition-all cursor-pointer",
-                !cell.isCurrentMonth && "text-stone-300 hover:text-stone-600",
-                cell.isCurrentMonth && !isSelected && "text-stone-700 hover:bg-stone-100",
-                isToday && !isSelected && "border border-stone-300 font-semibold text-stone-900",
+                "h-8 w-8 rounded-md flex items-center justify-center text-xs transition-all",
+                isDisabled
+                  ? "text-stone-300 cursor-not-allowed opacity-40"
+                  : "cursor-pointer",
+                !cell.isCurrentMonth && !isDisabled && "text-stone-300 hover:text-stone-600",
+                cell.isCurrentMonth && !isSelected && !isDisabled && "text-stone-700 hover:bg-stone-100",
+                isToday && !isSelected && !isDisabled && "border border-emerald-300 font-semibold text-[#0d4a36]",
                 isSelected && "bg-[#0d4a36] text-white font-semibold shadow-xs hover:bg-[#0a3829]"
               )}
             >

@@ -131,6 +131,7 @@ export default function DashboardPage() {
           subtext="Last 24 hours"
           trend={{ value: "+18.4%", isPositive: true }}
           icon={Users}
+          variant="sky"
         />
         <StatMetricCard
           title="Avg First Contact"
@@ -138,6 +139,7 @@ export default function DashboardPage() {
           subtext="Autonomous speed"
           trend={{ value: "98.2%", isPositive: true }}
           icon={Zap}
+          variant="amber"
         />
         <StatMetricCard
           title="Qualified Intent"
@@ -145,6 +147,7 @@ export default function DashboardPage() {
           subtext="Verified readiness"
           trend={{ value: "+12.1%", isPositive: true }}
           icon={CheckCircle2}
+          variant="emerald"
         />
         <StatMetricCard
           title="Hot Prospects"
@@ -152,6 +155,7 @@ export default function DashboardPage() {
           subtext="Ready for viewing"
           badge="High Priority"
           icon={Flame}
+          variant="rose"
         />
         <StatMetricCard
           title="Booked Viewings"
@@ -159,6 +163,7 @@ export default function DashboardPage() {
           subtext="Agent confirmed"
           trend={{ value: "+3 today", isPositive: true }}
           icon={CalendarCheck}
+          variant="indigo"
         />
       </div>
 
