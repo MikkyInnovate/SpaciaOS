@@ -62,6 +62,8 @@ Spacia acts as an automated sales acceleration layer positioned between inbound 
 | **Day 15: Calendar Booking & In-Person Inspection Scheduling Engine** | **COMPLETE & VERIFIED** | Full-fledged calendar integration and property inspection scheduling engine (`AppointmentsModule`). Features provider-agnostic `CalendarAdapterService`, `GoogleCalendarAdapter` implementing real Google OAuth2 flow, code exchange, token persistence in Neon PostgreSQL (`calendar_connections`), automatic token refresh via `refresh_token`, live free/busy collision check with timezone normalization, double-booking lockout, virtual tour Google Meet link generation (`meet.google.com`), appointment cancellation, and autonomous AI tool `book_property_inspection` with compliance audit logging (`ai_tool_call:book_property_inspection`). 8/8 automated integration tests passing (100%). |
 | **Day 16: Google Calendar Availability Retrieval Engine** | **COMPLETE & VERIFIED** | Real-time Free/Busy interval querying from connected Google Calendars and Neon PostgreSQL `appointments` table. Returns strictly typed `ViewingSlotEntity` records with broker attribution, collision reasons, and multi-tenant isolation. 7/7 automated tests passing (100%). |
 | **Day 17: Booking Confirmation & Domain Event Execution** | **COMPLETE & VERIFIED** | Confirmed inspection booking execution, Google Calendar event creation with Google Meet video links, Neon PostgreSQL persistence in `appointments`, transactional outbox domain event `BookingConfirmed` emission in `system_events`, compliance audit logging in `audit_logs`, double-booking lockout enforcement, and automated lead state transition to `Viewing Booked` with AI agent shutdown. 8/8 automated integration tests passing (100%). |
+| **Day 18: Appointment Management, Lifecycle & Synchronization** | **COMPLETE & VERIFIED** | Full appointment lifecycle state machine (`scheduled` $\rightarrow$ `confirmed` $\rightarrow$ `completed` / `no_show` / `cancelled` / `rescheduled`), sales team schedule views across 7 statuses, audit cancellation reason persistence, automated external calendar retraction, and strict multi-tenant isolation. 8/8 automated tests passing (100%). |
+| **Day 19: Booking Notifications & Resend Notification Service** | **COMPLETE & VERIFIED** | Enterprise multi-party inspection notification engine using Resend. Delivers branded confirmation emails and scheduled viewing reminders (24h/1h) with 1-click Google Calendar add links to prospects, automated high-stakes briefing digests to company closers (BANT lead context, property valuation/commission, and AI underwriting call summary), and Neon PostgreSQL audit persistence in `notifications`. 8/8 automated tests passing (100%). |
 
 ---
 
@@ -1119,9 +1121,24 @@ The Pacia modular monolith backend resides in `/server` (NestJS 11 + Neon Postgr
   - **Verification**: `npm run test:day17` passing 8/8 (100%).
 
 - **Day 18 — Appointment Management, Lifecycle & Synchronization (`modules/appointments`)**:
-  - Frontend: Multi-status sales team schedule view with dedicated filtering for `Upcoming`, `Scheduled`, `Confirmed`, `Cancelled`, `Rescheduled`, `Completed`, and `No-show`. Elevated luxury `CancelViewingDialog` with 1-click quick reason chips and target context card.
-  - Backend: Full appointment lifecycle state machine (`scheduled` -> `confirmed` -> `completed` / `no_show` / `cancelled` / `rescheduled`), audit cancellation reason persistence, automated external calendar retraction, and strict multi-tenant isolation.
+  - **Frontend Experience**:
+    - **7-Status Sales Team Schedule Visibility**: Dedicated filter chips and real-time view segmentation for `Upcoming` (future viewings), `Scheduled` (pending confirmation), `Confirmed` (active bookings), `Cancelled` (with reason chip), `Rescheduled` (closed prior viewings linked to new bookings), `Completed` (finished walk-throughs), and `No-show` (prospect did not attend).
+    - **Interactive Appointment Detail Drawer**: Slide-out inspection cockpit displaying property overview, prospect contact information, closer assignment, calendar sync status, and direct lifecycle actions.
+    - **Elevated Cancellation Modal**: Minimalist luxury `CancelViewingDialog` with 1-click quick-reason chips (*Broker scheduling conflict*, *Client requested cancellation*, *Property unavailable*, *Client unresponsive*, *Weather / access delay*) and custom notes.
+    - **Integrated Rescheduling**: 1-click reschedule action launching `BookInspectionModal` pre-hydrated with client and property metadata, seamlessly archiving the previous appointment while securing a new confirmed viewing.
+  - **Backend State Machine & Synchronization**:
+    - **Complete Lifecycle Machine**: Supports transitions (`scheduled` $\rightarrow$ `confirmed` $\rightarrow$ `completed` / `no_show` / `cancelled` / `rescheduled`) with audit reason persistence in PostgreSQL `appointments.notes`.
+    - **External Calendar Sync & Retraction**: Automatic event deletion across connected external calendars (Google Calendar v3) whenever a viewing is cancelled or rescheduled.
+    - **Strict Multi-Tenant Isolation**: Zero cross-tenant leakage with database-level workspace validation. Cross-tenant modification attempts return inviolable HTTP 404 responses.
   - **Verification**: `npm run test:day18` passing 8/8 (100%).
+    1. Baseline appointment creation across time slots ✔
+    2. Lifecycle transition: `scheduled` $\rightarrow$ `confirmed` ✔
+    3. Lifecycle transition: `confirmed` $\rightarrow$ `completed` ✔
+    4. Lifecycle transition: `confirmed` $\rightarrow$ `no_show` ✔
+    5. Lifecycle transition: `cancelled` with audit reason and calendar retraction ✔
+    6. Rescheduling cycle (prior closed + new appointment created) ✔
+    7. All 7 sales team status views verified ✔
+    8. Multi-tenant isolation verified (zero cross-tenant leakage) ✔
 
 - **Day 19 — Booking Notifications & Resend Notification Service (`modules/notifications`)**:
   - Frontend: Confirmation and reminder UI in `AppointmentDetailDrawer`, Resend delivery badges in `BookingConfirmationDialog`, and design system showcase in `primitives/page.tsx` (`14. Booking Notifications & Resend Reminders`).
