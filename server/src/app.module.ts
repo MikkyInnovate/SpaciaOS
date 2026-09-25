@@ -19,6 +19,8 @@ import { CallsModule } from "./modules/calls/calls.module";
 import { FollowUpsModule } from "./modules/follow-ups/follow-ups.module";
 import { AppointmentsModule } from "./modules/appointments/appointments.module";
 import { NotificationsModule } from "./modules/notifications/notifications.module";
+import { DashboardModule } from "./modules/dashboard/dashboard.module";
+import { AnalyticsModule } from "./modules/analytics/analytics.module";
 import { AppController } from "./app.controller";
 
 @Module({
@@ -39,6 +41,8 @@ import { AppController } from "./app.controller";
     FollowUpsModule,
     AppointmentsModule,
     NotificationsModule,
+    DashboardModule,
+    AnalyticsModule,
   ],
   controllers: [AppController],
   providers: [
