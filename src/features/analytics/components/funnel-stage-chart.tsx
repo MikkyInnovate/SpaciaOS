@@ -135,6 +135,43 @@ function FunnelCustomTooltip({
 export function FunnelStageChart({ data, isLoading = false }: FunnelStageChartProps) {
   const [activeMetric, setActiveMetric] = React.useState<FunnelMetricKey>("count");
 
+  const stages = data?.stages ?? [];
+  const totalLeads = data?.totalLeads ?? 0;
+  const wonCount = data?.wonCount ?? 0;
+  const overallConversionRate = data?.overallConversionRate ?? 0;
+
+  const avgStepConversion = React.useMemo(() => {
+    if (!stages.length) return 0;
+    const nonFirst = stages.slice(1);
+    if (!nonFirst.length) return 100;
+    const sum = nonFirst.reduce((acc, curr) => acc + curr.stepConversionRate, 0);
+    return Math.round((sum / nonFirst.length) * 10) / 10;
+  }, [stages]);
+
+  const chartData = React.useMemo(() => {
+    return stages.map((s, idx) => ({
+      stage: s.stage,
+      label: s.label,
+      shortLabel: STAGE_SHORT_LABELS[s.stage] || s.label,
+      stageNumber: idx + 1,
+      count: s.count,
+      percentageOfTop: s.percentageOfTop,
+      stepConversionRate: s.stepConversionRate,
+      dropOffCount: s.dropOffCount,
+      dropOffRate: s.dropOffRate,
+      description: s.description,
+      isWon: idx === stages.length - 1,
+    }));
+  }, [stages]);
+
+  const qualifiedCount = React.useMemo(() => {
+    return stages.find((s) => s.stage === "qualified")?.count ?? 0;
+  }, [stages]);
+
+  const viewingsCount = React.useMemo(() => {
+    return stages.find((s) => s.stage === "viewing_completed")?.count ?? 0;
+  }, [stages]);
+
   if (isLoading || !data) {
     return (
       <Card className="py-4 sm:py-0 bg-white border-border shadow-2xs overflow-hidden">
@@ -182,40 +219,6 @@ export function FunnelStageChart({ data, isLoading = false }: FunnelStageChartPr
       </Card>
     );
   }
-
-  const { stages, totalLeads, wonCount, overallConversionRate } = data;
-
-  const avgStepConversion = React.useMemo(() => {
-    if (!stages.length) return 0;
-    const nonFirst = stages.slice(1);
-    if (!nonFirst.length) return 100;
-    const sum = nonFirst.reduce((acc, curr) => acc + curr.stepConversionRate, 0);
-    return Math.round((sum / nonFirst.length) * 10) / 10;
-  }, [stages]);
-
-  const chartData = React.useMemo(() => {
-    return stages.map((s, idx) => ({
-      stage: s.stage,
-      label: s.label,
-      shortLabel: STAGE_SHORT_LABELS[s.stage] || s.label,
-      stageNumber: idx + 1,
-      count: s.count,
-      percentageOfTop: s.percentageOfTop,
-      stepConversionRate: s.stepConversionRate,
-      dropOffCount: s.dropOffCount,
-      dropOffRate: s.dropOffRate,
-      description: s.description,
-      isWon: idx === stages.length - 1,
-    }));
-  }, [stages]);
-
-  const qualifiedCount = React.useMemo(() => {
-    return stages.find((s) => s.stage === "qualified")?.count ?? 0;
-  }, [stages]);
-
-  const viewingsCount = React.useMemo(() => {
-    return stages.find((s) => s.stage === "viewing_completed")?.count ?? 0;
-  }, [stages]);
 
   return (
     <Card className="py-4 sm:py-0 bg-white border-border shadow-2xs overflow-hidden">
