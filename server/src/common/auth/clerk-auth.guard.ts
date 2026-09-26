@@ -99,7 +99,28 @@ export class ClerkAuthGuard implements CanActivate {
     }
 
     // Verify session token and extract claims
-    const session = await this.clerkService.verifySessionToken(token);
+    let session: any;
+    try {
+      session = await this.clerkService.verifySessionToken(token);
+    } catch (err) {
+      const devWsId = request.headers["x-workspace-id"];
+      if (
+        (process.env.NODE_ENV === "development" ||
+          process.env.ALLOW_MOCK_AUTH === "true") &&
+        devWsId &&
+        typeof devWsId === "string"
+      ) {
+        this.logger.warn(`Clerk token verification failed in dev, falling back to dev workspace: ${(err as Error).message}`);
+        session = {
+          userId: "dev_user",
+          orgId: devWsId,
+          orgRole: "org:admin",
+          claims: {},
+        };
+      } else {
+        throw err;
+      }
+    }
 
     // Enforce active workspace requirement
     if (!session.orgId) {

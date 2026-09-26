@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import type { DashboardFeedItem } from "../types";
 import {
   PhoneCall,
@@ -24,6 +25,7 @@ import { cn } from "@/lib/utils/cn";
 export interface OperationsActivityFeedProps {
   feed: DashboardFeedItem[];
   onInspectLead?: (leadId: string) => void;
+  isLoading?: boolean;
 }
 
 const INITIAL_LIMIT = 5;
@@ -31,6 +33,7 @@ const INITIAL_LIMIT = 5;
 export function OperationsActivityFeed({
   feed,
   onInspectLead,
+  isLoading = false,
 }: OperationsActivityFeedProps) {
   const [filter, setFilter] = React.useState<"all" | "calls" | "viewings" | "notifications">("all");
   const [showAll, setShowAll] = React.useState(false);
@@ -167,7 +170,23 @@ export function OperationsActivityFeed({
       </CardHeader>
 
       <CardContent className="p-4 sm:p-5 divide-y divide-stone-100">
-        {visibleFeed.length === 0 ? (
+        {isLoading ? (
+          <div className="space-y-4 py-1">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={`feed-skeleton-${i}`} className="py-2 flex items-start gap-3">
+                <Skeleton className="h-8 w-8 rounded-lg shrink-0 mt-0.5" />
+                <div className="flex-1 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Skeleton className="h-4 w-44" />
+                    <Skeleton className="h-3 w-16" />
+                  </div>
+                  <Skeleton className="h-3.5 w-4/5" />
+                  <Skeleton className="h-3 w-1/3" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : visibleFeed.length === 0 ? (
           <div className="py-8 text-center text-xs text-stone-500">
             No events found for this filter.
           </div>

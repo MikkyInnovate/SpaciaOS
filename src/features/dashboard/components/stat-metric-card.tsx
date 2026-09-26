@@ -1,5 +1,6 @@
 import * as React from "react";
 import { Card, CardContent } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils/cn";
 import { TrendingUp, type LucideIcon } from "lucide-react";
 
@@ -17,6 +18,7 @@ export interface StatMetricCardProps {
   badge?: string;
   variant?: StatMetricVariant;
   highlight?: boolean;
+  isLoading?: boolean;
 }
 
 const VARIANT_STYLES: Record<
@@ -67,7 +69,26 @@ export function StatMetricCard({
   icon: Icon,
   badge,
   variant = "stone",
+  isLoading = false,
 }: StatMetricCardProps) {
+  if (isLoading) {
+    return (
+      <Card className="bg-white border-stone-200/80 shadow-2xs">
+        <CardContent className="p-4.5 space-y-2.5">
+          <div className="flex items-center justify-between">
+            <Skeleton className="h-3 w-20" />
+            <Skeleton className="h-7 w-7 rounded-lg" />
+          </div>
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-7 w-14" />
+            <Skeleton className="h-4 w-12 rounded" />
+          </div>
+          <Skeleton className="h-3 w-32" />
+        </CardContent>
+      </Card>
+    );
+  }
+
   const styles = VARIANT_STYLES[variant] || VARIANT_STYLES.stone;
 
   return (

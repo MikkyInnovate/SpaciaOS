@@ -15,6 +15,7 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from "@/components/ui/chart";
+import { Skeleton } from "@/components/ui/skeleton";
 import type { DashboardFunnelStage, PipelineFunnelStageItem } from "../types";
 
 // Fallback operational trajectory if metrics are not loaded yet
@@ -56,6 +57,7 @@ export interface PipelineFunnelProps {
     qualifiedTotal?: number;
     viewingsTotal?: number;
   };
+  isLoading?: boolean;
 }
 
 export function PipelineFunnel({
@@ -64,9 +66,60 @@ export function PipelineFunnel({
   benchmarks,
   metrics,
   stages,
+  isLoading = false,
 }: PipelineFunnelProps) {
   const [activeChart, setActiveChart] =
     React.useState<keyof typeof chartConfig>("qualified");
+
+  if (isLoading) {
+    return (
+      <Card className="py-4 sm:py-0 bg-white border-border shadow-2xs">
+        <CardHeader className="flex flex-col items-stretch border-b border-border p-0! sm:flex-row">
+          <div className="flex flex-1 flex-col justify-center gap-1.5 px-6 py-4">
+            <Skeleton className="h-5 w-64" />
+            <Skeleton className="h-3.5 w-80" />
+          </div>
+
+          <div className="flex border-t sm:border-t-0 sm:border-l border-border">
+            {[1, 2, 3].map((i) => (
+              <div
+                key={i}
+                className="flex flex-1 flex-col justify-center gap-1.5 px-4 py-3.5 sm:px-6 sm:py-4 border-r last:border-r-0 border-border min-w-[130px]"
+              >
+                <Skeleton className="h-3 w-24" />
+                <Skeleton className="h-6 w-12" />
+              </div>
+            ))}
+          </div>
+        </CardHeader>
+
+        <CardContent className="px-4 py-5 sm:p-6 space-y-4">
+          <div className="h-[240px] w-full flex items-center justify-center bg-stone-50/40 rounded-lg border border-dashed border-stone-200">
+            <div className="w-full h-full p-6 flex flex-col justify-end space-y-3">
+              <Skeleton className="h-2 w-full" />
+              <Skeleton className="h-32 w-full rounded" />
+              <div className="flex justify-between">
+                <Skeleton className="h-3 w-12" />
+                <Skeleton className="h-3 w-12" />
+                <Skeleton className="h-3 w-12" />
+                <Skeleton className="h-3 w-12" />
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-3 border-t border-border/80">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="p-3 rounded-md border border-stone-200/80 bg-stone-50/50 space-y-1.5">
+                <Skeleton className="h-3 w-20" />
+                <Skeleton className="h-6 w-16" />
+                <Skeleton className="h-3 w-32" />
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   const totals = React.useMemo(() => {
     if (metrics) {
@@ -166,43 +219,7 @@ export function PipelineFunnel({
         </div>
       </CardHeader>
 
-      <CardContent className="px-4 py-5 sm:p-6 space-y-6">
-        {/* Visual Pipeline Conversion Stages from Live Backend */}
-        {stages && stages.length > 0 && (
-          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
-            {stages.map((st, idx) => {
-              const rate = "conversionRate" in st ? st.conversionRate : (st as any).percentage ?? 0;
-              const color = ("color" in st && st.color) ? st.color : "#0d4a36";
-              return (
-                <div
-                  key={idx}
-                  className="rounded-lg border border-stone-200/80 bg-stone-50/60 p-2.5 space-y-1.5"
-                >
-                  <div className="flex items-center justify-between text-[11px]">
-                    <span className="font-semibold text-stone-700 truncate">{st.label}</span>
-                    <span className="font-mono text-stone-600 font-bold">{rate}%</span>
-                  </div>
-                  <div className="flex items-baseline justify-between">
-                    <span className="font-display text-lg font-bold text-stone-900 font-mono">
-                      {st.count}
-                    </span>
-                    <span className="text-[10px] text-stone-400">leads</span>
-                  </div>
-                  <div className="w-full h-1.5 bg-stone-200 rounded-full overflow-hidden">
-                    <div
-                      className="h-full rounded-full transition-all duration-300"
-                      style={{
-                        width: `${Math.min(100, Math.max(10, rate))}%`,
-                        backgroundColor: color,
-                      }}
-                    />
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-
+      <CardContent className="px-4 py-5 sm:p-6">
         {/* Live Line Chart */}
         <ChartContainer
           config={chartConfig}

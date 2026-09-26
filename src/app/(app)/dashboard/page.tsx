@@ -16,11 +16,6 @@ import { PipelineFunnel } from "@/features/dashboard/components/pipeline-funnel"
 import { dashboardService } from "@/features/dashboard/services/dashboard-service";
 import { leadsService } from "@/features/leads/services/leads-service";
 import { appointmentsService } from "@/features/appointments/services/appointments-service";
-import {
-  MOCK_DASHBOARD_LEADS,
-  MOCK_UPCOMING_VIEWINGS,
-  MOCK_FUNNEL_METRICS,
-} from "@/features/dashboard/data/mock-data";
 import type {
   DashboardLead,
   DashboardMetrics,
@@ -57,8 +52,8 @@ export default function DashboardPage() {
   const [attentionItems, setAttentionItems] = React.useState<AttentionItem[]>([]);
   const [activityFeed, setActivityFeed] = React.useState<DashboardFeedItem[]>([]);
   const [funnelStages, setFunnelStages] = React.useState<PipelineFunnelStageItem[]>([]);
-  const [leadsList, setLeadsList] = React.useState<DashboardLead[]>(MOCK_DASHBOARD_LEADS);
-  const [viewingsList, setViewingsList] = React.useState<DashboardViewing[]>(MOCK_UPCOMING_VIEWINGS);
+  const [leadsList, setLeadsList] = React.useState<DashboardLead[]>([]);
+  const [viewingsList, setViewingsList] = React.useState<DashboardViewing[]>([]);
 
   // Load dashboard telemetry data
   const loadDashboardData = React.useCallback(async (silent = false) => {
@@ -95,7 +90,7 @@ export default function DashboardPage() {
         setFunnelStages(fetchedFunnel.value);
       }
 
-      // Populate lead table with live leads or fallback seamlessly
+      // Populate lead table with live leads or empty list
       if (
         fetchedLeadsRes.status === "fulfilled" &&
         fetchedLeadsRes.value?.leads &&
@@ -119,11 +114,11 @@ export default function DashboardPage() {
           aiNotes: l.aiNotes || undefined,
         }));
         setLeadsList(adaptedLeads);
-      } else {
-        setLeadsList(MOCK_DASHBOARD_LEADS);
+      } else if (fetchedLeadsRes.status === "fulfilled") {
+        setLeadsList([]);
       }
 
-      // Populate upcoming viewings with live appointments or fallback
+      // Populate upcoming viewings with live appointments or empty list
       if (
         fetchedAptsRes.status === "fulfilled" &&
         Array.isArray(fetchedAptsRes.value) &&
@@ -140,8 +135,8 @@ export default function DashboardPage() {
           leadScore: apt.leadScore || 85,
         }));
         setViewingsList(adaptedViewings);
-      } else {
-        setViewingsList(MOCK_UPCOMING_VIEWINGS);
+      } else if (fetchedAptsRes.status === "fulfilled") {
+        setViewingsList([]);
       }
     } catch (err) {
       console.warn("Failed to refresh dashboard data:", err);
@@ -185,13 +180,8 @@ export default function DashboardPage() {
     const found = leadsList.find((l) => l.id === leadId);
     if (found) {
       setSelectedLead(found);
-    } else {
-      const mockFound = MOCK_DASHBOARD_LEADS.find((l) => l.id === leadId);
-      if (mockFound) {
-        setSelectedLead(mockFound);
-      } else if (leadsList[0]) {
-        setSelectedLead(leadsList[0]);
-      }
+    } else if (leadsList[0]) {
+      setSelectedLead(leadsList[0]);
     }
   };
 
@@ -264,41 +254,43 @@ export default function DashboardPage() {
         {/* 1. INBOUND LEADS */}
         <StatMetricCard
           title="Inbound Leads"
-          value={metrics ? metrics.leads.total : 142}
+          value={metrics ? metrics.leads.total : 0}
           subtext={
             metrics
               ? `${metrics.leads.today} new inquiries today`
-              : "18 new inquiries today"
+              : "Live telemetry"
           }
           trend={{
-            value: metrics?.leads.trend || "+18.4%",
+            value: metrics?.leads.trend || "+0%",
             isPositive: true,
           }}
           icon={Users}
           variant="sky"
+          isLoading={isLoading && !metrics}
         />
 
         {/* 2. QUALIFIED INTENT */}
         <StatMetricCard
           title="Qualified Intent"
-          value={metrics ? metrics.qualified.total : 54}
+          value={metrics ? metrics.qualified.total : 0}
           subtext={
             metrics
               ? `${metrics.qualified.formattedRate} conversion rate`
-              : "38.0% conversion rate"
+              : "0% conversion rate"
           }
           trend={{
-            value: `+${metrics ? metrics.qualified.today : 9} today`,
+            value: `+${metrics ? metrics.qualified.today : 0} today`,
             isPositive: true,
           }}
           icon={CheckCircle2}
           variant="emerald"
+          isLoading={isLoading && !metrics}
         />
 
         {/* 3. HOT PROSPECTS */}
         <StatMetricCard
           title="Hot Prospects"
-          value={metrics ? metrics.hot.total : 12}
+          value={metrics ? metrics.hot.total : 0}
           subtext={
             metrics?.hot.urgentAttentionCount
               ? `${metrics.hot.urgentAttentionCount} unbooked urgent`
@@ -309,23 +301,25 @@ export default function DashboardPage() {
           badge="Score ≥ 85"
           icon={Flame}
           variant="rose"
+          isLoading={isLoading && !metrics}
         />
 
         {/* 4. BOOKED VIEWINGS */}
         <StatMetricCard
           title="Booked Viewings"
-          value={metrics ? metrics.viewings.total : 31}
+          value={metrics ? metrics.viewings.total : 0}
           subtext={
             metrics
               ? `${metrics.viewings.upcomingThisWeek} upcoming this week`
-              : "12 upcoming this week"
+              : "0 upcoming this week"
           }
           trend={{
-            value: `+${metrics ? metrics.viewings.today : 5} today`,
+            value: `+${metrics ? metrics.viewings.today : 0} today`,
             isPositive: true,
           }}
           icon={CalendarCheck}
           variant="amber"
+          isLoading={isLoading && !metrics}
         />
       </div>
 
@@ -355,6 +349,7 @@ export default function DashboardPage() {
                 onTakeLead={handleInspectLead}
                 isSplitView={true}
                 onToggleSplit={() => setSelectedLead(null)}
+                isLoading={isLoading && leadsList.length === 0}
               />
             </div>
             <div className="lg:col-span-5">
@@ -372,6 +367,7 @@ export default function DashboardPage() {
             leads={leadsList}
             onTakeLead={handleInspectLead}
             isSplitView={false}
+            isLoading={isLoading && leadsList.length === 0}
           />
         </div>
       )}
@@ -381,12 +377,16 @@ export default function DashboardPage() {
         <OperationsActivityFeed
           feed={activityFeed}
           onInspectLead={handleInspectById}
+          isLoading={isLoading && activityFeed.length === 0}
         />
       </div>
 
       {/* Confirmed Viewings - Full Width Section */}
       <div className="w-full pt-2">
-        <UpcomingViewingsList viewings={viewingsList} />
+        <UpcomingViewingsList
+          viewings={viewingsList}
+          isLoading={isLoading && viewingsList.length === 0}
+        />
       </div>
 
       {/* Pipeline Progression Trajectory Chart */}
@@ -402,6 +402,7 @@ export default function DashboardPage() {
                 }
               : undefined
           }
+          isLoading={isLoading && !metrics}
         />
       </div>
     </Container>

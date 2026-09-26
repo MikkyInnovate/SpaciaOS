@@ -104,8 +104,6 @@ export function WorkspaceProvider({ children }: { children: React.ReactNode }) {
   React.useEffect(() => {
     if (currentWorkspace?.id) {
       apiClient.setWorkspaceId(currentWorkspace.id);
-    } else {
-      apiClient.setWorkspaceId("");
     }
   }, [currentWorkspace?.id]);
 

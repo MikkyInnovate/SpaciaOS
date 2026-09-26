@@ -8,6 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Skeleton } from "@/components/ui/skeleton";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { ScoreIndicator } from "@/components/ui/score-indicator";
 import { EmptyState } from "@/components/shared/empty-state";
@@ -23,6 +24,7 @@ export interface LeadIntakeTableProps {
   isSplitView?: boolean;
   onToggleSplit?: () => void;
   hideViewAll?: boolean;
+  isLoading?: boolean;
 }
 
 export function LeadIntakeTable({
@@ -32,6 +34,7 @@ export function LeadIntakeTable({
   isSplitView,
   onToggleSplit,
   hideViewAll = false,
+  isLoading = false,
 }: LeadIntakeTableProps) {
   return (
     <div className="rounded-lg border border-border bg-white shadow-2xs overflow-hidden">
@@ -101,7 +104,39 @@ export function LeadIntakeTable({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {leads.length === 0 ? (
+          {isLoading ? (
+            Array.from({ length: 5 }).map((_, i) => (
+              <TableRow key={`skeleton-row-${i}`}>
+                <TableCell>
+                  <div className="space-y-1.5 py-1">
+                    <Skeleton className="h-4 w-28" />
+                    <Skeleton className="h-3 w-20" />
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <div className="space-y-1.5 py-1">
+                    <Skeleton className="h-4 w-36" />
+                    <Skeleton className="h-3 w-24" />
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <div className="space-y-1.5 py-1">
+                    <Skeleton className="h-4 w-20" />
+                    <Skeleton className="h-3 w-16" />
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-6 w-16 rounded-full" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-6 w-20 rounded-full" />
+                </TableCell>
+                <TableCell className="text-right">
+                  <Skeleton className="h-7 w-16 ml-auto rounded-md" />
+                </TableCell>
+              </TableRow>
+            ))
+          ) : leads.length === 0 ? (
             <TableRow>
               <TableCell colSpan={6} className="p-0 border-0">
                 <EmptyState
