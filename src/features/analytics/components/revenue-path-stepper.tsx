@@ -272,18 +272,40 @@ export function RevenuePathStepper({
                   <div className="flex items-center gap-4 mt-2 sm:mt-0 z-10 justify-between sm:justify-end">
                     <div className="text-right">
                       <div className="text-[10px] text-stone-400 font-medium">
-                        Activity
+                        Live Volume
                       </div>
                       <div className="text-xs font-bold font-mono text-stone-800">
-                        {node.eventsRecorded.toLocaleString()}
+                        {node.eventsRecorded === 0
+                          ? "0 recorded"
+                          : node.key === "verified_property_data"
+                          ? `${node.eventsRecorded} ${node.eventsRecorded === 1 ? "property" : "properties"}`
+                          : node.key.includes("lead") || node.key === "spacia_core" || node.key === "qualification" || node.key === "score"
+                          ? `${node.eventsRecorded} ${node.eventsRecorded === 1 ? "lead" : "leads"}`
+                          : node.key === "call" || node.key === "ai_contact" || node.key === "conversation"
+                          ? `${node.eventsRecorded} ${node.eventsRecorded === 1 ? "call" : "calls"}`
+                          : node.key.includes("viewing") || node.key === "calendar_availability"
+                          ? `${node.eventsRecorded} ${node.eventsRecorded === 1 ? "booking" : "bookings"}`
+                          : node.key === "human_handoff"
+                          ? `${node.eventsRecorded} ${node.eventsRecorded === 1 ? "takeover" : "takeovers"}`
+                          : `${node.eventsRecorded} dispatched`}
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200/80">
-                      <span className="w-2 h-2 rounded-full bg-emerald-600" />
-                      <span className="text-[11px] font-semibold text-emerald-800 capitalize">
-                        {node.status}
-                      </span>
+                    <div
+                      className={cn(
+                        "flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[11px] font-semibold capitalize",
+                        node.status === "operational"
+                          ? "bg-emerald-50 border-emerald-200/80 text-emerald-800"
+                          : "bg-stone-100 border-stone-200/80 text-stone-500"
+                      )}
+                    >
+                      <span
+                        className={cn(
+                          "w-2 h-2 rounded-full",
+                          node.status === "operational" ? "bg-emerald-600" : "bg-stone-400"
+                        )}
+                      />
+                      <span>{node.status}</span>
                     </div>
                   </div>
                 </div>

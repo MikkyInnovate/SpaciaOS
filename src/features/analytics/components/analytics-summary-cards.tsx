@@ -109,7 +109,7 @@ export function AnalyticsSummaryCards({
         />
 
         <StatMetricCard
-          title="Pipeline Deal Potential"
+          title="Active Pipeline Potential"
           value={metrics.pipelinePotential.value}
           subtext={metrics.pipelinePotential.subtext}
           trend={
@@ -146,7 +146,7 @@ export function AnalyticsSummaryCards({
               {metrics.speedToLead.value}
             </div>
             <div className="text-[10px] font-semibold text-emerald-700 bg-emerald-100/70 px-1.5 py-0.5 rounded-md inline-block">
-              Under 1 minute
+              Outbound Dispatch
             </div>
           </div>
         </div>
@@ -170,7 +170,7 @@ export function AnalyticsSummaryCards({
               {metrics.autonomousResolutionRate.value}
             </div>
             <div className="text-[10px] font-semibold text-sky-700 bg-sky-100/70 px-1.5 py-0.5 rounded-md inline-block">
-              Fully automated
+              {parseFloat(metrics.autonomousResolutionRate.value) >= 80 ? "Fully automated" : "Autonomous Tier"}
             </div>
           </div>
         </div>
