@@ -61,13 +61,16 @@ export class ClerkAuthGuard implements CanActivate {
     const authHeader = request.headers["authorization"];
 
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      const devWsId = request.headers["x-workspace-id"];
       if (
-        (process.env.NODE_ENV === "development" ||
-          process.env.ALLOW_MOCK_AUTH === "true") &&
-        devWsId &&
-        typeof devWsId === "string"
+        process.env.NODE_ENV === "development" ||
+        process.env.ALLOW_MOCK_AUTH === "true"
       ) {
+        const rawWsId = request.headers["x-workspace-id"];
+        const devWsId =
+          typeof rawWsId === "string" && rawWsId.trim().length > 0
+            ? rawWsId
+            : "org_3JCKtqmF5BWnjSaWqlcheLn0AA9";
+
         const tenantContext: TenantContext = {
           workspaceId: devWsId,
           userId: "dev_user",
@@ -126,12 +129,13 @@ export class ClerkAuthGuard implements CanActivate {
     if (!session.orgId) {
       const xWorkspaceId = request.headers["x-workspace-id"];
       if (
-        (process.env.NODE_ENV === "development" ||
-          process.env.ALLOW_MOCK_AUTH === "true") &&
-        xWorkspaceId &&
-        typeof xWorkspaceId === "string"
+        process.env.NODE_ENV === "development" ||
+        process.env.ALLOW_MOCK_AUTH === "true"
       ) {
-        session.orgId = xWorkspaceId;
+        session.orgId =
+          typeof xWorkspaceId === "string" && xWorkspaceId.trim().length > 0
+            ? xWorkspaceId
+            : "org_3JCKtqmF5BWnjSaWqlcheLn0AA9";
       } else {
         throw new ForbiddenException({
           code: "NO_ACTIVE_WORKSPACE",

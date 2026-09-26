@@ -11,7 +11,13 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import {
-  CheckCircle2,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Sliders,
   Volume2,
   Clock,
@@ -22,12 +28,6 @@ import {
   X,
   Plus,
   Loader2,
-  Sparkles,
-  PhoneCall,
-  Calendar,
-  MessageSquare,
-  Shield,
-  Layers,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -143,11 +143,13 @@ export function AIAgentConfigPresentation({
   const [newKeywordText, setNewKeywordText] = React.useState("");
   const [newDeedText, setNewDeedText] = React.useState("");
 
-  React.useEffect(() => {
-    if (activeConfig && !isEditing) {
-      setEditConfig(JSON.parse(JSON.stringify(activeConfig)));
+  const [prevActiveConfig, setPrevActiveConfig] = React.useState(activeConfig);
+  if (activeConfig !== prevActiveConfig) {
+    setPrevActiveConfig(activeConfig);
+    if (!isEditing) {
+      setEditConfig(activeConfig ? JSON.parse(JSON.stringify(activeConfig)) : null);
     }
-  }, [activeConfig, isEditing]);
+  }
 
   if (!activeConfig || !editConfig) return null;
 
@@ -516,22 +518,26 @@ export function AIAgentConfigPresentation({
                   Neural Voice Synthesis
                 </span>
                 {isEditing ? (
-                  <select
+                  <Select
                     value={editConfig.voice}
-                    onChange={(e) =>
+                    onValueChange={(val) =>
                       setEditConfig({
                         ...editConfig,
-                        voice: e.target.value,
+                        voice: val,
                       })
                     }
-                    className="w-full h-8 px-2 text-xs rounded-md border border-stone-300 bg-white text-stone-900 focus:outline-none focus:ring-1 focus:ring-[#0d4a36]"
                   >
-                    {VOICE_OPTIONS.map((v) => (
-                      <option key={v.id} value={v.id}>
-                        {v.label}
-                      </option>
-                    ))}
-                  </select>
+                    <SelectTrigger className="h-8 text-xs border-stone-200 bg-white focus:ring-[#0d4a36]/20 focus:border-[#0d4a36]">
+                      <SelectValue placeholder="Select neural voice" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {VOICE_OPTIONS.map((v) => (
+                        <SelectItem key={v.id} value={v.id} className="text-xs">
+                          {v.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 ) : (
                   <>
                     <p className="font-semibold text-stone-900 font-mono text-xs">
@@ -550,22 +556,26 @@ export function AIAgentConfigPresentation({
                   Communication Tone
                 </span>
                 {isEditing ? (
-                  <select
+                  <Select
                     value={editConfig.tone}
-                    onChange={(e) =>
+                    onValueChange={(val) =>
                       setEditConfig({
                         ...editConfig,
-                        tone: e.target.value as AIAgentTone,
+                        tone: val as AIAgentTone,
                       })
                     }
-                    className="w-full h-8 px-2 text-xs rounded-md border border-stone-300 bg-white text-stone-900 focus:outline-none focus:ring-1 focus:ring-[#0d4a36]"
                   >
-                    {TONE_OPTIONS.map((t) => (
-                      <option key={t.id} value={t.id}>
-                        {t.label} ({t.badge})
-                      </option>
-                    ))}
-                  </select>
+                    <SelectTrigger className="h-8 text-xs border-stone-200 bg-white focus:ring-[#0d4a36]/20 focus:border-[#0d4a36]">
+                      <SelectValue placeholder="Select tone" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {TONE_OPTIONS.map((t) => (
+                        <SelectItem key={t.id} value={t.id} className="text-xs">
+                          {t.label} ({t.badge})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 ) : (
                   <>
                     <p className="font-semibold text-stone-900 capitalize">
@@ -584,22 +594,26 @@ export function AIAgentConfigPresentation({
                   Primary Language
                 </span>
                 {isEditing ? (
-                  <select
+                  <Select
                     value={editConfig.language}
-                    onChange={(e) =>
+                    onValueChange={(val) =>
                       setEditConfig({
                         ...editConfig,
-                        language: e.target.value as AIAgentLanguage,
+                        language: val as AIAgentLanguage,
                       })
                     }
-                    className="w-full h-8 px-2 text-xs rounded-md border border-stone-300 bg-white text-stone-900 focus:outline-none focus:ring-1 focus:ring-[#0d4a36]"
                   >
-                    {LANGUAGE_OPTIONS.map((l) => (
-                      <option key={l.id} value={l.id}>
-                        {l.label}
-                      </option>
-                    ))}
-                  </select>
+                    <SelectTrigger className="h-8 text-xs border-stone-200 bg-white focus:ring-[#0d4a36]/20 focus:border-[#0d4a36]">
+                      <SelectValue placeholder="Select language" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {LANGUAGE_OPTIONS.map((l) => (
+                        <SelectItem key={l.id} value={l.id} className="text-xs">
+                          {l.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 ) : (
                   <>
                     <p className="font-semibold text-stone-900 font-mono text-xs">
