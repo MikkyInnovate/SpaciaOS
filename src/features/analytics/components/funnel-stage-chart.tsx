@@ -14,7 +14,7 @@ import {
   CheckCircle2,
   HelpCircle,
   Layers,
-  Sparkles,
+
   Award,
 } from "lucide-react";
 import { AnalyticsFunnelResponse, FunnelStage } from "../types";
@@ -118,19 +118,11 @@ export function FunnelStageChart({ data, isLoading = false }: FunnelStageChartPr
       <CardHeader className="border-b border-stone-100 pb-4">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2">
-              <CardTitle className="text-base font-display font-bold text-stone-900">
-                8-Stage Operational Funnel
-              </CardTitle>
-              <Badge
-                variant="outline"
-                className="bg-emerald-50 text-[#0d4a36] border-emerald-200 text-[10px] font-semibold"
-              >
-                Day 21 Certified
-              </Badge>
-            </div>
+            <CardTitle className="text-base font-display font-bold text-stone-900">
+              Conversion Funnel
+            </CardTitle>
             <CardDescription className="text-xs text-stone-500 mt-1">
-              Deterministic lead-to-won progression across all SpaciaOS autonomous pipeline stages
+              Lead-to-won progression across all pipeline stages
             </CardDescription>
           </div>
 

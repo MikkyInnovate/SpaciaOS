@@ -8,17 +8,14 @@ import { useWorkspace } from "@/lib/context/workspace-context";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils/cn";
 import {
   Calendar as CalendarIcon,
   ChevronDown,
   RefreshCw,
-  TrendingUp,
   Layers,
   CheckCircle2,
   Gauge,
-  Sparkles,
 } from "lucide-react";
 import {
   analyticsService,
@@ -49,7 +46,7 @@ const MONTH_DATASETS: Record<MonthKey, MonthAnalyticsConfig> = {
     label: "September 2026",
     badge: "MTD",
     periodDescription:
-      "Daily inbound volume, AI verified qualification, and viewing completions for September 2026 (Month-to-Date)",
+      "Daily inbound volume, qualification, and viewing completions for September 2026 (Month-to-Date)",
     trajectoryData: [
       { date: "2026-09-01", inquiries: 36, qualified: 18, viewings: 6 },
       { date: "2026-09-02", inquiries: 29, qualified: 14, viewings: 4 },
@@ -67,7 +64,7 @@ const MONTH_DATASETS: Record<MonthKey, MonthAnalyticsConfig> = {
     periodParam: "30d",
     label: "August 2026",
     periodDescription:
-      "Daily inbound volume, AI verified qualification, and viewing completions across August 2026",
+      "Daily inbound volume, qualification, and viewing completions across August 2026",
     trajectoryData: [
       { date: "2026-08-01", inquiries: 24, qualified: 11, viewings: 3 },
       { date: "2026-08-04", inquiries: 28, qualified: 13, viewings: 4 },
@@ -87,7 +84,7 @@ const MONTH_DATASETS: Record<MonthKey, MonthAnalyticsConfig> = {
     periodParam: "90d",
     label: "July 2026",
     periodDescription:
-      "Daily inbound volume, AI verified qualification, and viewing completions across July 2026",
+      "Daily inbound volume, qualification, and viewing completions across July 2026",
     trajectoryData: [
       { date: "2026-07-02", inquiries: 21, qualified: 9, viewings: 3 },
       { date: "2026-07-06", inquiries: 24, qualified: 11, viewings: 4 },
@@ -106,7 +103,7 @@ const MONTH_DATASETS: Record<MonthKey, MonthAnalyticsConfig> = {
     label: "Q3 2026",
     badge: "Quarter",
     periodDescription:
-      "Aggregated trajectory and quarterly conversion metrics across Q3 2026 (Jul - Sep)",
+      "Aggregated trajectory and conversion metrics across Q3 2026 (Jul - Sep)",
     trajectoryData: [
       { date: "2026-07-07", inquiries: 70, qualified: 33, viewings: 11 },
       { date: "2026-07-21", inquiries: 84, qualified: 40, viewings: 14 },
@@ -124,12 +121,20 @@ const PRESET_OPTIONS: MonthAnalyticsConfig[] = [
   MONTH_DATASETS["q3-2026"],
 ];
 
+type AnalyticsView = "funnel" | "pipeline" | "performance";
+
+const VIEW_OPTIONS: { key: AnalyticsView; label: string; icon: React.ElementType }[] = [
+  { key: "funnel", label: "Sales Funnel", icon: Layers },
+  { key: "pipeline", label: "Sales Pipeline", icon: CheckCircle2 },
+  { key: "performance", label: "Performance", icon: Gauge },
+];
+
 export default function AnalyticsPage() {
   const { currentWorkspace } = useWorkspace();
   const [selectedPeriod, setSelectedPeriod] = React.useState<MonthKey>("sep-2026");
   const [selectedDate, setSelectedDate] = React.useState<Date | null>(new Date(2026, 8, 9));
   const [isPickerOpen, setIsPickerOpen] = React.useState(false);
-  const [activeTab, setActiveTab] = React.useState("funnel");
+  const [activeView, setActiveView] = React.useState<AnalyticsView>("funnel");
 
   // Analytics states
   const [funnelData, setFunnelData] = React.useState<AnalyticsFunnelResponse | null>(null);
@@ -169,8 +174,8 @@ export default function AnalyticsPage() {
   return (
     <Container size="lg" className="space-y-6">
       <PageHeader
-        title="Operational Analytics & Revenue Path"
-        description={`End-to-end conversion funnels, pipeline velocity, and Day 21 certified operational revenue path for ${currentWorkspace?.name || "your luxury workspace"}.`}
+        title="Analytics"
+        description={`Conversion funnels, pipeline health, and performance metrics for ${currentWorkspace?.name || "your workspace"}.`}
         actions={
           <div className="flex items-center gap-2">
             {/* Manual Refresh Button */}
@@ -215,7 +220,7 @@ export default function AnalyticsPage() {
                   {/* Preset List Column */}
                   <div className="p-3 sm:w-48 space-y-1.5 bg-stone-50/70 text-xs">
                     <div className="px-2 py-1 text-[10px] font-semibold text-stone-400 uppercase tracking-wider">
-                      Timeframe Presets
+                      Timeframe
                     </div>
                     {PRESET_OPTIONS.map((period) => {
                       const isSelected = selectedPeriod === period.id;
@@ -281,99 +286,87 @@ export default function AnalyticsPage() {
         </div>
       )}
 
-      {/* Primary Analytics Views Navigation */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="bg-stone-100 p-1 rounded-xl border border-stone-200/80">
-          <TabsTrigger
-            value="funnel"
-            className="gap-2 text-xs font-semibold px-4 py-1.5 rounded-lg data-[state=active]:bg-white data-[state=active]:text-stone-900 data-[state=active]:shadow-2xs cursor-pointer"
+      {/* View Filter Pills — Dashboard style */}
+      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
+        {VIEW_OPTIONS.map(({ key, label, icon: Icon }) => (
+          <button
+            key={key}
+            type="button"
+            onClick={() => setActiveView(key)}
+            className={cn(
+              "px-3 py-1.5 rounded-md font-medium text-xs transition-colors shrink-0 cursor-pointer flex items-center gap-1.5",
+              activeView === key
+                ? "bg-stone-900 text-white shadow-2xs"
+                : "bg-white text-stone-600 border border-stone-200 hover:bg-stone-50"
+            )}
           >
-            <Layers className="w-3.5 h-3.5 text-[#0d4a36]" />
-            <span>8-Stage Funnel</span>
-          </TabsTrigger>
-          <TabsTrigger
-            value="revenue-path"
-            className="gap-2 text-xs font-semibold px-4 py-1.5 rounded-lg data-[state=active]:bg-white data-[state=active]:text-stone-900 data-[state=active]:shadow-2xs cursor-pointer"
-          >
-            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-            <span>17-Point Revenue Path</span>
-            <span className="ml-1 text-[9px] px-1.5 py-0.2 rounded-full bg-emerald-100 text-[#0d4a36] font-bold">
-              Day 21 Checkpoint
-            </span>
-          </TabsTrigger>
-          <TabsTrigger
-            value="benchmarks"
-            className="gap-2 text-xs font-semibold px-4 py-1.5 rounded-lg data-[state=active]:bg-white data-[state=active]:text-stone-900 data-[state=active]:shadow-2xs cursor-pointer"
-          >
-            <Gauge className="w-3.5 h-3.5 text-sky-600" />
-            <span>Operational Benchmarks</span>
-          </TabsTrigger>
-        </TabsList>
+            <Icon className="w-3.5 h-3.5" />
+            {label}
+          </button>
+        ))}
+      </div>
 
-        {/* Tab 1: 8-Stage Conversion Funnel */}
-        <TabsContent value="funnel" className="space-y-6">
-          {funnelData && (
-            <FunnelStageChart data={funnelData} isLoading={isLoading} />
-          )}
-
-          {/* Daily Trajectory Line Chart */}
-          <PipelineFunnel
-            key={selectedPeriod}
-            data={currentDataset.trajectoryData}
-            periodDescription={currentDataset.periodDescription}
-            benchmarks={{
-              speedToLead: metricsData?.speedToLead.value || "48 seconds",
-              qualificationAccuracy:
-                metricsData?.qualificationRate.value || "76.5% Verified",
-              viewingVelocity: "+38% vs Manual",
-            }}
-          />
-        </TabsContent>
-
-        {/* Tab 2: 17-Point Revenue Path (Day 21 Checkpoint) */}
-        <TabsContent value="revenue-path" className="space-y-6">
-          {revenuePathData && (
-            <RevenuePathStepper
-              data={revenuePathData}
-              isLoading={isLoading}
+      {/* Conditional View Content */}
+      <div className="space-y-6">
+        {activeView === "funnel" && (
+          <>
+            {funnelData && (
+              <FunnelStageChart data={funnelData} isLoading={isLoading} />
+            )}
+            <PipelineFunnel
+              key={selectedPeriod}
+              data={currentDataset.trajectoryData}
+              periodDescription={currentDataset.periodDescription}
+              benchmarks={{
+                speedToLead: metricsData?.speedToLead.value || "48 seconds",
+                qualificationAccuracy:
+                  metricsData?.qualificationRate.value || "76.5% Verified",
+                viewingVelocity: "+38% vs Manual",
+              }}
             />
-          )}
-        </TabsContent>
+          </>
+        )}
 
-        {/* Tab 3: Operational Benchmarks */}
-        <TabsContent value="benchmarks" className="space-y-6">
+        {activeView === "pipeline" && revenuePathData && (
+          <RevenuePathStepper
+            data={revenuePathData}
+            isLoading={isLoading}
+          />
+        )}
+
+        {activeView === "performance" && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="p-5 rounded-2xl bg-white border border-stone-200 shadow-2xs space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold text-stone-500 uppercase tracking-wider">
-                  Speed to Lead SLA
+                  Speed to Lead
                 </span>
                 <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 text-[#0d4a36]">
-                  Autonomous
+                  Active
                 </span>
               </div>
               <div className="text-3xl font-display font-bold text-stone-900">
                 {metricsData?.speedToLead.value || "48s"}
               </div>
               <p className="text-xs text-stone-500">
-                Average elapsed seconds between inbound webhook ingestion and autonomous outbound voice/SMS contact.
+                Average time from new enquiry to first AI-powered contact.
               </p>
             </div>
 
             <div className="p-5 rounded-2xl bg-white border border-stone-200 shadow-2xs space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-semibold text-stone-500 uppercase tracking-wider">
-                  BANT+ Accuracy
+                  Qualification Accuracy
                 </span>
                 <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-teal-100 text-teal-800">
-                  Deterministic
+                  Verified
                 </span>
               </div>
               <div className="text-3xl font-display font-bold text-stone-900">
                 {metricsData?.qualificationRate.value || "76.5%"}
               </div>
               <p className="text-xs text-stone-500">
-                Percentage of prospects passing multi-variable qualification (budget, timeline, authority, need) before booking.
+                Percentage of prospects passing qualification before booking a viewing.
               </p>
             </div>
 
@@ -390,23 +383,12 @@ export default function AnalyticsPage() {
                 +38%
               </div>
               <p className="text-xs text-stone-500">
-                Acceleration in booking cycle velocity compared to manual luxury brokerage operations without AI scheduling.
+                Faster booking cycle compared to manual operations.
               </p>
             </div>
           </div>
-
-          {/* Verification Audit Note */}
-          <div className="p-4 rounded-xl bg-stone-50 border border-stone-200 flex items-start gap-3">
-            <Sparkles className="w-5 h-5 text-[#0d4a36] mt-0.5 shrink-0" />
-            <div className="text-xs text-stone-600 leading-relaxed">
-              <span className="font-semibold text-stone-900">
-                Day 21 Operational Certification:
-              </span>{" "}
-              All 17 nodes across the SpaciaOS revenue cycle are verified against live PostgreSQL tenant databases. Multi-tenant isolation is strictly enforced via workspace scoping with zero metric leakage.
-            </div>
-          </div>
-        </TabsContent>
-      </Tabs>
+        )}
+      </div>
     </Container>
   );
 }

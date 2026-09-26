@@ -129,24 +129,18 @@ export function RevenuePathStepper({
 
   return (
     <Card className="bg-white border-stone-200 shadow-2xs overflow-hidden">
-      {/* Top Banner Header: 11. DAY 21 CHECKPOINT */}
       <CardHeader className="border-b border-stone-100 pb-5">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-bold uppercase tracking-wider text-emerald-800 bg-emerald-100/70 px-2 py-0.5 rounded-md">
-                11. Day 21 Checkpoint
-              </span>
-              <CardTitle className="text-base font-display font-bold text-stone-900">
-                End-to-End Revenue Path Operational Audit
-              </CardTitle>
-            </div>
+            <CardTitle className="text-base font-display font-bold text-stone-900">
+              Sales Pipeline
+            </CardTitle>
             <CardDescription className="text-xs text-stone-500 mt-1">
-              Verification of the complete 17-point operational lifecycle: from anonymous website lead to human broker closing handoff
+              Full journey from website enquiry to broker handoff
             </CardDescription>
           </div>
 
-          {/* Readiness Certification Card */}
+          {/* Readiness Status */}
           <div className="flex items-center gap-3 bg-emerald-50/80 border border-emerald-200/80 px-4 py-2.5 rounded-xl shadow-2xs">
             <div className="relative flex items-center justify-center">
               <div className="w-3 h-3 bg-emerald-500 rounded-full animate-ping opacity-75 absolute" />
@@ -154,13 +148,10 @@ export function RevenuePathStepper({
             </div>
             <div>
               <div className="text-xs font-bold text-emerald-950 flex items-center gap-1.5">
-                <span>{operationalNodes}/{totalNodes} Nodes Certified</span>
+                <span>{operationalNodes}/{totalNodes} Steps Active</span>
                 <span className="font-mono text-[11px] font-semibold text-emerald-700">
                   ({readinessPercentage}%)
                 </span>
-              </div>
-              <div className="text-[10px] text-emerald-800">
-                Substantially Operational Revenue Path
               </div>
             </div>
           </div>
@@ -179,7 +170,7 @@ export function RevenuePathStepper({
                 : "text-stone-600 border-stone-200 hover:bg-stone-50"
             )}
           >
-            All 17 Nodes
+            All Steps
           </Button>
 
           {(
@@ -271,9 +262,7 @@ export function RevenuePathStepper({
                         >
                           {catConfig.label}
                         </Badge>
-                        <span className="text-[10px] font-mono text-stone-500 bg-stone-100 px-1.5 py-0.5 rounded">
-                          {node.verifiedMilestone}
-                        </span>
+
                       </div>
                       <div className="text-xs text-stone-500 mt-0.5">
                         {node.description}
@@ -285,7 +274,7 @@ export function RevenuePathStepper({
                   <div className="flex items-center gap-4 mt-2 sm:mt-0 z-10 justify-between sm:justify-end">
                     <div className="text-right">
                       <div className="text-[10px] text-stone-400 font-medium">
-                        Events Recorded
+                        Activity
                       </div>
                       <div className="text-xs font-bold font-mono text-stone-800">
                         {node.eventsRecorded.toLocaleString()}

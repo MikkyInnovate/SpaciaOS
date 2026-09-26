@@ -103,7 +103,7 @@ export function AnalyticsSummaryCards({
             </div>
             <div>
               <div className="text-xs font-semibold text-stone-900">
-                Speed-to-Lead (Inbound to Voice Outreach)
+                Speed to Lead
               </div>
               <div className="text-[11px] text-stone-500">
                 {metrics.speedToLead.subtext}
@@ -115,7 +115,7 @@ export function AnalyticsSummaryCards({
               {metrics.speedToLead.value}
             </div>
             <div className="text-[10px] font-semibold text-emerald-700 bg-emerald-100/70 px-1.5 py-0.5 rounded-md inline-block">
-              Sub-1 minute SLA
+              Under 1 minute
             </div>
           </div>
         </div>
@@ -139,7 +139,7 @@ export function AnalyticsSummaryCards({
               {metrics.autonomousResolutionRate.value}
             </div>
             <div className="text-[10px] font-semibold text-sky-700 bg-sky-100/70 px-1.5 py-0.5 rounded-md inline-block">
-              Zero human fatigue
+              Fully automated
             </div>
           </div>
         </div>
