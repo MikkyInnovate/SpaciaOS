@@ -6,15 +6,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils/cn";
 import {
   ArrowDown,
-  TrendingDown,
-  CheckCircle2,
-  HelpCircle,
-  Layers,
-
   Award,
 } from "lucide-react";
 import { AnalyticsFunnelResponse, FunnelStage } from "../types";
@@ -24,76 +18,41 @@ interface FunnelStageChartProps {
   isLoading?: boolean;
 }
 
-const STAGE_COLOR_MAP: Record<
-  string,
-  {
-    bg: string;
-    border: string;
-    text: string;
-    bar: string;
-    accent: string;
-  }
-> = {
-  leads: {
-    bg: "bg-stone-50",
-    border: "border-stone-200",
-    text: "text-stone-800",
-    bar: "bg-stone-700",
-    accent: "text-stone-600",
-  },
-  contacted: {
-    bg: "bg-zinc-50",
-    border: "border-zinc-200",
-    text: "text-zinc-800",
-    bar: "bg-zinc-600",
-    accent: "text-zinc-600",
-  },
-  conversations: {
-    bg: "bg-teal-50/50",
-    border: "border-teal-200/70",
-    text: "text-teal-900",
-    bar: "bg-teal-700",
-    accent: "text-teal-700",
-  },
-  qualified: {
-    bg: "bg-emerald-50/60",
-    border: "border-emerald-200",
-    text: "text-emerald-950",
-    bar: "bg-emerald-700",
-    accent: "text-[#0d4a36]",
-  },
-  hot: {
-    bg: "bg-amber-50/60",
-    border: "border-amber-200",
-    text: "text-amber-950",
-    bar: "bg-amber-600",
-    accent: "text-amber-700",
-  },
-  viewing_booked: {
-    bg: "bg-sky-50/60",
-    border: "border-sky-200",
-    text: "text-sky-950",
-    bar: "bg-sky-600",
-    accent: "text-sky-700",
-  },
-  viewing_completed: {
-    bg: "bg-indigo-50/60",
-    border: "border-indigo-200",
-    text: "text-indigo-950",
-    bar: "bg-indigo-600",
-    accent: "text-indigo-700",
-  },
-  won: {
-    bg: "bg-emerald-50 border-emerald-300/80",
-    border: "border-emerald-300",
-    text: "text-[#0d4a36]",
-    bar: "bg-[#0d4a36]",
-    accent: "text-[#0d4a36]",
-  },
-};
+const STAGE_COLORS: string[] = [
+  "bg-stone-700",
+  "bg-zinc-600",
+  "bg-teal-700",
+  "bg-emerald-700",
+  "bg-amber-600",
+  "bg-sky-600",
+  "bg-indigo-600",
+  "bg-[#0d4a36]",
+];
+
+const STAGE_BG_COLORS: string[] = [
+  "bg-stone-100",
+  "bg-zinc-100",
+  "bg-teal-100",
+  "bg-emerald-100",
+  "bg-amber-100",
+  "bg-sky-100",
+  "bg-indigo-100",
+  "bg-emerald-100",
+];
+
+const STAGE_TEXT_COLORS: string[] = [
+  "text-stone-800",
+  "text-zinc-800",
+  "text-teal-900",
+  "text-emerald-950",
+  "text-amber-950",
+  "text-sky-950",
+  "text-indigo-950",
+  "text-[#0d4a36]",
+];
 
 export function FunnelStageChart({ data, isLoading = false }: FunnelStageChartProps) {
-  const [selectedStage, setSelectedStage] = React.useState<string | null>(null);
+  const [hoveredStage, setHoveredStage] = React.useState<number | null>(null);
 
   if (isLoading) {
     return (
@@ -104,7 +63,7 @@ export function FunnelStageChart({ data, isLoading = false }: FunnelStageChartPr
         </CardHeader>
         <CardContent className="space-y-4">
           {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-            <div key={i} className="h-14 bg-stone-100 rounded-lg animate-pulse" />
+            <div key={i} className="h-10 bg-stone-100 rounded-lg animate-pulse" style={{ width: `${100 - i * 10}%`, margin: "0 auto" }} />
           ))}
         </CardContent>
       </Card>
@@ -149,174 +108,142 @@ export function FunnelStageChart({ data, isLoading = false }: FunnelStageChartPr
         </div>
       </CardHeader>
 
-      <CardContent className="pt-6 pb-6 space-y-3">
-        {stages.map((stageItem, index) => {
-          const colors =
-            STAGE_COLOR_MAP[stageItem.stage] || STAGE_COLOR_MAP.leads;
-          const isSelected = selectedStage === stageItem.stage;
-          const isFirst = index === 0;
-          const isLast = index === stages.length - 1;
+      <CardContent className="pt-6 pb-6">
+        {/* Funnel Chart */}
+        <div className="flex flex-col items-center gap-0">
+          {stages.map((stageItem, index) => {
+            const isLast = index === stages.length - 1;
+            const isFirst = index === 0;
+            const isHovered = hoveredStage === index;
 
-          // Bar width percentage relative to top (minimum 6% for visibility)
-          const barWidthPercent = Math.max(stageItem.percentageOfTop, 8);
+            // Width tapers from 100% to a minimum based on percentageOfTop
+            const barWidthPercent = Math.max(stageItem.percentageOfTop, 12);
+            const barColor = STAGE_COLORS[index] || "bg-stone-600";
+            const bgColor = STAGE_BG_COLORS[index] || "bg-stone-100";
+            const textColor = STAGE_TEXT_COLORS[index] || "text-stone-800";
 
-          return (
-            <div key={stageItem.stage} className="relative group">
-              {/* Connector Step-Rate Line between stages */}
-              {!isFirst && (
-                <div className="flex items-center justify-between px-6 py-0.5 -my-1 text-[11px] text-stone-400 z-10 relative">
-                  <div className="flex items-center gap-1">
-                    <ArrowDown className="w-3 h-3 text-stone-400" />
-                    <span className="font-mono text-stone-600 font-medium">
-                      {stageItem.stepConversionRate}% pass-through
-                    </span>
-                  </div>
-                  {stageItem.dropOffCount > 0 && (
-                    <div className="flex items-center gap-1 text-rose-600/90 text-[10px] font-mono">
-                      <TrendingDown className="w-3 h-3 text-rose-500" />
-                      <span>
-                        -{stageItem.dropOffCount} ({stageItem.dropOffRate}% drop-off)
-                      </span>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Main Funnel Bar Container */}
-              <div
-                onClick={() =>
-                  setSelectedStage(isSelected ? null : stageItem.stage)
-                }
-                className={cn(
-                  "relative flex flex-col sm:flex-row sm:items-center justify-between p-3.5 rounded-xl border transition-all cursor-pointer shadow-2xs",
-                  colors.bg,
-                  colors.border,
-                  isSelected
-                    ? "ring-2 ring-[#0d4a36] shadow-sm"
-                    : "hover:border-stone-400/80"
-                )}
-              >
-                {/* Horizontal Progress Fill in the background */}
+            return (
+              <React.Fragment key={stageItem.stage}>
+                {/* Stage Bar */}
                 <div
-                  className="absolute inset-y-0 left-0 rounded-xl opacity-10 transition-all pointer-events-none"
-                  style={{
-                    width: `${barWidthPercent}%`,
-                    backgroundColor: isLast ? "#0d4a36" : undefined,
-                  }}
-                />
-
-                {/* Left: Stage Title & Description */}
-                <div className="flex items-center gap-3 z-10">
+                  className="relative w-full flex justify-center"
+                  onMouseEnter={() => setHoveredStage(index)}
+                  onMouseLeave={() => setHoveredStage(null)}
+                >
                   <div
                     className={cn(
-                      "w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold font-mono border",
-                      isLast
-                        ? "bg-[#0d4a36] text-white border-transparent"
-                        : "bg-white text-stone-700 border-stone-300"
+                      "relative flex items-center justify-between px-4 py-3 transition-all duration-300 cursor-pointer",
+                      isFirst ? "rounded-t-xl" : "",
+                      isLast ? "rounded-b-xl" : "",
+                      isHovered ? "shadow-md z-10 scale-[1.02]" : "shadow-2xs",
+                      barColor,
                     )}
+                    style={{ width: `${barWidthPercent}%`, minWidth: "280px" }}
                   >
-                    {index + 1}
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-semibold text-stone-900">
+                    {/* Stage Label */}
+                    <div className="flex items-center gap-2.5">
+                      <span className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center text-[10px] font-bold text-white font-mono">
+                        {index + 1}
+                      </span>
+                      <span className="text-sm font-semibold text-white">
                         {stageItem.label}
                       </span>
                       {isLast && (
-                        <span className="px-1.5 py-0.2 rounded bg-emerald-100 text-[#0d4a36] text-[9px] font-bold uppercase tracking-wider">
+                        <span className="px-1.5 py-0.5 rounded bg-white/20 text-[9px] font-bold text-white uppercase tracking-wider">
                           Closed Won
                         </span>
                       )}
                     </div>
-                    <div className="text-[11px] text-stone-500">
-                      {stageItem.description}
+
+                    {/* Stage Count & Percentage */}
+                    <div className="flex items-center gap-3">
+                      <span className="text-xs font-medium text-white/70">
+                        {stageItem.percentageOfTop}%
+                      </span>
+                      <span className="text-base font-bold font-mono text-white">
+                        {stageItem.count}
+                      </span>
                     </div>
                   </div>
-                </div>
 
-                {/* Right: Stage Metrics (Count & % of Inbound) */}
-                <div className="flex items-center gap-4 sm:gap-6 mt-2 sm:mt-0 z-10">
-                  {/* Step Conversion Rate Chip */}
-                  {!isFirst && (
-                    <div className="text-right hidden sm:block">
-                      <div className="text-[10px] text-stone-500 font-medium">
-                        Step Conv
-                      </div>
-                      <div className="text-xs font-bold font-mono text-stone-700">
-                        {stageItem.stepConversionRate}%
+                  {/* Hover Tooltip */}
+                  {isHovered && (
+                    <div className="absolute -right-4 top-1/2 -translate-y-1/2 translate-x-full z-20 hidden lg:block">
+                      <div className="bg-white border border-stone-200 shadow-lg rounded-xl p-3 min-w-[200px] animate-in fade-in slide-in-from-left-2 duration-150">
+                        <div className="text-xs font-semibold text-stone-900 mb-2">
+                          {stageItem.label}
+                        </div>
+                        <div className="grid grid-cols-2 gap-2 text-[11px]">
+                          <div>
+                            <div className="text-stone-400">Volume</div>
+                            <div className="font-bold font-mono text-stone-900">{stageItem.count}</div>
+                          </div>
+                          <div>
+                            <div className="text-stone-400">% of Funnel</div>
+                            <div className="font-bold font-mono text-[#0d4a36]">{stageItem.percentageOfTop}%</div>
+                          </div>
+                          {!isFirst && (
+                            <>
+                              <div>
+                                <div className="text-stone-400">Step Rate</div>
+                                <div className="font-bold font-mono text-stone-900">{stageItem.stepConversionRate}%</div>
+                              </div>
+                              <div>
+                                <div className="text-stone-400">Drop-off</div>
+                                <div className="font-bold font-mono text-rose-700">-{stageItem.dropOffCount}</div>
+                              </div>
+                            </>
+                          )}
+                        </div>
+                        <div className="text-[10px] text-stone-500 mt-2 border-t border-stone-100 pt-2">
+                          {stageItem.description}
+                        </div>
                       </div>
                     </div>
                   )}
+                </div>
 
-                  {/* Percentage of Top Lead Volume */}
-                  <div className="text-right">
-                    <div className="text-[10px] text-stone-500 font-medium">
-                      % of Funnel
-                    </div>
-                    <div className="text-xs font-bold font-mono text-stone-800">
-                      {stageItem.percentageOfTop}%
+                {/* Connector between stages */}
+                {!isLast && (
+                  <div className="flex items-center justify-center py-0.5">
+                    <div className="flex items-center gap-1 text-[10px] text-stone-400">
+                      <ArrowDown className="w-3 h-3" />
+                      <span className="font-mono font-medium text-stone-500">
+                        {stages[index + 1].stepConversionRate}%
+                      </span>
                     </div>
                   </div>
+                )}
+              </React.Fragment>
+            );
+          })}
+        </div>
 
-                  {/* Absolute Count */}
-                  <div className="min-w-[54px] text-right">
-                    <div className="text-[10px] text-stone-500 font-medium">
-                      Volume
-                    </div>
-                    <div
-                      className={cn(
-                        "text-base font-bold font-mono",
-                        isLast ? "text-[#0d4a36]" : "text-stone-900"
-                      )}
-                    >
-                      {stageItem.count}
-                    </div>
-                  </div>
+        {/* Legend / Stage Descriptions (below chart, compact) */}
+        <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-2">
+          {stages.map((stageItem, index) => {
+            const bgColor = STAGE_BG_COLORS[index] || "bg-stone-100";
+            const textColor = STAGE_TEXT_COLORS[index] || "text-stone-800";
+            const barColor = STAGE_COLORS[index] || "bg-stone-600";
+
+            return (
+              <div
+                key={stageItem.stage}
+                className={cn("p-2.5 rounded-lg border border-stone-200/60", bgColor)}
+              >
+                <div className="flex items-center gap-1.5 mb-1">
+                  <div className={cn("w-2 h-2 rounded-full", barColor)} />
+                  <span className={cn("text-[11px] font-semibold", textColor)}>
+                    {stageItem.label}
+                  </span>
+                </div>
+                <div className="text-[10px] text-stone-500 line-clamp-2">
+                  {stageItem.description}
                 </div>
               </div>
-
-              {/* Collapsible Inspection Details */}
-              {isSelected && (
-                <div className="mt-1.5 p-3 rounded-lg bg-stone-100/80 border border-stone-200/80 text-xs text-stone-700 space-y-1 animate-in fade-in slide-in-from-top-1 duration-150">
-                  <div className="flex items-center justify-between font-medium">
-                    <span className="font-semibold text-stone-900">
-                      {stageItem.label} Deep Dive
-                    </span>
-                    <span className="text-[11px] text-stone-500 font-mono">
-                      Stage {index + 1} of 8
-                    </span>
-                  </div>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1 text-[11px]">
-                    <div className="bg-white p-2 rounded border border-stone-200">
-                      <div className="text-stone-400">Absolute Count</div>
-                      <div className="font-bold font-mono text-stone-900">
-                        {stageItem.count} leads
-                      </div>
-                    </div>
-                    <div className="bg-white p-2 rounded border border-stone-200">
-                      <div className="text-stone-400">Funnel Retention</div>
-                      <div className="font-bold font-mono text-[#0d4a36]">
-                        {stageItem.percentageOfTop}%
-                      </div>
-                    </div>
-                    <div className="bg-white p-2 rounded border border-stone-200">
-                      <div className="text-stone-400">Step Conversion</div>
-                      <div className="font-bold font-mono text-stone-900">
-                        {stageItem.stepConversionRate}%
-                      </div>
-                    </div>
-                    <div className="bg-white p-2 rounded border border-stone-200">
-                      <div className="text-stone-400">Drop-off Loss</div>
-                      <div className="font-bold font-mono text-rose-700">
-                        {stageItem.dropOffCount} ({stageItem.dropOffRate}%)
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </CardContent>
     </Card>
   );
