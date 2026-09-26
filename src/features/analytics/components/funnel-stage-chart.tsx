@@ -1,4 +1,15 @@
+"use client";
+
 import * as React from "react";
+import {
+  BarChart,
+  Bar,
+  Cell,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  LabelList,
+} from "recharts";
 import {
   Card,
   CardContent,
@@ -6,243 +17,342 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { cn } from "@/lib/utils/cn";
 import {
-  ArrowDown,
-  Award,
-} from "lucide-react";
-import { AnalyticsFunnelResponse, FunnelStage } from "../types";
+  ChartContainer,
+  ChartTooltip,
+  type ChartConfig,
+} from "@/components/ui/chart";
+import { AnalyticsFunnelResponse } from "../types";
 
 interface FunnelStageChartProps {
   data: AnalyticsFunnelResponse;
   isLoading?: boolean;
 }
 
-const STAGE_COLORS: string[] = [
-  "bg-stone-700",
-  "bg-zinc-600",
-  "bg-teal-700",
-  "bg-emerald-700",
-  "bg-amber-600",
-  "bg-sky-600",
-  "bg-indigo-600",
-  "bg-[#0d4a36]",
+type FunnelMetricKey = "count" | "percentageOfTop" | "stepConversionRate";
+
+const chartConfig = {
+  count: {
+    label: "Lead Volume",
+    color: "#0d4a36",
+  },
+  percentageOfTop: {
+    label: "Funnel Retention",
+    color: "#059669",
+  },
+  stepConversionRate: {
+    label: "Step Pass-Through",
+    color: "#2563eb",
+  },
+} satisfies ChartConfig;
+
+const STAGE_BAR_COLORS = [
+  "#71717a", // Leads (Zinc 500)
+  "#52525b", // Contacted (Zinc 600)
+  "#3f3f46", // Conversations (Zinc 700)
+  "#0d9488", // Qualified (Teal 600)
+  "#059669", // Hot (Emerald 600)
+  "#0284c7", // Booked (Sky 600)
+  "#2563eb", // Completed (Blue 600)
+  "#0d4a36", // Won (Pacia Signature Forest Green)
 ];
 
-const STAGE_BG_COLORS: string[] = [
-  "bg-stone-100",
-  "bg-zinc-100",
-  "bg-teal-100",
-  "bg-emerald-100",
-  "bg-amber-100",
-  "bg-sky-100",
-  "bg-indigo-100",
-  "bg-emerald-100",
-];
+const STAGE_SHORT_LABELS: Record<string, string> = {
+  leads: "Leads",
+  contacted: "Contacted",
+  conversations: "In Talk",
+  qualified: "Qualified",
+  hot: "Hot",
+  viewing_booked: "Booked",
+  viewing_completed: "Completed",
+  won: "Won",
+};
 
-const STAGE_TEXT_COLORS: string[] = [
-  "text-stone-800",
-  "text-zinc-800",
-  "text-teal-900",
-  "text-emerald-950",
-  "text-amber-950",
-  "text-sky-950",
-  "text-indigo-950",
-  "text-[#0d4a36]",
-];
+interface TooltipPayloadItem {
+  payload: {
+    stage: string;
+    label: string;
+    stageNumber: number;
+    count: number;
+    percentageOfTop: number;
+    stepConversionRate: number;
+    dropOffCount: number;
+    dropOffRate: number;
+    description: string;
+    isWon: boolean;
+  };
+}
+
+function FunnelCustomTooltip({
+  active,
+  payload,
+}: {
+  active?: boolean;
+  payload?: TooltipPayloadItem[];
+}) {
+  if (!active || !payload?.length) return null;
+  const item = payload[0].payload;
+
+  return (
+    <div className="w-[220px] rounded-xl border border-stone-200 bg-white p-3 shadow-lg text-xs space-y-2">
+      <div className="flex items-center justify-between border-b border-stone-100 pb-1.5">
+        <span className="font-semibold text-stone-900">
+          {item.stageNumber}. {item.label}
+        </span>
+        {item.isWon && (
+          <span className="rounded bg-emerald-100 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-[#0d4a36]">
+            Closed Won
+          </span>
+        )}
+      </div>
+      <div className="grid grid-cols-2 gap-2 text-[11px]">
+        <div>
+          <span className="text-[10px] text-stone-400 block">Volume</span>
+          <span className="font-bold font-mono text-stone-900">{item.count} leads</span>
+        </div>
+        <div>
+          <span className="text-[10px] text-stone-400 block">% of Funnel</span>
+          <span className="font-bold font-mono text-[#0d4a36]">{item.percentageOfTop}%</span>
+        </div>
+        <div>
+          <span className="text-[10px] text-stone-400 block">Step Conv.</span>
+          <span className="font-bold font-mono text-stone-900">{item.stepConversionRate}%</span>
+        </div>
+        <div>
+          <span className="text-[10px] text-stone-400 block">Drop-off</span>
+          <span className="font-bold font-mono text-rose-600">
+            {item.dropOffCount > 0 ? `-${item.dropOffCount} (${item.dropOffRate}%)` : "0"}
+          </span>
+        </div>
+      </div>
+      <div className="text-[10px] text-stone-500 pt-1 border-t border-stone-100 leading-normal">
+        {item.description}
+      </div>
+    </div>
+  );
+}
 
 export function FunnelStageChart({ data, isLoading = false }: FunnelStageChartProps) {
-  const [hoveredStage, setHoveredStage] = React.useState<number | null>(null);
+  const [activeMetric, setActiveMetric] = React.useState<FunnelMetricKey>("count");
+
+  const { stages, totalLeads, wonCount, overallConversionRate } = data;
+
+  const avgStepConversion = React.useMemo(() => {
+    if (!stages.length) return 0;
+    const nonFirst = stages.slice(1);
+    if (!nonFirst.length) return 100;
+    const sum = nonFirst.reduce((acc, curr) => acc + curr.stepConversionRate, 0);
+    return Math.round((sum / nonFirst.length) * 10) / 10;
+  }, [stages]);
+
+  const chartData = React.useMemo(() => {
+    return stages.map((s, idx) => ({
+      stage: s.stage,
+      label: s.label,
+      shortLabel: STAGE_SHORT_LABELS[s.stage] || s.label,
+      stageNumber: idx + 1,
+      count: s.count,
+      percentageOfTop: s.percentageOfTop,
+      stepConversionRate: s.stepConversionRate,
+      dropOffCount: s.dropOffCount,
+      dropOffRate: s.dropOffRate,
+      description: s.description,
+      isWon: idx === stages.length - 1,
+    }));
+  }, [stages]);
+
+  const qualifiedCount = React.useMemo(() => {
+    return stages.find((s) => s.stage === "qualified")?.count ?? 0;
+  }, [stages]);
+
+  const viewingsCount = React.useMemo(() => {
+    return stages.find((s) => s.stage === "viewing_completed")?.count ?? 0;
+  }, [stages]);
 
   if (isLoading) {
     return (
-      <Card className="bg-white border-border shadow-2xs">
-        <CardHeader>
-          <div className="h-6 w-48 bg-stone-100 rounded animate-pulse" />
-          <div className="h-4 w-72 bg-stone-100 rounded animate-pulse" />
+      <Card className="py-4 sm:py-0 bg-white border-border shadow-2xs">
+        <CardHeader className="flex flex-col items-stretch border-b border-border p-0! sm:flex-row">
+          <div className="flex flex-1 flex-col justify-center gap-1 px-6 py-4 sm:py-0">
+            <div className="h-5 w-44 bg-stone-100 rounded animate-pulse" />
+            <div className="h-3 w-64 bg-stone-100 rounded animate-pulse" />
+          </div>
         </CardHeader>
-        <CardContent className="space-y-4">
-          {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-            <div key={i} className="h-10 bg-stone-100 rounded-lg animate-pulse" style={{ width: `${100 - i * 10}%`, margin: "0 auto" }} />
-          ))}
+        <CardContent className="px-4 py-5 sm:p-6 space-y-4">
+          <div className="h-[260px] bg-stone-100 rounded-xl animate-pulse" />
         </CardContent>
       </Card>
     );
   }
 
-  const { stages, totalLeads, wonCount, overallConversionRate } = data;
-
   return (
-    <Card className="bg-white border-stone-200 shadow-2xs overflow-hidden">
-      <CardHeader className="border-b border-stone-100 pb-4">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <CardTitle className="text-base font-display font-bold text-stone-900">
-              Conversion Funnel
-            </CardTitle>
-            <CardDescription className="text-xs text-stone-500 mt-1">
-              Lead-to-won progression across all pipeline stages
-            </CardDescription>
-          </div>
+    <Card className="py-4 sm:py-0 bg-white border-border shadow-2xs overflow-hidden">
+      <CardHeader className="flex flex-col items-stretch border-b border-border p-0! sm:flex-row">
+        <div className="flex flex-1 flex-col justify-center gap-1 px-6 py-4 sm:py-0">
+          <CardTitle className="font-display text-base font-bold text-stone-900">
+            Conversion Funnel
+          </CardTitle>
+          <CardDescription className="text-xs text-stone-500">
+            Stage-by-stage progression from inbound inquiry to closed won
+          </CardDescription>
+        </div>
 
-          {/* Aggregate Funnel Conversion Summary */}
-          <div className="flex items-center gap-3 bg-stone-50 border border-stone-200/80 px-4 py-2.5 rounded-xl">
-            <div className="flex items-center gap-1.5 text-xs text-stone-600">
-              <span className="text-stone-400">Inbound:</span>
-              <span className="font-bold text-stone-900 font-mono">{totalLeads}</span>
-            </div>
-            <ArrowDown className="w-3.5 h-3.5 text-stone-400 -rotate-90" />
-            <div className="flex items-center gap-1.5 text-xs text-stone-600">
-              <span className="text-stone-400">Won:</span>
-              <span className="font-bold text-[#0d4a36] font-mono">{wonCount}</span>
-            </div>
-            <div className="h-4 w-px bg-stone-200 mx-1" />
-            <div className="flex items-center gap-1.5">
-              <Award className="w-4 h-4 text-emerald-700" />
-              <span className="text-xs font-semibold text-stone-900">Conversion:</span>
-              <span className="text-xs font-bold font-mono text-[#0d4a36]">
-                {overallConversionRate}%
-              </span>
-            </div>
-          </div>
+        {/* Interactive Metric Switcher Tabs */}
+        <div className="flex border-t sm:border-t-0 sm:border-l border-border">
+          {(["count", "percentageOfTop", "stepConversionRate"] as const).map((key) => {
+            const isActive = activeMetric === key;
+            const displayValue =
+              key === "count"
+                ? totalLeads.toLocaleString()
+                : key === "percentageOfTop"
+                ? `${overallConversionRate}%`
+                : `${avgStepConversion}%`;
+
+            return (
+              <button
+                key={key}
+                type="button"
+                data-active={isActive}
+                className="flex flex-1 flex-col justify-center gap-1 px-4 py-3.5 sm:px-6 sm:py-4 text-left border-r last:border-r-0 border-border transition-colors cursor-pointer data-[active=true]:bg-stone-50/90 hover:bg-stone-50/50"
+                onClick={() => setActiveMetric(key)}
+              >
+                <div className="flex items-center gap-1.5">
+                  <span
+                    className="h-2 w-2 rounded-full shrink-0"
+                    style={{ backgroundColor: chartConfig[key].color }}
+                  />
+                  <span className="text-[11px] font-semibold text-stone-500 uppercase tracking-wider truncate">
+                    {chartConfig[key].label}
+                  </span>
+                </div>
+                <span className="font-display text-xl sm:text-2xl font-bold tracking-tight text-stone-900 tabular-nums">
+                  {displayValue}
+                </span>
+              </button>
+            );
+          })}
         </div>
       </CardHeader>
 
-      <CardContent className="pt-6 pb-6">
-        {/* Funnel Chart */}
-        <div className="flex flex-col items-center gap-0">
-          {stages.map((stageItem, index) => {
-            const isLast = index === stages.length - 1;
-            const isFirst = index === 0;
-            const isHovered = hoveredStage === index;
+      <CardContent className="px-4 py-5 sm:p-6">
+        <ChartContainer
+          config={chartConfig}
+          className="aspect-auto h-[260px] w-full"
+        >
+          <BarChart
+            accessibilityLayer
+            data={chartData}
+            margin={{
+              top: 20,
+              left: 0,
+              right: 14,
+              bottom: 0,
+            }}
+          >
+            <CartesianGrid
+              vertical={false}
+              strokeDasharray="4 4"
+              stroke="#e4e4e7"
+            />
+            <XAxis
+              dataKey="shortLabel"
+              tickLine={false}
+              axisLine={false}
+              tickMargin={10}
+              stroke="#71717a"
+              tick={{ fontSize: 11, fill: "#71717a" }}
+            />
+            <YAxis
+              tickLine={false}
+              axisLine={false}
+              tickMargin={8}
+              stroke="#71717a"
+              tick={{ fontSize: 11, fill: "#71717a" }}
+              domain={[0, "auto"]}
+              tickFormatter={(val: number) => {
+                if (activeMetric === "count") return `${val}`;
+                return `${val}%`;
+              }}
+            />
+            <ChartTooltip content={<FunnelCustomTooltip />} />
+            <Bar
+              dataKey={activeMetric}
+              radius={[6, 6, 0, 0]}
+              maxBarSize={56}
+            >
+              <LabelList
+                dataKey={activeMetric}
+                position="top"
+                offset={8}
+                fontSize={10}
+                fontWeight={600}
+                fill="#52525b"
+                formatter={(val: unknown) => {
+                  const num = Number(val);
+                  if (isNaN(num)) return "";
+                  if (activeMetric === "count") return `${num}`;
+                  return `${num}%`;
+                }}
+              />
+              {chartData.map((entry, index) => (
+                <Cell
+                  key={`cell-${entry.stage}`}
+                  fill={STAGE_BAR_COLORS[index % STAGE_BAR_COLORS.length]}
+                />
+              ))}
+            </Bar>
+          </BarChart>
+        </ChartContainer>
 
-            // Width tapers from 100% to a minimum based on percentageOfTop
-            const barWidthPercent = Math.max(stageItem.percentageOfTop, 12);
-            const barColor = STAGE_COLORS[index] || "bg-stone-600";
-            const bgColor = STAGE_BG_COLORS[index] || "bg-stone-100";
-            const textColor = STAGE_TEXT_COLORS[index] || "text-stone-800";
+        {/* Funnel Metrics Summary Under Chart */}
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 pt-4 mt-2 border-t border-border/80">
+          <div className="p-3 rounded-md border border-stone-200/80 bg-stone-50/50">
+            <span className="text-[11px] font-semibold text-stone-500 uppercase tracking-wider">
+              Total Inbound
+            </span>
+            <p className="font-display text-lg font-bold text-stone-900 mt-0.5">
+              {totalLeads.toLocaleString()}
+            </p>
+            <span className="text-[11px] text-stone-500">
+              Top of conversion funnel
+            </span>
+          </div>
 
-            return (
-              <React.Fragment key={stageItem.stage}>
-                {/* Stage Bar */}
-                <div
-                  className="relative w-full flex justify-center"
-                  onMouseEnter={() => setHoveredStage(index)}
-                  onMouseLeave={() => setHoveredStage(null)}
-                >
-                  <div
-                    className={cn(
-                      "relative flex items-center justify-between px-4 py-3 transition-all duration-300 cursor-pointer",
-                      isFirst ? "rounded-t-xl" : "",
-                      isLast ? "rounded-b-xl" : "",
-                      isHovered ? "shadow-md z-10 scale-[1.02]" : "shadow-2xs",
-                      barColor,
-                    )}
-                    style={{ width: `${barWidthPercent}%`, minWidth: "280px" }}
-                  >
-                    {/* Stage Label */}
-                    <div className="flex items-center gap-2.5">
-                      <span className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center text-[10px] font-bold text-white font-mono">
-                        {index + 1}
-                      </span>
-                      <span className="text-sm font-semibold text-white">
-                        {stageItem.label}
-                      </span>
-                      {isLast && (
-                        <span className="px-1.5 py-0.5 rounded bg-white/20 text-[9px] font-bold text-white uppercase tracking-wider">
-                          Closed Won
-                        </span>
-                      )}
-                    </div>
+          <div className="p-3 rounded-md border border-stone-200/80 bg-stone-50/50">
+            <span className="text-[11px] font-semibold text-stone-500 uppercase tracking-wider">
+              Qualified Intent
+            </span>
+            <p className="font-display text-lg font-bold text-stone-900 mt-0.5">
+              {qualifiedCount.toLocaleString()}
+            </p>
+            <span className="text-[11px] text-stone-500">
+              Passed qualification criteria
+            </span>
+          </div>
 
-                    {/* Stage Count & Percentage */}
-                    <div className="flex items-center gap-3">
-                      <span className="text-xs font-medium text-white/70">
-                        {stageItem.percentageOfTop}%
-                      </span>
-                      <span className="text-base font-bold font-mono text-white">
-                        {stageItem.count}
-                      </span>
-                    </div>
-                  </div>
+          <div className="p-3 rounded-md border border-stone-200/80 bg-stone-50/50">
+            <span className="text-[11px] font-semibold text-stone-500 uppercase tracking-wider">
+              Completed Viewings
+            </span>
+            <p className="font-display text-lg font-bold text-stone-900 mt-0.5">
+              {viewingsCount.toLocaleString()}
+            </p>
+            <span className="text-[11px] text-stone-500">
+              Attended property walkthroughs
+            </span>
+          </div>
 
-                  {/* Hover Tooltip */}
-                  {isHovered && (
-                    <div className="absolute -right-4 top-1/2 -translate-y-1/2 translate-x-full z-20 hidden lg:block">
-                      <div className="bg-white border border-stone-200 shadow-lg rounded-xl p-3 min-w-[200px] animate-in fade-in slide-in-from-left-2 duration-150">
-                        <div className="text-xs font-semibold text-stone-900 mb-2">
-                          {stageItem.label}
-                        </div>
-                        <div className="grid grid-cols-2 gap-2 text-[11px]">
-                          <div>
-                            <div className="text-stone-400">Volume</div>
-                            <div className="font-bold font-mono text-stone-900">{stageItem.count}</div>
-                          </div>
-                          <div>
-                            <div className="text-stone-400">% of Funnel</div>
-                            <div className="font-bold font-mono text-[#0d4a36]">{stageItem.percentageOfTop}%</div>
-                          </div>
-                          {!isFirst && (
-                            <>
-                              <div>
-                                <div className="text-stone-400">Step Rate</div>
-                                <div className="font-bold font-mono text-stone-900">{stageItem.stepConversionRate}%</div>
-                              </div>
-                              <div>
-                                <div className="text-stone-400">Drop-off</div>
-                                <div className="font-bold font-mono text-rose-700">-{stageItem.dropOffCount}</div>
-                              </div>
-                            </>
-                          )}
-                        </div>
-                        <div className="text-[10px] text-stone-500 mt-2 border-t border-stone-100 pt-2">
-                          {stageItem.description}
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* Connector between stages */}
-                {!isLast && (
-                  <div className="flex items-center justify-center py-0.5">
-                    <div className="flex items-center gap-1 text-[10px] text-stone-400">
-                      <ArrowDown className="w-3 h-3" />
-                      <span className="font-mono font-medium text-stone-500">
-                        {stages[index + 1].stepConversionRate}%
-                      </span>
-                    </div>
-                  </div>
-                )}
-              </React.Fragment>
-            );
-          })}
-        </div>
-
-        {/* Legend / Stage Descriptions (below chart, compact) */}
-        <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-2">
-          {stages.map((stageItem, index) => {
-            const bgColor = STAGE_BG_COLORS[index] || "bg-stone-100";
-            const textColor = STAGE_TEXT_COLORS[index] || "text-stone-800";
-            const barColor = STAGE_COLORS[index] || "bg-stone-600";
-
-            return (
-              <div
-                key={stageItem.stage}
-                className={cn("p-2.5 rounded-lg border border-stone-200/60", bgColor)}
-              >
-                <div className="flex items-center gap-1.5 mb-1">
-                  <div className={cn("w-2 h-2 rounded-full", barColor)} />
-                  <span className={cn("text-[11px] font-semibold", textColor)}>
-                    {stageItem.label}
-                  </span>
-                </div>
-                <div className="text-[10px] text-stone-500 line-clamp-2">
-                  {stageItem.description}
-                </div>
-              </div>
-            );
-          })}
+          <div className="p-3 rounded-md border border-stone-200/80 bg-stone-50/50">
+            <span className="text-[11px] font-semibold text-stone-500 uppercase tracking-wider">
+              Overall Win Rate
+            </span>
+            <p className="font-display text-lg font-bold text-[#0d4a36] mt-0.5">
+              {overallConversionRate}%
+            </p>
+            <span className="text-[11px] text-stone-500">
+              {wonCount} closed deals
+            </span>
+          </div>
         </div>
       </CardContent>
     </Card>
