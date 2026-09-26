@@ -234,8 +234,11 @@ export class AnalyticsService {
 
     let totalBudgetSum = 0;
     let totalLeads = 0;
+    let activeLeadsCount = 0;
     let qualifiedLeads = 0;
     let bookedViewings = 0;
+    let completedAppointmentsCount = 0;
+    let autonomousLeadsCount = 0;
 
     if (this.db) {
       try {
@@ -247,16 +250,27 @@ export class AnalyticsService {
             status: schema.leads.status,
             score: schema.leads.score,
             budget: schema.leads.budget,
+            managementMode: schema.leads.managementMode,
+            isAiStopped: schema.leads.isAiStopped,
+            createdAt: schema.leads.createdAt,
           })
           .from(schema.leads)
           .where(and(...conditions));
 
         totalLeads = leads.length;
         qualifiedLeads = leads.filter(
-          (l) => ["Qualified", "Viewing Booked", "Closed", "Won"].includes(l.status) || (l.score && l.score >= 70)
+          (l) =>
+            ["Qualified", "Viewing Booked", "Closed", "Won"].includes(l.status) ||
+            (l.score !== null && l.score >= 70)
         ).length;
 
-        leads.forEach((l) => {
+        // Active pipeline excludes Lost leads
+        const activeLeads = leads.filter(
+          (l) => (l.status as string) !== "Lost"
+        );
+        activeLeadsCount = activeLeads.length;
+
+        activeLeads.forEach((l) => {
           if (l.budget) {
             const numeric = parseFloat(l.budget.replace(/[^0-9.]/g, ""));
             if (!isNaN(numeric) && numeric > 0) {
@@ -265,12 +279,21 @@ export class AnalyticsService {
           }
         });
 
+        // Autonomous leads = handled by AI without broker takeover or manual stoppage
+        autonomousLeadsCount = leads.filter(
+          (l) =>
+            !l.isAiStopped &&
+            l.managementMode !== "human_managed" &&
+            l.status !== "Human Managed"
+        ).length;
+
         const apts = await this.db
-          .select({ id: schema.appointments.id })
+          .select({ id: schema.appointments.id, status: schema.appointments.status })
           .from(schema.appointments)
           .where(eq(schema.appointments.workspaceId, wsId));
 
         bookedViewings = apts.length;
+        completedAppointmentsCount = apts.filter((a) => a.status === "completed").length;
       } catch (err) {
         this.logger.warn(`Could not compute overview metrics: ${(err as Error).message}`);
       }
@@ -278,60 +301,61 @@ export class AnalyticsService {
 
     if (totalLeads === 0 && (!this.db || wsId === "default")) {
       return {
-        grossInbound: { value: "128", numericValue: 128, trend: "+18.4%", subtext: "vs last period", isPositive: true },
-        qualificationRate: { value: "76.5%", percentage: 76.5, trend: "+5.2%", subtext: "autonomous pass", isPositive: true },
-        bookedViewings: { value: "24", numericValue: 24, trend: "+12.0%", subtext: "on closer calendars", isPositive: true },
-        pipelinePotential: { value: "₦1.85B", rawNaira: 1_850_000_000, trend: "+22.5%", subtext: "verified budget", isPositive: true },
-        speedToLead: { value: "48s", subtext: "inbound to first voice touch" },
-        autonomousResolutionRate: { value: "88.4%", subtext: "resolved without human friction" },
+        grossInbound: { value: "0", numericValue: 0, subtext: "no leads captured yet", isPositive: true },
+        qualificationRate: { value: "0%", percentage: 0, subtext: "0 qualified leads", isPositive: false },
+        bookedViewings: { value: "0", numericValue: 0, subtext: "0 viewings scheduled", isPositive: false },
+        pipelinePotential: { value: "₦0", rawNaira: 0, subtext: "Active prospective pipeline (₦0 closed won)", isPositive: false },
+        speedToLead: { value: "--", subtext: "autonomous AI outreach dispatch" },
+        autonomousResolutionRate: { value: "0%", subtext: "0 leads handled" },
       };
     }
 
     const qualRate = totalLeads > 0 ? Math.round((qualifiedLeads / totalLeads) * 1000) / 10 : 0;
+    const autoRate = totalLeads > 0 ? Math.round((autonomousLeadsCount / totalLeads) * 1000) / 10 : 0;
 
     return {
       grossInbound: {
         value: totalLeads.toString(),
         numericValue: totalLeads,
-        trend: "+14.2%",
+        trend: undefined,
         subtext: "total captured leads",
         isPositive: true,
       },
       qualificationRate: {
         value: `${qualRate}%`,
         percentage: qualRate,
-        trend: "+4.8%",
-        subtext: "qualified / BANT passed",
+        trend: undefined,
+        subtext: `${qualifiedLeads} of ${totalLeads} leads BANT qualified`,
         isPositive: qualRate >= 50,
       },
       bookedViewings: {
         value: bookedViewings.toString(),
         numericValue: bookedViewings,
-        trend: "+10.5%",
-        subtext: "viewings on broker calendars",
+        trend: undefined,
+        subtext: `${completedAppointmentsCount > 0 ? `${completedAppointmentsCount} completed · ` : ""}${bookedViewings} scheduled viewings`,
         isPositive: true,
       },
       pipelinePotential: {
-        value: this.formatNaira(totalBudgetSum || 650_000_000),
-        rawNaira: totalBudgetSum || 650_000_000,
-        trend: "+18.0%",
-        subtext: "pipeline budget potential",
+        value: this.formatNaira(totalBudgetSum),
+        rawNaira: totalBudgetSum,
+        trend: undefined,
+        subtext: `Active prospective pipeline (${activeLeadsCount} active · ₦0 closed won)`,
         isPositive: true,
       },
       speedToLead: {
-        value: "42s",
-        subtext: "average time to first contact",
+        value: totalLeads > 0 ? "< 60s" : "--",
+        subtext: "autonomous AI outreach dispatch",
       },
       autonomousResolutionRate: {
-        value: "91.2%",
-        subtext: "fully automated prior to handoff",
+        value: `${autoRate}%`,
+        subtext: `${autonomousLeadsCount} of ${totalLeads} leads handled autonomously`,
       },
     };
   }
 
   /**
    * 3. GET /api/v1/analytics/revenue-path
-   * DAY 21 CHECKPOINT: Verifies the 17-step operational pipeline across the sales loop
+   * Verifies the 17-step operational pipeline across the sales loop with real database records
    */
   async getRevenuePath(tenant: TenantContext): Promise<RevenuePathResponse> {
     let wsId = tenant.workspaceId || "default";
@@ -352,29 +376,65 @@ export class AnalyticsService {
 
     // Track active database event counts across the pipeline steps
     let leadCount = 0;
+    let scoredCount = 0;
+    let handoffCount = 0;
+    let propertiesCount = 0;
     let callCount = 0;
+    let transcriptCount = 0;
+    let summaryCount = 0;
     let aptCount = 0;
+    let confirmedAptCount = 0;
     let notifCount = 0;
-    let eventCount = 0;
-    let auditCount = 0;
 
     if (this.db) {
       try {
-        const [leads, calls, apts, notifs, events, audits] = await Promise.all([
-          this.db.select({ id: schema.leads.id }).from(schema.leads).where(eq(schema.leads.workspaceId, wsId)),
-          this.db.select({ id: schema.calls.id }).from(schema.calls).where(eq(schema.calls.workspaceId, wsId)),
-          this.db.select({ id: schema.appointments.id }).from(schema.appointments).where(eq(schema.appointments.workspaceId, wsId)),
-          this.db.select({ id: schema.notifications.id }).from(schema.notifications).where(eq(schema.notifications.workspaceId, wsId)),
-          this.db.select({ id: schema.systemEvents.id }).from(schema.systemEvents).where(eq(schema.systemEvents.workspaceId, wsId)),
-          this.db.select({ id: schema.auditLogs.id }).from(schema.auditLogs).where(eq(schema.auditLogs.workspaceId, wsId)),
+        const [leads, properties, calls, apts, notifs] = await Promise.all([
+          this.db
+            .select({
+              id: schema.leads.id,
+              status: schema.leads.status,
+              score: schema.leads.score,
+              isAiStopped: schema.leads.isAiStopped,
+              managementMode: schema.leads.managementMode,
+            })
+            .from(schema.leads)
+            .where(eq(schema.leads.workspaceId, wsId)),
+          this.db
+            .select({ id: schema.properties.id, verificationStatus: schema.properties.verificationStatus })
+            .from(schema.properties)
+            .where(eq(schema.properties.workspaceId, wsId)),
+          this.db
+            .select({
+              id: schema.calls.id,
+              recordingState: schema.calls.recordingState,
+              durationSeconds: schema.calls.durationSeconds,
+            })
+            .from(schema.calls)
+            .where(eq(schema.calls.workspaceId, wsId)),
+          this.db
+            .select({ id: schema.appointments.id, status: schema.appointments.status })
+            .from(schema.appointments)
+            .where(eq(schema.appointments.workspaceId, wsId)),
+          this.db
+            .select({ id: schema.notifications.id, type: schema.notifications.type })
+            .from(schema.notifications)
+            .where(eq(schema.notifications.workspaceId, wsId)),
         ]);
 
         leadCount = leads.length;
+        scoredCount = leads.filter((l) => l.score !== null).length;
+        handoffCount = leads.filter(
+          (l) => l.isAiStopped || l.status === "Human Managed" || l.managementMode === "human_managed"
+        ).length;
+
+        propertiesCount = properties.length;
         callCount = calls.length;
+        transcriptCount = calls.filter((c) => c.recordingState === "ready" && c.durationSeconds > 0).length;
+        summaryCount = calls.filter((c) => c.recordingState === "ready" && c.durationSeconds > 0).length;
+
         aptCount = apts.length;
+        confirmedAptCount = apts.filter((a) => a.status === "confirmed").length;
         notifCount = notifs.length;
-        eventCount = events.length;
-        auditCount = audits.length;
       } catch (err) {
         this.logger.warn(`Could not query pipeline records for revenue path: ${(err as Error).message}`);
       }
@@ -387,7 +447,7 @@ export class AnalyticsService {
         label: "Website Lead",
         description: "Inbound webhook capture and phone E.164 normalization",
         category: "ingestion",
-        status: leadCount > 0 ? "operational" : "active",
+        status: leadCount > 0 ? "operational" : "standby",
         verifiedMilestone: "Day 5",
         eventsRecorded: leadCount,
       },
@@ -397,7 +457,7 @@ export class AnalyticsService {
         label: "Spacia Ingestion",
         description: "Idempotency reservation, deduplication & multi-tenant isolation",
         category: "ingestion",
-        status: leadCount > 0 ? "operational" : "active",
+        status: leadCount > 0 ? "operational" : "standby",
         verifiedMilestone: "Day 5",
         eventsRecorded: leadCount,
       },
@@ -407,9 +467,9 @@ export class AnalyticsService {
         label: "AI Contact",
         description: "Transactional outbox emission and BullMQ background queue dispatch",
         category: "ingestion",
-        status: "operational",
+        status: callCount > 0 ? "operational" : "standby",
         verifiedMilestone: "Day 8",
-        eventsRecorded: Math.max(eventCount, leadCount),
+        eventsRecorded: callCount,
       },
       {
         step: 4,
@@ -417,9 +477,9 @@ export class AnalyticsService {
         label: "Conversation",
         description: "Omnichannel conversational threads with prospect tracking",
         category: "qualification",
-        status: "operational",
+        status: callCount > 0 ? "operational" : "standby",
         verifiedMilestone: "Day 10",
-        eventsRecorded: callCount > 0 ? callCount : leadCount,
+        eventsRecorded: callCount,
       },
       {
         step: 5,
@@ -427,9 +487,9 @@ export class AnalyticsService {
         label: "Verified Property Data",
         description: "Controlled tool grounding against verified luxury property inventory",
         category: "qualification",
-        status: "operational",
+        status: propertiesCount > 0 ? "operational" : "standby",
         verifiedMilestone: "Day 9",
-        eventsRecorded: auditCount > 0 ? auditCount : leadCount,
+        eventsRecorded: propertiesCount,
       },
       {
         step: 6,
@@ -437,7 +497,7 @@ export class AnalyticsService {
         label: "Qualification",
         description: "5-point BANT+ underwriting (Budget, Authority, Need, Timeline, Fit)",
         category: "qualification",
-        status: "operational",
+        status: leadCount > 0 ? "operational" : "standby",
         verifiedMilestone: "Day 11",
         eventsRecorded: leadCount,
       },
@@ -447,9 +507,9 @@ export class AnalyticsService {
         label: "Score",
         description: "Deterministic 0–100 qualification scoring with HOT/WARM/COLD tiers",
         category: "qualification",
-        status: "operational",
+        status: scoredCount > 0 ? "operational" : "standby",
         verifiedMilestone: "Day 11",
-        eventsRecorded: leadCount,
+        eventsRecorded: scoredCount,
       },
       {
         step: 8,
@@ -457,7 +517,7 @@ export class AnalyticsService {
         label: "Call",
         description: "Vapi AI voice telephony outbound dispatch and webhook ingestion",
         category: "voice",
-        status: "operational",
+        status: callCount > 0 ? "operational" : "standby",
         verifiedMilestone: "Day 12",
         eventsRecorded: callCount,
       },
@@ -467,9 +527,9 @@ export class AnalyticsService {
         label: "Transcript",
         description: "Turn-by-turn speech transcription with speaker attribution",
         category: "voice",
-        status: "operational",
+        status: transcriptCount > 0 ? "operational" : "standby",
         verifiedMilestone: "Day 12",
-        eventsRecorded: callCount,
+        eventsRecorded: transcriptCount,
       },
       {
         step: 10,
@@ -477,9 +537,9 @@ export class AnalyticsService {
         label: "Summary",
         description: "Structured post-call outcome classification and sentiment analysis",
         category: "voice",
-        status: "operational",
+        status: summaryCount > 0 ? "operational" : "standby",
         verifiedMilestone: "Day 12",
-        eventsRecorded: callCount,
+        eventsRecorded: summaryCount,
       },
       {
         step: 11,
@@ -487,9 +547,9 @@ export class AnalyticsService {
         label: "Follow-up",
         description: "Automated cadence scheduling, objection logging & takeover protection",
         category: "voice",
-        status: "operational",
+        status: "standby",
         verifiedMilestone: "Day 13",
-        eventsRecorded: callCount > 0 ? callCount : Math.min(leadCount, 2),
+        eventsRecorded: 0,
       },
       {
         step: 12,
@@ -497,7 +557,7 @@ export class AnalyticsService {
         label: "Viewing Request",
         description: "Prospect inspection intent detected and captured by AI associate",
         category: "scheduling",
-        status: "operational",
+        status: aptCount > 0 ? "operational" : "standby",
         verifiedMilestone: "Day 15",
         eventsRecorded: aptCount,
       },
@@ -507,7 +567,7 @@ export class AnalyticsService {
         label: "Calendar Availability",
         description: "Real-time Google Calendar Free/Busy collision check & Sunday lockout",
         category: "scheduling",
-        status: "operational",
+        status: aptCount > 0 ? "operational" : "standby",
         verifiedMilestone: "Day 16",
         eventsRecorded: aptCount,
       },
@@ -517,9 +577,9 @@ export class AnalyticsService {
         label: "Viewing Booking",
         description: "Confirmed appointment creation, ref code generation & double-booking prevention",
         category: "scheduling",
-        status: "operational",
+        status: confirmedAptCount > 0 ? "operational" : "standby",
         verifiedMilestone: "Day 17",
-        eventsRecorded: aptCount,
+        eventsRecorded: confirmedAptCount,
       },
       {
         step: 15,
@@ -527,9 +587,9 @@ export class AnalyticsService {
         label: "Email Confirmation",
         description: "Branded Resend confirmation email with 1-click Google Calendar link",
         category: "closing",
-        status: "operational",
+        status: confirmedAptCount > 0 || notifCount > 0 ? "operational" : "standby",
         verifiedMilestone: "Day 19",
-        eventsRecorded: notifCount > 0 ? notifCount : aptCount,
+        eventsRecorded: confirmedAptCount > 0 ? confirmedAptCount : notifCount,
       },
       {
         step: 16,
@@ -537,9 +597,9 @@ export class AnalyticsService {
         label: "Sales Notification",
         description: "Real-time luxury closer briefing dossier dispatched to closers@spacia.io",
         category: "closing",
-        status: "operational",
+        status: confirmedAptCount > 0 || notifCount > 0 ? "operational" : "standby",
         verifiedMilestone: "Day 19",
-        eventsRecorded: notifCount > 0 ? notifCount : aptCount,
+        eventsRecorded: confirmedAptCount > 0 ? confirmedAptCount : notifCount,
       },
       {
         step: 17,
@@ -547,9 +607,9 @@ export class AnalyticsService {
         label: "Human Handoff",
         description: "1-click broker takeover, AI silence lockout, and inspection conclusion",
         category: "closing",
-        status: "operational",
+        status: handoffCount > 0 ? "operational" : "standby",
         verifiedMilestone: "Day 18",
-        eventsRecorded: leadCount > 0 ? Math.min(leadCount, 3) : 0,
+        eventsRecorded: handoffCount,
       },
     ];
 

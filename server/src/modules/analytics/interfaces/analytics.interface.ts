@@ -38,30 +38,30 @@ export interface AnalyticsOverviewMetrics {
   grossInbound: {
     value: string;
     numericValue: number;
-    trend: string;
+    trend?: string;
     subtext: string;
-    isPositive: boolean;
+    isPositive?: boolean;
   };
   qualificationRate: {
     value: string;
     percentage: number;
-    trend: string;
+    trend?: string;
     subtext: string;
-    isPositive: boolean;
+    isPositive?: boolean;
   };
   bookedViewings: {
     value: string;
     numericValue: number;
-    trend: string;
+    trend?: string;
     subtext: string;
-    isPositive: boolean;
+    isPositive?: boolean;
   };
   pipelinePotential: {
     value: string;
     rawNaira: number;
-    trend: string;
+    trend?: string;
     subtext: string;
-    isPositive: boolean;
+    isPositive?: boolean;
   };
   speedToLead: {
     value: string;
