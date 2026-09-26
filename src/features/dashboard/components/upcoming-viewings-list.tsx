@@ -1,4 +1,5 @@
 import * as React from "react";
+import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -9,12 +10,20 @@ import { CalendarDays, Clock, UserCheck, ChevronRight } from "lucide-react";
 export interface UpcomingViewingsListProps {
   viewings: DashboardViewing[];
   isLoading?: boolean;
+  limit?: number;
 }
+
+const DEFAULT_LIMIT = 6;
 
 export function UpcomingViewingsList({
   viewings,
   isLoading = false,
+  limit = DEFAULT_LIMIT,
 }: UpcomingViewingsListProps) {
+  const visibleViewings = React.useMemo(() => {
+    return viewings.slice(0, limit);
+  }, [viewings, limit]);
+
   return (
     <Card className="bg-white border-border shadow-2xs">
       <CardHeader className="p-4 pb-3 border-b border-border bg-stone-50/50">
@@ -27,13 +36,23 @@ export function UpcomingViewingsList({
               Confirmed Viewings
             </CardTitle>
           </div>
-          {isLoading ? (
-            <Skeleton className="h-4 w-16" />
-          ) : (
-            <span className="text-xs text-stone-500 font-medium">
-              {viewings.length} Booked
-            </span>
-          )}
+
+          <div className="flex items-center gap-2.5">
+            {isLoading ? (
+              <Skeleton className="h-4 w-16" />
+            ) : (
+              <span className="text-xs text-stone-500 font-medium">
+                {viewings.length} Booked
+              </span>
+            )}
+
+            <Button asChild variant="outline" size="sm" className="h-7.5 px-2.5 text-xs text-stone-700 bg-white shadow-2xs hover:bg-stone-50">
+              <Link href="/appointments">
+                <span>View Full Schedule</span>
+                <ChevronRight className="h-3 w-3 text-stone-400 ml-1" />
+              </Link>
+            </Button>
+          </div>
         </div>
       </CardHeader>
 
@@ -62,7 +81,7 @@ export function UpcomingViewingsList({
           </div>
         ) : (
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {viewings.map((viewing) => (
+            {visibleViewings.map((viewing) => (
               <div
                 key={viewing.id}
                 className="p-3.5 rounded-lg border border-stone-200/80 bg-stone-50/40 hover:bg-stone-50/80 transition-colors space-y-2.5 flex flex-col justify-between"
@@ -111,9 +130,15 @@ export function UpcomingViewingsList({
         )}
 
         <div className="pt-3">
-          <Button variant="outline" size="sm" className="w-full text-xs gap-1 text-stone-700">
-            <span>View Connected Calendars</span>
-            <ChevronRight className="h-3.5 w-3.5 text-stone-400" />
+          <Button asChild variant="outline" size="sm" className="w-full text-xs gap-1.5 text-stone-700 hover:bg-stone-50 bg-white shadow-2xs cursor-pointer">
+            <Link href="/appointments" className="flex items-center justify-center gap-1">
+              <span>
+                {viewings.length > limit
+                  ? `View All ${viewings.length} Upcoming Appointments & Full Calendar`
+                  : "View Connected Calendars & Full Schedule"}
+              </span>
+              <ChevronRight className="h-3.5 w-3.5 text-stone-400" />
+            </Link>
           </Button>
         </div>
       </CardContent>
