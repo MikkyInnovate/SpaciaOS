@@ -2,7 +2,7 @@
 
 > **Spacia** is a high-performance, managed AI sales orchestration platform purpose-built for modern real-estate brokerages and development firms. It autonomously captures inbound property inquiries, engages prospects via natural voice and chat, qualifies buyers against stringent underwriting criteria, evaluates purchasing power and timeline, and seamlessly books qualified viewings directly onto connected sales agents' calendars.
 
-This repository houses the **production frontend and backend implementation for Days 1 through 17** of the Spacia MVP.
+This repository houses the **production frontend and backend implementation for Days 1 through 21** of the Spacia MVP.
 
 ---
 
@@ -1185,11 +1185,46 @@ src/
 
 ## 31. Day 20 — Sales Command Center & Dashboard Operations
 
-Day 20 delivers the unified executive command center for sales leaders and luxury closers:
-- **7 Core Sales Metrics Strip**: Real-time KPI strip covering Leads, Calls, Qualified, Hot, Viewings, Handoffs, and Follow-ups with percentage trends and contextual subtext.
-- **"What Requires Attention?" Priority Cockpit (`AttentionCockpit`)**: Urgent broker action dashboard filtering critical handoffs, hot unbooked leads ($\ge 85$), today's inspections, and overdue follow-ups with 1-click action triggers.
-- **"What Happened Today?" Operations Activity Feed (`OperationsActivityFeed`)**: Unified real-time operations feed aggregating AI voice calls, viewing bookings, Resend email dispatches, and broker takeovers in reverse chronological order.
-- **Lead Qualification Table & Dossier Inspector**: Live synchronized data table with split-view lead dossier panel for comprehensive prospect evaluation.
+Day 20 delivers the unified executive command center for sales leaders and luxury closers, answering the two core operational questions: **"What happened today?"** and **"What requires attention?"**
+
+### 1. Executive Sales Command Center (`/dashboard`)
+- **Connected 7 Core Sales Metrics**:
+  - **Leads**: Live inquiries captured across all channels, today's count (`+X today`), and period trend.
+  - **Calls**: AI voice call volume, average call duration (e.g. `3m 38s`), and outcome distribution.
+  - **Qualified**: High-net-worth prospects passing BANT liquidity and intent underwriting, with live conversion rate %.
+  - **Hot**: Ultra-high purchasing intent tier (Score $\ge 85$) with unbooked urgent count.
+  - **Viewings**: In-person inspection count, today's schedule, and upcoming weekly lookaheads.
+  - **Handoffs**: Critical supervisory interventions where autonomous AI is paused for human broker takeover.
+  - **Follow-ups**: Scheduled broker cadences, deed deliveries, and post-inspection closings.
+- **Low-Fidelity Skeleton Loading State**:
+  - Implements clean, low-fidelity pulsing skeleton cards, table rows, and activity items on initial entry.
+  - Eliminates all mock data flashes; live data seamlessly populates from PostgreSQL upon query resolution.
+- **"What Happened Today?" Unified Operations Activity Feed (`OperationsActivityFeed`)**:
+  - Chronological real-time event stream aggregating AI voice calls, inspection bookings, Resend email dispatches, and broker takeovers.
+  - Category filters (`All`, `Voice Calls`, `Inspections`, `Notifications`) and relative timestamps with 1-click lead inspection deep-links.
+- **"What Requires Attention?" Priority Attention Cockpit**:
+  - Action-oriented operational cockpit prioritizing critical human takeovers, hot unbooked prospects, today's viewings, and overdue follow-ups with 1-click action triggers.
+- **Lead Qualification Feed & Split-View Dossier Inspector**:
+  - Live data table populated from real database leads, displaying prospect details, property interest, commercial fit, score indicator, and status.
+  - Interactive split-view inspector displaying the prospect's AI call transcript and qualification details side-by-side without page reloads.
+- **Confirmed Viewings Cockpit Integration (`UpcomingViewingsList`)**:
+  - Balanced 6-card viewing schedule layout (2 rows of 3 on desktop) preventing vertical page clutter.
+  - Direct navigation to the full `/appointments` schedule and calendar manager via header and bottom action triggers.
+- **Pipeline Progression Trajectory (`PipelineFunnel`)**:
+  - Dynamic trajectory curve reflecting live conversion totals with metric switcher tabs (`Inbound Inquiries`, `Qualified Intent`, `Confirmed Viewings`) and operational velocity benchmarks (Speed to Lead, Qualification Accuracy, Confirmed Viewings).
+
+### 2. Backend Aggregation APIs (`server/src/modules/dashboard`)
+- **High-Performance SQL Aggregations**:
+  - Direct Neon PostgreSQL queries via Drizzle ORM aggregating `leads`, `calls`, `appointments`, `follow_ups`, `lead_events`, and `notifications`.
+  - Date bounds (`startOfToday`, `endOfToday`) and timezone-aware lookaheads.
+- **Endpoints**:
+  - `GET /api/v1/dashboard/metrics`: Aggregates the 7 primary sales command center dimensions.
+  - `GET /api/v1/dashboard/attention`: Prioritizes urgent operational items requiring immediate closer intervention.
+  - `GET /api/v1/dashboard/feed`: Chronological unified audit activity stream.
+  - `GET /api/v1/dashboard/funnel`: Conversion pipeline stages and trajectory totals.
+- **Security & Multi-Tenant Isolation**:
+  - Enforces `ClerkAuthGuard`, `WorkspaceMemberGuard`, and `RequirePermissions('leads:read')` with strict `X-Workspace-Id` tenant isolation.
+- **Automated Verification**: `npm run test:day20` passing 6/6 (100%).
 
 ---
 
