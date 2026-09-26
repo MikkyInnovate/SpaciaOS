@@ -71,56 +71,6 @@ export function PipelineFunnel({
   const [activeChart, setActiveChart] =
     React.useState<keyof typeof chartConfig>("qualified");
 
-  if (isLoading) {
-    return (
-      <Card className="py-4 sm:py-0 bg-white border-border shadow-2xs">
-        <CardHeader className="flex flex-col items-stretch border-b border-border p-0! sm:flex-row">
-          <div className="flex flex-1 flex-col justify-center gap-1.5 px-6 py-4">
-            <Skeleton className="h-5 w-64" />
-            <Skeleton className="h-3.5 w-80" />
-          </div>
-
-          <div className="flex border-t sm:border-t-0 sm:border-l border-border">
-            {[1, 2, 3].map((i) => (
-              <div
-                key={i}
-                className="flex flex-1 flex-col justify-center gap-1.5 px-4 py-3.5 sm:px-6 sm:py-4 border-r last:border-r-0 border-border min-w-[130px]"
-              >
-                <Skeleton className="h-3 w-24" />
-                <Skeleton className="h-6 w-12" />
-              </div>
-            ))}
-          </div>
-        </CardHeader>
-
-        <CardContent className="px-4 py-5 sm:p-6 space-y-4">
-          <div className="h-[240px] w-full flex items-center justify-center bg-stone-50/40 rounded-lg border border-dashed border-stone-200">
-            <div className="w-full h-full p-6 flex flex-col justify-end space-y-3">
-              <Skeleton className="h-2 w-full" />
-              <Skeleton className="h-32 w-full rounded" />
-              <div className="flex justify-between">
-                <Skeleton className="h-3 w-12" />
-                <Skeleton className="h-3 w-12" />
-                <Skeleton className="h-3 w-12" />
-                <Skeleton className="h-3 w-12" />
-              </div>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-3 border-t border-border/80">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="p-3 rounded-md border border-stone-200/80 bg-stone-50/50 space-y-1.5">
-                <Skeleton className="h-3 w-20" />
-                <Skeleton className="h-6 w-16" />
-                <Skeleton className="h-3 w-32" />
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
   const totals = React.useMemo(() => {
     if (metrics) {
       return {
@@ -176,6 +126,56 @@ export function PipelineFunnel({
 
     return result;
   }, [data, metrics, totals]);
+
+  if (isLoading) {
+    return (
+      <Card className="py-4 sm:py-0 bg-white border-border shadow-2xs">
+        <CardHeader className="flex flex-col items-stretch border-b border-border p-0! sm:flex-row">
+          <div className="flex flex-1 flex-col justify-center gap-1.5 px-6 py-4">
+            <Skeleton className="h-5 w-64" />
+            <Skeleton className="h-3.5 w-80" />
+          </div>
+
+          <div className="flex border-t sm:border-t-0 sm:border-l border-border">
+            {[1, 2, 3].map((i) => (
+              <div
+                key={i}
+                className="flex flex-1 flex-col justify-center gap-1.5 px-4 py-3.5 sm:px-6 sm:py-4 border-r last:border-r-0 border-border min-w-[130px]"
+              >
+                <Skeleton className="h-3 w-24" />
+                <Skeleton className="h-6 w-12" />
+              </div>
+            ))}
+          </div>
+        </CardHeader>
+
+        <CardContent className="px-4 py-5 sm:p-6 space-y-4">
+          <div className="h-[240px] w-full flex items-center justify-center bg-stone-50/40 rounded-lg border border-dashed border-stone-200">
+            <div className="w-full h-full p-6 flex flex-col justify-end space-y-3">
+              <Skeleton className="h-2 w-full" />
+              <Skeleton className="h-32 w-full rounded" />
+              <div className="flex justify-between">
+                <Skeleton className="h-3 w-12" />
+                <Skeleton className="h-3 w-12" />
+                <Skeleton className="h-3 w-12" />
+                <Skeleton className="h-3 w-12" />
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-3 border-t border-border/80">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="p-3 rounded-md border border-stone-200/80 bg-stone-50/50 space-y-1.5">
+                <Skeleton className="h-3 w-20" />
+                <Skeleton className="h-6 w-16" />
+                <Skeleton className="h-3 w-32" />
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="py-4 sm:py-0 bg-white border-border shadow-2xs">
