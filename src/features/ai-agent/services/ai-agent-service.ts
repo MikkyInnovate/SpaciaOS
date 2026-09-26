@@ -195,6 +195,18 @@ class AIAgentService {
   async getBuyerIntentEvaluations(): Promise<BuyerIntentEvaluation[]> {
     return this.getIntents();
   }
+
+  async executeControlledTool(
+    toolName: string,
+    parameters: Record<string, any>,
+    personaId = "spacia_sales_persona_alpha"
+  ): Promise<any> {
+    return apiClient.post("/api/v1/ai-tools/execute", {
+      toolName,
+      parameters,
+      personaId,
+    });
+  }
 }
 
 export const aiAgentService = new AIAgentService();

@@ -25,6 +25,8 @@ export interface DetailDrawerProps {
   footer?: React.ReactNode;
   maxWidth?: "sm" | "md" | "lg" | "xl";
   className?: string;
+  /** Size the sheet to its content instead of a near full-screen panel. */
+  fitContent?: boolean;
 }
 
 export function DetailDrawer({
@@ -38,6 +40,7 @@ export function DetailDrawer({
   footer,
   maxWidth = "lg",
   className,
+  fitContent = false,
 }: DetailDrawerProps) {
   const maxWidthClass = {
     sm: "max-w-md",
@@ -48,7 +51,7 @@ export function DetailDrawer({
 
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
-      <DrawerContent className={cn("mx-auto w-full h-[88vh] max-h-[90vh] overflow-hidden flex flex-col border border-stone-200/80 bg-white", maxWidthClass, className)}>
+      <DrawerContent className={cn("mx-auto w-full overflow-hidden flex flex-col border border-stone-200/80 bg-white", fitContent ? "h-auto max-h-[85vh]" : "h-[88vh] max-h-[90vh]", maxWidthClass, className)}>
         {/* Header */}
         <DrawerHeader className="p-4 border-b border-stone-100 flex-shrink-0 bg-white">
           <div className="flex items-center justify-between gap-3">
@@ -87,7 +90,7 @@ export function DetailDrawer({
         </DrawerHeader>
 
         {/* Scrollable Body */}
-        <div className="p-4 overflow-y-auto flex-1 space-y-4 bg-stone-50/40">
+        <div className={cn("overflow-y-auto space-y-4 bg-stone-50/40", fitContent ? "p-0" : "flex-1 p-4")}>
           {children}
         </div>
 

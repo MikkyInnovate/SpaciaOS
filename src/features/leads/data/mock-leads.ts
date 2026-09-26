@@ -409,7 +409,7 @@ const RAW_MOCK_LEADS: Lead[] = [
     id: "lead_01",
     name: "Michael Adeleke",
     phone: "+234 803 451 9820",
-    email: "michael.a@gmail.com",
+    email: "michaelcodingclicks@gmail.com",
     propertyTitle: "3-Bedroom Contemporary Flat",
     location: "Lekki Phase 1",
     budget: "₦85,000,000",

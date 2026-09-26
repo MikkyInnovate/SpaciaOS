@@ -134,8 +134,10 @@ export function LeadIntakeDialog({
       onLeadCreated(createdLead);
       resetForm();
       onOpenChange(false);
-    } catch {
-      toast.error("Failed to register lead. Please try again.");
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : "Failed to register lead. Please try again.";
+      toast.error("Failed to register lead", { description: message });
     } finally {
       setIsSubmitting(false);
     }

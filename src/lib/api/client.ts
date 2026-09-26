@@ -9,8 +9,9 @@ export interface RequestOptions extends Omit<RequestInit, "headers"> {
 const DEFAULT_TIMEOUT_MS = 15000;
 
 class ApiClient {
-  private activeWorkspaceId: string | null = null;
+  private activeWorkspaceId: string | null = process.env.NEXT_PUBLIC_DEFAULT_WORKSPACE_ID || "org_dubai_palace";
   private authToken: string | null = null;
+  private tokenProvider: (() => Promise<string | null>) | null = null;
 
   public setWorkspaceId(workspaceId: string) {
     this.activeWorkspaceId = workspaceId;
@@ -20,20 +21,27 @@ class ApiClient {
     this.authToken = token;
   }
 
+  public setTokenProvider(provider: (() => Promise<string | null>) | null) {
+    this.tokenProvider = provider;
+  }
+
   private async request<T>(endpoint: string, options: RequestOptions = {}): Promise<T> {
-    // In local development / prototype mode without a provisioned remote backend,
-    // immediately short-circuit mock endpoints to avoid sending doomed network requests
-    // to Next.js which stalls compilation and triggers unnecessary 404s.
-    const isBackendConfigured = Boolean(
-      process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BACKEND_URL
-    );
-    if (!isBackendConfigured && endpoint.startsWith("/api/v1")) {
-      throw new NetworkError("Backend API not provisioned; utilizing local mock store");
+    let resolvedToken = options.token;
+    if (!resolvedToken && this.tokenProvider) {
+      try {
+        const dynamicToken = await this.tokenProvider();
+        if (dynamicToken) resolvedToken = dynamicToken;
+      } catch {
+        // Fall back to stored static token
+      }
+    }
+    if (!resolvedToken && this.authToken) {
+      resolvedToken = this.authToken;
     }
 
     const {
-      workspaceId = this.activeWorkspaceId,
-      token = this.authToken,
+      workspaceId = this.activeWorkspaceId || process.env.NEXT_PUBLIC_DEFAULT_WORKSPACE_ID || "org_dubai_palace",
+      token = resolvedToken,
       headers: customHeaders = {},
       ...fetchOptions
     } = options;
@@ -65,14 +73,18 @@ class ApiClient {
       clearTimeout(timeout);
 
       if (!response.ok) {
-        let errorData: { message?: string; error?: string } = {};
+        let errorData: any = {};
         try {
           errorData = await response.json();
         } catch {
           // Response body was not JSON
         }
 
-        const message = errorData.message || errorData.error || `HTTP request failed (${response.status})`;
+        const message =
+          (typeof errorData.message === "string" ? errorData.message : null) ||
+          (typeof errorData.error?.message === "string" ? errorData.error.message : null) ||
+          (typeof errorData.error === "string" ? errorData.error : null) ||
+          `HTTP request failed (${response.status})`;
 
         switch (response.status) {
           case 401:
@@ -90,7 +102,16 @@ class ApiClient {
         return null as unknown as T;
       }
 
-      return (await response.json()) as T;
+      const json = await response.json();
+      if (
+        json &&
+        typeof json === "object" &&
+        json.success === true &&
+        "data" in json
+      ) {
+        return json.data as T;
+      }
+      return json as T;
     } catch (err: unknown) {
       clearTimeout(timeout);
       if (err instanceof ApiError) {

@@ -8,27 +8,33 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Skeleton } from "@/components/ui/skeleton";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { ScoreIndicator } from "@/components/ui/score-indicator";
 import { EmptyState } from "@/components/shared/empty-state";
 import { Button } from "@/components/ui/button";
 import type { DashboardLead } from "../types";
-import { MapPin, Phone, ArrowUpRight, SplitSquareVertical, X } from "lucide-react";
+import { cn } from "@/lib/utils/cn";
+import { MapPin, Phone, ChevronRight, SplitSquareVertical, X } from "lucide-react";
 
 export interface LeadIntakeTableProps {
   leads: DashboardLead[];
   onTakeLead?: (lead: DashboardLead) => void;
+  selectedLeadId?: string | null;
   isSplitView?: boolean;
   onToggleSplit?: () => void;
   hideViewAll?: boolean;
+  isLoading?: boolean;
 }
 
 export function LeadIntakeTable({
   leads,
   onTakeLead,
+  selectedLeadId,
   isSplitView,
   onToggleSplit,
   hideViewAll = false,
+  isLoading = false,
 }: LeadIntakeTableProps) {
   return (
     <div className="rounded-lg border border-border bg-white shadow-2xs overflow-hidden">
@@ -98,7 +104,39 @@ export function LeadIntakeTable({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {leads.length === 0 ? (
+          {isLoading ? (
+            Array.from({ length: 5 }).map((_, i) => (
+              <TableRow key={`skeleton-row-${i}`}>
+                <TableCell>
+                  <div className="space-y-1.5 py-1">
+                    <Skeleton className="h-4 w-28" />
+                    <Skeleton className="h-3 w-20" />
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <div className="space-y-1.5 py-1">
+                    <Skeleton className="h-4 w-36" />
+                    <Skeleton className="h-3 w-24" />
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <div className="space-y-1.5 py-1">
+                    <Skeleton className="h-4 w-20" />
+                    <Skeleton className="h-3 w-16" />
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-6 w-16 rounded-full" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-6 w-20 rounded-full" />
+                </TableCell>
+                <TableCell className="text-right">
+                  <Skeleton className="h-7 w-16 ml-auto rounded-md" />
+                </TableCell>
+              </TableRow>
+            ))
+          ) : leads.length === 0 ? (
             <TableRow>
               <TableCell colSpan={6} className="p-0 border-0">
                 <EmptyState
@@ -111,15 +149,26 @@ export function LeadIntakeTable({
           ) : (
             leads.map((lead) => {
               const isHot = lead.scoreCategory === "HOT";
+              const isSelected = selectedLeadId === lead.id;
 
               return (
-                <TableRow key={lead.id} className="group">
+                <TableRow
+                  key={lead.id}
+                  className={cn(
+                    "group transition-colors",
+                    isSelected ? "bg-stone-50 border-l-2 border-l-stone-900" : ""
+                  )}
+                >
                   {/* Prospect Details */}
                   <TableCell>
                     <div className="flex flex-col min-w-0">
-                      <span className="font-semibold text-stone-900 text-sm">
+                      <button
+                        type="button"
+                        onClick={() => onTakeLead?.(lead)}
+                        className="font-semibold text-stone-900 text-sm hover:underline hover:text-[#0d4a36] transition-colors text-left cursor-pointer"
+                      >
                         {lead.name}
-                      </span>
+                      </button>
                       <div className="flex items-center gap-1.5 text-xs text-stone-500 mt-0.5">
                         <Phone className="h-3 w-3 text-stone-400" />
                         <span className="tabular-nums">{lead.phone}</span>
@@ -166,12 +215,15 @@ export function LeadIntakeTable({
                   <TableCell className="text-right whitespace-nowrap">
                     <Button
                       size="sm"
-                      variant={isHot ? "default" : "outline"}
-                      className="h-7 px-2.5 text-xs gap-1 whitespace-nowrap"
+                      variant={isSelected ? "secondary" : isHot ? "default" : "outline"}
+                      className={cn(
+                        "h-7 px-2.5 text-xs gap-1 whitespace-nowrap cursor-pointer",
+                        isSelected && "bg-stone-900 text-white hover:bg-stone-800"
+                      )}
                       onClick={() => onTakeLead?.(lead)}
                     >
-                      <span>{isHot ? "Take Lead" : "Inspect"}</span>
-                      <ArrowUpRight className="h-3.5 w-3.5 shrink-0" />
+                      <span>{isSelected ? "Inspecting" : "Inspect"}</span>
+                      <ChevronRight className="h-3.5 w-3.5 shrink-0" />
                     </Button>
                   </TableCell>
                 </TableRow>

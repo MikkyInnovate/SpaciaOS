@@ -41,33 +41,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Synchronize Clerk session token with centralized apiClient
   React.useEffect(() => {
-    let isMounted = true;
-
-    async function syncToken() {
-      if (isSignedIn) {
+    if (isSignedIn) {
+      apiClient.setTokenProvider(async () => {
         try {
-          const token = await getToken();
-          if (isMounted) {
-            apiClient.setAuthToken(token);
-          }
+          return await getToken();
         } catch {
-          if (isMounted) {
-            apiClient.setAuthToken(null);
-          }
+          return null;
         }
-      } else {
-        apiClient.setAuthToken(null);
-      }
+      });
+
+      // Also prime initial token
+      getToken()
+        .then((token) => {
+          apiClient.setAuthToken(token);
+        })
+        .catch(() => {
+          apiClient.setAuthToken(null);
+        });
+    } else {
+      apiClient.setTokenProvider(null);
+      apiClient.setAuthToken(null);
     }
-
-    syncToken();
-
-    return () => {
-      isMounted = false;
-    };
   }, [isSignedIn, getToken]);
 
   const signOut = React.useCallback(async () => {
+    apiClient.setTokenProvider(null);
     apiClient.setAuthToken(null);
     await clerk.signOut({ redirectUrl: "/sign-in" });
   }, [clerk]);

@@ -422,9 +422,15 @@ Next Action: ${lead.nextAction}`;
               Extracted Intent Signals
             </span>
             <div className="flex flex-wrap gap-1.5">
-              {profile.intentSignals.map((signal) => (
-                <IntentSignalPill key={signal.id} signal={signal} />
-              ))}
+              {profile.intentSignals.map((signal: any, idx: number) => {
+                const signalObj = typeof signal === "string"
+                  ? { id: `sig_${idx}`, type: "property_fit" as const, label: signal, strength: "high" as const }
+                  : signal;
+                const signalKey = signalObj?.id || `sig_${idx}_${signalObj?.label || signalObj?.text || idx}`;
+                return (
+                  <IntentSignalPill key={signalKey} signal={signalObj} />
+                );
+              })}
             </div>
           </div>
         )}

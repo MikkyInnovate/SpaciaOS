@@ -47,11 +47,13 @@ export const Switch = React.forwardRef<HTMLInputElement, SwitchProps>(
     const dimensions = {
       sm: {
         track: "h-4 w-7",
-        thumb: "h-3 w-3 translate-x-0.5 peer-checked:translate-x-3.5",
+        thumb: "h-3 w-3",
+        thumbTranslate: isCurrentChecked ? "translate-x-3.5" : "translate-x-0.5",
       },
       default: {
         track: "h-5 w-9",
-        thumb: "h-4 w-4 translate-x-0.5 peer-checked:translate-x-4.5",
+        thumb: "h-4 w-4",
+        thumbTranslate: isCurrentChecked ? "translate-x-4.5" : "translate-x-0.5",
       },
     }[size];
 
@@ -82,8 +84,9 @@ export const Switch = React.forwardRef<HTMLInputElement, SwitchProps>(
         >
           <div
             className={cn(
-              "rounded-full bg-white shadow-xs transition-transform duration-200",
-              dimensions.thumb
+              "rounded-full bg-white shadow-xs transition-transform duration-200 ease-in-out",
+              dimensions.thumb,
+              dimensions.thumbTranslate
             )}
           />
         </div>

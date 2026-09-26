@@ -9,8 +9,8 @@ export interface BantDimension {
 }
 
 export interface ScoreIndicatorProps extends React.HTMLAttributes<HTMLDivElement> {
-  score: number; // 0 - 100
-  category?: "HOT" | "WARM" | "COLD";
+  score?: number | null; // 0 - 100 or null if unevaluated
+  category?: "HOT" | "WARM" | "COLD" | null;
   variant?: "badge" | "gauge" | "breakdown";
   showLabel?: boolean;
   size?: "sm" | "md" | "lg";
@@ -57,6 +57,19 @@ export function ScoreIndicator({
   className,
   ...props
 }: ScoreIndicatorProps) {
+  if (score === null || score === undefined) {
+    return (
+      <span
+        className={cn(
+          "inline-flex items-center rounded-md border border-stone-200/80 bg-stone-50 px-2 py-0.5 text-[11px] font-mono font-medium text-stone-400 shadow-2xs select-none",
+          className
+        )}
+      >
+        Pending
+      </span>
+    );
+  }
+
   const normalizedScore = Math.max(0, Math.min(100, Math.round(score)));
   const category = propCategory || resolveScoreCategory(normalizedScore);
   const styles = CATEGORY_STYLES[category];

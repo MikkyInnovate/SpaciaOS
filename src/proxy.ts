@@ -7,6 +7,7 @@ const isPublicRoute = createRouteMatcher([
   "/sign-up(.*)",
   "/unauthorized(.*)",
   "/api(.*)",
+  "/appointments(.*)",
 ]);
 
 const hasClerkKeys = Boolean(

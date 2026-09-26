@@ -10,6 +10,7 @@ import {
   CallDetailCockpit,
   InitiateCallDialog,
   MOCK_CALLS,
+  callsService,
   type Call,
 } from "@/features/calls";
 import { leadsService } from "@/features/leads";
@@ -26,6 +27,25 @@ export default function CallsPage() {
   const [calls, setCalls] = React.useState<Call[]>(MOCK_CALLS);
   const [selectedCall, setSelectedCall] = React.useState<Call | null>(null);
   const [isInitiateOpen, setIsInitiateOpen] = React.useState(false);
+
+  // Fetch real calls from backend on load & workspace change
+  React.useEffect(() => {
+    let isMounted = true;
+    async function loadCalls() {
+      try {
+        const data = await callsService.getCalls();
+        if (isMounted && data && data.length > 0) {
+          setCalls(data);
+        }
+      } catch (err) {
+        console.warn("Could not load backend calls:", err);
+      }
+    }
+    loadCalls();
+    return () => {
+      isMounted = false;
+    };
+  }, [currentWorkspace?.id]);
 
   // Close sidepanel on ESC key & lock background scroll
   React.useEffect(() => {
@@ -47,9 +67,11 @@ export default function CallsPage() {
     }
   }, [selectedCall]);
 
-  const handleTakeover = (call: Call) => {
+  const handleTakeover = async (call: Call) => {
     if (call.leadId) {
-      leadsService.takeoverLead(call.leadId, "Marcus Vance", "Broker takeover from live call cockpit");
+      leadsService
+        .takeoverLead(call.leadId, "Marcus Vance", "Broker takeover from live call cockpit")
+        .catch((err) => console.warn("Takeover sync notification:", err));
     }
     setCalls((prev) =>
       prev.map((c) =>

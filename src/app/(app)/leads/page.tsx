@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useSearchParams } from "next/navigation";
 import { Container } from "@/components/layout/container";
 import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
@@ -21,8 +22,11 @@ import { exportLeadsToCSV } from "@/lib/utils/export-csv";
 import { Download, Loader2, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 
-export default function LeadsPage() {
-  const { currentWorkspace } = useWorkspace();
+function LeadsPageContent() {
+  const { currentWorkspace, isLoading: isWorkspaceLoading } = useWorkspace();
+  const searchParams = useSearchParams();
+  const targetLeadId =
+    searchParams.get("id") || searchParams.get("selected") || searchParams.get("leadId");
 
   // Filter state
   const [filters, setFilters] = React.useState<LeadFilterParams>({
@@ -41,6 +45,29 @@ export default function LeadsPage() {
   // Selected lead for detail inspection drawer
   const [selectedLead, setSelectedLead] = React.useState<Lead | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = React.useState(false);
+
+  // Auto-open detail drawer if targetLeadId is provided in search params
+  React.useEffect(() => {
+    if (!targetLeadId) return;
+
+    // Check if target lead is already loaded in leads array
+    const matched = leads.find((l) => l.id === targetLeadId);
+    if (matched) {
+      setSelectedLead(matched);
+      setIsDrawerOpen(true);
+      return;
+    }
+
+    // Otherwise, fetch target lead directly by ID
+    leadsService.getLeadById(targetLeadId).then((fetched) => {
+      if (fetched) {
+        setSelectedLead(fetched);
+        setIsDrawerOpen(true);
+      }
+    });
+  }, [targetLeadId, leads]);
+
+  const tabParam = searchParams.get("tab") as "overview" | "qualification" | "calls" | "timeline" | "supervision" | null;
 
   // Day 14: Lead Intake Modal
   const [isIntakeOpen, setIsIntakeOpen] = React.useState(false);
@@ -71,9 +98,15 @@ export default function LeadsPage() {
   }, [filters, selectedLead]);
 
   React.useEffect(() => {
+    if (isWorkspaceLoading) {
+      return;
+    }
+
     let isCancelled = false;
 
     const fetchLeads = async () => {
+      setIsLoading(true);
+      setError(null);
       try {
         const response = await leadsService.getLeads(filters);
         if (!isCancelled) {
@@ -96,7 +129,7 @@ export default function LeadsPage() {
     return () => {
       isCancelled = true;
     };
-  }, [filters]);
+  }, [filters, currentWorkspace?.id, isWorkspaceLoading]);
 
   // Handle row selection to open detail shell
   const handleSelectLead = React.useCallback((lead: Lead) => {
@@ -106,7 +139,7 @@ export default function LeadsPage() {
 
   // Handle lead successfully registered via intake modal
   const handleLeadCreated = React.useCallback((newLead: Lead) => {
-    setLeads((prev) => [newLead, ...prev]);
+    setLeads((prev) => [newLead, ...prev.filter((l) => l.id !== newLead.id)]);
     setTotalCount((prev) => prev + 1);
     setSelectedLead(newLead);
     setIsDrawerOpen(true);
@@ -261,9 +294,8 @@ export default function LeadsPage() {
   };
 
   return (
-    <div className="flex flex-col min-h-full pb-12 bg-[#fbfbfa]">
-      <Container className="space-y-6 pt-6">
-        {/* Page Header */}
+    <Container size="lg" className="space-y-4 pb-12">
+      {/* Page Header */}
         <PageHeader
           title="Lead Management"
           description={
@@ -332,6 +364,7 @@ export default function LeadsPage() {
           lead={selectedLead}
           open={isDrawerOpen}
           onOpenChange={setIsDrawerOpen}
+          defaultTab={tabParam || "overview"}
           onStatusChange={handleStatusChange}
           onAddNote={handleAddNote}
           onTakeover={handleTakeover}
@@ -357,6 +390,13 @@ export default function LeadsPage() {
           }}
         />
       </Container>
-    </div>
+  );
+}
+
+export default function LeadsPage() {
+  return (
+    <React.Suspense fallback={<div className="min-h-screen" />}>
+      <LeadsPageContent />
+    </React.Suspense>
   );
 }

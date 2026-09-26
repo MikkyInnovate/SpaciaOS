@@ -57,6 +57,28 @@ function createUniqueId(prefix: string): string {
  * All mock data is clearly isolated behind this adapter.
  */
 
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+function isUuid(id: string): boolean {
+  return UUID_REGEX.test(id);
+}
+
+const LEAD_ALIAS_MAP: Record<string, string> = {
+  lead_adeleke: "lead_01",
+  lead_jenkins: "lead_02",
+  lead_babatunde: "lead_03",
+  lead_eze: "lead_04",
+  lead_okafor: "lead_05",
+  lead_yusuf: "lead_06",
+  lead_bakare: "lead_07",
+  lead_nwosu: "lead_08",
+  lead_adesina: "lead_09",
+};
+
+function resolveLeadId(id: string): string {
+  if (!id) return "lead_01";
+  return LEAD_ALIAS_MAP[id] || id;
+}
+
 // In-memory mock session store for client-side state transitions
 const inMemoryMockLeads: Lead[] = JSON.parse(JSON.stringify(MOCK_LEADS));
 
@@ -65,75 +87,52 @@ class LeadsService {
    * Fetches leads with optional client-side/server-side filtering.
    */
   async getLeads(filters?: LeadFilterParams): Promise<LeadsApiResponse> {
-    try {
-      const queryParams = new URLSearchParams();
-      if (filters?.search) queryParams.set("search", filters.search);
-      if (filters?.scoreCategory && filters.scoreCategory !== "ALL") {
-        queryParams.set("scoreCategory", filters.scoreCategory);
-      }
-      if (filters?.status && filters.status !== "ALL") {
-        queryParams.set("status", filters.status);
-      }
-
-      const queryString = queryParams.toString();
-      const endpoint = "/api/v1/leads" + (queryString ? "?" + queryString : "");
-
-      const response = await apiClient.get<LeadsApiResponse>(endpoint);
-      if (response && Array.isArray(response.leads)) {
-        return response;
-      }
-    } catch {
-      // Backend not yet available: fall through to deterministic mock fallback
-    }
-
-    // Mock fallback with simulated network delay
-    await new Promise((resolve) => setTimeout(resolve, 150));
-
-    let filtered = [...inMemoryMockLeads];
-
-    if (filters?.search?.trim()) {
-      const query = filters.search.toLowerCase().trim();
-      filtered = filtered.filter(
-        (lead) =>
-          lead.name.toLowerCase().includes(query) ||
-          lead.phone.toLowerCase().includes(query) ||
-          lead.propertyTitle.toLowerCase().includes(query) ||
-          lead.location.toLowerCase().includes(query)
-      );
-    }
-
+    const queryParams = new URLSearchParams();
+    if (filters?.search) queryParams.set("search", filters.search);
     if (filters?.scoreCategory && filters.scoreCategory !== "ALL") {
-      filtered = filtered.filter((lead) => lead.scoreCategory === filters.scoreCategory);
+      queryParams.set("scoreCategory", filters.scoreCategory);
     }
-
     if (filters?.status && filters.status !== "ALL") {
-      filtered = filtered.filter((lead) => lead.status === filters.status);
+      queryParams.set("status", filters.status);
     }
-
     if (filters?.managementMode && filters.managementMode !== "ALL") {
-      filtered = filtered.filter((lead) => lead.managementMode === filters.managementMode);
+      queryParams.set("managementMode", filters.managementMode);
     }
 
-    return {
-      leads: filtered,
-      total: filtered.length,
-    };
+    const queryString = queryParams.toString();
+    const endpoint = "/api/v1/leads" + (queryString ? "?" + queryString : "");
+
+    const response = await apiClient.get<LeadsApiResponse | { leads: Lead[]; total: number }>(
+      endpoint
+    );
+    if (response && Array.isArray((response as any).leads)) {
+      return response as LeadsApiResponse;
+    }
+
+    throw new Error("Invalid response format received from leads API.");
   }
 
   /**
    * Fetches a single lead by its ID.
    */
   async getLeadById(id: string): Promise<Lead | null> {
-    try {
-      const response = await apiClient.get<{ lead: Lead }>("/api/v1/leads/" + id);
-      if (response?.lead) {
-        return response.lead;
+    if (isUuid(id)) {
+      try {
+        const response = await apiClient.get<Lead | { lead: Lead }>("/api/v1/leads/" + id);
+        if (response) {
+          if ("lead" in response && (response as any).lead) {
+            return (response as any).lead;
+          }
+          return response as Lead;
+        }
+      } catch (err) {
+        console.warn(`Could not fetch lead '${id}' from API, using fallback:`, err);
       }
-    } catch {
-      // Backend not yet available: fall through to deterministic mock fallback
     }
-
-    const found = inMemoryMockLeads.find((lead) => lead.id === id);
+    const targetId = resolveLeadId(id);
+    const found =
+      inMemoryMockLeads.find((l) => l.id === id || l.id === targetId) ||
+      MOCK_LEADS.find((l) => l.id === id || l.id === targetId);
     return found ? JSON.parse(JSON.stringify(found)) : null;
   }
 
@@ -141,45 +140,62 @@ class LeadsService {
    * Proposed contract: Update lead lifecycle status.
    */
   async updateLeadStatus(id: string, newStatus: LeadStatus, note?: string): Promise<Lead> {
-    try {
-      const response = await apiClient.patch<{ lead: Lead }>(`/api/v1/leads/${id}/status`, {
-        status: newStatus,
-        note,
-      });
-      if (response?.lead) {
-        return response.lead;
+    if (isUuid(id)) {
+      try {
+        const response = await apiClient.patch<Lead | { lead: Lead }>(`/api/v1/leads/${id}/status`, {
+          status: newStatus,
+          note,
+        });
+        if (response) {
+          if ("lead" in response && (response as any).lead) {
+            return (response as any).lead;
+          }
+          return response as Lead;
+        }
+      } catch (err) {
+        console.warn(`Backend updateLeadStatus failed for lead ${id}, applying local update:`, err);
       }
-    } catch {
-      // Backend not yet available: update in-memory mock store
     }
 
-    await new Promise((resolve) => setTimeout(resolve, 150));
-
-    const index = inMemoryMockLeads.findIndex((l) => l.id === id);
-    if (index === -1) {
-      throw new Error(`Lead with ID ${id} not found.`);
+    // Local fallback for mock leads or offline backend
+    const isHuman = newStatus === "Human Managed";
+    const targetId = resolveLeadId(id);
+    const index = inMemoryMockLeads.findIndex((l) => l.id === id || l.id === targetId);
+    if (index !== -1) {
+      const current = inMemoryMockLeads[index];
+      const updated: Lead = {
+        ...current,
+        status: newStatus,
+        managementMode: isHuman ? "human_managed" : current.managementMode,
+        isAiStopped: isHuman ? true : current.isAiStopped,
+      };
+      inMemoryMockLeads[index] = updated;
+      return JSON.parse(JSON.stringify(updated));
     }
 
-    const currentLead = inMemoryMockLeads[index];
-    const updatedLead: Lead = {
-      ...currentLead,
+    const fallbackLead = MOCK_LEADS.find((l) => l.id === id || l.id === targetId);
+    if (fallbackLead) {
+      const updated: Lead = {
+        ...fallbackLead,
+        status: newStatus,
+        managementMode: isHuman ? "human_managed" : fallbackLead.managementMode,
+        isAiStopped: isHuman ? true : fallbackLead.isAiStopped,
+      };
+      inMemoryMockLeads.push(updated);
+      return JSON.parse(JSON.stringify(updated));
+    }
+
+    // Synthesize fallback to prevent UI crash
+    const synthesized: Lead = {
+      ...MOCK_LEADS[0],
+      id,
+      name: id.replace("lead_", "").replace(/^\w/, (c) => c.toUpperCase()) + " (Lead)",
       status: newStatus,
+      managementMode: isHuman ? "human_managed" : "ai_autonomous",
+      isAiStopped: isHuman ? true : false,
     };
-
-    // Append an activity entry for this status transition
-    const statusActivity: LeadActivity = {
-      id: createUniqueId("act_status"),
-      type: "status_change",
-      title: `Status Transitioned to ${newStatus}`,
-      description: note || `Broker updated lifecycle status from ${currentLead.status} to ${newStatus}.`,
-      timestamp: "Just now",
-      channel: "Broker Command",
-    };
-
-    updatedLead.activities = [statusActivity, ...(updatedLead.activities || [])];
-    inMemoryMockLeads[index] = updatedLead;
-
-    return JSON.parse(JSON.stringify(updatedLead));
+    inMemoryMockLeads.push(synthesized);
+    return synthesized;
   }
 
   /**
@@ -189,36 +205,42 @@ class LeadsService {
     id: string,
     activityData: Omit<LeadActivity, "id">
   ): Promise<LeadActivity> {
-    const newActivity: LeadActivity = {
-      ...activityData,
-      id: createUniqueId("act"),
-    };
-
-    try {
-      const response = await apiClient.post<{ activity: LeadActivity }>(
-        `/api/v1/leads/${id}/activities`,
-        newActivity
-      );
-      if (response?.activity) {
-        return response.activity;
+    if (isUuid(id)) {
+      try {
+        const response = await apiClient.post<LeadActivity | { activity: LeadActivity }>(
+          `/api/v1/leads/${id}/activities`,
+          {
+            type: activityData.type,
+            title: activityData.title,
+            description: activityData.description,
+            channel: activityData.channel,
+            metadata: activityData.meta,
+          }
+        );
+        if (response) {
+          if ("activity" in response && (response as any).activity) {
+            return (response as any).activity;
+          }
+          return response as LeadActivity;
+        }
+      } catch (err) {
+        console.warn(`Backend addLeadActivity failed for lead ${id}:`, err);
       }
-    } catch {
-      // Backend not yet available: update in-memory mock store
     }
 
+    const activity: LeadActivity = {
+      id: createUniqueId("act"),
+      ...activityData,
+      timestamp: "Just now",
+    };
     const index = inMemoryMockLeads.findIndex((l) => l.id === id);
     if (index !== -1) {
-      inMemoryMockLeads[index].activities = [
-        newActivity,
-        ...(inMemoryMockLeads[index].activities || []),
-      ];
+      inMemoryMockLeads[index].activities = [activity, ...(inMemoryMockLeads[index].activities || [])];
     }
-
-    return newActivity;
+    return activity;
   }
 
   /**
-   * Proposed contract: POST /api/v1/leads/:id/takeover
    * Human broker seizes direct control of the lead, pausing AI automation.
    */
   async takeoverLead(
@@ -226,151 +248,51 @@ class LeadsService {
     brokerName = "Marcus Vance",
     reason = "Manual broker takeover initiated"
   ): Promise<Lead> {
-    try {
-      const response = await apiClient.post<{ lead: Lead }>(
-        `/api/v1/leads/${id}/takeover`,
-        { brokerName, reason }
-      );
-      if (response?.lead) return response.lead;
-    } catch {
-      // Fallback
+    if (isUuid(id)) {
+      try {
+        const res = await apiClient.post<any>(`/api/v1/leads/${id}/takeover`, {
+          brokerName,
+          reason,
+        });
+        if (res?.lead) return res.lead;
+      } catch (err) {
+        console.warn(`Backend takeoverLead failed for lead ${id}:`, err);
+      }
     }
-
-    await new Promise((r) => setTimeout(r, 120));
-
-    const index = inMemoryMockLeads.findIndex((l) => l.id === id);
-    if (index === -1) throw new Error(`Lead ${id} not found.`);
-
-    const current = inMemoryMockLeads[index];
-    const handoff: HandoffContext = {
-      triggerReason: reason,
-      triggerCategory: "manual_broker",
-      synthesis:
-        current.handoffContext?.synthesis ||
-        current.aiNotes ||
-        "Lead transitioned to direct human supervision. AI automation paused.",
-      keyQuotes: current.handoffContext?.keyQuotes || [
-        `Lead requested broker follow-up on ${current.propertyTitle}.`,
-      ],
-      unresolvedObjections: current.handoffContext?.unresolvedObjections || [],
-      handedOffAt: "Just now",
-      brokerName,
-    };
-
-    const updated: Lead = {
-      ...current,
-      status: "Human Managed",
-      managementMode: "human_managed",
-      assignedBroker: brokerName,
-      isAiStopped: true,
-      aiStoppedReason: `Direct human supervision active under ${brokerName}.`,
-      handoffContext: handoff,
-    };
-
-    const takeoverActivity: LeadActivity = {
-      id: createUniqueId("act_takeover"),
-      type: "status_change",
-      title: "Broker Seized Direct Control",
-      description: `Autonomous AI paused. ${brokerName} assumed active transaction leadership.`,
-      timestamp: "Just now",
-      channel: "Broker Command",
-      actor: {
-        type: "human_broker",
-        name: brokerName,
-        role: "Sales Associate",
-        territory: current.location,
-        verifiedBadge: true,
-      },
-    };
-
-    updated.activities = [takeoverActivity, ...(updated.activities || [])];
-    inMemoryMockLeads[index] = updated;
-
-    return JSON.parse(JSON.stringify(updated));
+    return this.updateLeadStatus(id, "Human Managed", `${reason} (Broker: ${brokerName})`);
   }
 
   /**
-   * Proposed contract: POST /api/v1/leads/:id/stop-ai
    * Pauses autonomous AI actions without claiming lead.
    */
   async stopAI(id: string, reason = "Broker paused autonomous AI automation"): Promise<Lead> {
-    try {
-      const res = await apiClient.post<{ lead: Lead }>(`/api/v1/leads/${id}/stop-ai`, {
-        reason,
-      });
-      if (res?.lead) return res.lead;
-    } catch {
-      // Fallback
+    if (isUuid(id)) {
+      try {
+        const res = await apiClient.post<any>(`/api/v1/leads/${id}/stop-ai`, { reason });
+        if (res?.lead) return res.lead;
+      } catch (err) {
+        console.warn(`Backend stopAI failed for lead ${id}:`, err);
+      }
     }
-
-    await new Promise((r) => setTimeout(r, 100));
-
-    const index = inMemoryMockLeads.findIndex((l) => l.id === id);
-    if (index === -1) throw new Error(`Lead ${id} not found.`);
-
-    const current = inMemoryMockLeads[index];
-    const updated: Lead = {
-      ...current,
-      isAiStopped: true,
-      aiStoppedReason: reason,
-    };
-
-    const activity: LeadActivity = {
-      id: createUniqueId("act_stop_ai"),
-      type: "status_change",
-      title: "AI Automation Suspended",
-      description: reason,
-      timestamp: "Just now",
-      channel: "AI Supervisor",
-    };
-
-    updated.activities = [activity, ...(updated.activities || [])];
-    inMemoryMockLeads[index] = updated;
-
-    return JSON.parse(JSON.stringify(updated));
+    return this.updateLeadStatus(id, "Human Managed", reason);
   }
 
   /**
-   * Proposed contract: POST /api/v1/leads/:id/resume-ai
    * Resumes autonomous AI engine for this lead.
    */
   async resumeAI(id: string): Promise<Lead> {
-    try {
-      const res = await apiClient.post<{ lead: Lead }>(`/api/v1/leads/${id}/resume-ai`, {});
-      if (res?.lead) return res.lead;
-    } catch {
-      // Fallback
+    if (isUuid(id)) {
+      try {
+        const res = await apiClient.post<any>(`/api/v1/leads/${id}/resume-ai`);
+        if (res?.lead) return res.lead;
+      } catch (err) {
+        console.warn(`Backend resumeAI failed for lead ${id}:`, err);
+      }
     }
-
-    await new Promise((r) => setTimeout(r, 100));
-
-    const index = inMemoryMockLeads.findIndex((l) => l.id === id);
-    if (index === -1) throw new Error(`Lead ${id} not found.`);
-
-    const current = inMemoryMockLeads[index];
-    const updated: Lead = {
-      ...current,
-      isAiStopped: false,
-      aiStoppedReason: undefined,
-    };
-
-    const activity: LeadActivity = {
-      id: createUniqueId("act_resume_ai"),
-      type: "status_change",
-      title: "AI Automation Resumed",
-      description: "Autonomous voice and chat engagement active.",
-      timestamp: "Just now",
-      channel: "AI Supervisor",
-    };
-
-    updated.activities = [activity, ...(updated.activities || [])];
-    inMemoryMockLeads[index] = updated;
-
-    return JSON.parse(JSON.stringify(updated));
+    return this.updateLeadStatus(id, "In Conversation", "Autonomous AI automation resumed");
   }
 
   /**
-   * Proposed contract: POST /api/v1/leads/:id/nurture
    * Marks lead as Nurture and schedules follow-up cadence.
    */
   async markNurture(
@@ -378,86 +300,36 @@ class LeadsService {
     schedule: FollowUpSchedule,
     notes?: string
   ): Promise<Lead> {
-    try {
-      const res = await apiClient.post<{ lead: Lead }>(`/api/v1/leads/${id}/nurture`, {
-        schedule,
-        notes,
-      });
-      if (res?.lead) return res.lead;
-    } catch {
-      // Fallback
-    }
-
-    await new Promise((r) => setTimeout(r, 120));
-
-    const index = inMemoryMockLeads.findIndex((l) => l.id === id);
-    if (index === -1) throw new Error(`Lead ${id} not found.`);
-
-    const current = inMemoryMockLeads[index];
-    const updated: Lead = {
-      ...current,
-      status: "Nurture",
-      managementMode: "nurture",
-      followUpSchedule: schedule,
-    };
-
-    const activity: LeadActivity = {
-      id: createUniqueId("act_nurture"),
-      type: "status_change",
-      title: "Transitioned to Nurture Pipeline",
-      description: `Follow-up set for ${schedule.scheduledFormatted} (${schedule.relativeCountdown}) via ${schedule.channel.toUpperCase()}.${notes ? ` Note: ${notes}` : ""}`,
-      timestamp: "Just now",
-      channel: "Broker Command",
-    };
-
-    updated.activities = [activity, ...(updated.activities || [])];
-    inMemoryMockLeads[index] = updated;
-
-    return JSON.parse(JSON.stringify(updated));
+    return this.updateLeadStatus(
+      id,
+      "Nurture",
+      `Follow-up scheduled on ${schedule.scheduledFormatted}.${notes ? ` Note: ${notes}` : ""}`
+    );
   }
 
   /**
-   * Proposed contract: POST /api/v1/leads/:id/lost
    * Marks lead as Lost with structured reason classification.
    */
   async markLost(id: string, lossDetails: LossDetails): Promise<Lead> {
-    try {
-      const res = await apiClient.post<{ lead: Lead }>(`/api/v1/leads/${id}/lost`, {
-        lossDetails,
-      });
-      if (res?.lead) return res.lead;
-    } catch {
-      // Fallback
+    if (isUuid(id)) {
+      try {
+        const response = await apiClient.patch<Lead | { lead: Lead }>(`/api/v1/leads/${id}/status`, {
+          status: "Lost",
+          note: lossDetails.notes,
+          lossReason: lossDetails.reason,
+          lossNotes: lossDetails.notes,
+        });
+        if (response) {
+          if ("lead" in response && (response as any).lead) {
+            return (response as any).lead;
+          }
+          return response as Lead;
+        }
+      } catch (err) {
+        console.warn(`Backend markLost failed for lead ${id}:`, err);
+      }
     }
-
-    await new Promise((r) => setTimeout(r, 120));
-
-    const index = inMemoryMockLeads.findIndex((l) => l.id === id);
-    if (index === -1) throw new Error(`Lead ${id} not found.`);
-
-    const current = inMemoryMockLeads[index];
-    const updated: Lead = {
-      ...current,
-      status: "Lost",
-      managementMode: "lost",
-      isAiStopped: true,
-      aiStoppedReason: `Deal marked as lost: ${lossDetails.reasonLabel}`,
-      lossDetails,
-    };
-
-    const activity: LeadActivity = {
-      id: createUniqueId("act_lost"),
-      type: "status_change",
-      title: `Deal Marked as Lost: ${lossDetails.reasonLabel}`,
-      description: lossDetails.notes || `Discontinued qualification. Reason: ${lossDetails.reasonLabel}`,
-      timestamp: "Just now",
-      channel: "Broker Command",
-    };
-
-    updated.activities = [activity, ...(updated.activities || [])];
-    inMemoryMockLeads[index] = updated;
-
-    return JSON.parse(JSON.stringify(updated));
+    return this.updateLeadStatus(id, "Lost", lossDetails.notes);
   }
 
   /**
@@ -653,98 +525,28 @@ class LeadsService {
    * Intakes a new prospect, validates duplicates, initializes BANT profile, and prepends to database.
    */
   async createLead(input: CreateLeadInput): Promise<Lead> {
-    await new Promise((r) => setTimeout(r, 120));
-
-    const duplicateCheck = this.detectDuplicates(input.phone, input.email);
-    const isDuplicateFlagged = duplicateCheck.hasDuplicate;
-
-    const newId = createUniqueId("lead");
-    const nowFormatted = "Just now";
-
-    // Dynamic initial BANT score calculation based on declared budget and investment intent
-    const budgetNum = parseInt(input.budget.replace(/[^\d]/g, ""), 10) || 0;
-    const isUltraHighNetWorth = budgetNum >= 300000000 || input.budget.includes("B");
-    const initialScore = isUltraHighNetWorth ? 86 : 74;
-    const initialCategory: "HOT" | "WARM" | "COLD" = initialScore >= 85 ? "HOT" : "WARM";
-
-    const intakeActivity: LeadActivity = {
-      id: createUniqueId("act_intake"),
-      type: "inbound_capture",
-      title: `Inbound Intake Captured via ${input.source}`,
-      description:
-        input.notes ||
-        `Direct inbound prospect registered for ${input.propertyTitle}. Declared budget: ${input.budget}.`,
-      timestamp: nowFormatted,
-      channel: input.source,
-      actor: {
-        type: "system",
-        name: "Autonomous Intake Engine",
-        subsystem: "Inbound Intake Gateway",
-      },
-    };
-
-    const newLead: Lead = {
-      id: newId,
-      name: input.name.trim(),
-      phone: input.phone.trim(),
-      email: input.email?.trim() || `${input.name.toLowerCase().replace(/\s+/g, ".")}@client.com`,
-      propertyTitle: input.propertyTitle,
-      location: input.location || "Lagos, Nigeria",
+    const res = await apiClient.post<{
+      lead: { id: string };
+      isDuplicate: boolean;
+      reEngaged: boolean;
+      message: string;
+    }>("/api/v1/leads/ingest", {
+      name: input.name,
+      phone: input.phone,
+      email: input.email,
       budget: input.budget,
-      score: initialScore,
-      scoreCategory: initialCategory,
-      status: "New",
-      managementMode: "ai_autonomous",
-      intent: input.intent || "Purchase",
-      timeline: input.timeline || "< 30 days",
-      nextAction: "AI Voice Outreach Scheduled",
+      timeline: input.timeline,
+      locationPreference: input.location,
+      message: input.notes,
       source: input.source,
-      createdAt: new Date().toISOString(),
-      aiNotes: `Inbound intake captured from ${input.source}. Requirement: ${input.propertyTitle} with declared budget ${input.budget}. Automated qualification queued.`,
-      isAiStopped: false,
-      activities: [intakeActivity],
-      qualificationProfile: {
-        confidenceScore: 84,
-        buyerIntent: "high_purchase_intent",
-        intentSignals: [
-          { id: createUniqueId("sig_budget"), type: "budget", label: `Budget declared at ${input.budget}`, strength: "high" },
-          { id: createUniqueId("sig_timeline"), type: "timeline", label: `Target acquisition: ${input.timeline || "< 30 days"}`, strength: "medium" },
-        ],
-        motivation: input.notes || "Seeking verified luxury residential/commercial property in Lagos.",
-        decisionReadiness: "evaluating_shortlist",
-        readinessNote: "Inbound registration recorded. Initial underwriting underway.",
-        timelineWindow: input.timeline || "< 30 days",
-        timelineUrgency: "near_term",
-        budgetAnalysis: {
-          declared: input.budget,
-          verifiedLiquidity: input.budget,
-          paymentStructure: "Outright",
-          budgetStretchPercentage: 0,
-          stretchCategory: "Within Budget",
-        },
-        objections: [],
-        explainableBreakdown: {
-          baseScore: initialScore,
-          positiveFactors: [
-            { label: "Direct Inbound Interest", impact: 15, category: "timeline" },
-            { label: "Declared Capital Allocation", impact: 20, category: "liquidity" },
-          ],
-          riskFactors: isDuplicateFlagged
-            ? [
-                {
-                  label: "Existing Record Match",
-                  impact: -5,
-                  category: "objection",
-                  detail: "Duplicate contact record detected in workspace registry",
-                },
-              ]
-            : [],
-        },
-      },
-    };
+    });
 
-    inMemoryMockLeads.unshift(newLead);
-    return JSON.parse(JSON.stringify(newLead));
+    if (res?.lead?.id) {
+      const created = await this.getLeadById(res.lead.id);
+      if (created) return created;
+    }
+
+    throw new Error("Failed to intake lead: Lead could not be loaded from backend.");
   }
 
   /**

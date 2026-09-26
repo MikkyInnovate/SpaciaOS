@@ -20,6 +20,7 @@ import {
 import { callsService } from "../services/calls-service";
 import type { Call } from "../types";
 import { MOCK_LEADS } from "@/features/leads/data/mock-leads";
+import { leadsService } from "@/features/leads";
 import {
   PhoneCall,
   PhoneOff,
@@ -58,16 +59,46 @@ export function InitiateCallDialog({
   defaultLeadId,
   onCallCompleted,
 }: InitiateCallDialogProps) {
-  const [selectedLeadId, setSelectedLeadId] = React.useState(MOCK_LEADS[0]?.id || "");
+  const [availableLeads, setAvailableLeads] = React.useState<any[]>(MOCK_LEADS);
+  const [selectedLeadId, setSelectedLeadId] = React.useState(defaultLeadId || MOCK_LEADS[0]?.id || "");
   const [personaId, setPersonaId] = React.useState("victoria");
   const [callState, setCallState] = React.useState<"idle" | "dialing" | "active" | "completing">("idle");
   const [activeSeconds, setActiveSeconds] = React.useState(0);
+  const activeCallRef = React.useRef<Call | null>(null);
+
+  // Fetch real leads for current workspace whenever dialog opens
+  React.useEffect(() => {
+    let isMounted = true;
+    async function loadWorkspaceLeads() {
+      try {
+        const res = await leadsService.getLeads();
+        if (isMounted && res && res.leads && res.leads.length > 0) {
+          setAvailableLeads(res.leads);
+          if (!defaultLeadId) {
+            setSelectedLeadId(res.leads[0].id);
+          }
+        }
+      } catch (err) {
+        console.warn("Could not fetch active workspace leads, using default leads:", err);
+      }
+    }
+    if (open) {
+      loadWorkspaceLeads();
+    }
+    return () => {
+      isMounted = false;
+    };
+  }, [open, defaultLeadId]);
 
   // Selected lead details derived cleanly from default or user selection
   const effectiveLeadId = defaultLeadId || selectedLeadId;
   const targetLead = React.useMemo(() => {
-    return MOCK_LEADS.find((l) => l.id === effectiveLeadId) || MOCK_LEADS[0];
-  }, [effectiveLeadId]);
+    return (
+      availableLeads.find((l) => l.id === effectiveLeadId) ||
+      availableLeads[0] ||
+      MOCK_LEADS[0]
+    );
+  }, [availableLeads, effectiveLeadId]);
 
   const selectedPersona = React.useMemo(() => {
     return VOICE_PERSONAS.find((p) => p.id === personaId) || VOICE_PERSONAS[0];
@@ -88,38 +119,82 @@ export function InitiateCallDialog({
     return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
   };
 
-  const handleStartDialing = () => {
+  const handleStartDialing = async () => {
     setActiveSeconds(0);
     setCallState("dialing");
-
-    // Simulate dialing delay (1.8s) -> auto-connect
-    setTimeout(() => {
-      setCallState("active");
-    }, 1800);
-  };
-
-  const handleFinishCall = async () => {
-    setCallState("completing");
 
     try {
       const createdCall = await callsService.initiateVapiCall({
         leadId: targetLead.id,
         leadName: targetLead.name,
         leadPhone: targetLead.phone,
-        propertyTitle: targetLead.propertyTitle,
-        propertyLocation: targetLead.location,
-        declaredBudget: targetLead.budget,
+        propertyTitle: targetLead.propertyTitle || "Luxury Development",
+        propertyLocation: targetLead.location || "Lagos, Nigeria",
+        declaredBudget: targetLead.budget || "₦1.5 Billion",
         score: targetLead.score,
         scoreCategory: targetLead.scoreCategory,
         persona: selectedPersona.name,
       });
+
+      activeCallRef.current = createdCall;
+      setCallState("active");
+    } catch (err: any) {
+      toast.error("Failed to connect to Vapi voice gateway.");
+      setCallState("idle");
+    }
+  };
+
+  const handleFinishCall = async () => {
+    setCallState("completing");
+
+    try {
+      const currentCall = activeCallRef.current;
+      const vapiCallId = (currentCall?.metrics as any)?.vapiCallId;
+
+      if (vapiCallId && currentCall?.id) {
+        // Send webhook to trigger full Vapi end-of-call processing & Day 11 qualification
+        await callsService.sendEndOfCallWebhook({
+          vapiCallId,
+          leadName: targetLead.name,
+          leadPhone: targetLead.phone,
+          propertyTitle: targetLead.propertyTitle,
+          duration: Math.max(activeSeconds, 60),
+        });
+
+        // Refetch fully hydrated call with transcript, summary, and Day 11 score
+        const refreshed = await callsService.getCallById(currentCall.id);
+        if (refreshed) {
+          toast.success("Vapi Voice Call Logged & Qualified", {
+            description: `Autonomous session with ${targetLead.name} completed. Audio, transcript, and lead score recorded in database.`,
+          });
+          onCallCompleted?.(refreshed);
+          setCallState("idle");
+          onOpenChange(false);
+          return;
+        }
+      }
+
+      // Simulated fallback
+      const fallbackCall =
+        currentCall ||
+        (await callsService.initiateVapiCall({
+          leadId: targetLead.id,
+          leadName: targetLead.name,
+          leadPhone: targetLead.phone,
+          propertyTitle: targetLead.propertyTitle,
+          propertyLocation: targetLead.location,
+          declaredBudget: targetLead.budget,
+          score: targetLead.score,
+          scoreCategory: targetLead.scoreCategory,
+          persona: selectedPersona.name,
+        }));
 
       toast.success("Vapi Voice Call Logged", {
         description: `Autonomous session with ${targetLead.name} completed. Audio and transcript synchronized.`,
       });
 
       if (onCallCompleted) {
-        onCallCompleted(createdCall);
+        onCallCompleted(fallbackCall);
       }
 
       setCallState("idle");
@@ -193,7 +268,7 @@ export function InitiateCallDialog({
                       <SelectValue placeholder="Select target lead" />
                     </SelectTrigger>
                     <SelectContent>
-                      {MOCK_LEADS.slice(0, 10).map((lead) => (
+                      {availableLeads.slice(0, 20).map((lead) => (
                         <SelectItem key={lead.id} value={lead.id} className="text-xs">
                           <span className="font-medium text-stone-900">{lead.name}</span>{" "}
                           <span className="text-stone-400 font-mono">({lead.phone})</span>

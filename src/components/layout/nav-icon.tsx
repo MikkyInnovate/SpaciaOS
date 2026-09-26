@@ -11,6 +11,7 @@ import {
   UserCheck,
   Settings,
   Layers,
+  Building2,
   HelpCircle,
   type LucideIcon,
 } from "lucide-react";
@@ -27,6 +28,8 @@ const ICON_MAP: Record<string, LucideIcon> = {
   UserCheck,
   Settings,
   Layers,
+  Building2,
+  Building: Building2,
 };
 
 export interface NavIconProps {

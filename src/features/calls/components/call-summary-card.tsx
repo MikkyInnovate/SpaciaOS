@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 
 export interface CallSummaryCardProps {
-  summary: CallSummary;
+  summary?: CallSummary | null;
   leadName?: string;
   className?: string;
 }
@@ -26,6 +26,27 @@ export function CallSummaryCard({
   className,
 }: CallSummaryCardProps) {
   const [hasCopied, setHasCopied] = React.useState(false);
+
+  if (!summary) {
+    return (
+      <div
+        className={cn(
+          "rounded-xl border border-stone-200 bg-white p-6 shadow-2xs text-center space-y-2",
+          className
+        )}
+      >
+        <div className="flex h-9 w-9 mx-auto items-center justify-center rounded-full bg-emerald-50 text-[#0d4a36]">
+          <Sparkles className="h-4 w-4 text-emerald-600 animate-pulse" />
+        </div>
+        <h4 className="text-xs font-semibold text-stone-900">
+          Executive AI Voice Brief Pending
+        </h4>
+        <p className="text-[11px] text-stone-500 max-w-xs mx-auto leading-relaxed">
+          Structured synthesis, key takeaways, and next actions will be automatically generated upon call completion.
+        </p>
+      </div>
+    );
+  }
 
   const handleCopySummary = () => {
     const text = `*EXECUTIVE CALL BRIEF — ${leadName.toUpperCase()}*
@@ -40,7 +61,7 @@ ${summary.objectionsRaised.length > 0 ? summary.objectionsRaised.map((o) => `•
 Action Items:
 ${summary.actionItems.map((a) => `• ${a}`).join("\n")}
 
-Suggested Next Step: ${summary.suggestedNextStep}`;
+Suggested Next Step: ${summary.suggestedNextStep || "Review conversation"}`;
 
     navigator.clipboard.writeText(text);
     setHasCopied(true);
