@@ -84,3 +84,88 @@ export type AiAgentRecord = typeof aiAgents.$inferSelect;
 export type NewAiAgentRecord = typeof aiAgents.$inferInsert;
 export type AiConfigurationRecord = typeof aiConfigurations.$inferSelect;
 export type NewAiConfigurationRecord = typeof aiConfigurations.$inferInsert;
+
+export interface BusinessHoursConfig {
+  enabled: boolean;
+  start: string;
+  end: string;
+  timezone: string;
+  days: string[];
+}
+
+export interface EscalationRulesConfig {
+  humanTakeoverKeywords: string[];
+  budgetThresholdNaira: number;
+  maxNegativeSentiments: number;
+  requireHumanForContracts: boolean;
+}
+
+export interface FollowUpRulesConfig {
+  maxAttempts: number;
+  intervalHours: number;
+  autoArchiveUnresponsiveDays: number;
+  channelOrder: string[];
+}
+
+export const aiAgentConfigs = pgTable(
+  "ai_agent_configs",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    workspaceId: varchar("workspace_id", { length: 64 })
+      .notNull()
+      .references(() => workspaces.id, { onDelete: "cascade" }),
+    name: varchar("name", { length: 150 }).notNull().default("Amara"),
+    voice: varchar("voice", { length: 100 }).notNull().default("en-NG-EzinneNeural"),
+    tone: varchar("tone", { length: 100 }).notNull().default("luxury_professional"),
+    language: varchar("language", { length: 50 }).notNull().default("en-NG"),
+    greeting: text("greeting")
+      .notNull()
+      .default(
+        "Good day. Thank you for contacting Spacia. I am Amara, your personal luxury real estate advisor. How may I assist your property acquisition today?"
+      ),
+    businessHours: jsonb("business_hours").$type<BusinessHoursConfig>().notNull().default({
+      enabled: true,
+      start: "08:00",
+      end: "19:00",
+      timezone: "Africa/Lagos",
+      days: ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday"],
+    }),
+    escalationRules: jsonb("escalation_rules").$type<EscalationRulesConfig>().notNull().default({
+      humanTakeoverKeywords: [
+        "human",
+        "agent",
+        "broker",
+        "lawyer",
+        "scam",
+        "dispute",
+        "litigation",
+        "c-of-o query",
+        "bank wire instructions",
+        "fraud",
+      ],
+      budgetThresholdNaira: 500000000,
+      maxNegativeSentiments: 2,
+      requireHumanForContracts: true,
+    }),
+    followUpRules: jsonb("follow_up_rules").$type<FollowUpRulesConfig>().notNull().default({
+      maxAttempts: 3,
+      intervalHours: 24,
+      autoArchiveUnresponsiveDays: 7,
+      channelOrder: ["whatsapp", "sms", "voice"],
+    }),
+    isActive: boolean("is_active").notNull().default(true),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    unique("uq_ai_agent_configs_workspace").on(table.workspaceId),
+    index("idx_ai_agent_configs_workspace_active").on(table.workspaceId, table.isActive),
+  ]
+);
+
+export type AiAgentConfigRecord = typeof aiAgentConfigs.$inferSelect;
+export type NewAiAgentConfigRecord = typeof aiAgentConfigs.$inferInsert;

@@ -19,16 +19,23 @@ class AnalyticsService {
    * Fetch 8-stage operational conversion funnel:
    * Leads -> Contacted -> Conversations -> Qualified -> Hot -> Viewing Booked -> Viewing Completed -> Won
    */
-  async getFunnel(params?: QueryAnalyticsParams): Promise<AnalyticsFunnelResponse> {
+  async getFunnel(
+    params?: QueryAnalyticsParams,
+    workspaceId?: string
+  ): Promise<AnalyticsFunnelResponse> {
     const query = new URLSearchParams();
     if (params?.period) query.set("period", params.period);
     if (params?.startDate) query.set("startDate", params.startDate);
     if (params?.endDate) query.set("endDate", params.endDate);
 
     const queryString = query.toString() ? `?${query.toString()}` : "";
+    const options = workspaceId ? { workspaceId } : undefined;
 
     try {
-      return await apiClient.get<AnalyticsFunnelResponse>(`/api/v1/analytics/funnel${queryString}`);
+      return await apiClient.get<AnalyticsFunnelResponse>(
+        `/api/v1/analytics/funnel${queryString}`,
+        options
+      );
     } catch (error) {
       console.warn("[AnalyticsService] Fallback to baseline funnel metrics:", error);
       return this.getFallbackFunnel();
@@ -38,16 +45,23 @@ class AnalyticsService {
   /**
    * Fetch operational overview metrics & velocity KPIs
    */
-  async getOverviewMetrics(params?: QueryAnalyticsParams): Promise<AnalyticsOverviewMetrics> {
+  async getOverviewMetrics(
+    params?: QueryAnalyticsParams,
+    workspaceId?: string
+  ): Promise<AnalyticsOverviewMetrics> {
     const query = new URLSearchParams();
     if (params?.period) query.set("period", params.period);
     if (params?.startDate) query.set("startDate", params.startDate);
     if (params?.endDate) query.set("endDate", params.endDate);
 
     const queryString = query.toString() ? `?${query.toString()}` : "";
+    const options = workspaceId ? { workspaceId } : undefined;
 
     try {
-      return await apiClient.get<AnalyticsOverviewMetrics>(`/api/v1/analytics/metrics${queryString}`);
+      return await apiClient.get<AnalyticsOverviewMetrics>(
+        `/api/v1/analytics/metrics${queryString}`,
+        options
+      );
     } catch (error) {
       console.warn("[AnalyticsService] Fallback to baseline overview metrics:", error);
       return this.getFallbackOverviewMetrics();
@@ -57,9 +71,13 @@ class AnalyticsService {
   /**
    * Fetch 17-point operational revenue path status (Day 21 Checkpoint)
    */
-  async getRevenuePath(): Promise<RevenuePathResponse> {
+  async getRevenuePath(workspaceId?: string): Promise<RevenuePathResponse> {
+    const options = workspaceId ? { workspaceId } : undefined;
     try {
-      return await apiClient.get<RevenuePathResponse>("/api/v1/analytics/revenue-path");
+      return await apiClient.get<RevenuePathResponse>(
+        "/api/v1/analytics/revenue-path",
+        options
+      );
     } catch (error) {
       console.warn("[AnalyticsService] Fallback to baseline revenue path:", error);
       return this.getFallbackRevenuePath();

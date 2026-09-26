@@ -34,6 +34,7 @@
     "test:day19": "NODE_ENV=test NOTIFICATION_PROVIDER=mock CALENDAR_PROVIDER=mock ts-node test/day19-notifications.spec.ts",
     "test:day20": "NODE_ENV=test NOTIFICATION_PROVIDER=mock CALENDAR_PROVIDER=mock ts-node test/day20-dashboard.spec.ts",
     "test:day21": "NODE_ENV=test NOTIFICATION_PROVIDER=mock CALENDAR_PROVIDER=mock ts-node test/day21-analytics.spec.ts",
+    "test:day22": "NODE_ENV=test AI_PROVIDER=mock ts-node test/day22-ai-config.spec.ts",
     "demo:tools": "ts-node scripts/demo-tools.ts",
     "demo:ai-agent": "ts-node scripts/demo-ai-agent.ts",
     "demo:handoff": "NODE_ENV=test AI_PROVIDER=mock VAPI_PROVIDER=mock ts-node scripts/demo-handoff.ts"

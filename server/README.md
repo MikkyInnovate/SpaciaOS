@@ -1252,6 +1252,65 @@ Certifies the complete 17-point end-to-end revenue path across 5 operational clu
   5. **Multi-Tenant Analytics Isolation**: Verified zero metric or event leakage between isolated tenant workspaces ✔
 - **Result**: `ALL DAY 21 OPERATIONAL ANALYTICS TESTS PASSED (5/5 - 100%)`.
 
+---
+
+# Day 22: Managed AI Agent Configuration & Context Injection Engine
+
+## Objective
+Establish a persistent, workspace-scoped AI Configuration Engine that allows brokerages to control their autonomous AI Sales Agent across 8 core dimensions (Name, Voice, Tone, Language, Greeting, Business Hours, Escalation Rules, Follow-up Rules), validates all configuration schemas with strict DTO constraints, enforces multi-tenant isolation, and dynamically injects active configurations into prompt generation and conversational execution.
+
+## Architectural Highlights
+
+### 1. Database Persistence (`ai_agent_configs` Table)
+Dedicated table in Neon PostgreSQL with workspace-scoped isolation (`workspace_id` unique constraint):
+- `name`: Agent persona name (default: "Amara").
+- `voice`: Neural voice synthesis identifier (default: "en-NG-EzinneNeural").
+- `tone`: Communication style ("luxury_professional", "consultative", "assertive", "warm_friendly").
+- `language`: Primary dialect ("en-NG", "en-US", "en-GB", "pcm-NG").
+- `greeting`: Opening script and introductory baseline text.
+- `business_hours`: JSONB structure `{ enabled: boolean, start: string, end: string, timezone: string, days: string[] }`.
+- `escalation_rules`: JSONB structure `{ humanTakeoverKeywords: string[], budgetThresholdNaira: number, maxNegativeSentiments: number, requireHumanForContracts: boolean }`.
+- `follow_up_rules`: JSONB structure `{ maxAttempts: number, intervalHours: number, autoArchiveUnresponsiveDays: number, channelOrder: string[] }`.
+
+### 2. Configuration Validation & DTOs (`src/modules/ai-agent/dto/ai-config.dto.ts`)
+- Strict type validation using `class-validator` and `class-transformer`:
+  - `start` and `end` times validated using 24-hour `HH:mm` regex (`/^([01]\d|2[0-3]):([0-5]\d)$/`).
+  - `budgetThresholdNaira` validated `>= 0`.
+  - `tone` validated against approved enum values.
+  - `language` validated against supported regional language codes.
+  - `maxAttempts` and `intervalHours` bounded to protect prospects from communication fatigue.
+
+### 3. AI Context Injection (`PromptBuilderService` & `AiOrchestratorService`)
+- Dynamically resolves the active workspace configuration on every chat turn and prompt assembly.
+- Injects:
+  - Agent Persona Name and Communication Tone guidance directly into system prompt instructions.
+  - Primary language dialect rules (e.g. Lagos Prime real estate dialect).
+  - Opening script baseline.
+  - Operational business hours context (identifying whether the interaction is in-hours or after-hours, with instructions to reassure after-hours prospects).
+  - Human escalation directives (immediate keywords requiring broker takeover and high-value budget threshold).
+  - Follow-up policy (cadence, attempts limit, and channel priority).
+- `AiOrchestratorService` labels outbound assistant messages with the configured agent persona name rather than a static string.
+
+### 4. REST Endpoints (`AiAgentController` under `/api/v1/ai-agent`)
+- `GET /api/v1/ai-agent/config`: Retrieves active workspace configuration (or auto-provisions baseline if non-existent).
+- `PUT /api/v1/ai-agent/config`: Updates all 8 configuration parameters with strict validation.
+- `PATCH /api/v1/ai-agent/config`: Partially updates configuration fields.
+- `POST /api/v1/ai-agent/config/reset`: Restores configuration to Spacia luxury baseline.
+- `GET /api/v1/ai-agent/status`: Returns live engine telemetry, uptime, and business-hours status.
+
+## Automated Verification & Test Suite
+- **Command**: `npm run test:day22`
+- **File**: `server/test/day22-ai-config.spec.ts`
+- **7 Verification Scenarios Verified Live Against Neon PostgreSQL**:
+  1. **Baseline Provisioning**: Automatically provisions all 8 configuration parameters for new workspaces ✔
+  2. **Configuration Validation**: Strictly rejects invalid time formats, unsupported tones/languages, and negative budgets ✔
+  3. **Full 8-Parameter Persistence**: Updates and persists all 8 fields in Neon PostgreSQL ✔
+  4. **Multi-Tenant Isolation**: Verifies that Workspace B's configuration remains completely untouched when Workspace A updates ✔
+  5. **AI Context Injection**: Verifies that `PromptBuilderService` injects the configured name, tone, greeting, business hours, escalation keywords, and budget threshold into the system prompt ✔
+  6. **Runtime Escalation & Business Hours Evaluation**: Accurately triggers keyword and budget escalation while allowing standard turns ✔
+  7. **Configuration Reset**: Restores workspace configuration back to Spacia luxury baseline defaults ✔
+- **Result**: `ALL PACIA DAY 22 AI CONFIGURATION TESTS PASSED (7/7 - 100%)`.
+
 
 
 

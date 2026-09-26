@@ -157,21 +157,20 @@ export function RevenuePathStepper({
           </div>
         </div>
 
-        {/* Filter Pills by Category */}
-        <div className="flex items-center gap-1.5 flex-wrap pt-3">
-          <Button
-            size="sm"
-            variant={selectedCategory === "all" ? "default" : "outline"}
+        {/* Design System Segmented Filter Bar */}
+        <div className="inline-flex items-center gap-1 bg-stone-100 p-1 rounded-lg border border-stone-200/80 flex-wrap">
+          <button
+            type="button"
             onClick={() => setSelectedCategory("all")}
             className={cn(
-              "h-7 text-xs px-2.5 cursor-pointer rounded-lg",
+              "px-3 py-1 rounded-md text-xs font-medium transition-all select-none whitespace-nowrap cursor-pointer",
               selectedCategory === "all"
-                ? "bg-[#0d4a36] text-white hover:bg-[#0d4a36]/90"
-                : "text-stone-600 border-stone-200 hover:bg-stone-50"
+                ? "bg-white text-stone-900 font-semibold shadow-2xs border border-stone-200/60"
+                : "text-stone-600 hover:text-stone-900 hover:bg-stone-200/60"
             )}
           >
             All Steps
-          </Button>
+          </button>
 
           {(
             [
@@ -185,20 +184,19 @@ export function RevenuePathStepper({
             const config = CATEGORY_MAP[cat];
             const isSelected = selectedCategory === cat;
             return (
-              <Button
+              <button
                 key={cat}
-                size="sm"
-                variant={isSelected ? "default" : "outline"}
+                type="button"
                 onClick={() => setSelectedCategory(cat)}
                 className={cn(
-                  "h-7 text-xs px-2.5 cursor-pointer rounded-lg",
+                  "px-3 py-1 rounded-md text-xs font-medium transition-all select-none whitespace-nowrap cursor-pointer",
                   isSelected
-                    ? "bg-[#0d4a36] text-white hover:bg-[#0d4a36]/90"
-                    : "text-stone-600 border-stone-200 hover:bg-stone-50"
+                    ? "bg-white text-stone-900 font-semibold shadow-2xs border border-stone-200/60"
+                    : "text-stone-600 hover:text-stone-900 hover:bg-stone-200/60"
                 )}
               >
                 {config.label}
-              </Button>
+              </button>
             );
           })}
         </div>

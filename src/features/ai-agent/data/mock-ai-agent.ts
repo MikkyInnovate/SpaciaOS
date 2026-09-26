@@ -21,12 +21,54 @@ export const MOCK_AI_AGENT_STATUS: AIAgentStatusTelemetry = {
 };
 
 export const MOCK_AI_AGENT_CONFIG: AIAgentConfiguration = {
+  name: "Amara",
+  voice: "en-NG-EzinneNeural",
+  tone: "luxury_professional",
+  language: "en-NG",
+  greeting:
+    "Good day. Thank you for contacting Spacia. I am Amara, your personal luxury real estate advisor. How may I assist your property acquisition today?",
+  businessHours: {
+    enabled: true,
+    start: "08:00",
+    end: "19:00",
+    timezone: "Africa/Lagos",
+    days: [
+      "monday",
+      "tuesday",
+      "wednesday",
+      "thursday",
+      "friday",
+      "saturday",
+    ],
+  },
+  escalationRules: {
+    humanTakeoverKeywords: [
+      "negotiate commission",
+      "bank wire instructions",
+      "speak to lawyer",
+      "escrow account",
+      "price discount",
+      "fraud",
+      "c-of-o query",
+    ],
+    budgetThresholdNaira: 500000000,
+    maxNegativeSentiments: 2,
+    requireHumanForContracts: true,
+  },
+  followUpRules: {
+    maxAttempts: 3,
+    intervalHours: 24,
+    autoArchiveUnresponsiveDays: 7,
+    channelOrder: ["whatsapp", "sms", "voice"],
+  },
+  isActive: true,
   persona: {
-    name: "Spacia AI Sales Associate",
+    name: "Amara",
     identityTitle: "Executive Brokerage Intake Specialist",
-    voiceModel: "Neural Executive v2.4 (Lagos Neutral)",
+    voiceModel: "en-NG-EzinneNeural (Lagos Neutral)",
     accent: "Nigerian Business English (Executive Lagos Neutral)",
-    greeting: "Good afternoon, this is Spacia on behalf of your inquiry on the Admiralty Way contemporary villa...",
+    greeting:
+      "Good day. Thank you for contacting Spacia. I am Amara, your personal luxury real estate advisor. How may I assist your property acquisition today?",
     temperature: 0.35,
     interruptionToleranceMs: 420,
     speechSpeed: 1.0,

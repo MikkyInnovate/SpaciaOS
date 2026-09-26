@@ -95,20 +95,99 @@ export class PromptBuilderService {
   }
 
   /**
-   * Constructs the authoritative system prompt with all anti-hallucination and policy guardrails.
+   * Resolves active workspace AI configuration from database.
+   */
+  async resolveAiConfig(workspaceId: string): Promise<schema.AiAgentConfigRecord | null> {
+    try {
+      const [cfg] = await this.db
+        .select()
+        .from(schema.aiAgentConfigs)
+        .where(eq(schema.aiAgentConfigs.workspaceId, workspaceId))
+        .limit(1);
+
+      return cfg || null;
+    } catch (err: any) {
+      this.logger.warn(`Could not fetch AI config [${workspaceId}]: ${err.message}`);
+      return null;
+    }
+  }
+
+  /**
+   * Constructs the authoritative system prompt with all anti-hallucination,
+   * policy guardrails, and injected workspace AI configuration.
    */
   buildSystemPrompt(
     workspace: WorkspaceContextInfo,
     lead?: LeadContextInfo | null,
-    channel = "web_chat"
+    channel = "web_chat",
+    aiConfig?: schema.AiAgentConfigRecord | null
   ): string {
     const agencyName = workspace.workspaceName || "Spacia Premier Realty";
     const market = workspace.primaryMarket || "Lagos Prime Luxury";
+    const agentName = aiConfig?.name || "Amara";
+    const tone = aiConfig?.tone || "luxury_professional";
+    const language = aiConfig?.language || "en-NG";
+
+    let toneGuidance = "Refined, discreet, articulate, and deeply respectful. Speak with the understated elegance suitable for High-Net-Worth individuals.";
+    if (tone === "consultative") {
+      toneGuidance = "Consultative, advisory, and diagnostic. Act as an expert real estate advisor uncovering client criteria through thoughtful questions.";
+    } else if (tone === "assertive") {
+      toneGuidance = "Direct, decisive, energetic, and velocity-driven. Emphasize exclusive inventory scarcity and swift viewing arrangements.";
+    } else if (tone === "warm_friendly") {
+      toneGuidance = "Warm, welcoming, encouraging, and hospitable while maintaining complete factual precision.";
+    }
 
     const promptParts = [
-      `You are the autonomous AI Sales Persona for ${agencyName}, an elite luxury real estate brokerage specializing in ${market}.`,
-      `Your communication style is polished, knowledgeable, warm, and highly professional.`,
+      `You are ${agentName}, the autonomous AI Sales Executive for ${agencyName}, an elite luxury real estate brokerage specializing in ${market}.`,
+      `Communication Tone: ${toneGuidance}`,
+      `Primary Operating Language: ${language} (Nigerian Prime Real Estate English).`,
       ``,
+    ];
+
+    if (aiConfig?.greeting) {
+      promptParts.push(
+        `APPROVED OPENING SCRIPT / GREETING BASELINE:`,
+        `"${aiConfig.greeting}"`,
+        ``
+      );
+    }
+
+    // Business Hours Context
+    if (aiConfig?.businessHours) {
+      const bh = aiConfig.businessHours;
+      promptParts.push(
+        `OPERATIONAL BUSINESS HOURS SCHEDULE:`,
+        `- Active Window: ${bh.start} to ${bh.end} (${bh.timezone || "Africa/Lagos"})`,
+        `- Operating Days: ${(bh.days || []).join(", ")}`,
+        `- Protocol: If responding outside scheduled hours, assure the prospect that a senior partner will prioritize follow-up first thing in the morning.`,
+        ``
+      );
+    }
+
+    // Human Escalation Directives
+    if (aiConfig?.escalationRules) {
+      const esc = aiConfig.escalationRules;
+      promptParts.push(
+        `CRITICAL HUMAN ESCALATION & HANDOVER DIRECTIVES:`,
+        `- Keywords requiring immediate human handoff: ${(esc.humanTakeoverKeywords || []).join(", ")}`,
+        `- High-Value Escalation Threshold: ₦${(esc.budgetThresholdNaira || 500000000).toLocaleString()}`,
+        `- Escalation Policy: If prospect demands human assistance, expresses legal disputes, or requests custom contracts, gracefully initiate a handoff.`,
+        ``
+      );
+    }
+
+    // Follow-up Policy Context
+    if (aiConfig?.followUpRules) {
+      const fu = aiConfig.followUpRules;
+      promptParts.push(
+        `FOLLOW-UP & ENGAGEMENT RULES:`,
+        `- Max Follow-up Sequences: ${fu.maxAttempts} attempts spaced by ${fu.intervalHours} hours.`,
+        `- Authorized Follow-up Channels: ${(fu.channelOrder || ["whatsapp", "sms", "voice"]).join(", ")}`,
+        ``
+      );
+    }
+
+    promptParts.push(
       `================================================================================`,
       `CRITICAL ANTI-HALLUCINATION GUARDRAILS (ZERO TOLERANCE FOR FABRICATION):`,
       `1. You must NEVER invent, assume, or fabricate property prices, availability, square footage, features, titles, fees, or commissions.`,
@@ -133,8 +212,8 @@ export class PromptBuilderService {
       ``,
       `ACTIVE CONTEXT & LEAD DOSSIER:`,
       `- Operating Workspace: ${agencyName} [ID: ${workspace.workspaceId}]`,
-      `- Interaction Channel: ${channel}`,
-    ];
+      `- Interaction Channel: ${channel}`
+    );
 
     if (lead) {
       promptParts.push(

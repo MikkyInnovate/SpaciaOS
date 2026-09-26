@@ -98,10 +98,22 @@ export default function AiAgentPage() {
       const updated = await aiAgentService.updateConfiguration(newConfig);
       setConfiguration(updated);
       toast.success("Agent configuration saved", {
-        description: "Updated BANT criteria and voice parameters synchronized.",
+        description: "Updated voice persona, business hours, and escalation rules synchronized.",
       });
     } catch {
       toast.error("Failed to save configuration");
+    }
+  };
+
+  const handleResetConfig = async () => {
+    try {
+      const reset = await aiAgentService.resetConfig();
+      setConfiguration(reset);
+      toast.info("Configuration reset", {
+        description: "Restored baseline Spacia luxury parameters.",
+      });
+    } catch {
+      toast.error("Failed to reset configuration");
     }
   };
 
@@ -335,6 +347,7 @@ export default function AiAgentPage() {
         <AIAgentConfigPresentation
           configuration={configuration}
           onSaveConfig={handleSaveConfig}
+          onResetConfig={handleResetConfig}
         />
       )}
     </Container>

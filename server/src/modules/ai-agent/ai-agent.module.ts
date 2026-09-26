@@ -10,6 +10,7 @@ import { PromptBuilderService } from "./services/prompt-builder.service";
 import { ConversationMemoryService } from "./services/conversation-memory.service";
 import { StructuredExtractionService } from "./services/structured-extraction.service";
 import { AiOrchestratorService } from "./services/ai-orchestrator.service";
+import { AiConfigService } from "./services/ai-config.service";
 import { AiAgentController } from "./ai-agent.controller";
 
 @Module({
@@ -28,9 +29,11 @@ import { AiAgentController } from "./ai-agent.controller";
     ConversationMemoryService,
     StructuredExtractionService,
     AiOrchestratorService,
+    AiConfigService,
   ],
   exports: [
     AiOrchestratorService,
+    AiConfigService,
     AI_PROVIDER_TOKEN,
     OpenRouterProvider,
     MockAiProvider,

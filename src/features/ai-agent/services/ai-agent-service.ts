@@ -36,6 +36,74 @@ let inMemoryConfig: AIAgentConfiguration = JSON.parse(
   JSON.stringify(MOCK_AI_AGENT_CONFIG)
 );
 
+function normalizeConfig(raw: any): AIAgentConfiguration {
+  const base = MOCK_AI_AGENT_CONFIG;
+  const name = raw?.name || raw?.persona?.name || base.name;
+  const voice = raw?.voice || raw?.persona?.voiceModel || base.voice;
+  const tone = raw?.tone || "luxury_professional";
+  const language = raw?.language || "en-NG";
+  const greeting = raw?.greeting || raw?.persona?.greeting || base.greeting;
+  const businessHours = raw?.businessHours || raw?.business_hours || base.businessHours;
+  const escalationRules = raw?.escalationRules || raw?.escalation_rules || base.escalationRules;
+  const followUpRules = raw?.followUpRules || raw?.follow_up_rules || base.followUpRules;
+  const isActive = raw?.isActive !== undefined ? raw.isActive : base.isActive;
+
+  const budgetNum = Number(escalationRules?.budgetThresholdNaira) || 500000000;
+  const formattedBudget = `₦${budgetNum.toLocaleString()}`;
+
+  return {
+    id: raw?.id,
+    workspaceId: raw?.workspaceId || raw?.workspace_id,
+    name,
+    voice,
+    tone,
+    language,
+    greeting,
+    businessHours,
+    escalationRules,
+    followUpRules,
+    isActive,
+    // Mirrored presentation structures for backward compatibility
+    persona: {
+      name,
+      identityTitle: raw?.persona?.identityTitle || "Executive Brokerage Intake Specialist",
+      voiceModel: voice,
+      accent: raw?.persona?.accent || "Nigerian Business English (Executive Lagos Neutral)",
+      greeting,
+      temperature: raw?.persona?.temperature ?? 0.35,
+      interruptionToleranceMs: raw?.persona?.interruptionToleranceMs ?? 420,
+      speechSpeed: raw?.persona?.speechSpeed ?? 1.0,
+      truthPolicy: raw?.persona?.truthPolicy || "strict_verified_only",
+    },
+    qualificationGates: {
+      minimumBudgetNaira: budgetNum,
+      formattedMinimumBudget: formattedBudget,
+      targetTimelineDays: raw?.qualificationGates?.targetTimelineDays ?? 30,
+      requiredTitleDeeds: raw?.qualificationGates?.requiredTitleDeeds || [
+        "Governor's Consent",
+        "Certificate of Occupancy (C of O)",
+        "Registered Gazette",
+      ],
+      immediateEscalationKeywords:
+        escalationRules?.humanTakeoverKeywords || [
+          "negotiate commission",
+          "bank wire instructions",
+          "speak to lawyer",
+          "escrow account",
+          "price discount",
+        ],
+    },
+    guardrails: {
+      maxOutboundAttempts: followUpRules?.maxAttempts ?? 3,
+      quietHoursStart: businessHours?.end || "19:00",
+      quietHoursEnd: businessHours?.start || "08:00",
+      dncEnforced: raw?.guardrails?.dncEnforced ?? true,
+      autoHandoffOnNegotiation: raw?.guardrails?.autoHandoffOnNegotiation ?? true,
+      autoDispatchBookings: raw?.guardrails?.autoDispatchBookings ?? false,
+    },
+  };
+}
+
 class AIAgentService {
   async getStatus(): Promise<AIAgentStatusTelemetry> {
     try {
@@ -57,16 +125,20 @@ class AIAgentService {
 
   async getConfig(): Promise<AIAgentConfiguration> {
     try {
-      const res = await apiClient.get<{ config: AIAgentConfiguration }>(
+      const res = await apiClient.get<{ config: any }>(
         "/api/v1/ai-agent/config"
       );
-      if (res?.config) return res.config;
+      if (res?.config) {
+        const normalized = normalizeConfig(res.config);
+        inMemoryConfig = normalized;
+        return normalized;
+      }
     } catch {
       // Fallback
     }
 
     await new Promise((r) => setTimeout(r, 80));
-    return JSON.parse(JSON.stringify(inMemoryConfig));
+    return normalizeConfig(inMemoryConfig);
   }
 
   async getConfiguration(): Promise<AIAgentConfiguration> {
@@ -77,40 +149,71 @@ class AIAgentService {
     patch: Partial<AIAgentConfiguration>
   ): Promise<AIAgentConfiguration> {
     try {
-      const res = await apiClient.patch<{ config: AIAgentConfiguration }>(
+      // Construct backend payload aligning with UpdateAiConfigDto
+      const payload: Record<string, any> = {};
+      if (patch.name !== undefined) payload.name = patch.name;
+      if (patch.voice !== undefined) payload.voice = patch.voice;
+      if (patch.tone !== undefined) payload.tone = patch.tone;
+      if (patch.language !== undefined) payload.language = patch.language;
+      if (patch.greeting !== undefined) payload.greeting = patch.greeting;
+      if (patch.businessHours !== undefined) payload.businessHours = patch.businessHours;
+      if (patch.escalationRules !== undefined) payload.escalationRules = patch.escalationRules;
+      if (patch.followUpRules !== undefined) payload.followUpRules = patch.followUpRules;
+      if (patch.isActive !== undefined) payload.isActive = patch.isActive;
+
+      // Also support legacy persona patches if caller passes them
+      if (patch.persona?.name && !payload.name) payload.name = patch.persona.name;
+      if (patch.persona?.voiceModel && !payload.voice) payload.voice = patch.persona.voiceModel;
+      if (patch.persona?.greeting && !payload.greeting) payload.greeting = patch.persona.greeting;
+
+      const res = await apiClient.put<{ config: any }>(
         "/api/v1/ai-agent/config",
-        patch
+        payload
       );
       if (res?.config) {
-        inMemoryConfig = res.config;
-        return res.config;
+        const normalized = normalizeConfig(res.config);
+        inMemoryConfig = normalized;
+        return normalized;
       }
     } catch {
       // Fallback
     }
 
     await new Promise((r) => setTimeout(r, 150));
-    inMemoryConfig = {
+    inMemoryConfig = normalizeConfig({
       ...inMemoryConfig,
       ...patch,
-      persona: { ...inMemoryConfig.persona, ...(patch.persona || {}) },
-      qualificationGates: {
-        ...inMemoryConfig.qualificationGates,
-        ...(patch.qualificationGates || {}),
-      },
-      guardrails: {
-        ...inMemoryConfig.guardrails,
-        ...(patch.guardrails || {}),
-      },
-    };
+    });
 
-    return JSON.parse(JSON.stringify(inMemoryConfig));
+    return inMemoryConfig;
   }
 
   async updateConfiguration(
     patch: Partial<AIAgentConfiguration>
   ): Promise<AIAgentConfiguration> {
     return this.updateConfig(patch);
+  }
+
+  async resetConfig(): Promise<AIAgentConfiguration> {
+    try {
+      const res = await apiClient.post<{ config: any }>(
+        "/api/v1/ai-agent/config/reset"
+      );
+      if (res?.config) {
+        const normalized = normalizeConfig(res.config);
+        inMemoryConfig = normalized;
+        return normalized;
+      }
+    } catch {
+      // Fallback
+    }
+
+    inMemoryConfig = JSON.parse(JSON.stringify(MOCK_AI_AGENT_CONFIG));
+    return inMemoryConfig;
+  }
+
+  async resetConfiguration(): Promise<AIAgentConfiguration> {
+    return this.resetConfig();
   }
 
   async toggleOutboundPause(): Promise<boolean> {

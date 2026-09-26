@@ -64,10 +64,53 @@ export interface AIAgentGuardrails {
   autoDispatchBookings?: boolean;
 }
 
+export type AIAgentTone =
+  | "luxury_professional"
+  | "consultative"
+  | "assertive"
+  | "warm_friendly";
+
+export type AIAgentLanguage = "en-NG" | "en-US" | "en-GB" | "pcm-NG";
+
+export interface BusinessHoursConfiguration {
+  enabled: boolean;
+  start: string;
+  end: string;
+  timezone: string;
+  days: string[];
+}
+
+export interface EscalationRulesConfiguration {
+  humanTakeoverKeywords: string[];
+  budgetThresholdNaira: number;
+  maxNegativeSentiments: number;
+  requireHumanForContracts: boolean;
+}
+
+export interface FollowUpRulesConfiguration {
+  maxAttempts: number;
+  intervalHours: number;
+  autoArchiveUnresponsiveDays: number;
+  channelOrder: string[];
+}
+
 export interface AIAgentConfiguration {
-  persona: AIAgentVoicePersona;
-  qualificationGates: AIAgentQualificationGates;
-  guardrails: AIAgentGuardrails;
+  id?: string;
+  workspaceId?: string;
+  // Day 22: 8 Core Configurable Parameters
+  name: string;
+  voice: string;
+  tone: AIAgentTone;
+  language: AIAgentLanguage;
+  greeting: string;
+  businessHours: BusinessHoursConfiguration;
+  escalationRules: EscalationRulesConfiguration;
+  followUpRules: FollowUpRulesConfiguration;
+  isActive?: boolean;
+  // Legacy / Presentation compatibility
+  persona?: AIAgentVoicePersona;
+  qualificationGates?: AIAgentQualificationGates;
+  guardrails?: AIAgentGuardrails;
 }
 
 export interface IntentSignal {

@@ -111,7 +111,7 @@ export class AiOrchestratorService {
       this.envService.aiContextWindowSize
     );
 
-    // 2. Assemble System Prompt with Workspace & Lead Context
+    // 2. Assemble System Prompt with Workspace, Lead Context & Workspace AI Configuration
     const workspaceContext = await this.promptBuilder.resolveWorkspaceContext(
       tenant.workspaceId
     );
@@ -119,10 +119,14 @@ export class AiOrchestratorService {
       tenant.workspaceId,
       dto.leadId
     );
+    const aiConfig = await this.promptBuilder.resolveAiConfig(
+      tenant.workspaceId
+    );
     const systemPrompt = this.promptBuilder.buildSystemPrompt(
       workspaceContext,
       leadContext,
-      dto.channel || conversation.channel
+      dto.channel || conversation.channel,
+      aiConfig
     );
 
     // 3. Format Day 9 Tool Definitions for Provider Function Calling
@@ -277,7 +281,7 @@ export class AiOrchestratorService {
       conversation.id,
       "ai_agent",
       finalContent,
-      "Spacia AI",
+      aiConfig?.name || "Spacia AI",
       {
         provider: this.aiProvider.providerName,
         model: lastUsage.model,

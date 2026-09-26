@@ -2,21 +2,32 @@
 
 import * as React from "react";
 import { cn } from "@/lib/utils/cn";
-import type { AIAgentConfiguration } from "../types";
+import type {
+  AIAgentConfiguration,
+  AIAgentTone,
+  AIAgentLanguage,
+} from "../types";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import {
   CheckCircle2,
-  ShieldCheck,
   Sliders,
   Volume2,
+  Clock,
+  AlertTriangle,
+  RotateCcw,
   Pencil,
   Save,
   X,
   Plus,
   Loader2,
   Sparkles,
+  PhoneCall,
+  Calendar,
+  MessageSquare,
+  Shield,
+  Layers,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -24,28 +35,119 @@ export interface AIAgentConfigPresentationProps {
   config?: AIAgentConfiguration;
   configuration?: AIAgentConfiguration;
   onSaveConfig?: (newConfig: AIAgentConfiguration) => Promise<void> | void;
+  onResetConfig?: () => Promise<void> | void;
   className?: string;
 }
+
+const VOICE_OPTIONS = [
+  {
+    id: "en-NG-EzinneNeural",
+    label: "Ezinne — Nigerian Lagos Neutral (Female)",
+    accent: "Executive Lagos Neutral",
+  },
+  {
+    id: "en-NG-AbeoNeural",
+    label: "Abeo — Nigerian Lagos Professional (Male)",
+    accent: "Commercial Lagos Executive",
+  },
+  {
+    id: "en-GB-SoniaNeural",
+    label: "Sonia — British Commonwealth Executive (Female)",
+    accent: "London Mayfair Neutral",
+  },
+  {
+    id: "en-US-JennyNeural",
+    label: "Jenny — Global Metropolitan Prime (Female)",
+    accent: "International American",
+  },
+];
+
+const TONE_OPTIONS: Array<{
+  id: AIAgentTone;
+  label: string;
+  badge: string;
+  description: string;
+}> = [
+  {
+    id: "luxury_professional",
+    label: "Luxury Professional",
+    badge: "Discreet & Refined",
+    description:
+      "Understated elegance, respectful vocabulary, tailored for High-Net-Worth individuals and institutional buyers.",
+  },
+  {
+    id: "consultative",
+    label: "Consultative Advisory",
+    badge: "Diagnostic & Strategic",
+    description:
+      "Acts as a strategic asset advisor, uncovering buyer motivations and portfolio criteria through thoughtful discovery.",
+  },
+  {
+    id: "assertive",
+    label: "High Velocity / Assertive",
+    badge: "Direct & Decisive",
+    description:
+      "Emphasizes scarce luxury inventory, capital appreciation potential, and immediate private viewing booking.",
+  },
+  {
+    id: "warm_friendly",
+    label: "Warm & Hospitable",
+    badge: "Welcoming & Approachable",
+    description:
+      "Accessible, gracious, and reassuring while maintaining complete regulatory accuracy and pricing discipline.",
+  },
+];
+
+const LANGUAGE_OPTIONS: Array<{
+  id: AIAgentLanguage;
+  label: string;
+  dialect: string;
+}> = [
+  { id: "en-NG", label: "English (Nigeria)", dialect: "Prime Nigerian Real Estate Standard" },
+  { id: "en-US", label: "English (United States)", dialect: "North American Metropolitan" },
+  { id: "en-GB", label: "English (United Kingdom)", dialect: "British Commonwealth Formal" },
+  { id: "pcm-NG", label: "Nigerian Pidgin", dialect: "Commercial West African Vernacular" },
+];
+
+const WEEKDAYS = [
+  { key: "monday", label: "Mon" },
+  { key: "tuesday", label: "Tue" },
+  { key: "wednesday", label: "Wed" },
+  { key: "thursday", label: "Thu" },
+  { key: "friday", label: "Fri" },
+  { key: "saturday", label: "Sat" },
+  { key: "sunday", label: "Sun" },
+];
 
 export function AIAgentConfigPresentation({
   config,
   configuration,
   onSaveConfig,
+  onResetConfig,
   className,
 }: AIAgentConfigPresentationProps) {
   const activeConfig = configuration ?? config;
-  const [activeTab, setActiveTab] = React.useState<"persona" | "bant" | "guardrails">("persona");
+  const [activeTab, setActiveTab] = React.useState<
+    "persona" | "hours" | "escalation" | "followup" | "bant"
+  >("persona");
   const [isEditing, setIsEditing] = React.useState(false);
   const [isSaving, setIsSaving] = React.useState(false);
+  const [isResetting, setIsResetting] = React.useState(false);
 
-  // Editable state buffer initialized when entering edit mode
+  // Editable working copy buffer
   const [editConfig, setEditConfig] = React.useState<AIAgentConfiguration | null>(() =>
     activeConfig ? JSON.parse(JSON.stringify(activeConfig)) : null
   );
 
-  // Tag creation inputs
-  const [newDeedText, setNewDeedText] = React.useState("");
+  // Tag inputs
   const [newKeywordText, setNewKeywordText] = React.useState("");
+  const [newDeedText, setNewDeedText] = React.useState("");
+
+  React.useEffect(() => {
+    if (activeConfig && !isEditing) {
+      setEditConfig(JSON.parse(JSON.stringify(activeConfig)));
+    }
+  }, [activeConfig, isEditing]);
 
   if (!activeConfig || !editConfig) return null;
 
@@ -65,22 +167,40 @@ export function AIAgentConfigPresentation({
     if (!onSaveConfig || !editConfig) return;
     setIsSaving(true);
     try {
-      // Recalculate formatted budget if budget number changed
-      const budgetNum = Number(editConfig.qualificationGates.minimumBudgetNaira) || 85000000;
+      const budgetNum = Number(editConfig.escalationRules?.budgetThresholdNaira) || 500000000;
       const formattedBudget = `₦${budgetNum.toLocaleString()}`;
+
       const payload: AIAgentConfiguration = {
         ...editConfig,
+        name: editConfig.name.trim() || "Amara",
+        voice: editConfig.voice,
+        tone: editConfig.tone,
+        language: editConfig.language,
+        greeting: editConfig.greeting.trim(),
+        businessHours: {
+          ...editConfig.businessHours,
+        },
+        escalationRules: {
+          ...editConfig.escalationRules,
+          budgetThresholdNaira: budgetNum,
+        },
+        followUpRules: {
+          ...editConfig.followUpRules,
+        },
         qualificationGates: {
           ...editConfig.qualificationGates,
           minimumBudgetNaira: budgetNum,
           formattedMinimumBudget: formattedBudget,
+          targetTimelineDays: editConfig.qualificationGates?.targetTimelineDays ?? 30,
+          requiredTitleDeeds: editConfig.qualificationGates?.requiredTitleDeeds || [],
+          immediateEscalationKeywords: editConfig.escalationRules?.humanTakeoverKeywords || [],
         },
       };
 
       await onSaveConfig(payload);
       setIsEditing(false);
-      toast.success("Configuration Saved", {
-        description: "Updated BANT criteria, voice persona, and safety parameters synchronized.",
+      toast.success("AI Configuration Persisted", {
+        description: "Agent persona, business hours, and escalation rules updated across all channels.",
       });
     } catch {
       toast.error("Failed to save configuration");
@@ -89,132 +209,155 @@ export function AIAgentConfigPresentation({
     }
   };
 
-  // Title deeds handlers
-  const handleAddDeed = () => {
-    const trimmed = newDeedText.trim();
-    if (!trimmed) return;
-    if (editConfig.qualificationGates.requiredTitleDeeds.includes(trimmed)) {
-      toast.info("Title deed already in list");
+  const handleResetToBaseline = async () => {
+    if (!confirm("Are you sure you want to reset all AI agent parameters to Spacia luxury baseline?")) {
       return;
     }
-    setEditConfig((prev) =>
-      prev
-        ? {
-            ...prev,
-            qualificationGates: {
-              ...prev.qualificationGates,
-              requiredTitleDeeds: [...prev.qualificationGates.requiredTitleDeeds, trimmed],
-            },
-          }
-        : null
-    );
-    setNewDeedText("");
+    setIsResetting(true);
+    try {
+      if (onResetConfig) {
+        await onResetConfig();
+      }
+      setIsEditing(false);
+      toast.info("Configuration Reset", {
+        description: "Restored baseline Spacia luxury settings.",
+      });
+    } catch {
+      toast.error("Failed to reset configuration");
+    } finally {
+      setIsResetting(false);
+    }
   };
 
-  const handleRemoveDeed = (index: number) => {
-    setEditConfig((prev) =>
-      prev
-        ? {
-            ...prev,
-            qualificationGates: {
-              ...prev.qualificationGates,
-              requiredTitleDeeds: prev.qualificationGates.requiredTitleDeeds.filter((_, i) => i !== index),
-            },
-          }
-        : null
-    );
+  // Day toggle handler
+  const handleToggleDay = (dayKey: string) => {
+    if (!isEditing || !editConfig) return;
+    const currentDays = editConfig.businessHours.days || [];
+    const exists = currentDays.includes(dayKey);
+    const updatedDays = exists
+      ? currentDays.filter((d) => d !== dayKey)
+      : [...currentDays, dayKey];
+
+    setEditConfig({
+      ...editConfig,
+      businessHours: {
+        ...editConfig.businessHours,
+        days: updatedDays,
+      },
+    });
   };
 
-  // Escalation keywords handlers
+  // Keyword handlers
   const handleAddKeyword = () => {
     const trimmed = newKeywordText.trim().toLowerCase();
-    if (!trimmed) return;
-    if (editConfig.qualificationGates.immediateEscalationKeywords.includes(trimmed)) {
-      toast.info("Keyword already in list");
+    if (!trimmed || !editConfig) return;
+    const currentKeywords = editConfig.escalationRules.humanTakeoverKeywords || [];
+    if (currentKeywords.includes(trimmed)) {
+      toast.info("Keyword already registered");
       return;
     }
-    setEditConfig((prev) =>
-      prev
-        ? {
-            ...prev,
-            qualificationGates: {
-              ...prev.qualificationGates,
-              immediateEscalationKeywords: [
-                ...prev.qualificationGates.immediateEscalationKeywords,
-                trimmed,
-              ],
-            },
-          }
-        : null
-    );
+    setEditConfig({
+      ...editConfig,
+      escalationRules: {
+        ...editConfig.escalationRules,
+        humanTakeoverKeywords: [...currentKeywords, trimmed],
+      },
+    });
     setNewKeywordText("");
   };
 
   const handleRemoveKeyword = (index: number) => {
-    setEditConfig((prev) =>
-      prev
-        ? {
-            ...prev,
-            qualificationGates: {
-              ...prev.qualificationGates,
-              immediateEscalationKeywords: prev.qualificationGates.immediateEscalationKeywords.filter(
-                (_, i) => i !== index
-              ),
-            },
-          }
-        : null
-    );
+    if (!editConfig) return;
+    setEditConfig({
+      ...editConfig,
+      escalationRules: {
+        ...editConfig.escalationRules,
+        humanTakeoverKeywords: (editConfig.escalationRules.humanTakeoverKeywords || []).filter(
+          (_, i) => i !== index
+        ),
+      },
+    });
   };
 
-  // Auto-dispatch toggle handler
-  const handleToggleAutoDispatch = async (checked: boolean) => {
-    const updated = {
-      ...currentDisplayConfig,
-      guardrails: {
-        ...currentDisplayConfig.guardrails,
-        autoDispatchBookings: checked,
-      },
-    };
-    if (isEditing) {
-      setEditConfig(updated);
-    } else if (onSaveConfig) {
-      await onSaveConfig(updated);
-      toast.success(checked ? "Auto-Pilot Active" : "Supervised Approval Active");
+  // Deed handlers
+  const handleAddDeed = () => {
+    const trimmed = newDeedText.trim();
+    if (!trimmed || !editConfig) return;
+    const currentDeeds = editConfig.qualificationGates?.requiredTitleDeeds || [];
+    if (currentDeeds.includes(trimmed)) {
+      toast.info("Title deed already in list");
+      return;
     }
+    setEditConfig({
+      ...editConfig,
+      qualificationGates: {
+        ...editConfig.qualificationGates!,
+        requiredTitleDeeds: [...currentDeeds, trimmed],
+      },
+    });
+    setNewDeedText("");
+  };
+
+  const handleRemoveDeed = (index: number) => {
+    if (!editConfig) return;
+    setEditConfig({
+      ...editConfig,
+      qualificationGates: {
+        ...editConfig.qualificationGates!,
+        requiredTitleDeeds: (editConfig.qualificationGates?.requiredTitleDeeds || []).filter(
+          (_, i) => i !== index
+        ),
+      },
+    });
   };
 
   return (
     <Card className={cn("rounded-lg border border-border bg-white shadow-2xs overflow-hidden", className)}>
-      {/* Card Header with Edit/Save Actions */}
+      {/* 1. Header Toolbar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border p-4 bg-stone-50/50">
         <div>
           <div className="flex items-center gap-2">
             <h2 className="font-display text-base font-bold text-stone-900">
-              Agent Studio &amp; Guardrails
+              AI Agent Configuration
             </h2>
-            <span className="flex items-center gap-1.5 rounded-md border border-stone-200 bg-white px-2 py-0.5 text-[11px] font-medium text-stone-600 shadow-2xs">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-600" />
-              Verified Core
+            <span className="flex items-center gap-1.5 rounded-md border border-emerald-200/90 bg-emerald-50/80 px-2 py-0.5 text-[11px] font-medium text-emerald-800 shadow-2xs">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-600 animate-pulse" />
+              Workspace Scoped
             </span>
           </div>
           <p className="text-xs text-stone-500 mt-0.5">
-            Voice persona parameters, BANT qualification gates, and legal compliance rules
+            Manage agent persona, voice parameters, business hours, escalation triggers, and follow-up cadences.
           </p>
         </div>
 
         {/* Action Buttons */}
         <div className="flex items-center gap-2 shrink-0">
           {!isEditing ? (
-            <Button
-              type="button"
-              size="sm"
-              variant="outline"
-              onClick={handleStartEdit}
-              className="h-8 px-3 text-xs gap-1.5 bg-white border-stone-200 text-stone-800 hover:bg-stone-50 shadow-2xs cursor-pointer font-medium"
-            >
-              <Pencil className="h-3.5 w-3.5 text-stone-500" />
-              <span>Edit Configuration</span>
-            </Button>
+            <>
+              {onResetConfig && (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={handleResetToBaseline}
+                  disabled={isResetting}
+                  className="h-8 px-2.5 text-xs gap-1.5 bg-white border-stone-200 text-stone-600 hover:text-stone-900 shadow-2xs cursor-pointer"
+                >
+                  <RotateCcw className="h-3 w-3 text-stone-400" />
+                  <span>Reset Defaults</span>
+                </Button>
+              )}
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={handleStartEdit}
+                className="h-8 px-3 text-xs gap-1.5 bg-white border-stone-200 text-stone-800 hover:bg-stone-50 shadow-2xs cursor-pointer font-medium"
+              >
+                <Pencil className="h-3.5 w-3.5 text-stone-500" />
+                <span>Edit Configuration</span>
+              </Button>
+            </>
           ) : (
             <div className="flex items-center gap-2">
               <Button
@@ -247,7 +390,7 @@ export function AIAgentConfigPresentation({
         </div>
       </div>
 
-      {/* Sub-Tab Navigation (SpaciaOS Design System Standard) */}
+      {/* 2. Sub-Tab Navigation for all 8 parameters */}
       <div className="border-b border-stone-200 px-4 bg-white">
         <div className="flex items-center gap-6 -mb-px overflow-x-auto no-scrollbar">
           <button
@@ -261,7 +404,61 @@ export function AIAgentConfigPresentation({
             )}
           >
             <Volume2 className="h-3.5 w-3.5" />
-            <span>Voice Persona</span>
+            <span>Persona &amp; Voice</span>
+            <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-stone-100 text-stone-600">
+              5 Parameters
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab("hours")}
+            className={cn(
+              "flex items-center gap-2 pb-2.5 pt-3 text-xs transition-colors cursor-pointer whitespace-nowrap select-none border-b-2",
+              activeTab === "hours"
+                ? "border-[#0d4a36] text-[#0d4a36] font-semibold"
+                : "border-transparent text-stone-500 hover:text-stone-800 hover:border-stone-300 font-medium"
+            )}
+          >
+            <Clock className="h-3.5 w-3.5" />
+            <span>Business Hours</span>
+            <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-stone-100 text-stone-600">
+              {currentDisplayConfig.businessHours.enabled ? "Active" : "24/7"}
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab("escalation")}
+            className={cn(
+              "flex items-center gap-2 pb-2.5 pt-3 text-xs transition-colors cursor-pointer whitespace-nowrap select-none border-b-2",
+              activeTab === "escalation"
+                ? "border-[#0d4a36] text-[#0d4a36] font-semibold"
+                : "border-transparent text-stone-500 hover:text-stone-800 hover:border-stone-300 font-medium"
+            )}
+          >
+            <AlertTriangle className="h-3.5 w-3.5" />
+            <span>Escalation Rules</span>
+            <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-stone-100 text-stone-600">
+              {currentDisplayConfig.escalationRules.humanTakeoverKeywords.length} Keywords
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab("followup")}
+            className={cn(
+              "flex items-center gap-2 pb-2.5 pt-3 text-xs transition-colors cursor-pointer whitespace-nowrap select-none border-b-2",
+              activeTab === "followup"
+                ? "border-[#0d4a36] text-[#0d4a36] font-semibold"
+                : "border-transparent text-stone-500 hover:text-stone-800 hover:border-stone-300 font-medium"
+            )}
+          >
+            <RotateCcw className="h-3.5 w-3.5" />
+            <span>Follow-Up Rules</span>
+            <span className="text-[10px] font-mono px-1.5 py-0.2 rounded bg-stone-100 text-stone-600">
+              {currentDisplayConfig.followUpRules.maxAttempts} Attempts
+            </span>
           </button>
 
           <button
@@ -277,178 +474,168 @@ export function AIAgentConfigPresentation({
             <Sliders className="h-3.5 w-3.5" />
             <span>BANT Gates</span>
           </button>
-
-          <button
-            type="button"
-            onClick={() => setActiveTab("guardrails")}
-            className={cn(
-              "flex items-center gap-2 pb-2.5 pt-3 text-xs transition-colors cursor-pointer whitespace-nowrap select-none border-b-2",
-              activeTab === "guardrails"
-                ? "border-[#0d4a36] text-[#0d4a36] font-semibold"
-                : "border-transparent text-stone-500 hover:text-stone-800 hover:border-stone-300 font-medium"
-            )}
-          >
-            <ShieldCheck className="h-3.5 w-3.5" />
-            <span>Guardrails &amp; Safety</span>
-          </button>
         </div>
       </div>
 
       <CardContent className="p-4">
         {/* ==================================================================== */}
-        {/* TAB 1: VOICE PERSONA */}
+        {/* TAB 1: PERSONA & VOICE (Name, Voice, Tone, Language, Greeting) */}
         {/* ==================================================================== */}
         {activeTab === "persona" && (
-          <div className="space-y-3.5 text-xs">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+          <div className="space-y-4 text-xs">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              {/* 1. NAME */}
               <div className="p-3 rounded-lg border border-stone-200/80 bg-stone-50/60 space-y-1">
                 <span className="text-stone-500 text-[11px] font-medium uppercase tracking-wider block">
-                  Identity Name
+                  Agent Persona Name
                 </span>
                 {isEditing ? (
                   <input
                     type="text"
-                    value={editConfig.persona.name}
+                    value={editConfig.name}
                     onChange={(e) =>
-                      setEditConfig((prev) =>
-                        prev
-                          ? { ...prev, persona: { ...prev.persona, name: e.target.value } }
-                          : null
-                      )
+                      setEditConfig({
+                        ...editConfig,
+                        name: e.target.value,
+                      })
                     }
+                    placeholder="e.g. Amara"
                     className="w-full h-8 px-2.5 text-xs font-semibold rounded-md border border-stone-300 bg-white text-stone-900 focus:outline-none focus:ring-1 focus:ring-[#0d4a36]"
                   />
                 ) : (
                   <>
-                    <p className="font-semibold text-stone-900">{currentDisplayConfig.persona.name}</p>
-                    <p className="text-[11px] text-stone-400">{currentDisplayConfig.persona.identityTitle}</p>
+                    <p className="font-semibold text-stone-900 text-sm">{currentDisplayConfig.name}</p>
+                    <p className="text-[11px] text-stone-400">Autonomous Sales Executive</p>
                   </>
                 )}
               </div>
 
+              {/* 2. VOICE */}
               <div className="p-3 rounded-lg border border-stone-200/80 bg-stone-50/60 space-y-1">
                 <span className="text-stone-500 text-[11px] font-medium uppercase tracking-wider block">
-                  Voice Model
+                  Neural Voice Synthesis
                 </span>
                 {isEditing ? (
-                  <input
-                    type="text"
-                    value={editConfig.persona.voiceModel}
+                  <select
+                    value={editConfig.voice}
                     onChange={(e) =>
-                      setEditConfig((prev) =>
-                        prev
-                          ? { ...prev, persona: { ...prev.persona, voiceModel: e.target.value } }
-                          : null
-                      )
+                      setEditConfig({
+                        ...editConfig,
+                        voice: e.target.value,
+                      })
                     }
-                    className="w-full h-8 px-2.5 text-xs font-mono font-semibold rounded-md border border-stone-300 bg-white text-stone-900 focus:outline-none focus:ring-1 focus:ring-[#0d4a36]"
-                  />
+                    className="w-full h-8 px-2 text-xs rounded-md border border-stone-300 bg-white text-stone-900 focus:outline-none focus:ring-1 focus:ring-[#0d4a36]"
+                  >
+                    {VOICE_OPTIONS.map((v) => (
+                      <option key={v.id} value={v.id}>
+                        {v.label}
+                      </option>
+                    ))}
+                  </select>
                 ) : (
                   <>
-                    <p className="font-semibold text-stone-900">{currentDisplayConfig.persona.voiceModel}</p>
-                    <p className="text-[11px] text-stone-500 font-mono">{currentDisplayConfig.persona.accent}</p>
+                    <p className="font-semibold text-stone-900 font-mono text-xs">
+                      {VOICE_OPTIONS.find((v) => v.id === currentDisplayConfig.voice)?.label || currentDisplayConfig.voice}
+                    </p>
+                    <p className="text-[11px] text-stone-400">
+                      {VOICE_OPTIONS.find((v) => v.id === currentDisplayConfig.voice)?.accent || "Natural Accent"}
+                    </p>
                   </>
                 )}
               </div>
 
+              {/* 3. TONE */}
               <div className="p-3 rounded-lg border border-stone-200/80 bg-stone-50/60 space-y-1">
                 <span className="text-stone-500 text-[11px] font-medium uppercase tracking-wider block">
-                  Verified Truth Policy
-                </span>
-                <p className="font-semibold text-emerald-800 flex items-center gap-1">
-                  <CheckCircle2 className="h-3.5 w-3.5 text-[#0d4a36]" />
-                  <span>Enforced Strict</span>
-                </p>
-                <p className="text-[11px] text-stone-400">Never quotes unvetted prices or title deeds</p>
-              </div>
-
-              <div className="p-3 rounded-lg border border-stone-200/80 bg-stone-50/60 space-y-1">
-                <span className="text-stone-500 text-[11px] font-medium uppercase tracking-wider block">
-                  Speech &amp; Latency Parameters
+                  Communication Tone
                 </span>
                 {isEditing ? (
-                  <div className="grid grid-cols-2 gap-2 pt-0.5">
-                    <div>
-                      <span className="text-[10px] text-stone-400 block">Temperature:</span>
-                      <input
-                        type="number"
-                        step="0.05"
-                        min="0.1"
-                        max="0.8"
-                        value={editConfig.persona.temperature}
-                        onChange={(e) =>
-                          setEditConfig((prev) =>
-                            prev
-                              ? {
-                                  ...prev,
-                                  persona: {
-                                    ...prev.persona,
-                                    temperature: parseFloat(e.target.value) || 0.3,
-                                  },
-                                }
-                              : null
-                          )
-                        }
-                        className="w-full h-7 px-2 text-xs font-mono rounded border border-stone-300 bg-white"
-                      />
-                    </div>
-                    <div>
-                      <span className="text-[10px] text-stone-400 block">Pause (ms):</span>
-                      <input
-                        type="number"
-                        step="50"
-                        min="100"
-                        max="1000"
-                        value={editConfig.persona.interruptionToleranceMs}
-                        onChange={(e) =>
-                          setEditConfig((prev) =>
-                            prev
-                              ? {
-                                  ...prev,
-                                  persona: {
-                                    ...prev.persona,
-                                    interruptionToleranceMs: parseInt(e.target.value, 10) || 400,
-                                  },
-                                }
-                              : null
-                          )
-                        }
-                        className="w-full h-7 px-2 text-xs font-mono rounded border border-stone-300 bg-white"
-                      />
-                    </div>
-                  </div>
+                  <select
+                    value={editConfig.tone}
+                    onChange={(e) =>
+                      setEditConfig({
+                        ...editConfig,
+                        tone: e.target.value as AIAgentTone,
+                      })
+                    }
+                    className="w-full h-8 px-2 text-xs rounded-md border border-stone-300 bg-white text-stone-900 focus:outline-none focus:ring-1 focus:ring-[#0d4a36]"
+                  >
+                    {TONE_OPTIONS.map((t) => (
+                      <option key={t.id} value={t.id}>
+                        {t.label} ({t.badge})
+                      </option>
+                    ))}
+                  </select>
                 ) : (
                   <>
-                    <p className="font-mono font-semibold text-stone-900">
-                      {currentDisplayConfig.persona.temperature} temp • {currentDisplayConfig.persona.interruptionToleranceMs}ms pause
+                    <p className="font-semibold text-stone-900 capitalize">
+                      {TONE_OPTIONS.find((t) => t.id === currentDisplayConfig.tone)?.label || currentDisplayConfig.tone}
                     </p>
-                    <p className="text-[11px] text-stone-400">Calibrated for natural, human turn-taking</p>
+                    <p className="text-[11px] text-stone-500">
+                      {TONE_OPTIONS.find((t) => t.id === currentDisplayConfig.tone)?.badge}
+                    </p>
+                  </>
+                )}
+              </div>
+
+              {/* 4. LANGUAGE */}
+              <div className="p-3 rounded-lg border border-stone-200/80 bg-stone-50/60 space-y-1">
+                <span className="text-stone-500 text-[11px] font-medium uppercase tracking-wider block">
+                  Primary Language
+                </span>
+                {isEditing ? (
+                  <select
+                    value={editConfig.language}
+                    onChange={(e) =>
+                      setEditConfig({
+                        ...editConfig,
+                        language: e.target.value as AIAgentLanguage,
+                      })
+                    }
+                    className="w-full h-8 px-2 text-xs rounded-md border border-stone-300 bg-white text-stone-900 focus:outline-none focus:ring-1 focus:ring-[#0d4a36]"
+                  >
+                    {LANGUAGE_OPTIONS.map((l) => (
+                      <option key={l.id} value={l.id}>
+                        {l.label}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <>
+                    <p className="font-semibold text-stone-900 font-mono text-xs">
+                      {LANGUAGE_OPTIONS.find((l) => l.id === currentDisplayConfig.language)?.label || currentDisplayConfig.language}
+                    </p>
+                    <p className="text-[11px] text-stone-400">
+                      {LANGUAGE_OPTIONS.find((l) => l.id === currentDisplayConfig.language)?.dialect}
+                    </p>
                   </>
                 )}
               </div>
             </div>
 
-            {/* Greeting Script Editor / Preview */}
-            <div className="p-3 rounded-lg border border-stone-200/80 bg-stone-50/70 space-y-1.5">
-              <span className="text-[11px] font-semibold text-stone-700 uppercase tracking-wider block">
-                Outbound Qualification Script (Greeting)
-              </span>
+            {/* 5. GREETING SCRIPT */}
+            <div className="p-3.5 rounded-lg border border-stone-200/80 bg-stone-50/70 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-semibold text-stone-700 uppercase tracking-wider block">
+                  Opening Script &amp; Greeting Baseline
+                </span>
+                <span className="text-[11px] text-stone-500">Injected into conversation intake turns</span>
+              </div>
               {isEditing ? (
                 <textarea
                   rows={3}
-                  value={editConfig.persona.greeting}
+                  value={editConfig.greeting}
                   onChange={(e) =>
-                    setEditConfig((prev) =>
-                      prev
-                        ? { ...prev, persona: { ...prev.persona, greeting: e.target.value } }
-                        : null
-                    )
+                    setEditConfig({
+                      ...editConfig,
+                      greeting: e.target.value,
+                    })
                   }
                   className="w-full p-2.5 text-xs rounded-md border border-stone-300 bg-white leading-relaxed focus:outline-none focus:ring-1 focus:ring-[#0d4a36]"
                 />
               ) : (
-                <p className="text-xs text-stone-800 bg-white p-2.5 rounded-md border border-stone-200 leading-relaxed italic shadow-2xs">
-                  &ldquo;{currentDisplayConfig.persona.greeting}&rdquo;
+                <p className="text-xs text-stone-800 bg-white p-3 rounded-md border border-stone-200 leading-relaxed italic shadow-2xs">
+                  &ldquo;{currentDisplayConfig.greeting}&rdquo;
                 </p>
               )}
             </div>
@@ -456,171 +643,284 @@ export function AIAgentConfigPresentation({
         )}
 
         {/* ==================================================================== */}
-        {/* TAB 2: BANT QUALIFICATION GATES (EDITABLE) */}
+        {/* TAB 2: BUSINESS HOURS (6. Business hours) */}
         {/* ==================================================================== */}
-        {activeTab === "bant" && (
-          <div className="space-y-3.5 text-xs">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-              {/* Minimum Budget Threshold */}
-              <div className="p-3 rounded-lg border border-stone-200/80 bg-stone-50/60 space-y-1">
-                <span className="text-stone-500 text-[11px] font-medium uppercase tracking-wider block">
-                  Minimum Budget Threshold
-                </span>
-                {isEditing ? (
-                  <div className="space-y-1">
-                    <div className="relative flex items-center">
-                      <span className="absolute left-2.5 text-stone-500 font-mono text-xs">₦</span>
-                      <input
-                        type="number"
-                        step="5000000"
-                        value={editConfig.qualificationGates.minimumBudgetNaira}
-                        onChange={(e) =>
-                          setEditConfig((prev) =>
-                            prev
-                              ? {
-                                  ...prev,
-                                  qualificationGates: {
-                                    ...prev.qualificationGates,
-                                    minimumBudgetNaira: Number(e.target.value),
-                                  },
-                                }
-                              : null
-                          )
-                        }
-                        className="w-full h-8 pl-7 pr-2.5 text-xs font-mono font-bold rounded-md border border-stone-300 bg-white text-stone-900 focus:outline-none focus:ring-1 focus:ring-[#0d4a36]"
-                      />
-                    </div>
-                    <p className="text-[11px] text-stone-400">Under threshold routed to automated nurture pipeline</p>
-                  </div>
-                ) : (
-                  <>
-                    <p className="font-mono text-base font-bold text-stone-900">
-                      {currentDisplayConfig.qualificationGates.formattedMinimumBudget}
-                    </p>
-                    <p className="text-[11px] text-stone-400">Under threshold routed to nurture pipeline</p>
-                  </>
-                )}
-              </div>
-
-              {/* Decision Horizon */}
-              <div className="p-3 rounded-lg border border-stone-200/80 bg-stone-50/60 space-y-1">
-                <span className="text-stone-500 text-[11px] font-medium uppercase tracking-wider block">
-                  Decision Horizon (Days)
-                </span>
-                {isEditing ? (
-                  <div className="space-y-1">
-                    <input
-                      type="number"
-                      step="5"
-                      min="7"
-                      max="180"
-                      value={editConfig.qualificationGates.targetTimelineDays}
-                      onChange={(e) =>
-                        setEditConfig((prev) =>
-                          prev
-                            ? {
-                                ...prev,
-                                qualificationGates: {
-                                  ...prev.qualificationGates,
-                                  targetTimelineDays: parseInt(e.target.value, 10) || 30,
-                                },
-                              }
-                            : null
-                        )
-                      }
-                      className="w-full h-8 px-2.5 text-xs font-mono font-bold rounded-md border border-stone-300 bg-white text-stone-900 focus:outline-none focus:ring-1 focus:ring-[#0d4a36]"
-                    />
-                    <p className="text-[11px] text-stone-400">Qualifies for immediate physical viewing slot</p>
-                  </div>
-                ) : (
-                  <>
-                    <p className="font-mono text-base font-bold text-stone-900">
-                      &lt; {currentDisplayConfig.qualificationGates.targetTimelineDays} Days
-                    </p>
-                    <p className="text-[11px] text-stone-400">Qualifies for immediate physical viewing slot</p>
-                  </>
-                )}
-              </div>
-            </div>
-
-            {/* Approved Title Deeds Editor */}
-            <div className="p-3 rounded-lg border border-stone-200/80 bg-stone-50/60 space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-stone-500 text-[11px] font-medium uppercase tracking-wider block">
-                  Approved Property Title Deeds
-                </span>
-                {isEditing && (
-                  <span className="text-[10px] text-stone-400">Click &times; to remove</span>
-                )}
-              </div>
-
-              <div className="flex flex-wrap gap-1.5 items-center">
-                {currentDisplayConfig.qualificationGates.requiredTitleDeeds.map((deed, idx) => (
-                  <span
-                    key={idx}
-                    className="inline-flex items-center gap-1.5 rounded-md bg-white px-2.5 py-1 text-xs font-medium text-stone-800 border border-stone-200 shadow-2xs"
-                  >
-                    <span>{deed}</span>
-                    {isEditing && (
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveDeed(idx)}
-                        className="text-stone-400 hover:text-rose-600 cursor-pointer p-0.5"
-                        title={`Remove ${deed}`}
-                      >
-                        <X className="h-3 w-3" />
-                      </button>
-                    )}
+        {activeTab === "hours" && (
+          <div className="space-y-4 text-xs">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {/* Enabled Switch */}
+              <div className="p-3 rounded-lg border border-stone-200/80 bg-stone-50/60 flex items-center justify-between">
+                <div>
+                  <span className="text-stone-500 text-[11px] font-medium uppercase tracking-wider block">
+                    Operating Schedule Enforced
                   </span>
-                ))}
+                  <p className="text-[11px] text-stone-400">
+                    {currentDisplayConfig.businessHours.enabled
+                      ? "After-hours inquiries receive scheduled notice"
+                      : "24/7 continuous operation"}
+                  </p>
+                </div>
+                {isEditing ? (
+                  <Switch
+                    checked={editConfig.businessHours.enabled}
+                    onCheckedChange={(checked) =>
+                      setEditConfig({
+                        ...editConfig,
+                        businessHours: {
+                          ...editConfig.businessHours,
+                          enabled: checked,
+                        },
+                      })
+                    }
+                  />
+                ) : (
+                  <span
+                    className={cn(
+                      "px-2 py-0.5 rounded text-[11px] font-semibold border",
+                      currentDisplayConfig.businessHours.enabled
+                        ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+                        : "bg-stone-100 text-stone-600 border-stone-200"
+                    )}
+                  >
+                    {currentDisplayConfig.businessHours.enabled ? "Active" : "Disabled"}
+                  </span>
+                )}
               </div>
 
-              {/* Add New Deed Input in Edit Mode */}
-              {isEditing && (
-                <div className="flex items-center gap-2 pt-1">
+              {/* Start & End Times */}
+              <div className="p-3 rounded-lg border border-stone-200/80 bg-stone-50/60 space-y-1">
+                <span className="text-stone-500 text-[11px] font-medium uppercase tracking-wider block">
+                  Active Hours Window (24h)
+                </span>
+                {isEditing ? (
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={editConfig.businessHours.start}
+                      onChange={(e) =>
+                        setEditConfig({
+                          ...editConfig,
+                          businessHours: {
+                            ...editConfig.businessHours,
+                            start: e.target.value,
+                          },
+                        })
+                      }
+                      placeholder="08:00"
+                      className="w-20 h-7.5 px-2 text-xs font-mono font-semibold rounded border border-stone-300 bg-white"
+                    />
+                    <span className="text-stone-400">to</span>
+                    <input
+                      type="text"
+                      value={editConfig.businessHours.end}
+                      onChange={(e) =>
+                        setEditConfig({
+                          ...editConfig,
+                          businessHours: {
+                            ...editConfig.businessHours,
+                            end: e.target.value,
+                          },
+                        })
+                      }
+                      placeholder="19:00"
+                      className="w-20 h-7.5 px-2 text-xs font-mono font-semibold rounded border border-stone-300 bg-white"
+                    />
+                  </div>
+                ) : (
+                  <>
+                    <p className="font-mono text-sm font-bold text-stone-900">
+                      {currentDisplayConfig.businessHours.start} – {currentDisplayConfig.businessHours.end}
+                    </p>
+                    <p className="text-[11px] text-stone-400">Call &amp; chat active dispatch window</p>
+                  </>
+                )}
+              </div>
+
+              {/* Timezone */}
+              <div className="p-3 rounded-lg border border-stone-200/80 bg-stone-50/60 space-y-1">
+                <span className="text-stone-500 text-[11px] font-medium uppercase tracking-wider block">
+                  Timezone Standard
+                </span>
+                {isEditing ? (
                   <input
                     type="text"
-                    value={newDeedText}
-                    onChange={(e) => setNewDeedText(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        e.preventDefault();
-                        handleAddDeed();
-                      }
-                    }}
-                    placeholder="e.g. Deed of Sublease"
-                    className="h-7.5 px-2.5 text-xs rounded-md border border-stone-300 bg-white text-stone-900 w-60 focus:outline-none focus:ring-1 focus:ring-[#0d4a36]"
+                    value={editConfig.businessHours.timezone}
+                    onChange={(e) =>
+                      setEditConfig({
+                        ...editConfig,
+                        businessHours: {
+                          ...editConfig.businessHours,
+                          timezone: e.target.value,
+                        },
+                      })
+                    }
+                    placeholder="Africa/Lagos"
+                    className="w-full h-7.5 px-2 text-xs font-mono rounded border border-stone-300 bg-white"
                   />
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    onClick={handleAddDeed}
-                    className="h-7.5 px-2.5 text-xs gap-1 bg-white hover:bg-stone-50 text-stone-800 border-stone-200 cursor-pointer"
-                  >
-                    <Plus className="h-3.5 w-3.5 text-stone-500" />
-                    <span>Add Deed</span>
-                  </Button>
-                </div>
-              )}
+                ) : (
+                  <>
+                    <p className="font-mono text-sm font-semibold text-stone-900">
+                      {currentDisplayConfig.businessHours.timezone}
+                    </p>
+                    <p className="text-[11px] text-stone-400">West Africa Time (WAT)</p>
+                  </>
+                )}
+              </div>
             </div>
 
-            {/* Escalation Keywords Editor */}
-            <div className="p-3 rounded-lg border border-stone-200/80 bg-stone-50/60 space-y-2">
-              <div className="flex items-center justify-between">
+            {/* Active Days of Week */}
+            <div className="p-3.5 rounded-lg border border-stone-200/80 bg-stone-50/70 space-y-2">
+              <span className="text-[11px] font-semibold text-stone-700 uppercase tracking-wider block">
+                Active Operating Days
+              </span>
+              <div className="flex flex-wrap gap-2 items-center">
+                {WEEKDAYS.map((day) => {
+                  const isActive = (currentDisplayConfig.businessHours.days || []).includes(day.key);
+                  return (
+                    <button
+                      key={day.key}
+                      type="button"
+                      disabled={!isEditing}
+                      onClick={() => handleToggleDay(day.key)}
+                      className={cn(
+                        "h-8 px-3 rounded-md text-xs font-medium transition-colors border select-none",
+                        isActive
+                          ? "bg-[#0d4a36] text-white border-[#0d4a36] font-semibold shadow-2xs"
+                          : "bg-white text-stone-500 border-stone-200 hover:border-stone-300",
+                        isEditing ? "cursor-pointer" : "cursor-default opacity-90"
+                      )}
+                    >
+                      {day.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ==================================================================== */}
+        {/* TAB 3: ESCALATION RULES (7. Escalation rules) */}
+        {/* ==================================================================== */}
+        {activeTab === "escalation" && (
+          <div className="space-y-4 text-xs">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {/* High Budget Escalation Threshold */}
+              <div className="p-3 rounded-lg border border-stone-200/80 bg-stone-50/60 space-y-1">
                 <span className="text-stone-500 text-[11px] font-medium uppercase tracking-wider block">
-                  Immediate Broker Escalation Keywords
+                  Ultra-High Budget Threshold
                 </span>
-                {isEditing && (
-                  <span className="text-[10px] text-stone-400">Click &times; to remove</span>
+                {isEditing ? (
+                  <div className="relative flex items-center">
+                    <span className="absolute left-2.5 text-stone-500 font-mono text-xs">₦</span>
+                    <input
+                      type="number"
+                      step="25000000"
+                      value={editConfig.escalationRules.budgetThresholdNaira}
+                      onChange={(e) =>
+                        setEditConfig({
+                          ...editConfig,
+                          escalationRules: {
+                            ...editConfig.escalationRules,
+                            budgetThresholdNaira: Number(e.target.value),
+                          },
+                        })
+                      }
+                      className="w-full h-8 pl-7 pr-2.5 text-xs font-mono font-bold rounded-md border border-stone-300 bg-white"
+                    />
+                  </div>
+                ) : (
+                  <>
+                    <p className="font-mono text-base font-bold text-stone-900">
+                      ₦{Number(currentDisplayConfig.escalationRules.budgetThresholdNaira).toLocaleString()}
+                    </p>
+                    <p className="text-[11px] text-stone-400">Triggers priority senior partner escalation</p>
+                  </>
                 )}
               </div>
 
+              {/* Max Negative Sentiments */}
+              <div className="p-3 rounded-lg border border-stone-200/80 bg-stone-50/60 space-y-1">
+                <span className="text-stone-500 text-[11px] font-medium uppercase tracking-wider block">
+                  Dispute / Friction Threshold
+                </span>
+                {isEditing ? (
+                  <input
+                    type="number"
+                    min="1"
+                    max="5"
+                    value={editConfig.escalationRules.maxNegativeSentiments}
+                    onChange={(e) =>
+                      setEditConfig({
+                        ...editConfig,
+                        escalationRules: {
+                          ...editConfig.escalationRules,
+                          maxNegativeSentiments: parseInt(e.target.value, 10) || 2,
+                        },
+                      })
+                    }
+                    className="w-full h-8 px-2.5 text-xs font-mono font-bold rounded-md border border-stone-300 bg-white"
+                  />
+                ) : (
+                  <>
+                    <p className="font-mono text-base font-bold text-stone-900">
+                      {currentDisplayConfig.escalationRules.maxNegativeSentiments} Turns
+                    </p>
+                    <p className="text-[11px] text-stone-400">Transfers immediately on objection loop</p>
+                  </>
+                )}
+              </div>
+
+              {/* Require Human For Contracts */}
+              <div className="p-3 rounded-lg border border-stone-200/80 bg-stone-50/60 flex items-center justify-between">
+                <div>
+                  <span className="text-stone-500 text-[11px] font-medium uppercase tracking-wider block">
+                    Contract Human Takeover
+                  </span>
+                  <p className="text-[11px] text-stone-400">Strict legal deed review</p>
+                </div>
+                {isEditing ? (
+                  <Switch
+                    checked={editConfig.escalationRules.requireHumanForContracts}
+                    onCheckedChange={(checked) =>
+                      setEditConfig({
+                        ...editConfig,
+                        escalationRules: {
+                          ...editConfig.escalationRules,
+                          requireHumanForContracts: checked,
+                        },
+                      })
+                    }
+                  />
+                ) : (
+                  <span
+                    className={cn(
+                      "px-2 py-0.5 rounded text-[11px] font-semibold border",
+                      currentDisplayConfig.escalationRules.requireHumanForContracts
+                        ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+                        : "bg-stone-100 text-stone-600 border-stone-200"
+                    )}
+                  >
+                    {currentDisplayConfig.escalationRules.requireHumanForContracts ? "Mandatory" : "Optional"}
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Keyword Chips */}
+            <div className="p-3.5 rounded-lg border border-stone-200/80 bg-stone-50/70 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-semibold text-stone-700 uppercase tracking-wider block">
+                  Human Broker Takeover Keywords
+                </span>
+                {isEditing && <span className="text-[10px] text-stone-400">Click &times; to delete</span>}
+              </div>
+
               <div className="flex flex-wrap gap-1.5 items-center">
-                {currentDisplayConfig.qualificationGates.immediateEscalationKeywords.map((kw, idx) => (
+                {(currentDisplayConfig.escalationRules.humanTakeoverKeywords || []).map((kw, idx) => (
                   <span
                     key={idx}
-                    className="inline-flex items-center gap-1.5 text-[11px] font-mono px-2 py-0.5 rounded-md bg-amber-50 text-amber-900 border border-amber-200/90 font-medium"
+                    className="inline-flex items-center gap-1.5 text-[11px] font-mono px-2 py-0.5 rounded-md bg-amber-50 text-amber-900 border border-amber-200 font-medium"
                   >
                     <span>&ldquo;{kw}&rdquo;</span>
                     {isEditing && (
@@ -628,7 +928,6 @@ export function AIAgentConfigPresentation({
                         type="button"
                         onClick={() => handleRemoveKeyword(idx)}
                         className="text-amber-700 hover:text-rose-600 cursor-pointer p-0.5"
-                        title={`Remove "${kw}"`}
                       >
                         <X className="h-3 w-3" />
                       </button>
@@ -637,9 +936,8 @@ export function AIAgentConfigPresentation({
                 ))}
               </div>
 
-              {/* Add New Keyword Input in Edit Mode */}
               {isEditing && (
-                <div className="flex items-center gap-2 pt-1">
+                <div className="flex items-center gap-2 pt-1.5">
                   <input
                     type="text"
                     value={newKeywordText}
@@ -650,15 +948,15 @@ export function AIAgentConfigPresentation({
                         handleAddKeyword();
                       }
                     }}
-                    placeholder="e.g. bank guarantee"
-                    className="h-7.5 px-2.5 text-xs rounded-md border border-stone-300 bg-white text-stone-900 w-60 focus:outline-none focus:ring-1 focus:ring-[#0d4a36]"
+                    placeholder="e.g. speak to lawyer"
+                    className="h-8 px-2.5 text-xs rounded-md border border-stone-300 bg-white w-64 focus:outline-none focus:ring-1 focus:ring-[#0d4a36]"
                   />
                   <Button
                     type="button"
                     size="sm"
                     variant="outline"
                     onClick={handleAddKeyword}
-                    className="h-7.5 px-2.5 text-xs gap-1 bg-white hover:bg-stone-50 text-stone-800 border-stone-200 cursor-pointer"
+                    className="h-8 px-2.5 text-xs gap-1 bg-white hover:bg-stone-50 border-stone-200"
                   >
                     <Plus className="h-3.5 w-3.5 text-stone-500" />
                     <span>Add Keyword</span>
@@ -670,153 +968,260 @@ export function AIAgentConfigPresentation({
         )}
 
         {/* ==================================================================== */}
-        {/* TAB 3: SAFETY GUARDRAILS */}
+        {/* TAB 4: FOLLOW-UP RULES (8. Follow-up rules) */}
         {/* ==================================================================== */}
-        {activeTab === "guardrails" && (
-          <div className="space-y-3.5 text-xs">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+        {activeTab === "followup" && (
+          <div className="space-y-4 text-xs">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {/* Max Attempts */}
               <div className="p-3 rounded-lg border border-stone-200/80 bg-stone-50/60 space-y-1">
                 <span className="text-stone-500 text-[11px] font-medium uppercase tracking-wider block">
-                  Max Outbound Calls per Lead
+                  Max Follow-Up Sequences
                 </span>
                 {isEditing ? (
                   <input
                     type="number"
                     min="1"
-                    max="5"
-                    value={editConfig.guardrails.maxOutboundAttempts}
+                    max="10"
+                    value={editConfig.followUpRules.maxAttempts}
                     onChange={(e) =>
-                      setEditConfig((prev) =>
-                        prev
-                          ? {
-                              ...prev,
-                              guardrails: {
-                                ...prev.guardrails,
-                                maxOutboundAttempts: parseInt(e.target.value, 10) || 3,
-                              },
-                            }
-                          : null
-                      )
+                      setEditConfig({
+                        ...editConfig,
+                        followUpRules: {
+                          ...editConfig.followUpRules,
+                          maxAttempts: parseInt(e.target.value, 10) || 3,
+                        },
+                      })
                     }
-                    className="w-full h-8 px-2.5 text-xs font-mono font-bold rounded-md border border-stone-300 bg-white text-stone-900"
+                    className="w-full h-8 px-2.5 text-xs font-mono font-bold rounded-md border border-stone-300 bg-white"
                   />
                 ) : (
                   <>
                     <p className="font-mono text-base font-bold text-stone-900">
-                      {currentDisplayConfig.guardrails.maxOutboundAttempts} Calls Max
+                      {currentDisplayConfig.followUpRules.maxAttempts} Touches Max
                     </p>
-                    <p className="text-[11px] text-stone-400">Strict carrier spam protection</p>
+                    <p className="text-[11px] text-stone-400">Protects prospects from spam fatigue</p>
                   </>
                 )}
               </div>
 
+              {/* Interval Hours */}
               <div className="p-3 rounded-lg border border-stone-200/80 bg-stone-50/60 space-y-1">
                 <span className="text-stone-500 text-[11px] font-medium uppercase tracking-wider block">
-                  Quiet Hours Window
+                  Cadence Spacing (Hours)
                 </span>
                 {isEditing ? (
-                  <div className="grid grid-cols-2 gap-2 pt-0.5">
-                    <input
-                      type="text"
-                      value={editConfig.guardrails.quietHoursStart}
-                      onChange={(e) =>
-                        setEditConfig((prev) =>
-                          prev
-                            ? {
-                                ...prev,
-                                guardrails: {
-                                  ...prev.guardrails,
-                                  quietHoursStart: e.target.value,
-                                },
-                              }
-                            : null
-                        )
-                      }
-                      placeholder="20:00"
-                      className="h-8 px-2 text-xs font-mono rounded border border-stone-300 bg-white"
-                    />
-                    <input
-                      type="text"
-                      value={editConfig.guardrails.quietHoursEnd}
-                      onChange={(e) =>
-                        setEditConfig((prev) =>
-                          prev
-                            ? {
-                                ...prev,
-                                guardrails: {
-                                  ...prev.guardrails,
-                                  quietHoursEnd: e.target.value,
-                                },
-                              }
-                            : null
-                        )
-                      }
-                      placeholder="08:00"
-                      className="h-8 px-2 text-xs font-mono rounded border border-stone-300 bg-white"
-                    />
-                  </div>
+                  <input
+                    type="number"
+                    min="1"
+                    max="168"
+                    value={editConfig.followUpRules.intervalHours}
+                    onChange={(e) =>
+                      setEditConfig({
+                        ...editConfig,
+                        followUpRules: {
+                          ...editConfig.followUpRules,
+                          intervalHours: parseInt(e.target.value, 10) || 24,
+                        },
+                      })
+                    }
+                    className="w-full h-8 px-2.5 text-xs font-mono font-bold rounded-md border border-stone-300 bg-white"
+                  />
                 ) : (
                   <>
                     <p className="font-mono text-base font-bold text-stone-900">
-                      {currentDisplayConfig.guardrails.quietHoursStart} – {currentDisplayConfig.guardrails.quietHoursEnd}
+                      Every {currentDisplayConfig.followUpRules.intervalHours} Hours
                     </p>
-                    <p className="text-[11px] text-stone-400">Queued to 9:00 AM next business day</p>
+                    <p className="text-[11px] text-stone-400">Automated queue dispatch interval</p>
+                  </>
+                )}
+              </div>
+
+              {/* Auto Archive Unresponsive */}
+              <div className="p-3 rounded-lg border border-stone-200/80 bg-stone-50/60 space-y-1">
+                <span className="text-stone-500 text-[11px] font-medium uppercase tracking-wider block">
+                  Unresponsive Archive Window
+                </span>
+                {isEditing ? (
+                  <input
+                    type="number"
+                    min="1"
+                    max="90"
+                    value={editConfig.followUpRules.autoArchiveUnresponsiveDays}
+                    onChange={(e) =>
+                      setEditConfig({
+                        ...editConfig,
+                        followUpRules: {
+                          ...editConfig.followUpRules,
+                          autoArchiveUnresponsiveDays: parseInt(e.target.value, 10) || 7,
+                        },
+                      })
+                    }
+                    className="w-full h-8 px-2.5 text-xs font-mono font-bold rounded-md border border-stone-300 bg-white"
+                  />
+                ) : (
+                  <>
+                    <p className="font-mono text-base font-bold text-stone-900">
+                      {currentDisplayConfig.followUpRules.autoArchiveUnresponsiveDays} Days
+                    </p>
+                    <p className="text-[11px] text-stone-400">Moves to long-term nurture pool</p>
                   </>
                 )}
               </div>
             </div>
 
-            <div className="space-y-2 pt-1">
-              <div className="flex items-center justify-between p-3 rounded-lg bg-stone-50/80 border border-stone-200/80">
-                <div>
-                  <p className="font-semibold text-stone-900">Strict DNC List Enforcement</p>
-                  <p className="text-[11px] text-stone-400">Immediate telephone unsubscribe suppression</p>
-                </div>
-                <span className="rounded bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-800 border border-emerald-200/90">
-                  Active
-                </span>
-              </div>
-
-              <div className="flex items-center justify-between p-3 rounded-lg bg-stone-50/80 border border-stone-200/80">
-                <div>
-                  <p className="font-semibold text-stone-900">Auto-Handoff on Price Negotiation</p>
-                  <p className="text-[11px] text-stone-400">Transfers unlisted discounts directly to broker</p>
-                </div>
-                <span className="rounded bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-800 border border-emerald-200/90">
-                  Enforced
-                </span>
-              </div>
-
-              {/* Autonomous Auto-Dispatch Toggle */}
-              <div className="flex items-center justify-between p-3 rounded-lg bg-stone-50/80 border border-stone-200/80 hover:bg-stone-50/60 transition-colors">
-                <div className="space-y-0.5">
-                  <div className="flex items-center gap-2">
-                    <p className="font-semibold text-stone-900">
-                      Autonomous Action Dispatch (Auto-Pilot)
-                    </p>
-                    <span
-                      className={cn(
-                        "rounded px-1.5 py-0.2 text-[10px] font-semibold border",
-                        currentDisplayConfig.guardrails.autoDispatchBookings
-                          ? "bg-emerald-50 text-emerald-800 border-emerald-200"
-                          : "bg-stone-100 text-stone-600 border border-stone-200"
-                      )}
+            {/* Channel Order */}
+            <div className="p-3.5 rounded-lg border border-stone-200/80 bg-stone-50/70 space-y-2">
+              <span className="text-[11px] font-semibold text-stone-700 uppercase tracking-wider block">
+                Channel Dispatch Sequence
+              </span>
+              <div className="flex items-center gap-2">
+                {(currentDisplayConfig.followUpRules.channelOrder || ["whatsapp", "sms", "voice"]).map(
+                  (ch, idx) => (
+                    <div
+                      key={idx}
+                      className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-md border border-stone-200 shadow-2xs font-mono text-xs font-medium"
                     >
-                      {currentDisplayConfig.guardrails.autoDispatchBookings ? "Auto-Pilot Active" : "Manual Approval"}
-                    </span>
-                  </div>
-                  <p className="text-[11px] text-stone-500">
-                    Automatically dispatches viewing calendar invites &amp; assigns lead brokers when intent confidence &gt; 85%
-                  </p>
-                </div>
-                <div className="shrink-0 ml-4">
-                  <Switch
-                    checked={Boolean(currentDisplayConfig.guardrails.autoDispatchBookings)}
-                    onCheckedChange={handleToggleAutoDispatch}
-                    aria-label="Toggle autonomous booking dispatch"
-                  />
-                </div>
+                      <span className="text-emerald-700 font-bold">{idx + 1}.</span>
+                      <span className="capitalize">{ch}</span>
+                    </div>
+                  )
+                )}
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* ==================================================================== */}
+        {/* TAB 5: BANT QUALIFICATION GATES */}
+        {/* ==================================================================== */}
+        {activeTab === "bant" && (
+          <div className="space-y-4 text-xs">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {/* Minimum Budget Threshold */}
+              <div className="p-3 rounded-lg border border-stone-200/80 bg-stone-50/60 space-y-1">
+                <span className="text-stone-500 text-[11px] font-medium uppercase tracking-wider block">
+                  Minimum BANT Budget Threshold
+                </span>
+                {isEditing ? (
+                  <div className="relative flex items-center">
+                    <span className="absolute left-2.5 text-stone-500 font-mono text-xs">₦</span>
+                    <input
+                      type="number"
+                      step="5000000"
+                      value={editConfig.qualificationGates?.minimumBudgetNaira || 85000000}
+                      onChange={(e) =>
+                        setEditConfig({
+                          ...editConfig,
+                          qualificationGates: {
+                            ...editConfig.qualificationGates!,
+                            minimumBudgetNaira: Number(e.target.value),
+                          },
+                        })
+                      }
+                      className="w-full h-8 pl-7 pr-2.5 text-xs font-mono font-bold rounded-md border border-stone-300 bg-white text-stone-900"
+                    />
+                  </div>
+                ) : (
+                  <>
+                    <p className="font-mono text-base font-bold text-stone-900">
+                      {currentDisplayConfig.qualificationGates?.formattedMinimumBudget || "₦85,000,000"}
+                    </p>
+                    <p className="text-[11px] text-stone-400">Below threshold routed to automated nurture</p>
+                  </>
+                )}
+              </div>
+
+              {/* Decision Horizon */}
+              <div className="p-3 rounded-lg border border-stone-200/80 bg-stone-50/60 space-y-1">
+                <span className="text-stone-500 text-[11px] font-medium uppercase tracking-wider block">
+                  Target Decision Horizon
+                </span>
+                {isEditing ? (
+                  <input
+                    type="number"
+                    step="5"
+                    min="7"
+                    max="180"
+                    value={editConfig.qualificationGates?.targetTimelineDays || 30}
+                    onChange={(e) =>
+                      setEditConfig({
+                        ...editConfig,
+                        qualificationGates: {
+                          ...editConfig.qualificationGates!,
+                          targetTimelineDays: parseInt(e.target.value, 10) || 30,
+                        },
+                      })
+                    }
+                    className="w-full h-8 px-2.5 text-xs font-mono font-bold rounded-md border border-stone-300 bg-white"
+                  />
+                ) : (
+                  <>
+                    <p className="font-mono text-base font-bold text-stone-900">
+                      &lt; {currentDisplayConfig.qualificationGates?.targetTimelineDays || 30} Days
+                    </p>
+                    <p className="text-[11px] text-stone-400">Qualifies for immediate physical viewing slot</p>
+                  </>
+                )}
+              </div>
+            </div>
+
+            {/* Approved Deeds */}
+            <div className="p-3.5 rounded-lg border border-stone-200/80 bg-stone-50/70 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] font-semibold text-stone-700 uppercase tracking-wider block">
+                  Approved Property Title Deeds
+                </span>
+                {isEditing && <span className="text-[10px] text-stone-400">Click &times; to delete</span>}
+              </div>
+
+              <div className="flex flex-wrap gap-1.5 items-center">
+                {(currentDisplayConfig.qualificationGates?.requiredTitleDeeds || []).map((deed, idx) => (
+                  <span
+                    key={idx}
+                    className="inline-flex items-center gap-1.5 text-[11px] font-mono px-2 py-0.5 rounded-md bg-stone-100 text-stone-800 border border-stone-200 font-medium"
+                  >
+                    <span>{deed}</span>
+                    {isEditing && (
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveDeed(idx)}
+                        className="text-stone-500 hover:text-rose-600 cursor-pointer p-0.5"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    )}
+                  </span>
+                ))}
+              </div>
+
+              {isEditing && (
+                <div className="flex items-center gap-2 pt-1.5">
+                  <input
+                    type="text"
+                    value={newDeedText}
+                    onChange={(e) => setNewDeedText(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        handleAddDeed();
+                      }
+                    }}
+                    placeholder="e.g. Registered Survey"
+                    className="h-8 px-2.5 text-xs rounded-md border border-stone-300 bg-white w-64 focus:outline-none focus:ring-1 focus:ring-[#0d4a36]"
+                  />
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={handleAddDeed}
+                    className="h-8 px-2.5 text-xs gap-1 bg-white hover:bg-stone-50 border-stone-200"
+                  >
+                    <Plus className="h-3.5 w-3.5 text-stone-500" />
+                    <span>Add Deed</span>
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
         )}
