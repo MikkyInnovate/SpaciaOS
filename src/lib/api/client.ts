@@ -9,7 +9,7 @@ export interface RequestOptions extends Omit<RequestInit, "headers"> {
 const DEFAULT_TIMEOUT_MS = 15000;
 
 class ApiClient {
-  private activeWorkspaceId: string | null = null;
+  private activeWorkspaceId: string | null = process.env.NEXT_PUBLIC_DEFAULT_WORKSPACE_ID || "org_dubai_palace";
   private authToken: string | null = null;
   private tokenProvider: (() => Promise<string | null>) | null = null;
 
@@ -40,7 +40,7 @@ class ApiClient {
     }
 
     const {
-      workspaceId = this.activeWorkspaceId,
+      workspaceId = this.activeWorkspaceId || process.env.NEXT_PUBLIC_DEFAULT_WORKSPACE_ID || "org_dubai_palace",
       token = resolvedToken,
       headers: customHeaders = {},
       ...fetchOptions

@@ -15,6 +15,7 @@ import { UpcomingViewingsList } from "@/features/dashboard/components/upcoming-v
 import { PipelineFunnel } from "@/features/dashboard/components/pipeline-funnel";
 import { dashboardService } from "@/features/dashboard/services/dashboard-service";
 import { leadsService } from "@/features/leads/services/leads-service";
+import { appointmentsService } from "@/features/appointments/services/appointments-service";
 import {
   MOCK_DASHBOARD_LEADS,
   MOCK_UPCOMING_VIEWINGS,
@@ -25,6 +26,7 @@ import type {
   DashboardMetrics,
   AttentionItem,
   DashboardFeedItem,
+  DashboardViewing,
   PipelineFunnelStageItem,
 } from "@/features/dashboard/types";
 import { toast } from "sonner";
@@ -56,6 +58,7 @@ export default function DashboardPage() {
   const [activityFeed, setActivityFeed] = React.useState<DashboardFeedItem[]>([]);
   const [funnelStages, setFunnelStages] = React.useState<PipelineFunnelStageItem[]>([]);
   const [leadsList, setLeadsList] = React.useState<DashboardLead[]>(MOCK_DASHBOARD_LEADS);
+  const [viewingsList, setViewingsList] = React.useState<DashboardViewing[]>(MOCK_UPCOMING_VIEWINGS);
 
   // Load dashboard telemetry data
   const loadDashboardData = React.useCallback(async (silent = false) => {
@@ -63,14 +66,21 @@ export default function DashboardPage() {
     else setIsRefreshing(true);
 
     try {
-      const [fetchedMetrics, fetchedAttention, fetchedFeed, fetchedFunnel, fetchedLeadsRes] =
-        await Promise.allSettled([
-          dashboardService.getMetrics(),
-          dashboardService.getAttentionItems(),
-          dashboardService.getActivityFeed(),
-          dashboardService.getPipelineFunnel(),
-          leadsService.getLeads(),
-        ]);
+      const [
+        fetchedMetrics,
+        fetchedAttention,
+        fetchedFeed,
+        fetchedFunnel,
+        fetchedLeadsRes,
+        fetchedAptsRes,
+      ] = await Promise.allSettled([
+        dashboardService.getMetrics(),
+        dashboardService.getAttentionItems(),
+        dashboardService.getActivityFeed(),
+        dashboardService.getPipelineFunnel(),
+        leadsService.getLeads(),
+        appointmentsService.getAppointments(),
+      ]);
 
       if (fetchedMetrics.status === "fulfilled" && fetchedMetrics.value) {
         setMetrics(fetchedMetrics.value);
@@ -111,6 +121,27 @@ export default function DashboardPage() {
         setLeadsList(adaptedLeads);
       } else {
         setLeadsList(MOCK_DASHBOARD_LEADS);
+      }
+
+      // Populate upcoming viewings with live appointments or fallback
+      if (
+        fetchedAptsRes.status === "fulfilled" &&
+        Array.isArray(fetchedAptsRes.value) &&
+        fetchedAptsRes.value.length > 0
+      ) {
+        const adaptedViewings: DashboardViewing[] = fetchedAptsRes.value.map((apt) => ({
+          id: apt.id,
+          prospectName: apt.leadName || "Registered Prospect",
+          propertyTitle: apt.propertyTitle || "Luxury Property Inspection",
+          agentName: apt.assignedBrokerName || "Senior Luxury Closer",
+          date: new Date(apt.startTime).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
+          time: new Date(apt.startTime).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }),
+          status: apt.status === "confirmed" ? "Confirmed" : apt.status === "scheduled" ? "Scheduled" : "Pending",
+          leadScore: apt.leadScore || 85,
+        }));
+        setViewingsList(adaptedViewings);
+      } else {
+        setViewingsList(MOCK_UPCOMING_VIEWINGS);
       }
     } catch (err) {
       console.warn("Failed to refresh dashboard data:", err);
@@ -355,12 +386,23 @@ export default function DashboardPage() {
 
       {/* Confirmed Viewings - Full Width Section */}
       <div className="w-full pt-2">
-        <UpcomingViewingsList viewings={MOCK_UPCOMING_VIEWINGS} />
+        <UpcomingViewingsList viewings={viewingsList} />
       </div>
 
       {/* Pipeline Progression Trajectory Chart */}
       <div className="w-full pt-1">
-        <PipelineFunnel stages={MOCK_FUNNEL_METRICS} />
+        <PipelineFunnel
+          stages={funnelStages.length > 0 ? funnelStages : undefined}
+          metrics={
+            metrics
+              ? {
+                  leadsTotal: metrics.leads.total,
+                  qualifiedTotal: metrics.qualified.total,
+                  viewingsTotal: metrics.viewings.total,
+                }
+              : undefined
+          }
+        />
       </div>
     </Container>
   );

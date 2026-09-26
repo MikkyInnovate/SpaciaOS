@@ -15,7 +15,7 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from "@/components/ui/chart";
-import type { DashboardFunnelStage } from "../types";
+import type { DashboardFunnelStage, PipelineFunnelStageItem } from "../types";
 
 // 14-day operational trajectory showing Inbound Volume vs Qualified Progression
 const trajectoryData = [
@@ -51,7 +51,7 @@ const chartConfig = {
 } satisfies ChartConfig;
 
 export interface PipelineFunnelProps {
-  stages?: DashboardFunnelStage[];
+  stages?: DashboardFunnelStage[] | PipelineFunnelStageItem[];
   data?: Array<{ date: string; inquiries: number; qualified: number; viewings: number }>;
   periodDescription?: string;
   benchmarks?: {
@@ -59,24 +59,36 @@ export interface PipelineFunnelProps {
     qualificationAccuracy: string;
     viewingVelocity: string;
   };
+  metrics?: {
+    leadsTotal?: number;
+    qualifiedTotal?: number;
+    viewingsTotal?: number;
+  };
 }
 
 export function PipelineFunnel({
   data = trajectoryData,
   periodDescription = "Daily inbound volume, AI verified qualification, and viewing completions over the last 14 days",
   benchmarks,
+  metrics,
 }: PipelineFunnelProps) {
   const [activeChart, setActiveChart] =
     React.useState<keyof typeof chartConfig>("qualified");
 
-  const totals = React.useMemo(
-    () => ({
+  const totals = React.useMemo(() => {
+    if (metrics) {
+      return {
+        inquiries: metrics.leadsTotal ?? data.reduce((acc, curr) => acc + curr.inquiries, 0),
+        qualified: metrics.qualifiedTotal ?? data.reduce((acc, curr) => acc + curr.qualified, 0),
+        viewings: metrics.viewingsTotal ?? data.reduce((acc, curr) => acc + curr.viewings, 0),
+      };
+    }
+    return {
       inquiries: data.reduce((acc, curr) => acc + curr.inquiries, 0),
       qualified: data.reduce((acc, curr) => acc + curr.qualified, 0),
       viewings: data.reduce((acc, curr) => acc + curr.viewings, 0),
-    }),
-    [data]
-  );
+    };
+  }, [data, metrics]);
 
   return (
     <Card className="py-4 sm:py-0 bg-white border-border shadow-2xs">
