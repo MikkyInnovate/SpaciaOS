@@ -31,7 +31,7 @@ import {
 import { RevenuePathResponse, RevenuePathNode, RevenuePathCategory } from "../types";
 
 interface RevenuePathStepperProps {
-  data: RevenuePathResponse;
+  data?: RevenuePathResponse | null;
   isLoading?: boolean;
 }
 
@@ -104,7 +104,7 @@ export function RevenuePathStepper({
     React.useState<RevenuePathCategory | "all">("all");
   const [activeStep, setActiveStep] = React.useState<number | null>(null);
 
-  if (isLoading) {
+  if (isLoading || !data) {
     return (
       <Card className="bg-white border-border shadow-2xs">
         <CardHeader>

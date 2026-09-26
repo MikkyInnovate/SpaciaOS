@@ -25,7 +25,7 @@ import {
 import { AnalyticsFunnelResponse } from "../types";
 
 interface FunnelStageChartProps {
-  data: AnalyticsFunnelResponse;
+  data?: AnalyticsFunnelResponse | null;
   isLoading?: boolean;
 }
 
@@ -135,6 +135,54 @@ function FunnelCustomTooltip({
 export function FunnelStageChart({ data, isLoading = false }: FunnelStageChartProps) {
   const [activeMetric, setActiveMetric] = React.useState<FunnelMetricKey>("count");
 
+  if (isLoading || !data) {
+    return (
+      <Card className="py-4 sm:py-0 bg-white border-border shadow-2xs overflow-hidden">
+        <CardHeader className="flex flex-col items-stretch border-b border-border p-0! sm:flex-row">
+          <div className="flex flex-1 flex-col justify-center gap-1.5 px-6 py-4">
+            <div className="h-5 w-44 bg-stone-200/80 rounded animate-pulse" />
+            <div className="h-3 w-64 bg-stone-100 rounded animate-pulse" />
+          </div>
+          <div className="flex border-t sm:border-t-0 sm:border-l border-border">
+            {[1, 2, 3].map((i) => (
+              <div
+                key={i}
+                className="flex flex-1 flex-col justify-center gap-1.5 px-4 py-3.5 sm:px-6 sm:py-4 border-r last:border-r-0 border-border min-w-[130px]"
+              >
+                <div className="h-3 w-20 bg-stone-100 rounded animate-pulse" />
+                <div className="h-6 w-16 bg-stone-200/80 rounded animate-pulse" />
+              </div>
+            ))}
+          </div>
+        </CardHeader>
+        <CardContent className="px-4 py-5 sm:p-6 space-y-4">
+          {/* Low-fidelity funnel bars skeleton */}
+          <div className="h-[260px] w-full flex items-end justify-between gap-3 px-4 pb-4 pt-8 bg-stone-50/40 rounded-xl border border-dashed border-stone-200">
+            {[100, 88, 76, 62, 50, 38, 26, 16].map((pct, idx) => (
+              <div key={idx} className="flex-1 flex flex-col items-center gap-2 h-full justify-end">
+                <div
+                  className="w-full max-w-[56px] rounded-t-lg bg-stone-200/70 animate-pulse"
+                  style={{ height: `${pct}%` }}
+                />
+                <div className="h-3 w-10 bg-stone-100 rounded animate-pulse" />
+              </div>
+            ))}
+          </div>
+          {/* Bottom summary boxes skeleton */}
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 pt-4 border-t border-border/80">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="p-3 rounded-md border border-stone-200/80 bg-stone-50/50 space-y-2">
+                <div className="h-3 w-20 bg-stone-100 rounded animate-pulse" />
+                <div className="h-6 w-14 bg-stone-200/80 rounded animate-pulse" />
+                <div className="h-3 w-28 bg-stone-100 rounded animate-pulse" />
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   const { stages, totalLeads, wonCount, overallConversionRate } = data;
 
   const avgStepConversion = React.useMemo(() => {
@@ -168,22 +216,6 @@ export function FunnelStageChart({ data, isLoading = false }: FunnelStageChartPr
   const viewingsCount = React.useMemo(() => {
     return stages.find((s) => s.stage === "viewing_completed")?.count ?? 0;
   }, [stages]);
-
-  if (isLoading) {
-    return (
-      <Card className="py-4 sm:py-0 bg-white border-border shadow-2xs">
-        <CardHeader className="flex flex-col items-stretch border-b border-border p-0! sm:flex-row">
-          <div className="flex flex-1 flex-col justify-center gap-1 px-6 py-4 sm:py-0">
-            <div className="h-5 w-44 bg-stone-100 rounded animate-pulse" />
-            <div className="h-3 w-64 bg-stone-100 rounded animate-pulse" />
-          </div>
-        </CardHeader>
-        <CardContent className="px-4 py-5 sm:p-6 space-y-4">
-          <div className="h-[260px] bg-stone-100 rounded-xl animate-pulse" />
-        </CardContent>
-      </Card>
-    );
-  }
 
   return (
     <Card className="py-4 sm:py-0 bg-white border-border shadow-2xs overflow-hidden">

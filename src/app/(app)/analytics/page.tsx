@@ -12,7 +12,10 @@ import {
   Layers,
   CheckCircle2,
   Gauge,
+  Calendar as CalendarIcon,
 } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
 import {
   analyticsService,
   AnalyticsSummaryCards,
@@ -47,6 +50,8 @@ const PERIOD_OPTIONS: { value: AnalyticsPeriod; label: string }[] = [
 export default function AnalyticsPage() {
   const { currentWorkspace } = useWorkspace();
   const [selectedPeriod, setSelectedPeriod] = React.useState<AnalyticsPeriod>("30d");
+  const [selectedCustomDate, setSelectedCustomDate] = React.useState<Date | null>(null);
+  const [isCalendarOpen, setIsCalendarOpen] = React.useState(false);
   const [activeView, setActiveView] = React.useState<AnalyticsView>("funnel");
 
   // Analytics states
@@ -107,7 +112,7 @@ export default function AnalyticsPage() {
   const dynamicTrajectoryData = React.useMemo(() => {
     const days = selectedPeriod === "7d" ? 7 : 14;
     const result: Array<{ date: string; inquiries: number; qualified: number; viewings: number }> = [];
-    const now = new Date();
+    const now = selectedCustomDate ? new Date(selectedCustomDate) : new Date();
 
     for (let i = days - 1; i >= 0; i--) {
       const d = new Date(now);
@@ -149,7 +154,7 @@ export default function AnalyticsPage() {
     }
 
     return result;
-  }, [selectedPeriod, leadsList, appointmentsList]);
+  }, [selectedPeriod, selectedCustomDate, leadsList, appointmentsList]);
 
   return (
     <Container size="lg" className="space-y-6">
@@ -175,15 +180,18 @@ export default function AnalyticsPage() {
               />
             </Button>
 
-            {/* Design System Segmented Timeframe Filter */}
+            {/* Design System Segmented Timeframe Filter with Calendar Picker */}
             <div className="inline-flex items-center gap-1 bg-stone-100 p-1 rounded-lg border border-stone-200/80">
               {PERIOD_OPTIONS.map((p) => {
-                const isSelected = selectedPeriod === p.value;
+                const isSelected = selectedPeriod === p.value && !selectedCustomDate;
                 return (
                   <button
                     key={p.value}
                     type="button"
-                    onClick={() => setSelectedPeriod(p.value)}
+                    onClick={() => {
+                      setSelectedPeriod(p.value);
+                      setSelectedCustomDate(null);
+                    }}
                     className={cn(
                       "px-2.5 py-1 rounded-md text-xs font-medium transition-all select-none whitespace-nowrap cursor-pointer",
                       isSelected
@@ -195,21 +203,73 @@ export default function AnalyticsPage() {
                   </button>
                 );
               })}
+
+              <div className="w-[1px] h-3.5 bg-stone-300/80 mx-0.5" />
+
+              {/* Calendar Popover Button */}
+              <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
+                <PopoverTrigger asChild>
+                  <button
+                    type="button"
+                    title={
+                      selectedCustomDate
+                        ? `Custom Date: ${selectedCustomDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`
+                        : "Select custom date"
+                    }
+                    className={cn(
+                      "flex items-center gap-1.5 px-2 py-1 rounded-md text-xs font-medium transition-all select-none whitespace-nowrap cursor-pointer",
+                      selectedCustomDate
+                        ? "bg-white text-[#0d4a36] font-semibold shadow-2xs border border-stone-200/60"
+                        : "text-stone-600 hover:text-stone-900 hover:bg-stone-200/60"
+                    )}
+                  >
+                    <CalendarIcon className="w-3.5 h-3.5" />
+                    {selectedCustomDate ? (
+                      <span className="font-semibold text-[11px] text-[#0d4a36]">
+                        {selectedCustomDate.toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                        })}
+                      </span>
+                    ) : null}
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent align="end" className="p-3 w-auto shadow-xl bg-white border border-stone-200 rounded-xl">
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-center justify-between px-1 pb-1 border-b border-stone-100">
+                      <span className="text-xs font-semibold text-stone-900">
+                        {selectedCustomDate ? "Custom Date" : "Select Date"}
+                      </span>
+                      {selectedCustomDate && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedCustomDate(null);
+                            setIsCalendarOpen(false);
+                          }}
+                          className="text-[11px] font-medium text-stone-500 hover:text-stone-900 underline cursor-pointer"
+                        >
+                          Reset
+                        </button>
+                      )}
+                    </div>
+                    <Calendar
+                      selectedDate={selectedCustomDate}
+                      onSelectDate={(date) => {
+                        setSelectedCustomDate(date);
+                        setIsCalendarOpen(false);
+                      }}
+                    />
+                  </div>
+                </PopoverContent>
+              </Popover>
             </div>
           </div>
         }
       />
 
-      {/* KPI Metrics Summary Row */}
-      {metricsData ? (
-        <AnalyticsSummaryCards metrics={metricsData} isLoading={isLoading} />
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-28 rounded-xl bg-stone-100 animate-pulse" />
-          ))}
-        </div>
-      )}
+      {/* KPI Metrics Summary Row: Renders full low-fidelity skeleton when loading */}
+      <AnalyticsSummaryCards metrics={metricsData} isLoading={isLoading} />
 
       {/* Design System Segmented View Filter */}
       <div className="inline-flex items-center gap-1 bg-stone-100 p-1 rounded-lg border border-stone-200/80">
@@ -238,65 +298,86 @@ export default function AnalyticsPage() {
       <div className="space-y-6">
         {activeView === "funnel" && (
           <>
-            {funnelData && (
-              <FunnelStageChart data={funnelData} isLoading={isLoading} />
-            )}
+            <FunnelStageChart data={funnelData} isLoading={isLoading} />
             <PipelineFunnel
-              key={selectedPeriod}
+              key={selectedPeriod + (selectedCustomDate ? selectedCustomDate.toISOString() : "")}
               data={dynamicTrajectoryData}
-              periodDescription="Daily inbound volume, AI verified qualification, and viewing completions over the selected timeframe"
-              benchmarks={{
-                speedToLead: metricsData?.speedToLead.value || "42s",
-                qualificationAccuracy:
-                  metricsData?.qualificationRate.value || "72.7% Verified",
-                viewingVelocity: "+38% vs Manual",
-              }}
+              periodDescription={
+                selectedCustomDate
+                  ? `Inbound activity and conversions leading up to ${selectedCustomDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`
+                  : "Daily inbound volume, AI verified qualification, and viewing completions over the selected timeframe"
+              }
+              benchmarks={
+                metricsData
+                  ? {
+                      speedToLead: metricsData.speedToLead.value,
+                      qualificationAccuracy: metricsData.qualificationRate.value,
+                      viewingVelocity: "+38% vs Manual",
+                    }
+                  : undefined
+              }
+              isLoading={isLoading}
             />
           </>
         )}
 
-        {activeView === "pipeline" && revenuePathData && (
+        {activeView === "pipeline" && (
           <RevenuePathStepper data={revenuePathData} isLoading={isLoading} />
         )}
 
         {activeView === "performance" && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="p-4 rounded-xl border border-stone-200 bg-white shadow-2xs space-y-2">
-              <span className="text-xs font-semibold text-stone-500 uppercase tracking-wider">
-                Speed to Lead
-              </span>
-              <p className="text-2xl font-bold font-mono text-stone-900">
-                {metricsData?.speedToLead.value || "42s"}
-              </p>
-              <p className="text-xs text-stone-500">
-                Average elapsed seconds between webform inquiry and initial outreach
-              </p>
+          isLoading || !metricsData ? (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {[1, 2, 3].map((i) => (
+                <div
+                  key={i}
+                  className="p-4 rounded-xl border border-stone-200 bg-white shadow-2xs space-y-3"
+                >
+                  <div className="h-3 w-28 bg-stone-100 rounded animate-pulse" />
+                  <div className="h-8 w-24 bg-stone-200/80 rounded animate-pulse" />
+                  <div className="h-3 w-48 bg-stone-100 rounded animate-pulse" />
+                </div>
+              ))}
             </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="p-4 rounded-xl border border-stone-200 bg-white shadow-2xs space-y-2">
+                <span className="text-xs font-semibold text-stone-500 uppercase tracking-wider">
+                  Speed to Lead
+                </span>
+                <p className="text-2xl font-bold font-mono text-stone-900">
+                  {metricsData.speedToLead.value}
+                </p>
+                <p className="text-xs text-stone-500">
+                  {metricsData.speedToLead.subtext}
+                </p>
+              </div>
 
-            <div className="p-4 rounded-xl border border-stone-200 bg-white shadow-2xs space-y-2">
-              <span className="text-xs font-semibold text-stone-500 uppercase tracking-wider">
-                Qualification Rate
-              </span>
-              <p className="text-2xl font-bold font-mono text-stone-900">
-                {metricsData?.qualificationRate.value || "72.7%"}
-              </p>
-              <p className="text-xs text-stone-500">
-                Percentage of captured prospects meeting budget and verified buying timeline
-              </p>
-            </div>
+              <div className="p-4 rounded-xl border border-stone-200 bg-white shadow-2xs space-y-2">
+                <span className="text-xs font-semibold text-stone-500 uppercase tracking-wider">
+                  Qualification Rate
+                </span>
+                <p className="text-2xl font-bold font-mono text-stone-900">
+                  {metricsData.qualificationRate.value}
+                </p>
+                <p className="text-xs text-stone-500">
+                  {metricsData.qualificationRate.subtext}
+                </p>
+              </div>
 
-            <div className="p-4 rounded-xl border border-stone-200 bg-white shadow-2xs space-y-2">
-              <span className="text-xs font-semibold text-stone-500 uppercase tracking-wider">
-                Autonomous Resolution
-              </span>
-              <p className="text-2xl font-bold font-mono text-[#0d4a36]">
-                {metricsData?.autonomousResolutionRate.value || "91.2%"}
-              </p>
-              <p className="text-xs text-stone-500">
-                Conversations, qualification, and viewing booking handled without manual takeover
-              </p>
+              <div className="p-4 rounded-xl border border-stone-200 bg-white shadow-2xs space-y-2">
+                <span className="text-xs font-semibold text-stone-500 uppercase tracking-wider">
+                  Autonomous Resolution
+                </span>
+                <p className="text-2xl font-bold font-mono text-[#0d4a36]">
+                  {metricsData.autonomousResolutionRate.value}
+                </p>
+                <p className="text-xs text-stone-500">
+                  {metricsData.autonomousResolutionRate.subtext}
+                </p>
+              </div>
             </div>
-          </div>
+          )
         )}
       </div>
     </Container>

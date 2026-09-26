@@ -4,7 +4,7 @@ import { StatMetricCard } from "@/features/dashboard/components/stat-metric-card
 import { AnalyticsOverviewMetrics } from "../types";
 
 interface AnalyticsSummaryCardsProps {
-  metrics: AnalyticsOverviewMetrics;
+  metrics?: AnalyticsOverviewMetrics | null;
   isLoading?: boolean;
 }
 
@@ -12,15 +12,46 @@ export function AnalyticsSummaryCards({
   metrics,
   isLoading = false,
 }: AnalyticsSummaryCardsProps) {
-  if (isLoading) {
+  if (isLoading || !metrics) {
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {[1, 2, 3, 4].map((i) => (
-          <div
-            key={i}
-            className="h-28 rounded-xl bg-stone-100 animate-pulse border border-stone-200/60"
-          />
-        ))}
+      <div className="space-y-4">
+        {/* Low-fidelity KPI Card Skeletons */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map((i) => (
+            <div
+              key={i}
+              className="h-28 rounded-xl bg-white border border-stone-200/70 shadow-2xs p-4 flex flex-col justify-between"
+            >
+              <div className="flex items-center justify-between">
+                <div className="h-3.5 w-24 bg-stone-100 rounded animate-pulse" />
+                <div className="w-7 h-7 bg-stone-100 rounded-lg animate-pulse" />
+              </div>
+              <div className="space-y-1.5">
+                <div className="h-6 w-20 bg-stone-200/80 rounded animate-pulse" />
+                <div className="h-3 w-32 bg-stone-100 rounded animate-pulse" />
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Low-fidelity Velocity Banner Skeletons */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {[1, 2].map((i) => (
+            <div
+              key={i}
+              className="h-16 rounded-xl bg-stone-50 border border-stone-200/70 p-3.5 flex items-center justify-between shadow-2xs"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-stone-200/70 animate-pulse" />
+                <div className="space-y-1">
+                  <div className="h-3.5 w-28 bg-stone-200/70 rounded animate-pulse" />
+                  <div className="h-3 w-40 bg-stone-100 rounded animate-pulse" />
+                </div>
+              </div>
+              <div className="h-6 w-14 bg-stone-200/70 rounded animate-pulse" />
+            </div>
+          ))}
+        </div>
       </div>
     );
   }
