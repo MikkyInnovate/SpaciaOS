@@ -92,29 +92,46 @@ export class AiAgentController {
   @Get("status")
   @RequirePermissions("leads:read")
   async getStatusTelemetry(@CurrentTenant() tenant: TenantContext) {
-    const config = await this.aiConfigService.getOrCreateConfig(tenant.workspaceId);
-    const inHours = this.aiConfigService.isWithinBusinessHours(config);
-
+    const status = await this.aiConfigService.getTelemetry(tenant.workspaceId);
     return {
       success: true,
-      status: {
-        status: config.isActive ? "online" : "paused",
-        statusLabel: config.isActive
-          ? inHours
-            ? "Voice & Chat Core Operational"
-            : "After-Hours Standby Mode"
-          : "Outbound Calling Paused by Operator",
-        uptime: "99.98% (Neon Managed)",
-        activeLines: config.isActive ? 2 : 0,
-        maxConcurrency: 10,
-        averageLatencyMs: 340,
-        callsHandledToday: 48,
-        qualificationRate: 78.4,
-        bookedAppointmentsToday: 14,
-        lastTrainedAt: "Synced to Workspace Config",
-        isOutboundPaused: !config.isActive,
-        engineStatus: config.isActive ? "active" : "paused",
-      },
+      status,
+    };
+  }
+
+  @Get("activities")
+  @RequirePermissions("leads:read")
+  async getActivities(@CurrentTenant() tenant: TenantContext) {
+    const activities = await this.aiConfigService.getRecentActivities(
+      tenant.workspaceId
+    );
+    return {
+      success: true,
+      activities,
+    };
+  }
+
+  @Get("active-calls")
+  @RequirePermissions("leads:read")
+  async getActiveCalls(@CurrentTenant() tenant: TenantContext) {
+    const activeCalls = await this.aiConfigService.getActiveCalls(
+      tenant.workspaceId
+    );
+    return {
+      success: true,
+      activeCalls,
+    };
+  }
+
+  @Get("active-call")
+  @RequirePermissions("leads:read")
+  async getActiveCall(@CurrentTenant() tenant: TenantContext) {
+    const activeCalls = await this.aiConfigService.getActiveCalls(
+      tenant.workspaceId
+    );
+    return {
+      success: true,
+      activeCall: activeCalls.length > 0 ? activeCalls[0] : null,
     };
   }
 }

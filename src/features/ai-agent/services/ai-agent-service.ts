@@ -9,9 +9,7 @@ import type {
 import {
   MOCK_AI_AGENT_STATUS,
   MOCK_AI_AGENT_CONFIG,
-  MOCK_ACTIVE_CALLS,
   MOCK_SAMPLE_INTENTS,
-  MOCK_AGENT_RECENT_ACTIVITIES,
 } from "../data/mock-ai-agent";
 
 /**
@@ -248,7 +246,17 @@ class AIAgentService {
     if (inMemoryStatus.isOutboundPaused) {
       return [];
     }
-    return JSON.parse(JSON.stringify(MOCK_ACTIVE_CALLS));
+
+    try {
+      const res = await apiClient.get<{ activeCalls: ActiveCallTelemetry[] }>(
+        "/api/v1/ai-agent/active-calls"
+      );
+      if (Array.isArray(res?.activeCalls)) return res.activeCalls;
+    } catch {
+      // Fallback
+    }
+
+    return [];
   }
 
   async getActiveCall(callId?: string): Promise<ActiveCallTelemetry | null> {
@@ -284,7 +292,7 @@ class AIAgentService {
       // Fallback
     }
 
-    return JSON.parse(JSON.stringify(MOCK_AGENT_RECENT_ACTIVITIES));
+    return [];
   }
 
   async getRecentActivity(): Promise<AIAgentRecentActivity[]> {
