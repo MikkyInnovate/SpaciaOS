@@ -40,95 +40,7 @@ export const DEFAULT_ROLE_DEFINITIONS: RoleDefinition[] = [
   },
 ];
 
-const FALLBACK_MEMBERS: TeamMember[] = [
-  {
-    id: "mem_tunde_bakare",
-    workspaceId: "default",
-    userId: "user_spacia_tundebakare",
-    role: "sales_agent",
-    status: "active",
-    createdAt: new Date().toISOString(),
-    user: {
-      id: "user_spacia_tundebakare",
-      email: "tunde.bakare@spacia.luxury",
-      firstName: "Tunde",
-      lastName: "Bakare",
-      imageUrl: "https://api.dicebear.com/7.x/initials/svg?seed=Tunde%20Bakare",
-    },
-    agent: {
-      id: "agent_tunde",
-      name: "Tunde Bakare",
-      email: "tunde.bakare@spacia.luxury",
-      phone: "+234 803 112 4001",
-      roleTitle: "Senior Acquisition Executive",
-      status: "active",
-      territory: "Lekki Phase 1 & Ikate",
-      specializations: ["luxury_residential", "waterfront"],
-      routingWeight: 15,
-      isAvailableForRouting: true,
-      maxConcurrentLeads: 50,
-      activeLeadsCount: 14,
-    },
-  },
-  {
-    id: "mem_ngozi_eze",
-    workspaceId: "default",
-    userId: "user_spacia_ngozieze",
-    role: "sales_manager",
-    status: "active",
-    createdAt: new Date().toISOString(),
-    user: {
-      id: "user_spacia_ngozieze",
-      email: "ngozi.eze@spacia.luxury",
-      firstName: "Ngozi",
-      lastName: "Eze",
-      imageUrl: "https://api.dicebear.com/7.x/initials/svg?seed=Ngozi%20Eze",
-    },
-    agent: {
-      id: "agent_ngozi",
-      name: "Ngozi Eze",
-      email: "ngozi.eze@spacia.luxury",
-      phone: "+234 802 334 5002",
-      roleTitle: "Luxury Portfolio Director",
-      status: "active",
-      territory: "Ikoyi & Banana Island",
-      specializations: ["luxury_residential", "penthouses", "investment_yield"],
-      routingWeight: 20,
-      isAvailableForRouting: true,
-      maxConcurrentLeads: 50,
-      activeLeadsCount: 19,
-    },
-  },
-  {
-    id: "mem_femi_adeleke",
-    workspaceId: "default",
-    userId: "user_spacia_femiadeleke",
-    role: "sales_agent",
-    status: "active",
-    createdAt: new Date().toISOString(),
-    user: {
-      id: "user_spacia_femiadeleke",
-      email: "femi.adeleke@spacia.luxury",
-      firstName: "Femi",
-      lastName: "Adeleke",
-      imageUrl: "https://api.dicebear.com/7.x/initials/svg?seed=Femi%20Adeleke",
-    },
-    agent: {
-      id: "agent_femi",
-      name: "Femi Adeleke",
-      email: "femi.adeleke@spacia.luxury",
-      phone: "+234 809 556 7003",
-      roleTitle: "Commercial & Waterfront Lead",
-      status: "active",
-      territory: "Victoria Island & Eko Atlantic",
-      specializations: ["commercial", "land_development", "waterfront"],
-      routingWeight: 15,
-      isAvailableForRouting: true,
-      maxConcurrentLeads: 50,
-      activeLeadsCount: 11,
-    },
-  },
-];
+const FALLBACK_MEMBERS: TeamMember[] = [];
 
 class TeamService {
   /**
@@ -137,24 +49,25 @@ class TeamService {
   async getStats(): Promise<TeamStats> {
     try {
       const response = await apiClient.get<any>("/api/v1/team/stats");
-      if (response && response.stats) {
-        return response.stats;
+      const data = response?.data || response;
+      if (data?.stats) {
+        return data.stats;
       }
-      if (response && response.totalMembers !== undefined) {
-        return response;
+      if (data?.totalMembers !== undefined) {
+        return data;
       }
     } catch (err) {
       console.warn("[TeamService] Using local fallback for stats:", err);
     }
 
     return {
-      totalMembers: FALLBACK_MEMBERS.length,
-      activeBrokers: FALLBACK_MEMBERS.filter((m) => m.agent !== null && m.status === "active").length,
-      routingActive: FALLBACK_MEMBERS.filter((m) => m.agent?.isAvailableForRouting).length,
-      totalCapacity: 150,
-      currentActiveLeads: 44,
-      availableCapacity: 106,
-      capacityUtilizationPercent: 29,
+      totalMembers: 0,
+      activeBrokers: 0,
+      routingActive: 0,
+      totalCapacity: 0,
+      currentActiveLeads: 0,
+      availableCapacity: 0,
+      capacityUtilizationPercent: 0,
     };
   }
 
@@ -164,17 +77,18 @@ class TeamService {
   async listMembers(): Promise<TeamMember[]> {
     try {
       const response = await apiClient.get<any>("/api/v1/team/members");
-      if (response && Array.isArray(response.members)) {
-        return response.members;
+      const data = response?.data || response;
+      if (data && Array.isArray(data.members)) {
+        return data.members;
       }
-      if (Array.isArray(response)) {
-        return response;
+      if (Array.isArray(data)) {
+        return data;
       }
     } catch (err) {
       console.warn("[TeamService] Using local fallback for members list:", err);
     }
 
-    return FALLBACK_MEMBERS;
+    return [];
   }
 
   /**
@@ -243,6 +157,28 @@ class TeamService {
     const response = await apiClient.post<any>(`/api/v1/team/members/${memberId}/resend-invite`, {});
     return response;
   }
+
+  /**
+   * 10. Public: Retrieve invitation details for member onboarding
+   */
+  async getInvitation(id: string): Promise<any> {
+    const response = await apiClient.get<any>(`/api/v1/team/invite/${id}`);
+    const data = response?.data || response;
+    return data?.invitation || data;
+  }
+
+  /**
+   * 11. Public: Accept invitation & complete onboarding
+   */
+  async acceptInvitation(
+    id: string,
+    payload: { firstName: string; lastName: string; phone?: string }
+  ): Promise<any> {
+    const response = await apiClient.post<any>(`/api/v1/team/invite/${id}/accept`, payload);
+    const data = response?.data || response;
+    return data;
+  }
 }
 
 export const teamService = new TeamService();
+

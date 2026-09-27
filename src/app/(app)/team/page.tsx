@@ -17,7 +17,7 @@ import {
 } from "@/features/team";
 import type { TeamMember, TeamStats, RoleDefinition } from "@/features/team/types";
 import { toast } from "sonner";
-import { UserPlus, RefreshCw, Building2 } from "lucide-react";
+import { UserPlus, RefreshCw } from "lucide-react";
 
 export default function TeamPage() {
   const { currentWorkspace } = useWorkspace();
@@ -187,16 +187,6 @@ export default function TeamPage() {
         description="Luxury brokerage sales roster, lead routing dispatch rules, and role-based access control."
         actions={
           <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1.5 h-8 rounded-md border border-stone-200 bg-white px-2.5 text-xs font-medium text-stone-700 shadow-2xs whitespace-nowrap">
-              <Building2 className="h-3.5 w-3.5 text-stone-400 shrink-0" aria-hidden="true" />
-              <span>{currentWorkspace?.name || "Spacia Luxury Hub"}</span>
-            </div>
-
-            <div className="flex items-center gap-1.5 h-8 rounded-md border border-stone-200 bg-white px-2.5 text-xs font-medium text-stone-700 shadow-2xs whitespace-nowrap">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-600 shrink-0 animate-pulse" />
-              <span>Team: Active</span>
-            </div>
-
             <Button
               variant="outline"
               size="sm"
