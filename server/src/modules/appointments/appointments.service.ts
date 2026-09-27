@@ -700,6 +700,40 @@ export class AppointmentsService {
   ) {
     const tokenResp = await this.calendarAdapter.handleOAuthCallback(workspaceId, provider, code, state);
     const connections = await this.calendarAdapter.getConnections(workspaceId);
+
+    // Keep integrations table synchronized with live calendar connection
+    if (this.db) {
+      try {
+        const accountEmail = (tokenResp as any)?.accountEmail || "connected@gmail.com";
+        await this.db
+          .update(schema.integrations)
+          .set({
+            status: "connected",
+            config: {
+              healthStatus: "healthy",
+              accountEmail,
+              calendarName: "VIP Viewings & Inspections",
+              lastTestedAt: new Date().toISOString(),
+              lastSuccessAt: new Date().toISOString(),
+              syncIntervalMinutes: 5,
+            },
+            credentials: {
+              hasToken: true,
+              accountEmail,
+            },
+            updatedAt: new Date(),
+          })
+          .where(
+            and(
+              eq(schema.integrations.workspaceId, workspaceId),
+              eq(schema.integrations.type, "google_calendar")
+            )
+          );
+      } catch (err) {
+        this.logger.warn(`Could not sync Google Calendar integration record: ${(err as Error).message}`);
+      }
+    }
+
     return {
       token: tokenResp,
       connections,

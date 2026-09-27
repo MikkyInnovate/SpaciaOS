@@ -330,8 +330,12 @@ class AppointmentsService {
   /**
    * Get real Google OAuth URL from backend or construct directly with client ID
    */
-  async getOAuthUrl(provider: string = "google_calendar"): Promise<string> {
-    const redirectUri = window.location.origin + "/appointments";
+  async getOAuthUrl(provider: string = "google_calendar", customRedirectUri?: string): Promise<string> {
+    const redirectUri =
+      customRedirectUri ||
+      (typeof window !== "undefined"
+        ? `${window.location.origin}${window.location.pathname}`
+        : "http://localhost:3000/appointments");
     try {
       const res = await apiClient.get<{ authUrl: string } | { data: { authUrl: string } }>(
         `/api/v1/appointments/calendars/auth-url?provider=${provider}&redirectUri=${encodeURIComponent(redirectUri)}`

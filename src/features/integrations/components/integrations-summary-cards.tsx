@@ -61,7 +61,7 @@ export function IntegrationsSummaryCards({
             </span>
           </div>
           <p className="mt-1 text-xs text-stone-500 font-normal truncate">
-            Client data & external connectors
+            Client data & calendar connectors
           </p>
         </CardContent>
       </Card>

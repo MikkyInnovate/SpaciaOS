@@ -31,6 +31,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils/cn";
 import { useWorkspace } from "@/lib/context/workspace-context";
 import { propertiesService } from "@/features/properties";
+import { appointmentsService } from "@/features/appointments";
 import {
   integrationsService,
   IntegrationCard,
@@ -44,6 +45,7 @@ import {
 const CATEGORIES: { id: IntegrationCategory; label: string }[] = [
   { id: "all", label: "All Integrations" },
   { id: "leads", label: "Lead Ingestion" },
+  { id: "calendar", label: "Calendars" },
   { id: "properties", label: "Property Inventory" },
   { id: "crm", label: "CRMs" },
 ];
@@ -62,6 +64,7 @@ export default function IntegrationsPage() {
   const [testingId, setTestingId] = React.useState<string | null>(null);
   const [reconnectingId, setReconnectingId] = React.useState<string | null>(null);
   const [isTestingAll, setIsTestingAll] = React.useState(false);
+  const [isConnectingGoogle, setIsConnectingGoogle] = React.useState(false);
 
   // Modal State
   const [selectedForConfig, setSelectedForConfig] = React.useState<IntegrationItem | null>(null);
@@ -96,6 +99,59 @@ export default function IntegrationsPage() {
   React.useEffect(() => {
     loadIntegrations();
   }, [loadIntegrations]);
+
+  // Auto-detect OAuth Callback from Google redirect (e.g. /integrations?code=4/0A...&state=...)
+  React.useEffect(() => {
+    const handleCallbackFromUrl = async () => {
+      if (typeof window === "undefined") return;
+      const params = new URLSearchParams(window.location.search);
+      const code = params.get("code");
+      const state = params.get("state");
+
+      if (code) {
+        setIsConnectingGoogle(true);
+        toast.loading("Exchanging Google OAuth token & linking calendar...", { id: "google-oauth" });
+
+        try {
+          const result = await appointmentsService.handleOAuthCallback(code, state || undefined);
+          toast.success("Google Calendar Linked Successfully!", {
+            id: "google-oauth",
+            description: `Live 2-way sync activated for ${result.accountEmail || "your Google Account"}.`,
+          });
+
+          // Clean URL without refresh
+          const newUrl = window.location.pathname;
+          window.history.replaceState({}, document.title, newUrl);
+          await loadIntegrations(true);
+        } catch (err: any) {
+          toast.error("Google Calendar connection failed", {
+            id: "google-oauth",
+            description: err?.message || "Failed to exchange OAuth token.",
+          });
+        } finally {
+          setIsConnectingGoogle(false);
+        }
+      }
+    };
+
+    handleCallbackFromUrl();
+  }, [loadIntegrations]);
+
+  const handleConnectGoogle = async () => {
+    setIsConnectingGoogle(true);
+    try {
+      toast.loading("Redirecting to Google Sign-In...", { id: "oauth-redirect" });
+      const redirectUri = window.location.origin + "/integrations";
+      const authUrl = await appointmentsService.getOAuthUrl("google_calendar", redirectUri);
+      window.location.href = authUrl;
+    } catch (err: any) {
+      toast.error("Failed to initiate Google OAuth", {
+        id: "oauth-redirect",
+        description: err?.message || "Could not generate authorization URL.",
+      });
+      setIsConnectingGoogle(false);
+    }
+  };
 
   // Adapter Health check
   const fetchAdapterHealth = React.useCallback(async (providerId?: string) => {
@@ -502,8 +558,10 @@ export default function IntegrationsPage() {
               onReconnect={handleReconnect}
               onDisconnect={handleDisconnect}
               onConfigure={handleOpenConfig}
+              onConnectGoogle={handleConnectGoogle}
               isTesting={testingId === item.id || isTestingAll}
               isReconnecting={reconnectingId === item.id}
+              isConnectingGoogle={isConnectingGoogle}
             />
           ))}
         </div>

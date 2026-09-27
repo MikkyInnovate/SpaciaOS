@@ -60,10 +60,9 @@ async function runDay24IntegrationsTests() {
     const integrations = await integrationsService.getIntegrations(primaryTenant.workspaceId);
 
     assert.ok(Array.isArray(integrations), "Integrations result must be an array");
-    assert.ok(integrations.length >= 3, "Workspace must have at least 3 default client integrations");
+    assert.ok(integrations.length >= 4, "Workspace must have at least 4 default client integrations");
 
-    // google_calendar is platform-managed (Day 15 appointments) — not a client integration
-    const expectedTypes = ["webhook", "property_db", "crm"];
+    const expectedTypes = ["webhook", "google_calendar", "property_db", "crm"];
     expectedTypes.forEach((type) => {
       const item = integrations.find((i) => i.type === type);
       assert.ok(item, `Default integration type '${type}' must be present`);

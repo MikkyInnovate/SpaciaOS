@@ -4,7 +4,7 @@ import {
   NotFoundException,
   Logger,
 } from "@nestjs/common";
-import { eq, and } from "drizzle-orm";
+import { eq, and, or } from "drizzle-orm";
 import { DRIZZLE_DATABASE, DrizzleDb } from "../../database/database.provider";
 import * as schema from "../../database/schema";
 import {
@@ -83,11 +83,11 @@ export class IntegrationsService {
     const rawCreds = (record.credentials as Record<string, any>) || {};
     const config = (record.config as Record<string, any>) || {};
 
-    const hasCredentials = Boolean(
-      rawCreds &&
-      Object.keys(rawCreds).length > 0 &&
-      Object.values(rawCreds).some((v) => v !== null && v !== undefined && v !== "")
-    );
+    const type = record.type as IntegrationType;
+    const meta = PROVIDER_METADATA[type] || {
+      description: "External enterprise integration",
+      category: "leads",
+    };
 
     // Pick first non-empty credential key to provide a masked hint
     let maskedKey: string | null = null;
@@ -103,11 +103,16 @@ export class IntegrationsService {
       maskedKey = this.maskCredential(credCandidate);
     }
 
-    const type = record.type as IntegrationType;
-    const meta = PROVIDER_METADATA[type] || {
-      description: "External enterprise integration",
-      category: "leads",
-    };
+    if (type === "google_calendar" && (config.accountEmail || rawCreds.accountEmail)) {
+      maskedKey = (config.accountEmail || rawCreds.accountEmail) as string;
+    }
+
+    const hasCredentials = Boolean(
+      (rawCreds &&
+        Object.keys(rawCreds).length > 0 &&
+        Object.values(rawCreds).some((v) => v !== null && v !== undefined && v !== "")) ||
+      (type === "google_calendar" && (Boolean(config.accountEmail) || record.status === "connected"))
+    );
 
     const healthStatus: HealthStatus =
       (config.healthStatus as HealthStatus) ||
@@ -167,6 +172,17 @@ export class IntegrationsService {
       },
 
       {
+        type: "google_calendar",
+        name: "Google Calendar Workspace",
+        status: "disconnected",
+        credentials: {},
+        config: {
+          healthStatus: "untested",
+          failureCount: 0,
+          syncIntervalMinutes: 5,
+        },
+      },
+      {
         type: "property_db",
         name: "External Property Database / PMS Gateway",
         status: "disconnected",
@@ -218,12 +234,11 @@ export class IntegrationsService {
       .orderBy(schema.integrations.createdAt);
 
     // Filter out internal platform infrastructure from client integrations list
-    // google_calendar is managed by the platform on the Appointments page (Day 15)
     const clientRecords = records.filter(
-      (r) => r.type !== "vapi" && r.type !== "resend" && r.type !== "whatsapp" && r.type !== "google_calendar"
+      (r) => r.type !== "vapi" && r.type !== "resend" && r.type !== "whatsapp"
     );
 
-    // If clientRecords doesn't contain property_db yet (e.g. from earlier seed), insert it
+    // If clientRecords doesn't contain property_db yet, insert it
     const hasPropertyDb = clientRecords.some((r) => r.type === "property_db");
     if (!hasPropertyDb) {
       const [newProp] = await this.db
@@ -242,6 +257,70 @@ export class IntegrationsService {
         })
         .returning();
       clientRecords.push(newProp);
+    }
+
+    // If clientRecords doesn't contain google_calendar yet, insert it
+    const hasGcal = clientRecords.some((r) => r.type === "google_calendar");
+    if (!hasGcal) {
+      const [newGcal] = await this.db
+        .insert(schema.integrations)
+        .values({
+          workspaceId,
+          type: "google_calendar",
+          name: "Google Calendar Workspace",
+          status: "disconnected",
+          credentials: {},
+          config: {
+            healthStatus: "untested",
+            failureCount: 0,
+            syncIntervalMinutes: 5,
+          },
+        })
+        .returning();
+      clientRecords.push(newGcal);
+    }
+
+    // Hydrate Google Calendar status from calendar_connections table (Appointments OAuth)
+    try {
+      const calRows = await this.db
+        .select()
+        .from(schema.calendarConnections)
+        .where(
+          and(
+            eq(schema.calendarConnections.workspaceId, workspaceId),
+            or(
+              eq(schema.calendarConnections.provider, "google"),
+              eq(schema.calendarConnections.provider, "google_calendar")
+            )
+          )
+        );
+
+      if (calRows.length > 0) {
+        const cal = calRows[0];
+        const meta = (cal.metadata as Record<string, any>) || {};
+        const gcalRecord = clientRecords.find((r) => r.type === "google_calendar");
+        if (gcalRecord) {
+          const isConnected = cal.status === "connected";
+          gcalRecord.status = isConnected ? "connected" : (cal.status as any);
+          const currentConfig = (gcalRecord.config as Record<string, any>) || {};
+          gcalRecord.config = {
+            ...currentConfig,
+            accountEmail: meta.accountEmail || currentConfig.accountEmail || "connected@gmail.com",
+            calendarName: meta.calendarName || currentConfig.calendarName || "Primary Calendar",
+            healthStatus: isConnected ? "healthy" : "untested",
+            lastTestedAt: cal.updatedAt?.toISOString() || currentConfig.lastTestedAt,
+          };
+          if (isConnected) {
+            gcalRecord.credentials = {
+              ...(gcalRecord.credentials as Record<string, any>),
+              hasToken: true,
+              accountEmail: meta.accountEmail,
+            };
+          }
+        }
+      }
+    } catch (err) {
+      this.logger.warn(`Could not sync calendar_connections for workspace ${workspaceId}: ${(err as Error).message}`);
     }
 
     return clientRecords.map((r) => this.sanitize(r));
@@ -495,6 +574,28 @@ export class IntegrationsService {
       })
       .where(eq(schema.integrations.id, id))
       .returning();
+
+    if (existing.type === "google_calendar") {
+      try {
+        await this.db
+          .update(schema.calendarConnections)
+          .set({
+            status: "disconnected",
+            updatedAt: new Date(),
+          })
+          .where(
+            and(
+              eq(schema.calendarConnections.workspaceId, workspaceId),
+              or(
+                eq(schema.calendarConnections.provider, "google"),
+                eq(schema.calendarConnections.provider, "google_calendar")
+              )
+            )
+          );
+      } catch (err) {
+        this.logger.warn(`Could not sync disconnect with calendarConnections: ${(err as Error).message}`);
+      }
+    }
 
     return this.sanitize(updated);
   }

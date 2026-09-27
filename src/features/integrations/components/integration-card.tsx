@@ -40,8 +40,33 @@ interface IntegrationCardProps {
   onReconnect: (id: string) => Promise<void>;
   onDisconnect: (id: string) => Promise<void>;
   onConfigure: (integration: IntegrationItem) => void;
+  onConnectGoogle?: () => void;
   isTesting?: boolean;
   isReconnecting?: boolean;
+  isConnectingGoogle?: boolean;
+}
+
+function GoogleGIcon({ className = "w-4 h-4" }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24">
+      <path
+        fill="#4285F4"
+        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+      />
+      <path
+        fill="#34A853"
+        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+      />
+      <path
+        fill="#FBBC05"
+        d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
+      />
+      <path
+        fill="#EA4335"
+        d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
+      />
+    </svg>
+  );
 }
 
 /**
@@ -196,8 +221,10 @@ export function IntegrationCard({
   onReconnect,
   onDisconnect,
   onConfigure,
+  onConnectGoogle,
   isTesting = false,
   isReconnecting = false,
+  isConnectingGoogle = false,
 }: IntegrationCardProps) {
   const [copied, setCopied] = React.useState(false);
 
@@ -211,15 +238,8 @@ export function IntegrationCard({
   };
 
   const isConnected = integration.status === "connected";
-  const isErrorOrDisconnected =
-    integration.status === "disconnected" || integration.status === "error";
-
-  // Determine if this is a brand-new unconfigured integration
-  const isUnconfigured =
-    !integration.hasCredentials &&
-    integration.status === "disconnected" &&
-    integration.healthStatus === "untested" &&
-    !integration.lastError;
+  const isError = integration.status === "error";
+  const isGoogle = integration.type === "google_calendar";
 
   const formattedLastTested = integration.lastTestedAt
     ? new Date(integration.lastTestedAt).toLocaleTimeString([], {
@@ -228,53 +248,8 @@ export function IntegrationCard({
       })
     : "Never";
 
-  /* ─── UNCONFIGURED EMPTY STATE ─── */
-  if (isUnconfigured) {
-    return (
-      <Card className="flex flex-col justify-between border-stone-200/60 border-dashed shadow-none hover:border-stone-300 hover:shadow-2xs transition-all bg-white/60 rounded-xl overflow-hidden">
-        <CardHeader className="p-4.5 pb-3">
-          <div className="flex items-start gap-3">
-            {renderCompanyBrandIcon(integration.type)}
-            <div>
-              <CardTitle className="text-sm font-semibold text-stone-900 leading-tight">
-                {integration.name}
-              </CardTitle>
-              <span className="inline-block text-[10px] font-semibold text-stone-400 uppercase tracking-wider mt-1">
-                {integration.category}
-              </span>
-            </div>
-          </div>
-        </CardHeader>
-
-        <CardContent className="p-4.5 pt-0 space-y-4 text-xs flex-1 flex flex-col justify-between">
-          <p className="text-stone-500 text-xs leading-relaxed">
-            {integration.description}
-          </p>
-
-          <div className="flex items-center gap-2 p-3 rounded-lg bg-stone-50/60 border border-stone-200/50 text-stone-400">
-            <Plug className="h-4 w-4 text-stone-300 shrink-0" />
-            <span className="text-[11px] font-medium">Not yet connected</span>
-          </div>
-        </CardContent>
-
-        <CardFooter className="p-3 px-4.5 border-t border-stone-100/60 bg-stone-50/30 rounded-b-xl">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onConfigure(integration)}
-            className="h-8 text-xs font-semibold gap-1.5 flex-1 border-stone-800 text-stone-800 bg-white hover:bg-stone-900 hover:text-white transition-colors shadow-2xs"
-          >
-            <Plug className="h-3.5 w-3.5" />
-            Connect
-          </Button>
-        </CardFooter>
-      </Card>
-    );
-  }
-
-  /* ─── CONFIGURED / ACTIVE STATE (full diagnostic card) ─── */
   return (
-    <Card className="flex flex-col justify-between border-stone-200/80 shadow-2xs hover:border-stone-300 transition-all bg-white rounded-xl overflow-hidden">
+    <Card className="flex flex-col justify-between border border-stone-200/80 shadow-2xs hover:border-stone-300 transition-all bg-white rounded-xl overflow-hidden">
       <CardHeader className="p-4.5 pb-3">
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-start gap-3">
@@ -290,33 +265,33 @@ export function IntegrationCard({
           </div>
           <div className="flex items-center gap-1.5">
             {renderStatusBadge(integration.status)}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-7 w-7 text-stone-400 hover:text-stone-700">
-                  <MoreVertical className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48 text-xs font-sans">
-                <DropdownMenuItem onClick={() => onConfigure(integration)} className="cursor-pointer gap-2">
-                  <Settings className="h-3.5 w-3.5 text-stone-600" />
-                  Configure Credentials
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => onTest(integration.id)}
-                  disabled={isTesting}
-                  className="cursor-pointer gap-2"
-                >
-                  <Activity className="h-3.5 w-3.5 text-stone-600" />
-                  Test Handshake
-                </DropdownMenuItem>
-                {integration.type === "webhook" && (
-                  <DropdownMenuItem onClick={copyWebhookUrl} className="cursor-pointer gap-2">
-                    <Copy className="h-3.5 w-3.5 text-stone-600" />
-                    Copy Ingestion URL
+            {isConnected && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-7 w-7 text-stone-400 hover:text-stone-700">
+                    <MoreVertical className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48 text-xs font-sans">
+                  <DropdownMenuItem onClick={() => onConfigure(integration)} className="cursor-pointer gap-2">
+                    <Settings className="h-3.5 w-3.5 text-stone-600" />
+                    Configure Credentials
                   </DropdownMenuItem>
-                )}
-                <DropdownMenuSeparator />
-                {isConnected ? (
+                  <DropdownMenuItem
+                    onClick={() => onTest(integration.id)}
+                    disabled={isTesting}
+                    className="cursor-pointer gap-2"
+                  >
+                    <Activity className="h-3.5 w-3.5 text-stone-600" />
+                    Test Handshake
+                  </DropdownMenuItem>
+                  {integration.type === "webhook" && (
+                    <DropdownMenuItem onClick={copyWebhookUrl} className="cursor-pointer gap-2">
+                      <Copy className="h-3.5 w-3.5 text-stone-600" />
+                      Copy Ingestion URL
+                    </DropdownMenuItem>
+                  )}
+                  <DropdownMenuSeparator />
                   <DropdownMenuItem
                     onClick={() => onDisconnect(integration.id)}
                     className="cursor-pointer text-rose-600 focus:text-rose-700 focus:bg-rose-50 gap-2"
@@ -324,18 +299,9 @@ export function IntegrationCard({
                     <Power className="h-3.5 w-3.5" />
                     Disconnect Service
                   </DropdownMenuItem>
-                ) : (
-                  <DropdownMenuItem
-                    onClick={() => onReconnect(integration.id)}
-                    disabled={isReconnecting}
-                    className="cursor-pointer text-emerald-700 focus:text-emerald-800 focus:bg-emerald-50 gap-2"
-                  >
-                    <RefreshCw className="h-3.5 w-3.5" />
-                    Attempt Reconnect
-                  </DropdownMenuItem>
-                )}
-              </DropdownMenuContent>
-            </DropdownMenu>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
           </div>
         </div>
       </CardHeader>
@@ -345,22 +311,25 @@ export function IntegrationCard({
           {integration.description}
         </p>
 
-        {/* Security & Credentials Pill Container */}
+        {/* Security & Credentials / Account Pill Container */}
         <div className="flex items-center justify-between p-2.5 rounded-lg bg-stone-50/80 border border-stone-200/70">
           <div className="flex items-center gap-1.5 text-stone-600">
             <Lock className="h-3.5 w-3.5 text-stone-400" />
-            <span className="text-[11px] font-medium">Access Key:</span>
+            <span className="text-[11px] font-medium">
+              {isGoogle ? "Linked Account:" : "Access Key:"}
+            </span>
           </div>
-          {integration.hasCredentials ? (
+
+          {isConnected ? (
             <div className="flex items-center gap-1.5">
               <span className="font-mono text-[11px] text-stone-800 bg-white px-2 py-0.5 rounded border border-stone-200 shadow-2xs font-semibold">
-                {integration.maskedKey}
+                {integration.maskedKey || (isGoogle ? "Google Workspace" : "Live Key")}
               </span>
               <ShieldCheck className="h-3.5 w-3.5 text-emerald-600 shrink-0" />
             </div>
           ) : (
-            <span className="text-[11px] text-amber-800 font-medium bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
-              Credentials Required
+            <span className="text-[11px] text-stone-500 font-medium bg-stone-100 px-2 py-0.5 rounded border border-stone-200">
+              {isGoogle ? "Awaiting Google Sign-In" : "Credentials Required"}
             </span>
           )}
         </div>
@@ -381,61 +350,121 @@ export function IntegrationCard({
         {/* Diagnostic health summary row */}
         <div className="flex items-center justify-between pt-1 border-t border-stone-100 text-[11px]">
           <div className="flex items-center gap-2">
-            {renderHealthIndicator(integration.healthStatus, integration.latencyMs)}
+            {isConnected ? (
+              renderHealthIndicator(integration.healthStatus, integration.latencyMs)
+            ) : (
+              <span className="inline-flex items-center gap-1.5 text-stone-500 text-xs font-medium">
+                <span className="h-2 w-2 rounded-full bg-stone-300" />
+                Untested
+              </span>
+            )}
           </div>
           <span className="text-stone-400 text-[10px]">
-            Checked: {formattedLastTested}
+            {isConnected
+              ? `Checked: ${formattedLastTested}`
+              : isGoogle
+              ? "Free/Busy Clash Detection"
+              : "Ready to connect"}
           </span>
         </div>
       </CardContent>
 
       <CardFooter className="p-3 px-4.5 border-t border-stone-100 bg-stone-50/40 rounded-b-xl flex items-center justify-between gap-2">
-        {isErrorOrDisconnected ? (
+        {isConnected ? (
+          <>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onTest(integration.id)}
+              disabled={isTesting}
+              className="h-8 text-xs text-stone-700 border-stone-200 bg-white hover:bg-stone-50 font-medium gap-1.5 flex-1 shadow-2xs cursor-pointer"
+            >
+              <RefreshCw className={`h-3 w-3 text-stone-500 ${isTesting ? "animate-spin" : ""}`} />
+              {isTesting ? "Validating..." : "Test Health"}
+            </Button>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onConfigure(integration)}
+              className="h-8 px-2.5 text-xs text-stone-700 border-stone-200 bg-white hover:bg-stone-50 font-medium gap-1.5 shadow-2xs cursor-pointer"
+              title="Configure Credentials"
+            >
+              <Settings className="h-3.5 w-3.5 text-stone-500" />
+              <span>Config</span>
+            </Button>
+
+            {integration.type === "webhook" && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={copyWebhookUrl}
+                className="h-8 px-2.5 text-xs text-stone-600 hover:text-stone-900 hover:bg-stone-100 font-medium gap-1 cursor-pointer"
+                title="Copy Webhook Endpoint"
+              >
+                {copied ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
+                <span>{copied ? "Copied" : "URL"}</span>
+              </Button>
+            )}
+          </>
+        ) : isError ? (
           <Button
             variant="outline"
             size="sm"
             onClick={() => onReconnect(integration.id)}
             disabled={isReconnecting}
-            className="h-8 text-xs border-amber-300 text-amber-900 bg-amber-50/70 hover:bg-amber-100 font-medium gap-1.5 flex-1 shadow-2xs"
+            className="h-8 text-xs border-amber-300 text-amber-900 bg-amber-50/70 hover:bg-amber-100 font-medium gap-1.5 flex-1 shadow-2xs cursor-pointer"
           >
             <RefreshCw className={`h-3.5 w-3.5 text-amber-700 ${isReconnecting ? "animate-spin" : ""}`} />
             {isReconnecting ? "Reconnecting..." : "Reconnect"}
           </Button>
+        ) : isGoogle ? (
+          <Button
+            size="sm"
+            onClick={onConnectGoogle}
+            disabled={isConnectingGoogle}
+            className="h-8 text-xs font-semibold gap-2 flex-1 bg-stone-900 text-white hover:bg-stone-800 transition-colors shadow-2xs cursor-pointer"
+          >
+            {isConnectingGoogle ? (
+              <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <GoogleGIcon className="h-3.5 w-3.5 shrink-0" />
+            )}
+            <span>{isConnectingGoogle ? "Connecting..." : "Connect Google Calendar"}</span>
+          </Button>
         ) : (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => onTest(integration.id)}
-            disabled={isTesting}
-            className="h-8 text-xs text-stone-700 border-stone-200 bg-white hover:bg-stone-50 font-medium gap-1.5 flex-1 shadow-2xs"
-          >
-            <RefreshCw className={`h-3 w-3 text-stone-500 ${isTesting ? "animate-spin" : ""}`} />
-            {isTesting ? "Validating..." : "Test Health"}
-          </Button>
-        )}
-
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => onConfigure(integration)}
-          className="h-8 px-2.5 text-xs text-stone-700 border-stone-200 bg-white hover:bg-stone-50 font-medium gap-1.5 shadow-2xs"
-          title="Configure Credentials"
-        >
-          <Settings className="h-3.5 w-3.5 text-stone-500" />
-          <span>Config</span>
-        </Button>
-
-        {integration.type === "webhook" && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={copyWebhookUrl}
-            className="h-8 px-2.5 text-xs text-stone-600 hover:text-stone-900 hover:bg-stone-100 font-medium gap-1"
-            title="Copy Webhook Endpoint"
-          >
-            {copied ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
-            <span>{copied ? "Copied" : "URL"}</span>
-          </Button>
+          <>
+            <Button
+              size="sm"
+              onClick={() => onConfigure(integration)}
+              className="h-8 text-xs font-semibold gap-1.5 flex-1 bg-stone-900 text-white hover:bg-stone-800 transition-colors shadow-2xs cursor-pointer"
+            >
+              <Plug className="h-3.5 w-3.5" />
+              <span>Connect Service</span>
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onConfigure(integration)}
+              className="h-8 px-2.5 text-xs text-stone-700 border-stone-200 bg-white hover:bg-stone-50 font-medium gap-1.5 shadow-2xs cursor-pointer"
+              title="Configure Credentials"
+            >
+              <Settings className="h-3.5 w-3.5 text-stone-500" />
+              <span>Config</span>
+            </Button>
+            {integration.type === "webhook" && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={copyWebhookUrl}
+                className="h-8 px-2.5 text-xs text-stone-600 hover:text-stone-900 hover:bg-stone-100 font-medium gap-1 cursor-pointer"
+                title="Copy Webhook Endpoint"
+              >
+                {copied ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
+                <span>{copied ? "Copied" : "URL"}</span>
+              </Button>
+            )}
+          </>
         )}
       </CardFooter>
     </Card>
