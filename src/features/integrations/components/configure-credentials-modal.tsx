@@ -229,19 +229,19 @@ export function ConfigureCredentialsModal({
     switch (integration.type) {
       case "webhook":
         return (
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-100/80 shrink-0">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-stone-100 text-stone-700 border border-stone-200/80 shrink-0">
             <Webhook className="h-5 w-5" />
           </div>
         );
       case "property_db":
         return (
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-sky-50 text-sky-800 border border-sky-100/80 shrink-0">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-stone-100 text-stone-700 border border-stone-200/80 shrink-0">
             <Database className="h-5 w-5" />
           </div>
         );
       case "crm":
         return (
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-orange-50 text-orange-800 border border-orange-100/80 shrink-0">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-stone-100 text-stone-700 border border-stone-200/80 shrink-0">
             <Building2 className="h-5 w-5" />
           </div>
         );
@@ -287,7 +287,7 @@ export function ConfigureCredentialsModal({
         <form onSubmit={handleSubmit} className="p-5 space-y-4 max-h-[75vh] overflow-y-auto">
           {/* Security Banner */}
           <div className="rounded-lg border border-stone-200 bg-stone-50/70 p-3 text-xs text-stone-700 flex items-start gap-2.5">
-            <ShieldCheck className="h-4 w-4 text-[#0d4a36] shrink-0 mt-0.5" />
+            <ShieldCheck className="h-4 w-4 text-stone-600 shrink-0 mt-0.5" />
             <div className="space-y-0.5">
               <span className="font-semibold text-stone-900">Zero-Trust Encrypted Storage</span>
               <p className="text-[11px] text-stone-500 leading-normal">
@@ -565,7 +565,7 @@ export function ConfigureCredentialsModal({
                         className={cn(
                           "p-2.5 rounded-lg border text-left text-xs transition-all cursor-pointer",
                           formData.syncMode === "realtime"
-                            ? "border-[#0d4a36] bg-emerald-50/30 text-stone-900 font-semibold"
+                            ? "border-stone-900 bg-stone-100/80 text-stone-900 font-semibold"
                             : "border-stone-200 bg-white text-stone-600 hover:bg-stone-50"
                         )}
                       >
@@ -578,7 +578,7 @@ export function ConfigureCredentialsModal({
                         className={cn(
                           "p-2.5 rounded-lg border text-left text-xs transition-all cursor-pointer",
                           formData.syncMode === "interval"
-                            ? "border-[#0d4a36] bg-emerald-50/30 text-stone-900 font-semibold"
+                            ? "border-stone-900 bg-stone-100/80 text-stone-900 font-semibold"
                             : "border-stone-200 bg-white text-stone-600 hover:bg-stone-50"
                         )}
                       >
@@ -699,7 +699,7 @@ export function ConfigureCredentialsModal({
                 type="checkbox"
                 checked={testImmediately}
                 onChange={(e) => setTestImmediately(e.target.checked)}
-                className="h-4 w-4 rounded border-stone-300 text-[#0d4a36] focus:ring-[#0d4a36] accent-[#0d4a36]"
+                className="h-4 w-4 rounded border-stone-300 text-stone-900 focus:ring-stone-900 accent-stone-900"
               />
               <span>Test connection handshake immediately on save</span>
             </label>
@@ -721,7 +721,7 @@ export function ConfigureCredentialsModal({
               type="submit"
               size="sm"
               disabled={isSaving}
-              className="text-xs h-8 shadow-2xs font-medium gap-1.5 bg-[#0d4a36] hover:bg-[#0a3829] text-white"
+              className="text-xs h-8 shadow-2xs font-medium gap-1.5 bg-stone-900 hover:bg-stone-800 text-white rounded-md cursor-pointer"
             >
               {isSaving ? (
                 <>

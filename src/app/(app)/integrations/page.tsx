@@ -643,7 +643,7 @@ export default function IntegrationsPage() {
         <CardHeader className="pb-3 border-b border-stone-100">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#0d4a36]/10 text-[#0d4a36]">
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-stone-100 text-stone-700 border border-stone-200/80">
                 <Database className="h-4 w-4" />
               </div>
               <div>
@@ -717,44 +717,44 @@ export default function IntegrationsPage() {
 
           {/* External PMS Gateway Endpoint Configuration Form */}
           {activeProvider === "mock_pms" ? (
-            <div className="p-3.5 rounded-lg border border-emerald-200/80 bg-emerald-50/30 space-y-3 animate-in fade-in duration-200">
+            <div className="p-4 rounded-xl border border-stone-200/90 bg-stone-50/60 space-y-3.5 animate-in fade-in duration-200">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <ShieldCheck className="h-4 w-4 text-emerald-700" />
+                  <Database className="h-4 w-4 text-stone-600" />
                   <span className="text-xs font-semibold text-stone-900">
                     Connect External Property Database / PMS Gateway
                   </span>
                 </div>
-                <span className="text-[11px] text-stone-500 font-mono">
+                <span className="text-[10px] text-stone-500 font-mono bg-stone-100 px-2 py-0.5 rounded border border-stone-200/60">
                   GET /api/v1/properties
                 </span>
               </div>
-              <p className="text-[11px] text-stone-600 leading-relaxed">
+              <p className="text-xs text-stone-500 leading-relaxed">
                 Paste your external property inventory API endpoint and secret access key. Spacia queries this endpoint in real-time during AI calls to ground property specifications and check availability.
               </p>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-                <div className="space-y-1">
-                  <label className="text-[11px] font-medium text-stone-700">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-stone-700">
                     Database / PMS API Endpoint URL
                   </label>
                   <Input
                     type="text"
                     value={pmsEndpointUrl}
                     onChange={(e) => setPmsEndpointUrl(e.target.value)}
-                    className="h-8 text-xs font-mono bg-white border-stone-200"
+                    className="h-9 text-xs font-mono bg-white border-stone-200 focus-visible:ring-1 focus-visible:ring-stone-400 rounded-md"
                     placeholder="https://your-crm.com/api/properties"
                   />
                 </div>
-                <div className="space-y-1">
-                  <label className="text-[11px] font-medium text-stone-700">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-stone-700">
                     Bearer Token / API Authorization Key
                   </label>
                   <Input
                     type="password"
                     value={pmsApiKey}
                     onChange={(e) => setPmsApiKey(e.target.value)}
-                    className="h-8 text-xs font-mono bg-white border-stone-200"
+                    className="h-9 text-xs font-mono bg-white border-stone-200 focus-visible:ring-1 focus-visible:ring-stone-400 rounded-md"
                     placeholder={
                       propertyDbItem?.hasCredentials
                         ? propertyDbItem.maskedKey || "pms_sec_••••••••••••"
@@ -764,15 +764,15 @@ export default function IntegrationsPage() {
                 </div>
               </div>
 
-              <div className="flex items-center justify-between pt-1">
-                <span className="text-[10px] text-stone-500">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pt-1">
+                <span className="text-[11px] text-stone-400">
                   Supported formats: REST JSON, Supabase PostgREST, HubSpot Listings, Salesforce PropertyBase.
                 </span>
                 <Button
                   size="sm"
                   onClick={handleSaveAndProbePms}
                   disabled={isProbing}
-                  className="h-7 text-xs bg-[#0d4a36] hover:bg-[#0a3829] text-white font-medium gap-1.5 shadow-2xs"
+                  className="h-8 px-3 text-xs bg-stone-900 hover:bg-stone-800 text-white font-medium gap-1.5 shadow-2xs rounded-md cursor-pointer shrink-0"
                 >
                   <RefreshCw className={`h-3 w-3 ${isProbing ? "animate-spin" : ""}`} />
                   {isProbing ? "Validating Handshake..." : "Save & Validate Handshake"}
@@ -780,14 +780,14 @@ export default function IntegrationsPage() {
               </div>
             </div>
           ) : (
-            <div className="p-3 rounded-lg border border-stone-200 bg-stone-50/50 flex items-center justify-between text-xs text-stone-600">
-              <div className="flex items-center gap-2">
-                <Database className="h-4 w-4 text-[#0d4a36]" />
+            <div className="p-3.5 rounded-xl border border-stone-200/90 bg-stone-50/60 flex items-center justify-between text-xs text-stone-600">
+              <div className="flex items-center gap-2.5">
+                <Database className="h-4 w-4 text-stone-600" />
                 <span>
-                  Using <strong>Native Neon DB</strong>: Property inventory is securely stored and managed in Spacia’s multi-tenant database.
+                  Using <strong className="text-stone-900 font-semibold">Native Neon DB</strong>: Property inventory is securely stored and managed in Spacia’s multi-tenant database.
                 </span>
               </div>
-              <Badge variant="outline" className="text-[10px] bg-white border-stone-200 text-stone-700">
+              <Badge variant="outline" className="text-[11px] bg-white border-stone-200 text-stone-700 shadow-2xs">
                 12 Normalized Listings
               </Badge>
             </div>
