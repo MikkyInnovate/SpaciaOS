@@ -167,6 +167,18 @@ export default function TeamPage() {
     }
   };
 
+  const handleResendInvite = async (member: TeamMember) => {
+    try {
+      const result = await teamService.resendInvite(member.id);
+      toast.success(
+        result.message ||
+          `Invitation email resent to ${member.user.email || member.invitedEmail}.`
+      );
+    } catch (err: any) {
+      toast.error(err.message || "Failed to resend invitation email.");
+    }
+  };
+
   return (
     <Container size="lg" className="space-y-4">
       {/* Header matching dashboard/page.tsx standard */}
@@ -240,6 +252,7 @@ export default function TeamPage() {
         onEditRole={(member) => setEditingRoleMember(member)}
         onToggleStatus={handleToggleStatus}
         onRemoveMember={(member) => setRemovingMember(member)}
+        onResendInvite={handleResendInvite}
       />
 
       {/* Modals & Drawers */}

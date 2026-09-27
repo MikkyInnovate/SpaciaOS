@@ -105,7 +105,9 @@ export function InviteMemberModal({
       }
 
       const invited = await teamService.inviteMember(payload);
-      toast.success(`Invitation sent to ${email} as ${role}.`);
+      toast.success(
+        `Invitation sent to ${email}. An email invite has been dispatched.`
+      );
       onMemberInvited(invited);
       onOpenChange(false);
 
@@ -138,7 +140,7 @@ export function InviteMemberModal({
                   Invite Team Member
                 </DialogTitle>
                 <DialogDescription className="text-xs text-stone-500">
-                  Add a new luxury broker, operations administrator, or partner to your workspace.
+                  Send an email invitation with a secure workspace onboarding link and role permissions.
                 </DialogDescription>
               </div>
             </div>

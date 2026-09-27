@@ -33,6 +33,7 @@ import {
   UserCheck,
   UserX,
   Trash2,
+  Send,
 } from "lucide-react";
 import type { TeamMember, WorkspaceRole } from "../types";
 
@@ -43,6 +44,7 @@ export interface TeamMemberTableProps {
   onEditRole?: (member: TeamMember) => void;
   onToggleStatus?: (member: TeamMember) => void;
   onRemoveMember?: (member: TeamMember) => void;
+  onResendInvite?: (member: TeamMember) => void;
 }
 
 export function TeamMemberTable({
@@ -52,6 +54,7 @@ export function TeamMemberTable({
   onEditRole,
   onToggleStatus,
   onRemoveMember,
+  onResendInvite,
 }: TeamMemberTableProps) {
   const getRoleBadge = (role: WorkspaceRole) => {
     switch (role) {
@@ -72,8 +75,8 @@ export function TeamMemberTable({
   const getMemberStatusString = (status: string) => {
     if (status === "active") return "Active";
     if (status === "suspended") return "Offline";
-    if (status === "pending") return "Pending";
-    return "Contacting";
+    if (status === "pending" || status === "invited") return "Pending";
+    return "Pending";
   };
 
   return (
@@ -251,7 +254,18 @@ export function TeamMemberTable({
                   {/* Action Column matching lead-intake-table standard */}
                   <TableCell className="text-right whitespace-nowrap">
                     <div className="flex items-center justify-end gap-1.5">
-                      {member.agent ? (
+                      {member.status === "invited" || member.status === "pending" ? (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-7.5 px-2.5 text-xs gap-1.5 whitespace-nowrap cursor-pointer hover:bg-amber-50/80 border-amber-200/90 bg-amber-50/40 text-amber-800"
+                          onClick={() => onResendInvite?.(member)}
+                          title="Resend workspace invitation email"
+                        >
+                          <Send className="h-3 w-3 text-amber-600 shrink-0" />
+                          <span>Resend</span>
+                        </Button>
+                      ) : member.agent ? (
                         <Button
                           size="sm"
                           variant="outline"
@@ -283,10 +297,19 @@ export function TeamMemberTable({
                             <MoreHorizontal className="h-3.5 w-3.5" />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-48">
+                        <DropdownMenuContent align="end" className="w-52">
                           <DropdownMenuLabel className="text-xs font-semibold text-stone-500">
                             Member Actions
                           </DropdownMenuLabel>
+                          {(member.status === "invited" || member.status === "pending") && (
+                            <DropdownMenuItem
+                              onClick={() => onResendInvite?.(member)}
+                              className="text-xs cursor-pointer gap-2 text-stone-800 hover:text-stone-900"
+                            >
+                              <Send className="h-3.5 w-3.5 text-amber-600" />
+                              <span>Resend Invite Email</span>
+                            </DropdownMenuItem>
+                          )}
                           {member.agent && (
                             <DropdownMenuItem
                               onClick={() => onSelectAgent?.(member)}
