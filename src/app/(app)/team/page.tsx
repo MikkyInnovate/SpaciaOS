@@ -4,7 +4,6 @@ import * as React from "react";
 import { Container } from "@/components/layout/container";
 import { PageHeader } from "@/components/layout/page-header";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { useWorkspace } from "@/lib/context/workspace-context";
 import {
@@ -18,14 +17,7 @@ import {
 } from "@/features/team";
 import type { TeamMember, TeamStats, RoleDefinition } from "@/features/team/types";
 import { toast } from "sonner";
-import {
-  UserPlus,
-  RefreshCw,
-  Search,
-  Users,
-  Shield,
-  Filter,
-} from "lucide-react";
+import { UserPlus, RefreshCw, Building2 } from "lucide-react";
 
 export default function TeamPage() {
   const { currentWorkspace } = useWorkspace();
@@ -36,10 +28,9 @@ export default function TeamPage() {
   const [isLoading, setIsLoading] = React.useState(true);
   const [isRefreshing, setIsRefreshing] = React.useState(false);
 
-  // Search & Filters
+  // Search & Filter state
   const [searchQuery, setSearchQuery] = React.useState("");
   const [roleFilter, setRoleFilter] = React.useState<string>("all");
-  const [statusFilter, setStatusFilter] = React.useState<string>("all");
 
   // Modals & Drawers state
   const [isInviteOpen, setIsInviteOpen] = React.useState(false);
@@ -73,33 +64,6 @@ export default function TeamPage() {
   React.useEffect(() => {
     loadTeamData();
   }, [loadTeamData, currentWorkspace?.id]);
-
-  // Filter members
-  const filteredMembers = React.useMemo(() => {
-    return members.filter((member) => {
-      const fullName = [member.user.firstName, member.user.lastName]
-        .filter(Boolean)
-        .join(" ") || member.agent?.name || "";
-      const email = member.user.email || member.invitedEmail || "";
-      const territory = member.agent?.territory || "";
-
-      const matchesSearch =
-        searchQuery === "" ||
-        fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        territory.toLowerCase().includes(searchQuery.toLowerCase());
-
-      const matchesRole =
-        roleFilter === "all" ||
-        (roleFilter === "brokers" && (member.role === "sales_agent" || member.role === "sales_manager")) ||
-        member.role === roleFilter;
-
-      const matchesStatus =
-        statusFilter === "all" || member.status === statusFilter;
-
-      return matchesSearch && matchesRole && matchesStatus;
-    });
-  }, [members, searchQuery, roleFilter, statusFilter]);
 
   // Handlers
   const handleMemberInvited = (newMember: TeamMember) => {
@@ -154,33 +118,42 @@ export default function TeamPage() {
   };
 
   return (
-    <Container size="lg" className="space-y-6">
-      {/* Header */}
+    <Container size="lg" className="space-y-4">
+      {/* Header matching dashboard/page.tsx standard */}
       <PageHeader
         title="Team & Governance"
-        description={`Manage luxury brokers, operations admins, role permissions, and automated lead routing rules for ${
-          currentWorkspace?.name || "Spacia Luxury Real Estate"
-        }.`}
+        description="Luxury brokerage sales roster, lead routing dispatch rules, and role-based access control."
         actions={
           <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 h-8 rounded-md border border-stone-200 bg-white px-2.5 text-xs font-medium text-stone-700 shadow-2xs whitespace-nowrap">
+              <Building2 className="h-3.5 w-3.5 text-stone-400 shrink-0" aria-hidden="true" />
+              <span>{currentWorkspace?.name || "Spacia Luxury Hub"}</span>
+            </div>
+
+            <div className="flex items-center gap-1.5 h-8 rounded-md border border-stone-200 bg-white px-2.5 text-xs font-medium text-stone-700 shadow-2xs whitespace-nowrap">
+              <span className="h-1.5 w-1.5 rounded-full bg-emerald-600 shrink-0 animate-pulse" />
+              <span>Team: Active</span>
+            </div>
+
             <Button
               variant="outline"
               size="sm"
               onClick={() => loadTeamData(true)}
               disabled={isRefreshing || isLoading}
-              className="text-xs h-8 cursor-pointer bg-white"
+              className="h-8 gap-1.5 text-xs text-stone-700 bg-white shadow-2xs whitespace-nowrap hover:bg-stone-50 cursor-pointer"
             >
               <RefreshCw
-                className={`h-3.5 w-3.5 mr-1.5 text-stone-500 ${
+                className={`h-3.5 w-3.5 text-stone-400 shrink-0 ${
                   isRefreshing ? "animate-spin" : ""
                 }`}
               />
               <span>Refresh</span>
             </Button>
+
             <Button
               size="sm"
               onClick={() => setIsInviteOpen(true)}
-              className="text-xs h-8 bg-[#0d4a36] hover:bg-[#0a3a2b] text-white cursor-pointer gap-1.5 shadow-2xs"
+              className="h-8 gap-1.5 text-xs bg-[#0d4a36] hover:bg-[#0a3a2b] text-white shadow-2xs whitespace-nowrap cursor-pointer"
             >
               <UserPlus className="h-3.5 w-3.5" />
               <span>Invite Member</span>
@@ -189,72 +162,17 @@ export default function TeamPage() {
         }
       />
 
-      {/* KPI Stats Strip */}
+      {/* 4 Prioritized KPI Metric Cards */}
       <TeamStatsStrip stats={stats} isLoading={isLoading} />
 
-      {/* Toolbar & Filter Bar */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-white p-3 rounded-lg border border-border shadow-2xs">
-        <div className="flex items-center gap-2 flex-1 max-w-md">
-          <div className="relative w-full">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-stone-400" />
-            <Input
-              placeholder="Search by name, email, or territory..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-8 text-xs h-8.5 bg-stone-50/50"
-            />
-          </div>
-        </div>
-
-        {/* Filter Pills */}
-        <div className="flex items-center gap-2 overflow-x-auto">
-          <div className="flex items-center rounded-lg border border-stone-200 bg-stone-50/80 p-0.5">
-            {[
-              { id: "all", label: "All Members" },
-              { id: "brokers", label: "Luxury Brokers" },
-              { id: "admin", label: "Admins" },
-              { id: "owner", label: "Owners" },
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setRoleFilter(tab.id)}
-                className={`px-2.5 py-1 text-xs rounded-md font-medium transition-colors cursor-pointer ${
-                  roleFilter === tab.id
-                    ? "bg-white text-stone-900 shadow-2xs"
-                    : "text-stone-600 hover:text-stone-900"
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
-
-          <div className="flex items-center rounded-lg border border-stone-200 bg-stone-50/80 p-0.5">
-            {[
-              { id: "all", label: "All States" },
-              { id: "active", label: "Active" },
-              { id: "suspended", label: "Suspended" },
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setStatusFilter(tab.id)}
-                className={`px-2.5 py-1 text-xs rounded-md font-medium transition-colors cursor-pointer ${
-                  statusFilter === tab.id
-                    ? "bg-white text-stone-900 shadow-2xs"
-                    : "text-stone-600 hover:text-stone-900"
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Team Roster Table */}
+      {/* Team Roster Table with integrated header, search, and segmented filters */}
       <TeamMemberTable
-        members={filteredMembers}
+        members={members}
         isLoading={isLoading}
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        roleFilter={roleFilter}
+        onRoleFilterChange={setRoleFilter}
         onSelectAgent={(member) => setSelectedAgentMember(member)}
         onEditRole={(member) => setEditingRoleMember(member)}
         onToggleStatus={handleToggleStatus}
