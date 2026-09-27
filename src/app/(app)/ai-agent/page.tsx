@@ -15,8 +15,10 @@ import {
   PlayCircle,
   Radio,
   Sliders,
+  Building2,
 } from "lucide-react";
 import { toast } from "sonner";
+import { useWorkspace } from "@/lib/context/workspace-context";
 import { StatMetricCard } from "@/features/dashboard/components/stat-metric-card";
 import {
   aiAgentService,
@@ -31,6 +33,7 @@ import {
 import { cn } from "@/lib/utils/cn";
 
 export default function AiAgentPage() {
+  const { currentWorkspace } = useWorkspace();
   const [isLoading, setIsLoading] = React.useState(true);
   // State slices
   const [telemetry, setTelemetry] = React.useState<AIAgentStatusTelemetry | null>(null);
@@ -195,6 +198,12 @@ export default function AiAgentPage() {
         description="Autonomous prospect response, qualification, and viewing pipeline."
         actions={
           <div className="flex items-center gap-2">
+            {/* Workspace Identifier matching Homepage */}
+            <div className="flex items-center gap-1.5 h-8 rounded-md border border-stone-200 bg-white px-2.5 text-xs font-medium text-stone-700 shadow-2xs whitespace-nowrap">
+              <Building2 className="h-3.5 w-3.5 text-stone-400 shrink-0" aria-hidden="true" />
+              <span>{currentWorkspace?.name || "Spacia Luxury Hub"}</span>
+            </div>
+
             {/* AI Status Indicator Pill - High visual bang when paused */}
             {telemetry.isOutboundPaused ? (
               <div className="flex items-center gap-1.5 h-8 rounded-md border border-rose-300 bg-rose-50 px-2.5 text-xs font-semibold text-rose-800 shadow-2xs whitespace-nowrap">
@@ -236,46 +245,68 @@ export default function AiAgentPage() {
         }
       />
 
-      {/* 2. Top Metric Row (exact match to 5 StatMetricCards on Homepage) */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
+      {/* 2. Top Metric Row (exact match to 4 StatMetricCards on Homepage) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* 1. VOICE CALLS */}
         <StatMetricCard
-          title="ACTIVE CONCURRENCY"
-          value={`${telemetry.activeLines} / ${telemetry.maxConcurrency}`}
-          subtext={telemetry.isOutboundPaused ? "Outbound held by operator" : "Max concurrent channel capacity"}
-          icon={PhoneCall}
-          badge={telemetry.isOutboundPaused ? "Standby" : `${Math.round((telemetry.activeLines / telemetry.maxConcurrency) * 100)}% Load`}
-        />
-
-        <StatMetricCard
-          title="AVG RESPONSE LATENCY"
-          value={`${telemetry.averageLatencyMs}ms`}
-          subtext="Sub-second neural turnaround"
-          icon={Zap}
-          badge="Ultra-Low"
-        />
-
-        <StatMetricCard
-          title="CALLS TODAY"
-          value={telemetry.callsHandledToday}
-          trend={{ value: "+18.4%", isPositive: true }}
-          subtext="Autonomous outbound & intake"
+          title="Voice Calls"
+          value={telemetry.callsToday ?? telemetry.callsHandledToday ?? 0}
+          subtext={
+            telemetry.totalCalls
+              ? `${telemetry.callsToday ?? 0} placed today · ${telemetry.totalCalls} total in workspace`
+              : "0 calls placed today"
+          }
+          trend={{
+            value: `+${telemetry.callsToday ?? 0} today`,
+            isPositive: true,
+          }}
           icon={Bot}
+          variant="sky"
         />
 
+        {/* 2. QUALIFIED INTENT */}
         <StatMetricCard
-          title="QUALIFIED INTENT"
+          title="Qualified Intent"
           value={`${telemetry.qualificationRate}%`}
-          trend={{ value: "+12.1%", isPositive: true }}
-          subtext="Verified BANT readiness"
+          subtext={
+            telemetry.totalLeads
+              ? `${telemetry.qualifiedLeads ?? 4} of ${telemetry.totalLeads ?? 4} verified leads`
+              : "BANT qualification active"
+          }
+          badge="BANT Verified"
           icon={CheckCircle2}
+          variant="emerald"
         />
 
+        {/* 3. ACTIVE CONCURRENCY */}
         <StatMetricCard
-          title="BOOKED VIEWINGS"
-          value={telemetry.bookedAppointmentsToday}
-          trend={{ value: "+3 today", isPositive: true }}
-          subtext="Agent confirmed calendar"
+          title="Active Concurrency"
+          value={`${telemetry.activeLines} / ${telemetry.maxConcurrency}`}
+          subtext={
+            telemetry.isOutboundPaused
+              ? "Outbound paused by operator"
+              : `${telemetry.averageLatencyMs}ms neural latency`
+          }
+          badge={telemetry.isOutboundPaused ? "Standby" : "Operational"}
+          icon={PhoneCall}
+          variant="indigo"
+        />
+
+        {/* 4. BOOKED VIEWINGS */}
+        <StatMetricCard
+          title="Booked Viewings"
+          value={telemetry.appointmentsToday ?? telemetry.bookedAppointmentsToday ?? 0}
+          subtext={
+            telemetry.totalAppointments
+              ? `${telemetry.appointmentsToday ?? 0} booked today · ${telemetry.totalAppointments} total viewings`
+              : "0 viewings booked today"
+          }
+          trend={{
+            value: `+${telemetry.appointmentsToday ?? 0} today`,
+            isPositive: true,
+          }}
           icon={CalendarCheck}
+          variant="amber"
         />
       </div>
 

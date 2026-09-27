@@ -106,14 +106,25 @@ export function RevenuePathStepper({
 
   if (isLoading || !data) {
     return (
-      <Card className="bg-white border-border shadow-2xs">
-        <CardHeader>
-          <div className="h-6 w-52 bg-stone-100 rounded animate-pulse" />
-          <div className="h-4 w-80 bg-stone-100 rounded animate-pulse" />
+      <Card className="bg-white border-stone-200 shadow-2xs">
+        <CardHeader className="border-b border-stone-100 pb-5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="space-y-1.5">
+              <div className="h-5 w-40 bg-stone-200/80 rounded animate-pulse" />
+              <div className="h-3.5 w-64 bg-stone-100 rounded animate-pulse" />
+            </div>
+            <div className="h-9 w-44 bg-stone-100 rounded-xl animate-pulse" />
+          </div>
+          <div className="inline-flex items-center gap-1 bg-stone-100 p-1 rounded-lg border border-stone-200/80 mt-4 animate-pulse">
+            <div className="h-6 w-16 bg-stone-200/80 rounded-md" />
+            <div className="h-6 w-24 bg-stone-200/60 rounded-md" />
+            <div className="h-6 w-24 bg-stone-200/60 rounded-md" />
+            <div className="h-6 w-24 bg-stone-200/60 rounded-md" />
+          </div>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-3 pt-6 pb-6">
           {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div key={i} className="h-20 bg-stone-100 rounded-xl animate-pulse" />
+            <div key={i} className="h-16 bg-stone-100/80 border border-stone-200/50 rounded-xl animate-pulse" />
           ))}
         </CardContent>
       </Card>
@@ -136,7 +147,7 @@ export function RevenuePathStepper({
               Sales Pipeline
             </CardTitle>
             <CardDescription className="text-xs text-stone-500 mt-1">
-              Full journey from website enquiry to broker handoff
+              Live Neon PostgreSQL operational throughput across all 17 sales milestones
             </CardDescription>
           </div>
 

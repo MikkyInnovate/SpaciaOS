@@ -18,9 +18,9 @@ export function AIAgentSkeletonLoading() {
         </div>
       </div>
 
-      {/* 2. Top Metric Row Skeletons (5 cards matching StatMetricCards) */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
-        {[1, 2, 3, 4, 5].map((i) => (
+      {/* 2. Top Metric Row Skeletons (4 cards matching StatMetricCards) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {[1, 2, 3, 4].map((i) => (
           <div
             key={i}
             className="rounded-lg border border-border bg-white p-4.5 shadow-2xs space-y-3"

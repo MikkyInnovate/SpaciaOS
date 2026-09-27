@@ -343,6 +343,12 @@ export class AiConfigService {
     const config = await this.getOrCreateConfig(workspaceId);
     const inHours = this.isWithinBusinessHours(config);
 
+    const now = new Date();
+    const startOfToday = new Date(now);
+    startOfToday.setUTCHours(0, 0, 0, 0);
+    const endOfToday = new Date(now);
+    endOfToday.setUTCHours(23, 59, 59, 999);
+
     // 1. Calls count & active lines
     const calls = await this.db
       .select({
@@ -354,15 +360,30 @@ export class AiConfigService {
       .where(eq(schema.calls.workspaceId, workspaceId));
 
     const totalCalls = calls.length;
+    const callsToday = calls.filter(
+      (c) =>
+        c.createdAt &&
+        new Date(c.createdAt) >= startOfToday &&
+        new Date(c.createdAt) <= endOfToday
+    ).length;
     const activeLines = calls.filter((c) => c.isLive).length;
 
     // 2. Appointments count
     const appointments = await this.db
-      .select({ id: schema.appointments.id })
+      .select({
+        id: schema.appointments.id,
+        createdAt: schema.appointments.createdAt,
+      })
       .from(schema.appointments)
       .where(eq(schema.appointments.workspaceId, workspaceId));
 
     const totalAppointments = appointments.length;
+    const appointmentsToday = appointments.filter(
+      (a) =>
+        a.createdAt &&
+        new Date(a.createdAt) >= startOfToday &&
+        new Date(a.createdAt) <= endOfToday
+    ).length;
 
     // 3. Leads & Qualification rate
     const leads = await this.db
@@ -370,11 +391,19 @@ export class AiConfigService {
         id: schema.leads.id,
         status: schema.leads.status,
         score: schema.leads.score,
+        createdAt: schema.leads.createdAt,
       })
       .from(schema.leads)
       .where(eq(schema.leads.workspaceId, workspaceId));
 
     const totalLeads = leads.length;
+    const leadsToday = leads.filter(
+      (l) =>
+        l.createdAt &&
+        new Date(l.createdAt) >= startOfToday &&
+        new Date(l.createdAt) <= endOfToday
+    ).length;
+
     const qualifiedLeads = leads.filter(
       (l) =>
         l.status === "Qualified" ||
@@ -404,9 +433,16 @@ export class AiConfigService {
       activeLines: config.isActive ? activeLines : 0,
       maxConcurrency: 10,
       averageLatencyMs: 340,
-      callsHandledToday: totalCalls,
+      callsHandledToday: callsToday,
+      callsToday,
+      totalCalls,
       qualificationRate,
-      bookedAppointmentsToday: totalAppointments,
+      qualifiedLeads,
+      totalLeads,
+      leadsToday,
+      bookedAppointmentsToday: appointmentsToday,
+      appointmentsToday,
+      totalAppointments,
       lastTrainedAt: config.updatedAt
         ? "Synced to Workspace Config"
         : "Baseline Active",

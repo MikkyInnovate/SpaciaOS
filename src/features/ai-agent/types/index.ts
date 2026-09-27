@@ -33,6 +33,13 @@ export interface AIAgentStatusTelemetry {
   lastTrainedAt: string;
   isOutboundPaused: boolean;
   engineStatus?: "active" | "paused" | "offline";
+  callsToday?: number;
+  totalCalls?: number;
+  appointmentsToday?: number;
+  totalAppointments?: number;
+  leadsToday?: number;
+  totalLeads?: number;
+  qualifiedLeads?: number;
 }
 
 export interface AIAgentVoicePersona {
