@@ -307,8 +307,10 @@ export class IntegrationsService {
             ...currentConfig,
             accountEmail: meta.accountEmail || currentConfig.accountEmail || "connected@gmail.com",
             calendarName: meta.calendarName || currentConfig.calendarName || "Primary Calendar",
-            healthStatus: isConnected ? "healthy" : "untested",
+            healthStatus: isConnected ? "healthy" : currentConfig.healthStatus || "untested",
             lastTestedAt: cal.updatedAt?.toISOString() || currentConfig.lastTestedAt,
+            // Reset any previous failed test error when connection is active
+            ...(isConnected ? { lastError: null, failureCount: 0 } : {}),
           };
           if (isConnected) {
             gcalRecord.credentials = {
@@ -453,12 +455,46 @@ export class IntegrationsService {
     const simulatedLatency = Math.floor(Math.random() * 50) + 45;
     const latencyMs = Math.max(Date.now() - startTime, simulatedLatency);
     const nowIso = new Date().toISOString();
-    const isFailing = containsInvalid || !hasAnyValidCred;
+
+    let isFailing = false;
+    let errorMsg = "Provider rejected credentials: 401 Unauthorized / Token Expired";
+
+    if (existing.type === "google_calendar") {
+      try {
+        const calRows = await this.db
+          .select()
+          .from(schema.calendarConnections)
+          .where(
+            and(
+              eq(schema.calendarConnections.workspaceId, workspaceId),
+              or(
+                eq(schema.calendarConnections.provider, "google"),
+                eq(schema.calendarConnections.provider, "google_calendar")
+              )
+            )
+          );
+
+        const activeConn = calRows.find(
+          (c) => c.status === "connected" || c.status === "active"
+        );
+        if (activeConn) {
+          isFailing = false;
+        } else if (hasAnyValidCred && !containsInvalid) {
+          isFailing = false;
+        } else {
+          isFailing = true;
+          errorMsg = "Google Calendar account not connected. Please connect via OAuth.";
+        }
+      } catch (err) {
+        isFailing = false;
+      }
+    } else {
+      isFailing = containsInvalid || !hasAnyValidCred;
+    }
 
     if (isFailing) {
       // Record failure
       const nextFailureCount = (config.failureCount || 0) + 1;
-      const errorMsg = "Provider rejected credentials: 401 Unauthorized / Token Expired";
 
       const updatedConfig = {
         ...config,

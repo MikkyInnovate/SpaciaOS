@@ -18,6 +18,7 @@ import {
   UpdateMemberRoleDto,
   UpdateMemberStatusDto,
   UpdateAgentRoutingDto,
+  AcceptInvitationDto,
 } from "./dto/team.dto";
 import {
   TeamMemberResponse,
@@ -343,7 +344,17 @@ export class TeamService {
     } catch {}
 
     // 7. Dispatch invitation email via Resend
-    await this.sendInvitationEmail(normalizedEmail, firstName, dto.role);
+    let workspaceName = "Spacia Luxury Agency";
+    try {
+      const [ws] = await this.db
+        .select({ name: schema.workspaces.name })
+        .from(schema.workspaces)
+        .where(eq(schema.workspaces.id, tenant.workspaceId))
+        .limit(1);
+      if (ws?.name) workspaceName = ws.name;
+    } catch {}
+
+    await this.sendInvitationEmail(normalizedEmail, firstName, dto.role, workspaceName, createdMember.id);
 
     this.logger.log(
       `Invited member '${normalizedEmail}' as role '${dto.role}' in workspace '${tenant.workspaceId}'`
@@ -709,6 +720,14 @@ export class TeamService {
    */
   private async ensureSeedBrokers(workspaceId: string): Promise<void> {
     try {
+      if (
+        process.env.NODE_ENV !== "test" &&
+        !workspaceId.startsWith("ws_test_") &&
+        !workspaceId.startsWith("ws_day23_")
+      ) {
+        return;
+      }
+
       const existingAgents = await this.db
         .select({ id: schema.agents.id })
         .from(schema.agents)
@@ -813,7 +832,18 @@ export class TeamService {
       .limit(1);
 
     const firstName = user?.firstName || email.split("@")[0];
-    await this.sendInvitationEmail(email, firstName, member.role);
+
+    let workspaceName = "Spacia Luxury Agency";
+    try {
+      const [ws] = await this.db
+        .select({ name: schema.workspaces.name })
+        .from(schema.workspaces)
+        .where(eq(schema.workspaces.id, tenant.workspaceId))
+        .limit(1);
+      if (ws?.name) workspaceName = ws.name;
+    } catch {}
+
+    await this.sendInvitationEmail(email, firstName, member.role, workspaceName, member.id);
 
     return {
       success: true,
@@ -828,7 +858,8 @@ export class TeamService {
     toEmail: string,
     firstName: string,
     role: string,
-    workspaceName: string = "Spacia Luxury Agency"
+    workspaceName: string,
+    memberId?: string
   ): Promise<void> {
     if (!this.resendAdapter) return;
 
@@ -839,7 +870,10 @@ export class TeamService {
       sales_agent: "Licensed Luxury Broker",
     };
     const roleTitle = roleTitleMap[role] || "Team Member";
-    const inviteLink = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/sign-up?invitedEmail=${encodeURIComponent(toEmail)}`;
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+    const inviteLink = memberId
+      ? `${baseUrl}/invite/${memberId}`
+      : `${baseUrl}/sign-up?invitedEmail=${encodeURIComponent(toEmail)}`;
 
     const html = `
       <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 580px; margin: 0 auto; padding: 32px 24px; background: #ffffff; color: #1c1917; border: 1px solid #e7e5e4; border-radius: 12px;">
@@ -875,5 +909,188 @@ export class TeamService {
     } catch (err: any) {
       this.logger.warn(`[TeamService] Failed to dispatch invitation email to ${toEmail}: ${err.message}`);
     }
+  }
+
+  /**
+   * Public: Retrieve invitation details for member onboarding
+   */
+  async getInvitation(memberId: string) {
+    const [member] = await this.db
+      .select({
+        id: schema.workspaceMembers.id,
+        workspaceId: schema.workspaceMembers.workspaceId,
+        userId: schema.workspaceMembers.userId,
+        role: schema.workspaceMembers.role,
+        status: schema.workspaceMembers.status,
+        invitedEmail: schema.workspaceMembers.invitedEmail,
+        invitedAt: schema.workspaceMembers.invitedAt,
+        joinedAt: schema.workspaceMembers.joinedAt,
+        createdAt: schema.workspaceMembers.createdAt,
+      })
+      .from(schema.workspaceMembers)
+      .where(eq(schema.workspaceMembers.id, memberId))
+      .limit(1);
+
+    if (!member) {
+      throw new NotFoundException("Invitation link not found or expired.");
+    }
+
+    const [workspace] = await this.db
+      .select({ id: schema.workspaces.id, name: schema.workspaces.name, slug: schema.workspaces.slug })
+      .from(schema.workspaces)
+      .where(eq(schema.workspaces.id, member.workspaceId))
+      .limit(1);
+
+    let user = null;
+    if (member.userId) {
+      const [foundUser] = await this.db
+        .select()
+        .from(schema.users)
+        .where(eq(schema.users.id, member.userId))
+        .limit(1);
+      user = foundUser;
+    }
+
+    // Try finding matching agent
+    const [agent] = await this.db
+      .select()
+      .from(schema.agents)
+      .where(
+        and(
+          eq(schema.agents.workspaceId, member.workspaceId),
+          sql`(${schema.agents.userId} = ${member.userId} OR LOWER(${schema.agents.email}) = LOWER(${member.invitedEmail || user?.email || ""}))`
+        )
+      )
+      .limit(1);
+
+    const roleDefinitions = this.getRoleDefinitions();
+    const roleDef = roleDefinitions.find((r) => r.role === member.role);
+
+    return {
+      id: member.id,
+      workspaceId: member.workspaceId,
+      workspaceName: workspace?.name || "Spacia Luxury Agency",
+      email: member.invitedEmail || user?.email || "",
+      role: member.role,
+      roleTitle: roleDef?.title || member.role,
+      roleDescription: roleDef?.description || "",
+      badgeVariant: roleDef?.badgeVariant || "sky",
+      status: member.status,
+      isAccepted: member.status === "active",
+      invitedAt: member.invitedAt,
+      joinedAt: member.joinedAt,
+      firstName: user?.firstName || "",
+      lastName: user?.lastName || "",
+      phone: agent?.phone || "",
+      agent: agent
+        ? {
+            roleTitle: agent.roleTitle,
+            territory: agent.territory,
+            specializations: agent.specializations,
+            phone: agent.phone,
+          }
+        : null,
+    };
+  }
+
+  /**
+   * Public: Accept workspace invitation and complete agent onboarding
+   */
+  async acceptInvitation(memberId: string, dto: AcceptInvitationDto) {
+    const [member] = await this.db
+      .select()
+      .from(schema.workspaceMembers)
+      .where(eq(schema.workspaceMembers.id, memberId))
+      .limit(1);
+
+    if (!member) {
+      throw new NotFoundException("Invitation link not found or expired.");
+    }
+
+    if (member.status === "active") {
+      return {
+        success: true,
+        alreadyActive: true,
+        message: "Invitation has already been accepted.",
+        workspaceId: member.workspaceId,
+      };
+    }
+
+    const now = new Date();
+    const fullName = `${dto.firstName} ${dto.lastName}`.trim();
+
+    // 1. Update workspace member status to active
+    await this.db
+      .update(schema.workspaceMembers)
+      .set({
+        status: "active",
+        joinedAt: now,
+      })
+      .where(eq(schema.workspaceMembers.id, memberId));
+
+    // 2. Update user profile if exists
+    if (member.userId) {
+      await this.db
+        .update(schema.users)
+        .set({
+          firstName: dto.firstName,
+          lastName: dto.lastName,
+          imageUrl: `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(fullName)}`,
+          updatedAt: now,
+        })
+        .where(eq(schema.users.id, member.userId));
+    }
+
+    // 3. Update agent record if exists
+    const [agent] = await this.db
+      .select()
+      .from(schema.agents)
+      .where(
+        and(
+          eq(schema.agents.workspaceId, member.workspaceId),
+          sql`(${schema.agents.userId} = ${member.userId} OR LOWER(${schema.agents.email}) = LOWER(${member.invitedEmail || ""}))`
+        )
+      )
+      .limit(1);
+
+    if (agent) {
+      await this.db
+        .update(schema.agents)
+        .set({
+          name: fullName,
+          phone: dto.phone || agent.phone,
+          status: "active",
+          isAvailableForRouting: true,
+          updatedAt: now,
+        })
+        .where(eq(schema.agents.id, agent.id));
+    }
+
+    // 4. Audit trail
+    try {
+      await this.db.insert(schema.auditLogs).values({
+        workspaceId: member.workspaceId,
+        actorId: member.userId || "user_invited",
+        actorType: "user",
+        action: "team:member_accepted_invite",
+        resource: "workspace_members",
+        metadata: {
+          memberId: member.id,
+          role: member.role,
+          name: fullName,
+          email: member.invitedEmail,
+        },
+      });
+    } catch {}
+
+    this.logger.log(
+      `Invitation ${memberId} accepted by '${fullName}' (${member.invitedEmail}) in workspace '${member.workspaceId}'`
+    );
+
+    return {
+      success: true,
+      message: "Welcome to SpaciaOS! Your profile has been activated.",
+      workspaceId: member.workspaceId,
+    };
   }
 }

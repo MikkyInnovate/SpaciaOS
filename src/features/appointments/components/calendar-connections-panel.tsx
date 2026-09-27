@@ -67,6 +67,12 @@ export function CalendarConnectionsPanel() {
           // Clean URL without refresh
           const newUrl = window.location.pathname;
           window.history.replaceState({}, document.title, newUrl);
+
+          // If initiated from integrations page, redirect back there with query param
+          if (state && (state.includes("integrations") || state.includes("from_integrations"))) {
+            window.location.href = `/integrations?calendar=connected&email=${encodeURIComponent(result.accountEmail || "")}`;
+            return;
+          }
         } catch {
           toast.error("Google Calendar connection failed", { id: "google-oauth" });
         } finally {

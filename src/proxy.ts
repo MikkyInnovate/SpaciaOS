@@ -10,6 +10,7 @@ const isPublicRoute = createRouteMatcher([
   "/appointments(.*)",
   "/team(.*)",
   "/integrations(.*)",
+  "/invite(.*)",
 ]);
 
 const hasClerkKeys = Boolean(
