@@ -8,6 +8,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { SearchInput } from "@/components/ui/search-input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Activity,
   CheckCircle2,
@@ -15,12 +23,12 @@ import {
   Layers,
   Plus,
   RefreshCw,
-  Search,
+  RotateCcw,
   ShieldCheck,
-  Sparkles,
   Terminal,
 } from "lucide-react";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils/cn";
 import { useWorkspace } from "@/lib/context/workspace-context";
 import { propertiesService } from "@/features/properties";
 import {
@@ -292,6 +300,12 @@ export default function IntegrationsPage() {
 
   const connectedCount = integrations.filter((i) => i.status === "connected").length;
 
+  const hasActiveFilters = Boolean(
+    searchQuery.trim().length > 0 ||
+      selectedCategory !== "all" ||
+      statusFilter !== "all"
+  );
+
   return (
     <Container size="lg" className="space-y-6 pb-12 font-sans">
       <PageHeader
@@ -322,34 +336,6 @@ export default function IntegrationsPage() {
         }
       />
 
-      {/* Managed Platform Infrastructure Notice */}
-      <div className="p-3.5 rounded-xl border border-emerald-200/90 bg-emerald-50/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-        <div className="flex items-start sm:items-center gap-3">
-          <div className="h-8 w-8 rounded-lg bg-[#0d4a36] text-white flex items-center justify-center shrink-0 shadow-xs">
-            <Sparkles className="h-4 w-4" />
-          </div>
-          <div className="space-y-0.5">
-            <div className="flex items-center gap-2">
-              <span className="font-semibold text-emerald-950">
-                Managed Platform Infrastructure (Included by Spacia)
-              </span>
-              <Badge variant="outline" className="border-emerald-300 bg-white text-emerald-800 text-[10px] font-medium py-0 px-1.5">
-                Zero Setup
-              </Badge>
-            </div>
-            <p className="text-emerald-800/90 text-[11px] leading-relaxed">
-              Autonomous AI Voice Calling (Telephony Engine) and High-Deliverability Email Notifications are fully managed by Spacia out of the box. Your team only connects your website forms, broker calendars, property database, and CRM.
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2 shrink-0 self-start sm:self-auto">
-          <span className="inline-flex items-center gap-1.5 text-emerald-800 text-xs font-medium bg-white px-2.5 py-1 rounded-md border border-emerald-200 shadow-2xs">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-600 animate-pulse" />
-            AI Voice & Email Active
-          </span>
-        </div>
-      </div>
-
       {/* KPI Overview Strip */}
       <IntegrationsSummaryCards
         integrations={integrations}
@@ -358,52 +344,93 @@ export default function IntegrationsPage() {
       />
 
       {/* Filter and Search Bar */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-2">
-        {/* Category Pills */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
-          {CATEGORIES.map((cat) => {
-            const isActive = selectedCategory === cat.id;
-            return (
-              <button
-                key={cat.id}
-                type="button"
-                onClick={() => setSelectedCategory(cat.id)}
-                className={`text-xs px-3 py-1.5 rounded-full font-medium whitespace-nowrap transition-all ${
-                  isActive
-                    ? "bg-[#0d4a36] text-white shadow-xs"
-                    : "bg-white text-stone-600 border border-stone-200 hover:border-stone-300 hover:bg-stone-50"
-                }`}
-              >
-                {cat.label}
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Search & Status Filter */}
-        <div className="flex items-center gap-2">
-          <div className="relative w-full sm:w-56">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-stone-400" />
-            <Input
-              type="text"
-              placeholder="Search services..."
+      <div className="flex flex-col gap-3 rounded-xl border border-stone-200/80 bg-white p-3.5 shadow-2xs">
+        {/* Top row: Search input + count display + reset */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="w-full sm:max-w-md">
+            <SearchInput
+              placeholder="Search integrations by name or service..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="h-8 text-xs pl-8 pr-3 border-stone-200 focus-visible:ring-emerald-700 bg-white"
+              onClear={() => setSearchQuery("")}
+              size="sm"
             />
           </div>
 
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="h-8 text-xs px-2.5 rounded-md border border-stone-200 bg-white text-stone-700 focus:outline-none focus:ring-1 focus:ring-emerald-700"
-          >
-            <option value="all">All States</option>
-            <option value="connected">Connected</option>
-            <option value="disconnected">Disconnected</option>
-            <option value="reconnecting">Reconnecting</option>
-            <option value="error">Error</option>
-          </select>
+          <div className="flex items-center gap-2 self-end sm:self-center">
+            <span className="text-xs font-mono text-stone-500 tabular-nums">
+              Showing <strong className="text-stone-900">{filteredIntegrations.length}</strong> of{" "}
+              {integrations.length} services
+            </span>
+
+            {hasActiveFilters && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setSelectedCategory("all");
+                  setStatusFilter("all");
+                  setSearchQuery("");
+                }}
+                className="h-8 text-xs text-stone-600 hover:text-stone-900 gap-1 px-2"
+              >
+                <RotateCcw className="h-3 w-3" />
+                Reset
+              </Button>
+            )}
+          </div>
+        </div>
+
+        {/* Bottom row: Category chips & Status dropdown filter */}
+        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-stone-100 pt-2.5">
+          {/* Category Chips */}
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
+            <span className="text-[11px] font-medium text-stone-500 uppercase tracking-wider mr-1">
+              Category:
+            </span>
+            {CATEGORIES.map((cat) => {
+              const isSelected = selectedCategory === cat.id;
+              return (
+                <button
+                  key={cat.id}
+                  type="button"
+                  onClick={() => setSelectedCategory(cat.id)}
+                  className={cn(
+                    "rounded-md px-2.5 py-1 text-xs font-medium transition-all select-none whitespace-nowrap",
+                    isSelected
+                      ? "bg-[#0d4a36] text-white font-semibold shadow-2xs"
+                      : "bg-stone-100 text-stone-600 hover:bg-stone-200/80 hover:text-stone-900"
+                  )}
+                >
+                  {cat.label}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Status Dropdown */}
+          <div className="flex items-center gap-1.5">
+            <span className="text-[11px] font-medium text-stone-500 uppercase tracking-wider mr-1">
+              Status:
+            </span>
+            <div className="w-40">
+              <Select
+                value={statusFilter}
+                onValueChange={(val) => setStatusFilter(val)}
+              >
+                <SelectTrigger className="h-8 text-xs bg-white border-stone-200">
+                  <SelectValue placeholder="All States" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All States</SelectItem>
+                  <SelectItem value="connected">Connected</SelectItem>
+                  <SelectItem value="disconnected">Disconnected</SelectItem>
+                  <SelectItem value="reconnecting">Reconnecting</SelectItem>
+                  <SelectItem value="error">Error</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
         </div>
       </div>
 
