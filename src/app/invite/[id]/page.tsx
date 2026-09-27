@@ -4,6 +4,7 @@ import * as React from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
+import { useUser, useClerk } from "@clerk/nextjs";
 import {
   Building2,
   ShieldCheck,
@@ -16,8 +17,12 @@ import {
   ArrowRight,
   Lock,
   AlertCircle,
+  AlertTriangle,
   Loader2,
   Briefcase,
+  Copy,
+  LogOut,
+  ExternalLink,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,6 +35,7 @@ interface InvitationData {
   workspaceId: string;
   workspaceName: string;
   email: string;
+  hasClerkAccount?: boolean;
   role: string;
   roleTitle: string;
   roleDescription: string;
@@ -103,6 +109,9 @@ export default function InviteOnboardingPage() {
   const router = useRouter();
   const inviteId = params?.id as string;
 
+  const { user: currentClerkUser, isSignedIn, isLoaded: isUserLoaded } = useUser();
+  const clerk = useClerk();
+
   const [isLoading, setIsLoading] = React.useState(true);
   const [invitation, setInvitation] = React.useState<InvitationData | null>(null);
   const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
@@ -113,6 +122,16 @@ export default function InviteOnboardingPage() {
   const [phone, setPhone] = React.useState("");
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [isSuccess, setIsSuccess] = React.useState(false);
+
+  // Session correlation: detect if admin is testing in their own browser
+  const currentEmail = currentClerkUser?.primaryEmailAddress?.emailAddress?.toLowerCase().trim();
+  const invitedEmail = invitation?.email?.toLowerCase().trim();
+  const isMismatchedSession = Boolean(
+    isSignedIn && currentEmail && invitedEmail && currentEmail !== invitedEmail
+  );
+  const isMatchingSession = Boolean(
+    isSignedIn && currentEmail && invitedEmail && currentEmail === invitedEmail
+  );
 
   // Load invitation
   React.useEffect(() => {
@@ -161,14 +180,38 @@ export default function InviteOnboardingPage() {
         firstName: firstName.trim(),
         lastName: lastName.trim(),
         phone: phone.trim() || undefined,
+        clerkUserId: isMatchingSession ? currentClerkUser?.id : undefined,
       });
 
       if (res && res.success) {
         setIsSuccess(true);
         toast.success("Welcome to the team! Your profile is active.");
-        setTimeout(() => {
-          router.push("/team");
-        }, 1800);
+
+        // Direct guest to Clerk sign-in / sign-up or team roster
+        if (isMismatchedSession) {
+          // Admin tested in their own browser session.
+          // Sign out so they don't land on their personal owner page.
+          await clerk.signOut();
+          const targetUrl = (invitation?.hasClerkAccount ?? res?.hasClerkAccount)
+            ? `/sign-in?email_address=${encodeURIComponent(invitation?.email || "")}&redirect_url=${encodeURIComponent("/team")}`
+            : `/sign-up?email_address=${encodeURIComponent(invitation?.email || "")}&redirect_url=${encodeURIComponent("/team")}`;
+          setTimeout(() => {
+            router.push(targetUrl);
+          }, 1800);
+        } else if (!isSignedIn) {
+          // Fresh guest opening link on their device or in incognito
+          const targetUrl = (invitation?.hasClerkAccount ?? res?.hasClerkAccount)
+            ? `/sign-in?email_address=${encodeURIComponent(invitation?.email || "")}&redirect_url=${encodeURIComponent("/team")}`
+            : `/sign-up?email_address=${encodeURIComponent(invitation?.email || "")}&redirect_url=${encodeURIComponent("/team")}`;
+          setTimeout(() => {
+            router.push(targetUrl);
+          }, 1800);
+        } else {
+          // Already signed in as the invited guest
+          setTimeout(() => {
+            router.push("/team");
+          }, 1800);
+        }
       } else {
         toast.error(res?.message || "Failed to complete onboarding. Please try again.");
       }
@@ -293,14 +336,63 @@ export default function InviteOnboardingPage() {
                 Invitation Already Accepted
               </h2>
               <p className="text-xs text-stone-600 mb-6 leading-relaxed max-w-sm mx-auto">
-                You are already an active team member of <strong className="text-stone-900">{invitation.workspaceName}</strong> as <strong className="text-stone-900">{invitation.roleTitle}</strong>.
+                Membership for <strong className="text-stone-900">{invitation.email}</strong> is active in <strong className="text-stone-900">{invitation.workspaceName}</strong> as <strong className="text-stone-900">{invitation.roleTitle}</strong>.
               </p>
-              <Link href="/team">
-                <Button className="bg-[#0d4a36] hover:bg-[#0d4a36]/90 text-white w-full gap-2 shadow-xs">
-                  <span>Enter Workspace Team</span>
-                  <ArrowRight className="w-4 h-4" />
-                </Button>
-              </Link>
+
+              {isMismatchedSession ? (
+                <div className="space-y-3 max-w-sm mx-auto">
+                  <div className="p-3 bg-amber-50/90 border border-amber-300 rounded-lg text-left text-xs text-amber-900 space-y-1">
+                    <p className="font-semibold flex items-center gap-1.5">
+                      <AlertTriangle className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                      <span>Account Session Notice</span>
+                    </p>
+                    <p className="text-[11px] text-amber-800 leading-relaxed">
+                      Your browser is currently signed in as <strong>{currentEmail}</strong>. To access this workspace as <strong>{invitation.email}</strong>, test in an Incognito window or switch accounts:
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        navigator.clipboard.writeText(window.location.href);
+                        toast.success("Link copied! Open an Incognito window to view as guest.");
+                      }}
+                      className="text-[11px] h-8 gap-1.5 border-amber-300 bg-white text-amber-900 hover:bg-amber-100/60"
+                    >
+                      <Copy className="w-3.5 h-3.5 text-amber-700" />
+                      <span>Copy for Incognito</span>
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      onClick={async () => {
+                        await clerk.signOut();
+                        router.push(`/sign-in?email_address=${encodeURIComponent(invitation.email)}&redirect_url=${encodeURIComponent("/team")}`);
+                      }}
+                      className="bg-[#0d4a36] hover:bg-[#0d4a36]/90 text-white text-[11px] h-8 gap-1.5"
+                    >
+                      <LogOut className="w-3.5 h-3.5" />
+                      <span>Sign In as Guest</span>
+                    </Button>
+                  </div>
+                </div>
+              ) : !isSignedIn ? (
+                <Link href={`/sign-in?email_address=${encodeURIComponent(invitation.email)}&redirect_url=${encodeURIComponent("/team")}`}>
+                  <Button className="bg-[#0d4a36] hover:bg-[#0d4a36]/90 text-white w-full gap-2 shadow-xs">
+                    <span>Sign In to Access Workspace</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </Button>
+                </Link>
+              ) : (
+                <Link href="/team">
+                  <Button className="bg-[#0d4a36] hover:bg-[#0d4a36]/90 text-white w-full gap-2 shadow-xs">
+                    <span>Enter Workspace Team</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </Button>
+                </Link>
+              )}
             </div>
           )}
 
@@ -320,6 +412,53 @@ export default function InviteOnboardingPage() {
                   You have been invited to join the brokerage team. Set up your profile below to accept.
                 </p>
               </div>
+
+              {/* Mismatched Session Alert for Testing Admins */}
+              {isMismatchedSession && (
+                <div className="rounded-lg border border-amber-300 bg-amber-50/90 p-3.5 space-y-2.5 animate-in fade-in duration-200">
+                  <div className="flex items-start gap-2.5">
+                    <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                    <div className="space-y-0.5">
+                      <h4 className="text-xs font-semibold text-amber-900">
+                        Admin Session Active ({currentEmail})
+                      </h4>
+                      <p className="text-[11px] text-amber-800 leading-relaxed">
+                        This invitation is addressed to <strong className="font-semibold text-amber-950">{invitation.email}</strong>. Testing in an Incognito window lets you preview as a guest without signing out:
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 border-t border-amber-200/60">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        navigator.clipboard.writeText(window.location.href);
+                        toast.success("Invite link copied! Open an Incognito / Private window to test as guest.");
+                      }}
+                      className="h-8 text-[11px] bg-white border-amber-300 text-amber-900 hover:bg-amber-100/60 gap-1.5 font-medium"
+                    >
+                      <Copy className="w-3.5 h-3.5 text-amber-700" />
+                      <span>Copy Link for Incognito</span>
+                    </Button>
+
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={async () => {
+                        await clerk.signOut();
+                        window.location.reload();
+                      }}
+                      className="h-8 text-[11px] bg-white border-amber-300 text-amber-900 hover:bg-amber-100/60 gap-1.5 font-medium"
+                    >
+                      <LogOut className="w-3.5 h-3.5 text-amber-700" />
+                      <span>Sign Out &amp; Switch Account</span>
+                    </Button>
+                  </div>
+                </div>
+              )}
 
               {/* Role & Territory Overview Banner */}
               <div className="p-3.5 rounded-lg bg-stone-50 border border-stone-200/80 space-y-2">
@@ -476,7 +615,11 @@ export default function InviteOnboardingPage() {
               </p>
               <div className="flex items-center justify-center gap-2 text-xs text-stone-600">
                 <Loader2 className="w-4 h-4 animate-spin text-[#0d4a36]" />
-                <span>Redirecting to Team Roster...</span>
+                <span>
+                  {isMismatchedSession || !isSignedIn
+                    ? `Preparing secure sign-in as ${invitation?.email}...`
+                    : "Redirecting to Team Roster..."}
+                </span>
               </div>
             </div>
           )}

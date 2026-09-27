@@ -172,7 +172,7 @@ class TeamService {
    */
   async acceptInvitation(
     id: string,
-    payload: { firstName: string; lastName: string; phone?: string }
+    payload: { firstName: string; lastName: string; phone?: string; clerkUserId?: string }
   ): Promise<any> {
     const response = await apiClient.post<any>(`/api/v1/team/invite/${id}/accept`, payload);
     const data = response?.data || response;
