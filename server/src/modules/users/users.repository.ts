@@ -1,5 +1,5 @@
 import { Injectable, Inject } from "@nestjs/common";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { DRIZZLE_DATABASE, DrizzleDb } from "../../database/database.provider";
 import { users, UserRecord, NewUserRecord } from "../../database/schema/users.schema";
 
@@ -49,5 +49,12 @@ export class UsersRepository {
       .returning();
 
     return results[0];
+  }
+
+  async updateUserIdByEmail(email: string, newId: string): Promise<void> {
+    await this.db
+      .update(users)
+      .set({ id: newId, updatedAt: new Date() })
+      .where(sql`LOWER(${users.email}) = LOWER(${email})`);
   }
 }

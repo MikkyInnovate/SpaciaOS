@@ -118,5 +118,9 @@ export class AcceptInvitationDto {
   @IsOptional()
   @IsString()
   phone?: string;
+
+  @IsOptional()
+  @IsString()
+  clerkUserId?: string;
 }
 

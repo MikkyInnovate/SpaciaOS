@@ -6,8 +6,10 @@ import {
   UnauthorizedException,
   NotFoundException,
   Logger,
+  Optional,
 } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
+import { ClerkService } from "./clerk.service";
 import { IS_PUBLIC_KEY } from "./public.decorator";
 import { ROLES_KEY } from "./roles.decorator";
 import { SKIP_MEMBERSHIP_CHECK_KEY } from "./skip-membership-check.decorator";
@@ -41,7 +43,9 @@ export class WorkspaceMemberGuard implements CanActivate {
     private readonly reflector: Reflector,
     private readonly workspacesRepo: WorkspacesRepository,
     private readonly workspaceMembersService: WorkspaceMembersService,
-    private readonly usersRepo: UsersRepository
+    private readonly usersRepo: UsersRepository,
+    @Optional()
+    private readonly clerkService?: ClerkService
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -132,6 +136,31 @@ export class WorkspaceMemberGuard implements CanActivate {
       tenantContext.workspaceId,
       tenantContext.userId
     );
+
+    // If not found by userId and userId is a real Clerk user, check if this user matches an invited email
+    if (!member && tenantContext.userId && tenantContext.userId.startsWith("user_") && this.clerkService) {
+      try {
+        const clerkUser = await this.clerkService.getClient().users.getUser(tenantContext.userId);
+        const userEmail = clerkUser.emailAddresses?.[0]?.emailAddress;
+        if (userEmail) {
+          const invitedMember = await this.workspaceMembersService.findMemberByEmail(
+            tenantContext.workspaceId,
+            userEmail
+          );
+          if (invitedMember) {
+            // Update the user's ID to this real Clerk ID (cascades to workspace_members & agents)
+            await this.usersRepo.updateUserIdByEmail(userEmail, tenantContext.userId);
+            member = await this.workspaceMembersService.findMember(
+              tenantContext.workspaceId,
+              tenantContext.userId
+            );
+            this.logger.log(`Linked member '${userEmail}' to Clerk user '${tenantContext.userId}'.`);
+          }
+        }
+      } catch (err: any) {
+        this.logger.debug(`Could not link member by Clerk email: ${err?.message}`);
+      }
+    }
 
     if (!member) {
       if (

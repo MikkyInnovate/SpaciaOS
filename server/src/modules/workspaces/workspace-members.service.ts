@@ -51,6 +51,16 @@ export class WorkspaceMembersService {
   }
 
   /**
+   * Finds a member record by workspaceId and email without throwing.
+   */
+  async findMemberByEmail(
+    workspaceId: string,
+    email: string
+  ): Promise<WorkspaceMemberRecord | null> {
+    return this.workspaceMembersRepo.findMemberByEmail(workspaceId, email);
+  }
+
+  /**
    * Lists all members belonging to a workspace.
    */
   async listMembers(workspaceId: string): Promise<WorkspaceMemberRecord[]> {

@@ -26,6 +26,7 @@ import {
   RoleDefinition,
 } from "./interfaces/team.interface";
 import { WorkspaceRole } from "../../database/schema/users.schema";
+import { ClerkService } from "../../common/auth/clerk.service";
 
 const DEFAULT_BROKERS = [
   {
@@ -68,7 +69,9 @@ export class TeamService {
     @Inject(DRIZZLE_DATABASE)
     private readonly db: DrizzleDb,
     @Optional()
-    private readonly resendAdapter?: ResendNotificationAdapter
+    private readonly resendAdapter?: ResendNotificationAdapter,
+    @Optional()
+    private readonly clerkService?: ClerkService
   ) {}
 
   /**
@@ -281,8 +284,29 @@ export class TeamService {
     const lastName = dto.lastName || "Broker";
     let targetUserId = existingUser?.id;
 
-    if (!targetUserId) {
+    // Check Clerk for existing user with this email
+    let clerkUserId: string | null = null;
+    if (this.clerkService) {
+      try {
+        const clerkUsers = await this.clerkService.getClient().users.getUserList({
+          emailAddress: [normalizedEmail],
+          limit: 1,
+        });
+        if (clerkUsers.data && clerkUsers.data.length > 0) {
+          clerkUserId = clerkUsers.data[0].id;
+        }
+      } catch (err: any) {
+        this.logger.debug(`Could not lookup Clerk user by email: ${err?.message}`);
+      }
+    }
+
+    if (clerkUserId) {
+      targetUserId = clerkUserId;
+    } else if (!targetUserId) {
       targetUserId = `user_spacia_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+    }
+
+    if (!existingUser) {
       await this.db
         .insert(schema.users)
         .values({
@@ -294,6 +318,12 @@ export class TeamService {
             `${firstName} ${lastName}`
           )}`,
         });
+    } else if (clerkUserId && existingUser.id !== clerkUserId) {
+      // Cascade update to real Clerk ID
+      await this.db
+        .update(schema.users)
+        .set({ id: clerkUserId, updatedAt: new Date() })
+        .where(eq(schema.users.email, normalizedEmail));
     }
 
     // 4. Provision workspace_members record (status: invited until accepted)
@@ -309,6 +339,35 @@ export class TeamService {
         joinedAt: null,
       })
       .returning();
+
+    // 4b. Synchronize with Clerk Organization if applicable
+    if (this.clerkService && tenant.workspaceId.startsWith("org_")) {
+      const orgRole = dto.role === "admin" || dto.role === "owner" ? "org:admin" : "org:member";
+      if (clerkUserId) {
+        try {
+          await this.clerkService.getClient().organizations.createOrganizationMembership({
+            organizationId: tenant.workspaceId,
+            userId: clerkUserId,
+            role: orgRole,
+          });
+          this.logger.log(`Added Clerk organization membership for '${normalizedEmail}' in '${tenant.workspaceId}'`);
+        } catch (err: any) {
+          this.logger.debug(`Clerk org membership already exists or skipped: ${err?.message}`);
+        }
+      } else {
+        try {
+          await this.clerkService.getClient().organizations.createOrganizationInvitation({
+            organizationId: tenant.workspaceId,
+            emailAddress: normalizedEmail,
+            role: orgRole,
+            inviterUserId: tenant.userId.startsWith("user_") ? tenant.userId : undefined,
+          });
+          this.logger.log(`Created Clerk organization invitation for '${normalizedEmail}' in '${tenant.workspaceId}'`);
+        } catch (err: any) {
+          this.logger.debug(`Clerk org invitation already exists or skipped: ${err?.message}`);
+        }
+      }
+    }
 
     // 5. If role is sales_agent or sales_manager, create agent routing profile
     let createdAgent = null;
@@ -973,12 +1032,25 @@ export class TeamService {
 
     const roleDefinitions = this.getRoleDefinitions();
     const roleDef = roleDefinitions.find((r) => r.role === member.role);
+    const targetEmail = (member.invitedEmail || user?.email || "").toLowerCase().trim();
+
+    let hasClerkAccount = false;
+    if (this.clerkService && targetEmail) {
+      try {
+        const clerkUsers = await this.clerkService.getClient().users.getUserList({
+          emailAddress: [targetEmail],
+          limit: 1,
+        });
+        hasClerkAccount = Boolean(clerkUsers.data && clerkUsers.data.length > 0);
+      } catch {}
+    }
 
     return {
       id: member.id,
       workspaceId: member.workspaceId,
       workspaceName: workspace?.name || "Spacia Luxury Agency",
-      email: member.invitedEmail || user?.email || "",
+      email: targetEmail,
+      hasClerkAccount,
       role: member.role,
       roleTitle: roleDef?.title || member.role,
       roleDescription: roleDef?.description || "",
@@ -1036,6 +1108,20 @@ export class TeamService {
       })
       .where(eq(schema.workspaceMembers.id, memberId));
 
+    // Resolve real Clerk user ID if available
+    let resolvedClerkUserId = dto.clerkUserId;
+    if (!resolvedClerkUserId && this.clerkService && member.invitedEmail) {
+      try {
+        const clerkUsers = await this.clerkService.getClient().users.getUserList({
+          emailAddress: [member.invitedEmail.toLowerCase().trim()],
+          limit: 1,
+        });
+        if (clerkUsers.data && clerkUsers.data.length > 0) {
+          resolvedClerkUserId = clerkUsers.data[0].id;
+        }
+      } catch {}
+    }
+
     // 2. Update user profile if exists
     if (member.userId) {
       await this.db
@@ -1047,6 +1133,27 @@ export class TeamService {
           updatedAt: now,
         })
         .where(eq(schema.users.id, member.userId));
+
+      if (resolvedClerkUserId && member.userId !== resolvedClerkUserId) {
+        await this.db
+          .update(schema.users)
+          .set({ id: resolvedClerkUserId, updatedAt: now })
+          .where(eq(schema.users.id, member.userId));
+      }
+    }
+
+    // Ensure member is in Clerk Organization
+    if (this.clerkService && resolvedClerkUserId && member.workspaceId.startsWith("org_")) {
+      const orgRole = member.role === "admin" || member.role === "owner" ? "org:admin" : "org:member";
+      try {
+        await this.clerkService.getClient().organizations.createOrganizationMembership({
+          organizationId: member.workspaceId,
+          userId: resolvedClerkUserId,
+          role: orgRole,
+        });
+      } catch (err: any) {
+        this.logger.debug(`Clerk membership add skipped: ${err?.message}`);
+      }
     }
 
     // 3. Update agent record if exists
@@ -1078,7 +1185,7 @@ export class TeamService {
     try {
       await this.db.insert(schema.auditLogs).values({
         workspaceId: member.workspaceId,
-        actorId: member.userId || "user_invited",
+        actorId: resolvedClerkUserId || member.userId || "user_invited",
         actorType: "user",
         action: "team:member_accepted_invite",
         resource: "workspace_members",
@@ -1099,6 +1206,7 @@ export class TeamService {
       success: true,
       message: "Welcome to SpaciaOS! Your profile has been activated.",
       workspaceId: member.workspaceId,
+      hasClerkAccount: Boolean(resolvedClerkUserId),
     };
   }
 }

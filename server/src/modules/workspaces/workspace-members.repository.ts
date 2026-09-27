@@ -1,11 +1,12 @@
 import { Injectable, Inject } from "@nestjs/common";
-import { eq, and } from "drizzle-orm";
+import { eq, and, sql } from "drizzle-orm";
 import { BaseTenantRepository } from "../../common/tenant/base-tenant.repository";
 import {
   workspaceMembers,
   WorkspaceMemberRecord,
   NewWorkspaceMemberRecord,
   workspaceRoleEnum,
+  users,
 } from "../../database/schema/users.schema";
 import { DRIZZLE_DATABASE, DrizzleDb } from "../../database/database.provider";
 import { ClientRole } from "../../database/schema/roles.schema";
@@ -38,6 +39,28 @@ export class WorkspaceMembersRepository extends BaseTenantRepository<
       .limit(1);
 
     return results[0] || null;
+  }
+
+  /**
+   * Finds a member record by workspaceId and email (checking invitedEmail or users.email).
+   */
+  async findMemberByEmail(workspaceId: string, email: string): Promise<WorkspaceMemberRecord | null> {
+    const normalized = email.toLowerCase().trim();
+    const results = await this.db
+      .select({
+        wm: workspaceMembers,
+      })
+      .from(workspaceMembers)
+      .leftJoin(users, eq(users.id, workspaceMembers.userId))
+      .where(
+        and(
+          eq(workspaceMembers.workspaceId, workspaceId),
+          sql`(LOWER(${workspaceMembers.invitedEmail}) = LOWER(${normalized}) OR LOWER(${users.email}) = LOWER(${normalized}))`
+        )
+      )
+      .limit(1);
+
+    return results[0]?.wm || null;
   }
 
   /**
