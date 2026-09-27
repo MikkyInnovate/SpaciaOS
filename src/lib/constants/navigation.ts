@@ -52,12 +52,6 @@ export const NAVIGATION_SECTIONS: NavSection[] = [
         isAvailable: true,
       },
       {
-        title: "Operations",
-        href: "/ops",
-        iconName: "Activity",
-        isAvailable: true,
-      },
-      {
         title: "Team",
         href: "/team",
         iconName: "UserCheck",

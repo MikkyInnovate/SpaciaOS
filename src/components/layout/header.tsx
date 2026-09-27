@@ -20,6 +20,7 @@ export function Header({ className, ...props }: HeaderProps) {
   const [searchOpen, setSearchOpen] = React.useState(false);
 
   const currentTitle = React.useMemo(() => {
+    if (pathname === "/ops") return "Operations Command Center";
     for (const section of NAVIGATION_SECTIONS) {
       for (const item of section.items) {
         if (item.href === pathname) return item.title;
