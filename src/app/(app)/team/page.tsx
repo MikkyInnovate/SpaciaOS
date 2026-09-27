@@ -8,11 +8,11 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { useWorkspace } from "@/lib/context/workspace-context";
 import {
   TeamStatsStrip,
+  TeamFiltersBar,
   TeamMemberTable,
   InviteMemberModal,
   EditRoleModal,
   AgentDetailDrawer,
-  RoleGuidePanel,
   teamService,
 } from "@/features/team";
 import type { TeamMember, TeamStats, RoleDefinition } from "@/features/team/types";
@@ -31,6 +31,7 @@ export default function TeamPage() {
   // Search & Filter state
   const [searchQuery, setSearchQuery] = React.useState("");
   const [roleFilter, setRoleFilter] = React.useState<string>("all");
+  const [statusFilter, setStatusFilter] = React.useState<string>("all");
 
   // Modals & Drawers state
   const [isInviteOpen, setIsInviteOpen] = React.useState(false);
@@ -53,7 +54,7 @@ export default function TeamPage() {
       setStats(fetchedStats);
       setMembers(fetchedMembers);
       setRoles(fetchedRoles);
-    } catch (err: any) {
+    } catch {
       toast.error("Failed to load team data from workspace.");
     } finally {
       setIsLoading(false);
@@ -64,6 +65,55 @@ export default function TeamPage() {
   React.useEffect(() => {
     loadTeamData();
   }, [loadTeamData, currentWorkspace?.id]);
+
+  // Real-time filtering matching SpaciaOS standard
+  const filteredMembers = React.useMemo(() => {
+    return members.filter((member) => {
+      // 1. Search Query
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase().trim();
+        const fullName = [member.user.firstName, member.user.lastName]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase();
+        const email = (member.user.email || member.invitedEmail || "").toLowerCase();
+        const territory = (member.agent?.territory || "").toLowerCase();
+        const title = (member.agent?.roleTitle || "").toLowerCase();
+        const specs = (member.agent?.specializations || []).join(" ").toLowerCase();
+
+        const match =
+          fullName.includes(q) ||
+          email.includes(q) ||
+          territory.includes(q) ||
+          title.includes(q) ||
+          specs.includes(q);
+
+        if (!match) return false;
+      }
+
+      // 2. Role Filter
+      if (roleFilter !== "all") {
+        if (roleFilter === "brokers" && member.role !== "sales_agent" && member.role !== "sales_manager") {
+          return false;
+        }
+        if (roleFilter === "admin" && member.role !== "admin") {
+          return false;
+        }
+        if (roleFilter === "owner" && member.role !== "owner") {
+          return false;
+        }
+      }
+
+      // 3. Status Filter
+      if (statusFilter !== "all") {
+        if (member.status !== statusFilter) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+  }, [members, searchQuery, roleFilter, statusFilter]);
 
   // Handlers
   const handleMemberInvited = (newMember: TeamMember) => {
@@ -165,19 +215,32 @@ export default function TeamPage() {
       {/* 4 Prioritized KPI Metric Cards */}
       <TeamStatsStrip stats={stats} isLoading={isLoading} />
 
-      {/* Team Roster Table with integrated header, search, and segmented filters */}
+      {/* Filter & Search Bar matching canonical SpaciaOS pattern */}
+      <TeamFiltersBar
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        roleFilter={roleFilter}
+        onRoleChange={setRoleFilter}
+        statusFilter={statusFilter}
+        onStatusChange={setStatusFilter}
+        onReset={() => {
+          setSearchQuery("");
+          setRoleFilter("all");
+          setStatusFilter("all");
+        }}
+        totalCount={members.length}
+        filteredCount={filteredMembers.length}
+      />
+
+      {/* Team Roster Table with clean SpaciaOS table design */}
       <TeamMemberTable
-        members={members}
+        members={filteredMembers}
         isLoading={isLoading}
         onSelectAgent={(member) => setSelectedAgentMember(member)}
         onEditRole={(member) => setEditingRoleMember(member)}
         onToggleStatus={handleToggleStatus}
         onRemoveMember={(member) => setRemovingMember(member)}
       />
-
-
-      {/* Role-Based Access Control Guide */}
-      <RoleGuidePanel roles={roles} />
 
       {/* Modals & Drawers */}
       <InviteMemberModal

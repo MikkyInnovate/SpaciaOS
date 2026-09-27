@@ -1,6 +1,7 @@
 export * from "./types";
 export * from "./services/team-service";
 export * from "./components/team-stats-strip";
+export * from "./components/team-filters-bar";
 export * from "./components/team-member-table";
 export * from "./components/invite-member-modal";
 export * from "./components/edit-role-modal";

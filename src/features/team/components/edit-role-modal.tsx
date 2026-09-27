@@ -49,6 +49,7 @@ export function EditRoleModal({
   const memberName =
     [member.user.firstName, member.user.lastName].filter(Boolean).join(" ") ||
     member.agent?.name ||
+    member.invitedEmail ||
     member.user.email;
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -73,60 +74,79 @@ export function EditRoleModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <div className="flex items-center gap-2 text-indigo-700">
-            <Shield className="h-5 w-5" />
-            <DialogTitle className="text-base font-serif font-bold text-stone-900">
-              Reassign Member Role
-            </DialogTitle>
-          </div>
-          <DialogDescription className="text-xs text-stone-500">
-            Modify workspace permissions and RBAC clearance for <strong className="text-stone-800">{memberName}</strong>.
-          </DialogDescription>
-        </DialogHeader>
-
-        <form onSubmit={handleSubmit} className="space-y-4 pt-2">
-          {member.role === "owner" && (
-            <div className="flex items-start gap-2.5 p-3 rounded-lg bg-amber-50 border border-amber-200/80 text-amber-900 text-xs">
-              <AlertTriangle className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
-              <div>
-                <span className="font-semibold">Sole Owner Protection Guardrail:</span>
-                <p className="mt-0.5 text-amber-800">
-                  If this member is the only workspace owner, ensure another member is promoted to Owner first before demoting.
-                </p>
+      <DialogContent className="sm:max-w-md p-0 gap-0 border border-stone-200/80 bg-white shadow-xl rounded-xl overflow-hidden">
+        <form onSubmit={handleSubmit}>
+          {/* Header matching canonical SpaciaOS dialogs */}
+          <DialogHeader className="p-5 pb-4 border-b border-stone-100 bg-[#fcfcfb] text-left">
+            <div className="flex items-center gap-3">
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-50 border border-indigo-200/70 text-indigo-700 shadow-2xs shrink-0">
+                <Shield className="h-4.5 w-4.5" />
+              </div>
+              <div className="space-y-0.5">
+                <DialogTitle className="text-sm font-semibold text-stone-900 tracking-tight">
+                  Reassign Member Role
+                </DialogTitle>
+                <DialogDescription className="text-xs text-stone-500">
+                  Modify permissions and RBAC clearance for <strong className="text-stone-800">{memberName}</strong>.
+                </DialogDescription>
               </div>
             </div>
-          )}
+          </DialogHeader>
 
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-stone-700">
-              Select New Role
-            </label>
-            <Select
-              value={selectedRole}
-              onValueChange={(val) => setSelectedRole(val as WorkspaceRole)}
-            >
-              <SelectTrigger className="text-xs">
-                <SelectValue placeholder="Select role" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="sales_agent">Licensed Luxury Broker (Viewings & Lead Intake)</SelectItem>
-                <SelectItem value="sales_manager">Sales Director / Manager (Pipeline Supervision & Objections)</SelectItem>
-                <SelectItem value="admin">Operations Admin (Full Team & Settings Authority)</SelectItem>
-                <SelectItem value="owner">Workspace Owner (Unrestricted Billing & Account Authority)</SelectItem>
-                <SelectItem value="viewer">Auditor / Viewer (Read-only)</SelectItem>
-              </SelectContent>
-            </Select>
+          {/* Form Content */}
+          <div className="p-5 space-y-4">
+            {member.role === "owner" && (
+              <div className="flex items-start gap-2.5 p-3 rounded-lg bg-amber-50 border border-amber-200/80 text-amber-900 text-xs">
+                <AlertTriangle className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
+                <div>
+                  <span className="font-semibold text-stone-900">Sole Owner Protection:</span>
+                  <p className="mt-0.5 text-stone-600">
+                    If this member is the only workspace owner, another member must be promoted to Owner first before reassigning this role.
+                  </p>
+                </div>
+              </div>
+            )}
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-stone-700">
+                Select Workspace Role
+              </label>
+              <Select
+                value={selectedRole}
+                onValueChange={(val) => setSelectedRole(val as WorkspaceRole)}
+              >
+                <SelectTrigger className="h-8.5 text-xs bg-white border-stone-200 shadow-2xs">
+                  <SelectValue placeholder="Select role" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="sales_agent" className="text-xs">
+                    Licensed Luxury Broker (Viewings & Lead Intake)
+                  </SelectItem>
+                  <SelectItem value="sales_manager" className="text-xs">
+                    Sales Director / Manager (Pipeline Supervision & Objections)
+                  </SelectItem>
+                  <SelectItem value="admin" className="text-xs">
+                    Operations Admin (Full Team & Settings Authority)
+                  </SelectItem>
+                  <SelectItem value="owner" className="text-xs">
+                    Workspace Owner (Unrestricted Billing & Account Authority)
+                  </SelectItem>
+                  <SelectItem value="viewer" className="text-xs">
+                    Auditor / Viewer (Read-only)
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
-          <DialogFooter className="pt-2">
+          {/* Footer */}
+          <DialogFooter className="p-4 border-t border-stone-100 bg-stone-50/50 flex items-center justify-between sm:justify-between">
             <Button
               type="button"
               variant="outline"
               size="sm"
               onClick={() => onOpenChange(false)}
-              className="text-xs cursor-pointer"
+              className="h-8 border-stone-200 bg-white px-3 text-xs font-medium text-stone-700 hover:bg-stone-100 shadow-2xs cursor-pointer"
               disabled={isSubmitting}
             >
               Cancel
@@ -134,7 +154,7 @@ export function EditRoleModal({
             <Button
               type="submit"
               size="sm"
-              className="text-xs bg-[#0d4a36] hover:bg-[#0a3a2b] text-white cursor-pointer gap-1.5"
+              className="h-8 gap-1.5 bg-[#0d4a36] hover:bg-[#0a3a2b] px-3.5 text-xs font-medium text-white shadow-2xs transition-colors cursor-pointer"
               disabled={isSubmitting}
             >
               {isSubmitting ? (
