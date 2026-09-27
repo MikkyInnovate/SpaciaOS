@@ -22,7 +22,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { teamService } from "../services/team-service";
 import type { InviteMemberPayload, TeamMember, WorkspaceRole } from "../types";
-import { Shield, Sparkles, UserPlus, Loader2 } from "lucide-react";
+import { Sparkles, UserPlus, Loader2 } from "lucide-react";
 
 export interface InviteMemberModalProps {
   open: boolean;
@@ -125,181 +125,198 @@ export function InviteMemberModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <div className="flex items-center gap-2 text-[#0d4a36]">
-            <UserPlus className="h-5 w-5" />
-            <DialogTitle className="text-base font-serif font-bold text-stone-900">
-              Invite Team Member
-            </DialogTitle>
-          </div>
-          <DialogDescription className="text-xs text-stone-500">
-            Send an invitation to a broker or administrator to join your Spacia workspace.
-          </DialogDescription>
-        </DialogHeader>
+      <DialogContent className="sm:max-w-lg p-0 gap-0 border border-stone-200/80 bg-white shadow-xl rounded-xl overflow-hidden">
+        <form onSubmit={handleSubmit}>
+          {/* Header matching LeadIntakeDialog */}
+          <DialogHeader className="p-5 pb-4 border-b border-stone-100 bg-[#fcfcfb] text-left">
+            <div className="flex items-center gap-3">
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-50 border border-emerald-200/70 text-[#0d4a36] shadow-2xs shrink-0">
+                <UserPlus className="h-4.5 w-4.5 text-[#0d4a36]" />
+              </div>
+              <div className="space-y-0.5">
+                <DialogTitle className="text-sm font-semibold text-stone-900 tracking-tight">
+                  Invite Team Member
+                </DialogTitle>
+                <DialogDescription className="text-xs text-stone-500">
+                  Add a new luxury broker, operations administrator, or partner to your workspace.
+                </DialogDescription>
+              </div>
+            </div>
+          </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4 pt-2">
-          {/* Email */}
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-stone-700">
-              Email Address <span className="text-rose-500">*</span>
-            </label>
-            <Input
-              type="email"
-              placeholder="e.g. adewale@spacia.luxury"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="text-xs"
-              required
-            />
-          </div>
-
-          {/* First Name & Last Name */}
-          <div className="grid grid-cols-2 gap-3">
+          {/* Form Content */}
+          <div className="p-5 space-y-3.5 max-h-[75vh] overflow-y-auto">
+            {/* Email */}
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-stone-700">First Name</label>
+              <label className="text-xs font-semibold text-stone-700">
+                Email Address <span className="text-rose-500">*</span>
+              </label>
               <Input
-                placeholder="Adewale"
-                value={firstName}
-                onChange={(e) => setFirstName(e.target.value)}
-                className="text-xs"
+                type="email"
+                placeholder="e.g. adewale@spacia.luxury"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="text-xs h-8.5 bg-white border-stone-200"
+                required
               />
             </div>
-            <div className="space-y-1.5">
-              <label className="text-xs font-semibold text-stone-700">Last Name</label>
-              <Input
-                placeholder="Tinubu"
-                value={lastName}
-                onChange={(e) => setLastName(e.target.value)}
-                className="text-xs"
-              />
-            </div>
-          </div>
 
-          {/* Role Selector */}
-          <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-stone-700">
-              Assigned Role <span className="text-rose-500">*</span>
-            </label>
-            <Select value={role} onValueChange={(val) => setRole(val as WorkspaceRole)}>
-              <SelectTrigger className="text-xs">
-                <SelectValue placeholder="Select a role" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="sales_agent">Licensed Luxury Broker (Assigned Leads & Viewings)</SelectItem>
-                <SelectItem value="sales_manager">Sales Director / Manager (Pipeline Supervision & Takeover)</SelectItem>
-                <SelectItem value="admin">Operations Admin (Full Team & Settings Control)</SelectItem>
-                <SelectItem value="owner">Workspace Owner (Unrestricted Agency Billing & Org Control)</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Broker-specific fields */}
-          {isBroker && (
-            <div className="p-3.5 bg-stone-50 rounded-lg border border-stone-200/80 space-y-3.5">
-              <div className="flex items-center gap-1.5 text-xs font-semibold text-[#0d4a36]">
-                <Sparkles className="h-3.5 w-3.5" />
-                <span>Broker Lead Routing Profile</span>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <label className="text-[11px] font-semibold text-stone-700">Phone (WhatsApp)</label>
-                  <Input
-                    placeholder="+234 800 000 0000"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    className="text-xs bg-white"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-[11px] font-semibold text-stone-700">Professional Title</label>
-                  <Input
-                    placeholder="e.g. Senior Portfolio Lead"
-                    value={roleTitle}
-                    onChange={(e) => setRoleTitle(e.target.value)}
-                    className="text-xs bg-white"
-                  />
-                </div>
-              </div>
-
-              {/* Territory */}
+            {/* First Name & Last Name */}
+            <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <label className="text-[11px] font-semibold text-stone-700">Primary Territory</label>
-                <Select value={territory} onValueChange={setTerritory}>
-                  <SelectTrigger className="text-xs bg-white">
-                    <SelectValue placeholder="Select territory" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {LAGOS_TERRITORIES.map((t) => (
-                      <SelectItem key={t} value={t}>
-                        {t}
-                      </SelectItem>
+                <label className="text-xs font-semibold text-stone-700">First Name</label>
+                <Input
+                  placeholder="Adewale"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  className="text-xs h-8.5 bg-white border-stone-200"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-stone-700">Last Name</label>
+                <Input
+                  placeholder="Tinubu"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  className="text-xs h-8.5 bg-white border-stone-200"
+                />
+              </div>
+            </div>
+
+            {/* Role Selector */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold text-stone-700">
+                Assigned Role <span className="text-rose-500">*</span>
+              </label>
+              <Select value={role} onValueChange={(val) => setRole(val as WorkspaceRole)}>
+                <SelectTrigger className="text-xs h-8.5 bg-white border-stone-200">
+                  <SelectValue placeholder="Select a role" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="sales_agent" className="text-xs">
+                    Licensed Luxury Broker (Viewings & Lead Intake)
+                  </SelectItem>
+                  <SelectItem value="sales_manager" className="text-xs">
+                    Sales Director / Manager (Pipeline Supervision)
+                  </SelectItem>
+                  <SelectItem value="admin" className="text-xs">
+                    Operations Admin (Full Team & Settings Authority)
+                  </SelectItem>
+                  <SelectItem value="owner" className="text-xs">
+                    Workspace Owner (Unrestricted Organization Authority)
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Broker-specific fields */}
+            {isBroker && (
+              <div className="p-3.5 bg-stone-50/70 rounded-lg border border-stone-200/80 space-y-3">
+                <div className="flex items-center gap-1.5 text-xs font-semibold text-[#0d4a36]">
+                  <Sparkles className="h-3.5 w-3.5" />
+                  <span>Broker Lead Routing Profile</span>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-semibold text-stone-700">Phone Number</label>
+                    <Input
+                      placeholder="+234 800 000 0000"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      className="text-xs h-8 bg-white border-stone-200"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-semibold text-stone-700">Professional Title</label>
+                    <Input
+                      placeholder="e.g. Senior Portfolio Lead"
+                      value={roleTitle}
+                      onChange={(e) => setRoleTitle(e.target.value)}
+                      className="text-xs h-8 bg-white border-stone-200"
+                    />
+                  </div>
+                </div>
+
+                {/* Territory */}
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-semibold text-stone-700">Primary Territory</label>
+                  <Select value={territory} onValueChange={setTerritory}>
+                    <SelectTrigger className="text-xs h-8 bg-white border-stone-200">
+                      <SelectValue placeholder="Select territory" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {LAGOS_TERRITORIES.map((t) => (
+                        <SelectItem key={t} value={t} className="text-xs">
+                          {t}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Specializations */}
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-semibold text-stone-700">
+                    Property Specializations
+                  </label>
+                  <div className="grid grid-cols-2 gap-2 pt-1">
+                    {AVAILABLE_SPECIALIZATIONS.map((spec) => (
+                      <label
+                        key={spec.id}
+                        className="flex items-center gap-2 text-xs text-stone-700 cursor-pointer"
+                      >
+                        <Checkbox
+                          checked={specializations.includes(spec.id)}
+                          onCheckedChange={() => handleSpecializationToggle(spec.id)}
+                        />
+                        <span>{spec.label}</span>
+                      </label>
                     ))}
-                  </SelectContent>
-                </Select>
-              </div>
+                  </div>
+                </div>
 
-              {/* Specializations */}
-              <div className="space-y-1.5">
-                <label className="text-[11px] font-semibold text-stone-700">
-                  Property Specializations
-                </label>
-                <div className="grid grid-cols-2 gap-2 pt-1">
-                  {AVAILABLE_SPECIALIZATIONS.map((spec) => (
-                    <label
-                      key={spec.id}
-                      className="flex items-center gap-2 text-xs text-stone-700 cursor-pointer"
-                    >
-                      <Checkbox
-                        checked={specializations.includes(spec.id)}
-                        onCheckedChange={() => handleSpecializationToggle(spec.id)}
-                      />
-                      <span>{spec.label}</span>
+                {/* Weight & Capacity */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-semibold text-stone-700">
+                      Routing Weight (1-100)
                     </label>
-                  ))}
+                    <Input
+                      type="number"
+                      min={1}
+                      max={100}
+                      value={routingWeight}
+                      onChange={(e) => setRoutingWeight(Number(e.target.value))}
+                      className="text-xs h-8 bg-white border-stone-200"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[11px] font-semibold text-stone-700">
+                      Max Active Leads
+                    </label>
+                    <Input
+                      type="number"
+                      min={5}
+                      max={200}
+                      value={maxCapacity}
+                      onChange={(e) => setMaxCapacity(Number(e.target.value))}
+                      className="text-xs h-8 bg-white border-stone-200"
+                    />
+                  </div>
                 </div>
               </div>
+            )}
+          </div>
 
-              {/* Weight & Capacity */}
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <label className="text-[11px] font-semibold text-stone-700">
-                    Routing Weight (1-50)
-                  </label>
-                  <Input
-                    type="number"
-                    min={1}
-                    max={100}
-                    value={routingWeight}
-                    onChange={(e) => setRoutingWeight(Number(e.target.value))}
-                    className="text-xs bg-white"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <label className="text-[11px] font-semibold text-stone-700">
-                    Max Active Leads
-                  </label>
-                  <Input
-                    type="number"
-                    min={5}
-                    max={200}
-                    value={maxCapacity}
-                    onChange={(e) => setMaxCapacity(Number(e.target.value))}
-                    className="text-xs bg-white"
-                  />
-                </div>
-              </div>
-            </div>
-          )}
-
-          <DialogFooter className="pt-2">
+          {/* Footer matching standard DialogFooter */}
+          <DialogFooter className="p-4 border-t border-stone-100 bg-[#fcfcfb] flex items-center justify-between sm:justify-between w-full">
             <Button
               type="button"
               variant="outline"
               size="sm"
               onClick={() => onOpenChange(false)}
-              className="text-xs cursor-pointer"
+              className="text-xs h-8 cursor-pointer"
               disabled={isSubmitting}
             >
               Cancel
@@ -307,7 +324,7 @@ export function InviteMemberModal({
             <Button
               type="submit"
               size="sm"
-              className="text-xs bg-[#0d4a36] hover:bg-[#0a3a2b] text-white cursor-pointer gap-1.5"
+              className="text-xs h-8 bg-[#0d4a36] hover:bg-[#0a3a2b] text-white cursor-pointer gap-1.5 font-medium"
               disabled={isSubmitting}
             >
               {isSubmitting ? (

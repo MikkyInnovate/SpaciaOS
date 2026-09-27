@@ -17,6 +17,7 @@ import {
   CalendarDays,
   Check,
   Copy,
+  Database,
   Globe,
   KeyRound,
   Mail,
@@ -50,16 +51,12 @@ interface IntegrationCardProps {
 
 function getProviderIcon(type: string) {
   switch (type) {
-    case "vapi":
-      return <Mic className="h-4 w-4" />;
-    case "resend":
-      return <Mail className="h-4 w-4" />;
+    case "property_db":
+      return <Database className="h-4 w-4" />;
     case "google_calendar":
       return <CalendarDays className="h-4 w-4" />;
     case "webhook":
       return <Globe className="h-4 w-4" />;
-    case "whatsapp":
-      return <MessageSquare className="h-4 w-4" />;
     case "crm":
       return <Zap className="h-4 w-4" />;
     default:

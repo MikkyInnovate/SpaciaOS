@@ -10,12 +10,14 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Activity,
+  CheckCircle2,
   Database,
   Layers,
   Plus,
   RefreshCw,
   Search,
   ShieldCheck,
+  Sparkles,
   Terminal,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -33,11 +35,9 @@ import {
 
 const CATEGORIES: { id: IntegrationCategory; label: string }[] = [
   { id: "all", label: "All Integrations" },
-  { id: "voice", label: "Voice & AI" },
-  { id: "notifications", label: "Notifications" },
-  { id: "calendar", label: "Calendars" },
   { id: "leads", label: "Lead Ingestion" },
-  { id: "messaging", label: "Messaging" },
+  { id: "calendar", label: "Calendars" },
+  { id: "properties", label: "Property Inventory" },
   { id: "crm", label: "CRMs" },
 ];
 
@@ -321,6 +321,34 @@ export default function IntegrationsPage() {
           </div>
         }
       />
+
+      {/* Managed Platform Infrastructure Notice */}
+      <div className="p-3.5 rounded-xl border border-emerald-200/90 bg-emerald-50/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+        <div className="flex items-start sm:items-center gap-3">
+          <div className="h-8 w-8 rounded-lg bg-[#0d4a36] text-white flex items-center justify-center shrink-0 shadow-xs">
+            <Sparkles className="h-4 w-4" />
+          </div>
+          <div className="space-y-0.5">
+            <div className="flex items-center gap-2">
+              <span className="font-semibold text-emerald-950">
+                Managed Platform Infrastructure (Included by Spacia)
+              </span>
+              <Badge variant="outline" className="border-emerald-300 bg-white text-emerald-800 text-[10px] font-medium py-0 px-1.5">
+                Zero Setup
+              </Badge>
+            </div>
+            <p className="text-emerald-800/90 text-[11px] leading-relaxed">
+              Autonomous AI Voice Calling (Telephony Engine) and High-Deliverability Email Notifications are fully managed by Spacia out of the box. Your team only connects your website forms, broker calendars, property database, and CRM.
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 shrink-0 self-start sm:self-auto">
+          <span className="inline-flex items-center gap-1.5 text-emerald-800 text-xs font-medium bg-white px-2.5 py-1 rounded-md border border-emerald-200 shadow-2xs">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-600 animate-pulse" />
+            AI Voice & Email Active
+          </span>
+        </div>
+      </div>
 
       {/* KPI Overview Strip */}
       <IntegrationsSummaryCards

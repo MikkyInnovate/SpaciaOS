@@ -60,9 +60,9 @@ async function runDay24IntegrationsTests() {
     const integrations = await integrationsService.getIntegrations(primaryTenant.workspaceId);
 
     assert.ok(Array.isArray(integrations), "Integrations result must be an array");
-    assert.ok(integrations.length >= 5, "Workspace must have at least 5 default integrations");
+    assert.ok(integrations.length >= 4, "Workspace must have at least 4 default client integrations");
 
-    const expectedTypes = ["vapi", "resend", "google_calendar", "webhook", "whatsapp", "crm"];
+    const expectedTypes = ["webhook", "google_calendar", "property_db", "crm"];
     expectedTypes.forEach((type) => {
       const item = integrations.find((i) => i.type === type);
       assert.ok(item, `Default integration type '${type}' must be present`);
@@ -71,20 +71,20 @@ async function runDay24IntegrationsTests() {
       assert.ok(item.description.length > 0, `Integration '${type}' must have a description`);
     });
 
-    console.log(`✔ [TEST 1 PASSED] Verified ${integrations.length} default integrations provisioned and categorized.\n`);
+    console.log(`✔ [TEST 1 PASSED] Verified ${integrations.length} default client integrations provisioned and categorized.\n`);
 
     // =========================================================================
     // TEST 2: Credential Storage & Security Sanitization
     // =========================================================================
     console.log("▶ [TEST 2] Validating Credential Storage & Security Sanitization...");
-    const vapiIntegration = integrations.find((i) => i.type === "vapi")!;
-    const superSecretKey = "vapi_secret_key_super_confidential_999xyz";
+    const testIntegration = integrations.find((i) => i.type === "webhook")!;
+    const superSecretKey = "whsec_secret_key_super_confidential_999xyz";
 
     const updated = await integrationsService.updateCredentials(
       primaryTenant.workspaceId,
-      vapiIntegration.id,
+      testIntegration.id,
       {
-        credentials: { apiKey: superSecretKey, assistantId: "asst_custom_closer_44" },
+        credentials: { webhookSecret: superSecretKey },
       }
     );
 
@@ -109,10 +109,10 @@ async function runDay24IntegrationsTests() {
     const [dbRow] = await db
       .select()
       .from(schema.integrations)
-      .where(eq(schema.integrations.id, vapiIntegration.id));
+      .where(eq(schema.integrations.id, testIntegration.id));
     assert.ok(dbRow, "Database row must exist");
     assert.strictEqual(
-      (dbRow.credentials as any).apiKey,
+      (dbRow.credentials as any).webhookSecret,
       superSecretKey,
       "Raw credential must be securely persisted in Neon PostgreSQL"
     );
@@ -125,7 +125,7 @@ async function runDay24IntegrationsTests() {
     console.log("▶ [TEST 3] Testing Live Connection Validation & Health Tracking...");
     const testResult = await integrationsService.testConnection(
       primaryTenant.workspaceId,
-      vapiIntegration.id
+      testIntegration.id
     );
 
     assert.strictEqual(testResult.success, true, "Connection test must succeed for valid integration");
@@ -135,7 +135,8 @@ async function runDay24IntegrationsTests() {
     assert.strictEqual(testResult.failureCount, 0, "Failure count must be 0 after successful test");
     assert.strictEqual(testResult.lastError, null, "lastError must be null on success");
 
-    console.log(`✔ [TEST 3 PASSED] Validated ${vapiIntegration.name} in ${testResult.latencyMs}ms (Health: ${testResult.healthStatus}).\n`);
+    console.log(`✔ [TEST 3 PASSED] Validated ${testIntegration.name} in ${testResult.latencyMs}ms (Health: ${testResult.healthStatus}).\n`);
+
 
     // =========================================================================
     // TEST 4: Failure Recording & Error Tracking
@@ -144,15 +145,15 @@ async function runDay24IntegrationsTests() {
     // Update with invalid credentials to trigger provider failure
     await integrationsService.updateCredentials(
       primaryTenant.workspaceId,
-      vapiIntegration.id,
+      testIntegration.id,
       {
-        credentials: { apiKey: "invalid_revoked_key_trigger_fail" },
+        credentials: { webhookSecret: "invalid_revoked_key_trigger_fail" },
       }
     );
 
     const failResult1 = await integrationsService.testConnection(
       primaryTenant.workspaceId,
-      vapiIntegration.id
+      testIntegration.id
     );
 
     assert.strictEqual(failResult1.success, false, "Test must fail for invalid credentials");
@@ -164,7 +165,7 @@ async function runDay24IntegrationsTests() {
     // Test second consecutive failure
     const failResult2 = await integrationsService.testConnection(
       primaryTenant.workspaceId,
-      vapiIntegration.id
+      testIntegration.id
     );
     assert.strictEqual(failResult2.failureCount, 2, "Failure count must increment to 2 on repeat failure");
 
@@ -177,15 +178,15 @@ async function runDay24IntegrationsTests() {
     // Restore valid credentials
     await integrationsService.updateCredentials(
       primaryTenant.workspaceId,
-      vapiIntegration.id,
+      testIntegration.id,
       {
-        credentials: { apiKey: "vapi_restored_valid_key_001" },
+        credentials: { webhookSecret: "whsec_restored_valid_key_001" },
       }
     );
 
     const reconnected = await integrationsService.reconnect(
       primaryTenant.workspaceId,
-      vapiIntegration.id
+      testIntegration.id
     );
     assert.strictEqual(reconnected.status, "connected", "Reconnection must restore connected status");
     assert.strictEqual(reconnected.healthStatus, "healthy", "Reconnection must restore healthy status");
@@ -194,7 +195,7 @@ async function runDay24IntegrationsTests() {
     // Disconnect
     const disconnected = await integrationsService.disconnect(
       primaryTenant.workspaceId,
-      vapiIntegration.id
+      testIntegration.id
     );
     assert.strictEqual(disconnected.status, "disconnected", "Disconnect must update status to disconnected");
     assert.strictEqual(disconnected.healthStatus, "untested", "Disconnect must set healthStatus to untested");
@@ -211,7 +212,8 @@ async function runDay24IntegrationsTests() {
     // Attempt cross-tenant access: Workspace B trying to inspect Workspace A's integration
     let crossTenantBlocked = false;
     try {
-      await integrationsService.getIntegration(otherTenant.workspaceId, vapiIntegration.id);
+      await integrationsService.getIntegration(otherTenant.workspaceId, testIntegration.id);
+
     } catch (err: any) {
       crossTenantBlocked = true;
       assert.strictEqual(err.status, 404, "Cross-tenant access must throw 404 Not Found");

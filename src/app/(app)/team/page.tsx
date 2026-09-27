@@ -169,15 +169,12 @@ export default function TeamPage() {
       <TeamMemberTable
         members={members}
         isLoading={isLoading}
-        searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
-        roleFilter={roleFilter}
-        onRoleFilterChange={setRoleFilter}
         onSelectAgent={(member) => setSelectedAgentMember(member)}
         onEditRole={(member) => setEditingRoleMember(member)}
         onToggleStatus={handleToggleStatus}
         onRemoveMember={(member) => setRemovingMember(member)}
       />
+
 
       {/* Role-Based Access Control Guide */}
       <RoleGuidePanel roles={roles} />

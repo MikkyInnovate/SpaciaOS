@@ -19,33 +19,37 @@ import {
 
 interface ProviderMetadata {
   description: string;
-  category: "voice" | "notifications" | "calendar" | "leads" | "messaging" | "crm";
+  category: "leads" | "calendar" | "properties" | "crm" | "voice" | "notifications" | "messaging" | string;
 }
 
-const PROVIDER_METADATA: Record<IntegrationType, ProviderMetadata> = {
-  vapi: {
-    description: "High-concurrency outbound AI voice calling with turn-by-turn speech transcription",
-    category: "voice",
-  },
-  resend: {
-    description: "Branded inspection confirmations, 24h/1h viewing reminders, and closer briefings",
-    category: "notifications",
+const PROVIDER_METADATA: Record<string, ProviderMetadata> = {
+  webhook: {
+    description: "Sub-second inbound lead payload capture from agency website contact and inquiry forms",
+    category: "leads",
   },
   google_calendar: {
     description: "Two-way broker calendar synchronization and Free/Busy collision avoidance",
     category: "calendar",
   },
-  webhook: {
-    description: "Sub-second inbound lead payload capture with E.164 phone normalization",
-    category: "leads",
-  },
-  whatsapp: {
-    description: "Automated property brochure dispatch, location pins, and SMS viewing alerts",
-    category: "messaging",
+  property_db: {
+    description: "Real-time sync with external property inventory database, PMS, or listings CMS",
+    category: "properties",
   },
   crm: {
-    description: "Two-way synchronization of qualified buyer dossiers and deal pipeline stages",
+    description: "Two-way synchronization of qualified buyer dossiers and deal pipeline stages with HubSpot / CRM",
     category: "crm",
+  },
+  vapi: {
+    description: "Managed AI voice calling engine (Provisioned by Spacia)",
+    category: "voice",
+  },
+  resend: {
+    description: "Managed transactional email and viewing notifications (Provisioned by Spacia)",
+    category: "notifications",
+  },
+  whatsapp: {
+    description: "WhatsApp Business messaging (Phase 2)",
+    category: "messaging",
   },
 };
 
@@ -151,31 +155,17 @@ export class IntegrationsService {
       config: Record<string, any>;
     }> = [
       {
-        type: "vapi",
-        name: "Vapi AI Voice Telephony",
+        type: "webhook",
+        name: "Website Inbound Lead Webhook",
         status: "connected",
-        credentials: { apiKey: "vapi_live_9a8f27b9c1d044e", assistantId: "asst_luxury_closer_01" },
+        credentials: { webhookSecret: "whsec_spacia_inbound_98124b" },
         config: {
           healthStatus: "healthy",
-          latencyMs: 142,
+          latencyMs: 18,
           lastTestedAt: new Date().toISOString(),
           lastSuccessAt: new Date().toISOString(),
           failureCount: 0,
-          version: "v2.4",
-        },
-      },
-      {
-        type: "resend",
-        name: "Resend Notification Engine",
-        status: "connected",
-        credentials: { apiKey: "re_spacia_sec_89df201ba7e44", fromEmail: "concierge@spacia.io" },
-        config: {
-          healthStatus: "healthy",
-          latencyMs: 84,
-          lastTestedAt: new Date().toISOString(),
-          lastSuccessAt: new Date().toISOString(),
-          failureCount: 0,
-          version: "v1.2",
+          endpointUrl: "https://api.spacia.io/api/v1/leads/ingest",
         },
       },
       {
@@ -193,30 +183,17 @@ export class IntegrationsService {
         },
       },
       {
-        type: "webhook",
-        name: "Inbound Marketing Webhook",
+        type: "property_db",
+        name: "External Property Database / PMS Gateway",
         status: "connected",
-        credentials: { webhookSecret: "whsec_spacia_inbound_98124b" },
+        credentials: { apiKey: "pms_sec_live_9941a", endpointUrl: "https://api.luxuryagency.com/v1/properties" },
         config: {
           healthStatus: "healthy",
-          latencyMs: 18,
+          latencyMs: 34,
           lastTestedAt: new Date().toISOString(),
           lastSuccessAt: new Date().toISOString(),
           failureCount: 0,
-          endpointUrl: "https://api.spacia.io/api/v1/leads/ingest",
-        },
-      },
-      {
-        type: "whatsapp",
-        name: "Termii / WhatsApp Business",
-        status: "connected",
-        credentials: { apiKey: "termii_api_live_44920ab", senderId: "SPACIA" },
-        config: {
-          healthStatus: "healthy",
-          latencyMs: 165,
-          lastTestedAt: new Date().toISOString(),
-          lastSuccessAt: new Date().toISOString(),
-          failureCount: 0,
+          syncMode: "realtime",
         },
       },
       {
@@ -243,11 +220,12 @@ export class IntegrationsService {
       });
     }
 
-    this.logger.log(`Initialized default integrations for workspace ${workspaceId}`);
+    this.logger.log(`Initialized default client integrations for workspace ${workspaceId}`);
   }
 
   /**
-   * Retrieves all integrations for a tenant, automatically ensuring default connections.
+   * Retrieves all client-facing integrations for a tenant.
+   * Internal managed platform infrastructure (vapi, resend, whatsapp) is omitted.
    */
   async getIntegrations(workspaceId: string): Promise<IntegrationSanitizedDto[]> {
     await this.ensureDefaultIntegrations(workspaceId);
@@ -258,8 +236,41 @@ export class IntegrationsService {
       .where(eq(schema.integrations.workspaceId, workspaceId))
       .orderBy(schema.integrations.createdAt);
 
-    return records.map((r) => this.sanitize(r));
+    // Filter out internal platform infrastructure from client integrations list
+    const clientRecords = records.filter(
+      (r) => r.type !== "vapi" && r.type !== "resend" && r.type !== "whatsapp"
+    );
+
+    // If clientRecords doesn't contain property_db yet (e.g. from earlier seed), insert it
+    const hasPropertyDb = clientRecords.some((r) => r.type === "property_db");
+    if (!hasPropertyDb) {
+      const [newProp] = await this.db
+        .insert(schema.integrations)
+        .values({
+          workspaceId,
+          type: "property_db",
+          name: "External Property Database / PMS Gateway",
+          status: "connected",
+          credentials: {
+            apiKey: "pms_sec_live_9941a",
+            endpointUrl: "https://api.luxuryagency.com/v1/properties",
+          },
+          config: {
+            healthStatus: "healthy",
+            latencyMs: 34,
+            lastTestedAt: new Date().toISOString(),
+            lastSuccessAt: new Date().toISOString(),
+            failureCount: 0,
+            syncMode: "realtime",
+          },
+        })
+        .returning();
+      clientRecords.push(newProp);
+    }
+
+    return clientRecords.map((r) => this.sanitize(r));
   }
+
 
   /**
    * Retrieves a single integration by ID.

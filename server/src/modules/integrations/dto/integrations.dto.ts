@@ -3,16 +3,18 @@ import {
   IsOptional,
   IsObject,
   IsNotEmpty,
-  IsIn,
 } from "class-validator";
 
 export type IntegrationType =
+  | "webhook"
+  | "google_calendar"
+  | "property_db"
+  | "crm"
+  | "meta_ads"
   | "vapi"
   | "resend"
-  | "google_calendar"
-  | "webhook"
   | "whatsapp"
-  | "crm";
+  | string;
 
 export type ConnectionStatus =
   | "connected"
@@ -39,7 +41,6 @@ export class UpdateCredentialsDto {
 export class CreateIntegrationDto {
   @IsString()
   @IsNotEmpty()
-  @IsIn(["vapi", "resend", "google_calendar", "webhook", "whatsapp", "crm"])
   type!: IntegrationType;
 
   @IsString()
@@ -61,7 +62,7 @@ export interface IntegrationSanitizedDto {
   type: IntegrationType;
   name: string;
   description: string;
-  category: "voice" | "notifications" | "calendar" | "leads" | "messaging" | "crm";
+  category: "leads" | "calendar" | "properties" | "crm" | "voice" | "notifications" | "messaging" | string;
   status: ConnectionStatus;
   healthStatus: HealthStatus;
   hasCredentials: boolean;

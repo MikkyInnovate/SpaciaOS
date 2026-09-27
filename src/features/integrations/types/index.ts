@@ -1,10 +1,9 @@
 export type IntegrationType =
-  | "vapi"
-  | "resend"
-  | "google_calendar"
   | "webhook"
-  | "whatsapp"
+  | "google_calendar"
+  | "property_db"
   | "crm"
+  | "meta_ads"
   | string;
 
 export type IntegrationStatus = "connected" | "disconnected" | "reconnecting" | "error";
@@ -13,11 +12,9 @@ export type IntegrationHealthStatus = "healthy" | "degraded" | "unhealthy" | "un
 
 export type IntegrationCategory =
   | "all"
-  | "voice"
-  | "notifications"
-  | "calendar"
   | "leads"
-  | "messaging"
+  | "calendar"
+  | "properties"
   | "crm";
 
 export interface IntegrationItem {
@@ -68,45 +65,21 @@ export interface CredentialFieldDefinition {
 }
 
 export const INTEGRATION_FIELD_DEFINITIONS: Record<string, CredentialFieldDefinition[]> = {
-  vapi: [
+  webhook: [
     {
-      key: "apiKey",
-      label: "Vapi Private API Key",
+      key: "signingSecret",
+      label: "Webhook HMAC Signing Secret",
       type: "password",
-      placeholder: "vapi_live_••••••••••••••••",
-      description: "Found in your Vapi Dashboard under Account > API Keys.",
+      placeholder: "whsec_••••••••••••••••",
+      description: "Secret token used to verify SHA-256 HMAC incoming inquiry signatures.",
       required: true,
     },
     {
-      key: "phoneNumberId",
-      label: "Outbound Phone Number ID",
-      type: "text",
-      placeholder: "pn_9a12c84e1b",
-      description: "Dedicated high-reputation luxury brokerage caller ID.",
-    },
-    {
-      key: "assistantId",
-      label: "Voice Assistant Agent ID",
-      type: "text",
-      placeholder: "asst_spacia_luxury_v2",
-      description: "Configured conversational prompt model on Vapi.",
-    },
-  ],
-  resend: [
-    {
-      key: "apiKey",
-      label: "Resend API Key",
-      type: "password",
-      placeholder: "re_spacia_••••••••••••••••",
-      description: "API Key with sending permissions from resend.com.",
-      required: true,
-    },
-    {
-      key: "fromEmail",
-      label: "Verified Sender Email",
-      type: "text",
-      placeholder: "concierge@spacia.ai",
-      description: "Must match a verified domain in your Resend account.",
+      key: "endpointUrl",
+      label: "Ingestion Endpoint URL",
+      type: "url",
+      placeholder: "https://api.spacia.ai/api/v1/leads/ingest",
+      description: "Webhook destination configured in external marketing portals.",
     },
   ],
   google_calendar: [
@@ -123,7 +96,7 @@ export const INTEGRATION_FIELD_DEFINITIONS: Record<string, CredentialFieldDefini
       label: "Google Client Secret",
       type: "password",
       placeholder: "GOCSPX-••••••••••••••••",
-      description: "Secure OAuth client secret.",
+      description: "Secure OAuth client secret for broker calendar access.",
       required: true,
     },
     {
@@ -134,38 +107,29 @@ export const INTEGRATION_FIELD_DEFINITIONS: Record<string, CredentialFieldDefini
       description: "Target calendar where viewing events are booked.",
     },
   ],
-  webhook: [
-    {
-      key: "signingSecret",
-      label: "HMAC Signing Secret",
-      type: "password",
-      placeholder: "whsec_••••••••••••••••",
-      description: "Secret token used to verify SHA-256 HMAC incoming signatures.",
-      required: true,
-    },
+  property_db: [
     {
       key: "endpointUrl",
-      label: "Ingestion Endpoint URL",
+      label: "Property Database / PMS API Endpoint URL",
       type: "url",
-      placeholder: "https://api.spacia.ai/api/v1/leads/ingest",
-      description: "Webhook destination configured in external marketing portals.",
-    },
-  ],
-  whatsapp: [
-    {
-      key: "apiKey",
-      label: "Termii / Meta API Key",
-      type: "password",
-      placeholder: "term_sec_••••••••••••••••",
-      description: "Provider key for WhatsApp Business Cloud API & SMS.",
+      placeholder: "https://api.luxuryagency.com/v1/properties",
+      description: "External API endpoint where your listings and availability live.",
       required: true,
     },
     {
-      key: "senderId",
-      label: "Registered Sender ID",
+      key: "apiKey",
+      label: "Bearer Token / Secret API Key",
+      type: "password",
+      placeholder: "pms_sec_••••••••••••",
+      description: "Secret key with read access to listings inventory.",
+      required: true,
+    },
+    {
+      key: "syncMode",
+      label: "Sync Mode",
       type: "text",
-      placeholder: "SPACIA",
-      description: "Approved alpha-numeric sender ID for high-deliverability alerts.",
+      placeholder: "realtime",
+      description: "Real-time on-demand query or cached interval.",
     },
   ],
   crm: [
@@ -183,6 +147,23 @@ export const INTEGRATION_FIELD_DEFINITIONS: Record<string, CredentialFieldDefini
       type: "text",
       placeholder: "14892019",
       description: "Your HubSpot enterprise portal number.",
+    },
+  ],
+  meta_ads: [
+    {
+      key: "accessToken",
+      label: "Meta System User Token",
+      type: "password",
+      placeholder: "EAAG••••••••••••",
+      description: "Permanent system user token with leads_retrieval permission.",
+      required: true,
+    },
+    {
+      key: "pageId",
+      label: "Facebook Page ID",
+      type: "text",
+      placeholder: "1092837465019",
+      description: "Target Facebook Page running luxury real estate lead forms.",
     },
   ],
 };
