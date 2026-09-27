@@ -1,0 +1,764 @@
+import {
+  Injectable,
+  Inject,
+  NotFoundException,
+  BadRequestException,
+  ConflictException,
+  ForbiddenException,
+  Logger,
+} from "@nestjs/common";
+import { eq, and, sql, desc } from "drizzle-orm";
+import { DRIZZLE_DATABASE, DrizzleDb } from "../../database/database.provider";
+import * as schema from "../../database/schema";
+import { TenantContext } from "../../common/tenant/tenant-context.interface";
+import {
+  InviteMemberDto,
+  UpdateMemberRoleDto,
+  UpdateMemberStatusDto,
+  UpdateAgentRoutingDto,
+} from "./dto/team.dto";
+import {
+  TeamMemberResponse,
+  TeamStatsResponse,
+  RoleDefinition,
+} from "./interfaces/team.interface";
+import { WorkspaceRole } from "../../database/schema/users.schema";
+
+const DEFAULT_BROKERS = [
+  {
+    name: "Tunde Bakare",
+    email: "tunde.bakare@spacia.luxury",
+    phone: "+234 803 112 4001",
+    roleTitle: "Senior Acquisition Executive",
+    territory: "Lekki Phase 1 & Ikate",
+    specializations: ["luxury_residential", "waterfront"],
+    maxConcurrentLeads: 50,
+    routingWeight: 15,
+  },
+  {
+    name: "Ngozi Eze",
+    email: "ngozi.eze@spacia.luxury",
+    phone: "+234 802 334 5002",
+    roleTitle: "Luxury Portfolio Director",
+    territory: "Ikoyi & Banana Island",
+    specializations: ["luxury_residential", "penthouses", "investment_yield"],
+    maxConcurrentLeads: 50,
+    routingWeight: 20,
+  },
+  {
+    name: "Femi Adeleke",
+    email: "femi.adeleke@spacia.luxury",
+    phone: "+234 809 556 7003",
+    roleTitle: "Commercial & Waterfront Lead",
+    territory: "Victoria Island & Eko Atlantic",
+    specializations: ["commercial", "land_development", "waterfront"],
+    maxConcurrentLeads: 50,
+    routingWeight: 15,
+  },
+];
+
+@Injectable()
+export class TeamService {
+  private readonly logger = new Logger(TeamService.name);
+
+  constructor(
+    @Inject(DRIZZLE_DATABASE)
+    private readonly db: DrizzleDb
+  ) {}
+
+  /**
+   * 1. Team KPI summary statistics
+   */
+  async getStats(workspaceId: string): Promise<TeamStatsResponse> {
+    await this.ensureSeedBrokers(workspaceId);
+
+    // 1. Total members count
+    const members = await this.db
+      .select({ id: schema.workspaceMembers.id, role: schema.workspaceMembers.role, status: schema.workspaceMembers.status })
+      .from(schema.workspaceMembers)
+      .where(eq(schema.workspaceMembers.workspaceId, workspaceId));
+
+    const totalMembers = members.length;
+    const activeBrokers = members.filter(
+      (m) =>
+        (m.role === "sales_agent" || m.role === "sales_manager") &&
+        m.status === "active"
+    ).length;
+
+    // 2. Agents capacity & routing
+    const agents = await this.db
+      .select({
+        id: schema.agents.id,
+        status: schema.agents.status,
+        isAvailableForRouting: schema.agents.isAvailableForRouting,
+        maxConcurrentLeads: schema.agents.maxConcurrentLeads,
+      })
+      .from(schema.agents)
+      .where(eq(schema.agents.workspaceId, workspaceId));
+
+    const routingActive = agents.filter(
+      (a) => a.isAvailableForRouting && a.status === "active"
+    ).length;
+
+    const totalCapacity = agents
+      .filter((a) => a.isAvailableForRouting && a.status === "active")
+      .reduce((sum, a) => sum + (a.maxConcurrentLeads || 50), 0);
+
+    // 3. Current active leads count
+    const leads = await this.db
+      .select({ id: schema.leads.id, status: schema.leads.status })
+      .from(schema.leads)
+      .where(eq(schema.leads.workspaceId, workspaceId));
+
+    const currentActiveLeads = leads.filter(
+      (l) => l.status !== "Lost" && l.status !== "Nurture"
+    ).length;
+
+    const availableCapacity = Math.max(0, totalCapacity - currentActiveLeads);
+    const capacityUtilizationPercent =
+      totalCapacity > 0
+        ? Math.min(100, Math.round((currentActiveLeads / totalCapacity) * 100))
+        : 0;
+
+    return {
+      totalMembers,
+      activeBrokers,
+      routingActive,
+      totalCapacity,
+      currentActiveLeads,
+      availableCapacity,
+      capacityUtilizationPercent,
+    };
+  }
+
+  /**
+   * 2. List all workspace members and agents
+   */
+  async listMembers(workspaceId: string): Promise<TeamMemberResponse[]> {
+    await this.ensureSeedBrokers(workspaceId);
+
+    // Query members with user data
+    const memberRows = await this.db
+      .select({
+        id: schema.workspaceMembers.id,
+        workspaceId: schema.workspaceMembers.workspaceId,
+        userId: schema.workspaceMembers.userId,
+        role: schema.workspaceMembers.role,
+        status: schema.workspaceMembers.status,
+        invitedEmail: schema.workspaceMembers.invitedEmail,
+        invitedAt: schema.workspaceMembers.invitedAt,
+        joinedAt: schema.workspaceMembers.joinedAt,
+        createdAt: schema.workspaceMembers.createdAt,
+        userEmail: schema.users.email,
+        userFirstName: schema.users.firstName,
+        userLastName: schema.users.lastName,
+        userImageUrl: schema.users.imageUrl,
+      })
+      .from(schema.workspaceMembers)
+      .leftJoin(schema.users, eq(schema.workspaceMembers.userId, schema.users.id))
+      .where(eq(schema.workspaceMembers.workspaceId, workspaceId))
+      .orderBy(desc(schema.workspaceMembers.createdAt));
+
+    // Query all agents for workspace
+    const agentRows = await this.db
+      .select()
+      .from(schema.agents)
+      .where(eq(schema.agents.workspaceId, workspaceId));
+
+    // Lead assignment count per agent
+    const leads = await this.db
+      .select({
+        id: schema.leads.id,
+        assignedAgentId: schema.leads.assignedAgentId,
+        status: schema.leads.status,
+      })
+      .from(schema.leads)
+      .where(eq(schema.leads.workspaceId, workspaceId));
+
+    return memberRows.map((m) => {
+      const matchingAgent = agentRows.find(
+        (a) => a.userId === m.userId || a.email.toLowerCase() === (m.userEmail || "").toLowerCase()
+      );
+
+      let agentData = null;
+      if (matchingAgent) {
+        const assignedLeadsCount = leads.filter(
+          (l) =>
+            l.assignedAgentId === matchingAgent.id &&
+            l.status !== "Lost" &&
+            l.status !== "Nurture"
+        ).length;
+
+        agentData = {
+          id: matchingAgent.id,
+          name: matchingAgent.name,
+          email: matchingAgent.email,
+          phone: matchingAgent.phone,
+          avatarUrl: matchingAgent.avatarUrl,
+          roleTitle: matchingAgent.roleTitle,
+          status: matchingAgent.status as "active" | "busy" | "offline",
+          territory: matchingAgent.territory || "Lagos Prime",
+          specializations: matchingAgent.specializations || ["luxury_residential"],
+          routingWeight: matchingAgent.routingWeight ?? 10,
+          isAvailableForRouting: matchingAgent.isAvailableForRouting ?? true,
+          maxConcurrentLeads: matchingAgent.maxConcurrentLeads ?? 50,
+          activeLeadsCount: assignedLeadsCount,
+        };
+      }
+
+      return {
+        id: m.id,
+        workspaceId: m.workspaceId,
+        userId: m.userId,
+        role: m.role as WorkspaceRole,
+        status: (m.status as any) || "active",
+        invitedEmail: m.invitedEmail,
+        invitedAt: m.invitedAt,
+        joinedAt: m.joinedAt,
+        createdAt: m.createdAt,
+        user: {
+          id: m.userId,
+          email: m.userEmail || m.invitedEmail || `${m.userId}@pacia.luxury`,
+          firstName: m.userFirstName,
+          lastName: m.userLastName,
+          imageUrl: m.userImageUrl,
+        },
+        agent: agentData,
+      };
+    });
+  }
+
+  /**
+   * 3. Invite a new team member with role & optional agent routing profile
+   */
+  async inviteMember(
+    tenant: TenantContext,
+    dto: InviteMemberDto
+  ): Promise<TeamMemberResponse> {
+    const normalizedEmail = dto.email.toLowerCase().trim();
+
+    // 1. Check if an active member with this email already belongs to workspace
+    const existingMembers = await this.listMembers(tenant.workspaceId);
+    const existing = existingMembers.find(
+      (m) =>
+        m.user.email.toLowerCase() === normalizedEmail ||
+        (m.invitedEmail && m.invitedEmail.toLowerCase() === normalizedEmail)
+    );
+
+    if (existing) {
+      throw new ConflictException(
+        `A team member with email '${dto.email}' already exists in this workspace.`
+      );
+    }
+
+    // 2. Caller role validation: only owner or admin can invite members
+    if (tenant.role !== "owner" && tenant.role !== "admin") {
+      throw new ForbiddenException(
+        "Only workspace owners and administrators can invite team members."
+      );
+    }
+
+    // Only owners can invite someone as owner
+    if (dto.role === "owner" && tenant.role !== "owner") {
+      throw new ForbiddenException(
+        "Only existing workspace owners can grant the Owner role to new members."
+      );
+    }
+
+    // 3. Provision user record
+    const targetUserId = `user_spacia_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+    const firstName = dto.firstName || dto.email.split("@")[0];
+    const lastName = dto.lastName || "Broker";
+
+    await this.db
+      .insert(schema.users)
+      .values({
+        id: targetUserId,
+        email: normalizedEmail,
+        firstName,
+        lastName,
+        imageUrl: `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(
+          `${firstName} ${lastName}`
+        )}`,
+      })
+      .onConflictDoNothing();
+
+    // 4. Provision workspace_members record
+    const [createdMember] = await this.db
+      .insert(schema.workspaceMembers)
+      .values({
+        workspaceId: tenant.workspaceId,
+        userId: targetUserId,
+        role: dto.role,
+        status: "active",
+        invitedEmail: normalizedEmail,
+        invitedAt: new Date(),
+        joinedAt: new Date(),
+      })
+      .returning();
+
+    // 5. If role is sales_agent or sales_manager, create agent routing profile
+    let createdAgent = null;
+    if (dto.role === "sales_agent" || dto.role === "sales_manager") {
+      const [agentRecord] = await this.db
+        .insert(schema.agents)
+        .values({
+          workspaceId: tenant.workspaceId,
+          userId: targetUserId,
+          name: `${firstName} ${lastName}`.trim(),
+          email: normalizedEmail,
+          phone: dto.phone || "+234 800 000 0000",
+          roleTitle: dto.roleTitle || (dto.role === "sales_manager" ? "Sales Director" : "Sales Associate"),
+          territory: dto.territory || "Lagos Prime",
+          specializations: dto.specializations || ["luxury_residential"],
+          routingWeight: dto.routingWeight || 10,
+          maxConcurrentLeads: dto.maxConcurrentLeads || 50,
+          status: "active",
+          isAvailableForRouting: true,
+        })
+        .returning();
+
+      createdAgent = agentRecord;
+    }
+
+    // 6. Record compliance audit log
+    try {
+      await this.db.insert(schema.auditLogs).values({
+        workspaceId: tenant.workspaceId,
+        actorId: tenant.userId,
+        actorType: "user",
+        action: "team:member_invited",
+        resource: "workspace_members",
+        metadata: {
+          email: normalizedEmail,
+          role: dto.role,
+          resourceId: createdMember.id,
+          invitedBy: tenant.userId,
+        },
+      });
+    } catch {}
+
+    this.logger.log(
+      `Invited member '${normalizedEmail}' as role '${dto.role}' in workspace '${tenant.workspaceId}'`
+    );
+
+    return {
+      id: createdMember.id,
+      workspaceId: createdMember.workspaceId,
+      userId: targetUserId,
+      role: createdMember.role as WorkspaceRole,
+      status: "active",
+      invitedEmail: normalizedEmail,
+      invitedAt: createdMember.invitedAt,
+      joinedAt: createdMember.joinedAt,
+      createdAt: createdMember.createdAt,
+      user: {
+        id: targetUserId,
+        email: normalizedEmail,
+        firstName,
+        lastName,
+      },
+      agent: createdAgent
+        ? {
+            id: createdAgent.id,
+            name: createdAgent.name,
+            email: createdAgent.email,
+            phone: createdAgent.phone,
+            roleTitle: createdAgent.roleTitle,
+            status: createdAgent.status as any,
+            territory: createdAgent.territory,
+            specializations: createdAgent.specializations,
+            routingWeight: createdAgent.routingWeight,
+            isAvailableForRouting: createdAgent.isAvailableForRouting,
+            maxConcurrentLeads: createdAgent.maxConcurrentLeads,
+            activeLeadsCount: 0,
+          }
+        : null,
+    };
+  }
+
+  /**
+   * 4. Update member role with owner protection guardrails
+   */
+  async updateRole(
+    tenant: TenantContext,
+    memberId: string,
+    dto: UpdateMemberRoleDto
+  ): Promise<TeamMemberResponse> {
+    const [member] = await this.db
+      .select()
+      .from(schema.workspaceMembers)
+      .where(
+        and(
+          eq(schema.workspaceMembers.id, memberId),
+          eq(schema.workspaceMembers.workspaceId, tenant.workspaceId)
+        )
+      )
+      .limit(1);
+
+    if (!member) {
+      throw new NotFoundException(`Team member '${memberId}' not found.`);
+    }
+
+    // Owner protection guardrails
+    if (member.role === "owner" && dto.role !== "owner") {
+      const allOwners = await this.db
+        .select()
+        .from(schema.workspaceMembers)
+        .where(
+          and(
+            eq(schema.workspaceMembers.workspaceId, tenant.workspaceId),
+            eq(schema.workspaceMembers.role, "owner")
+          )
+        );
+
+      if (allOwners.length <= 1) {
+        throw new BadRequestException(
+          "Cannot demote the sole workspace owner. Assign another owner before transferring or demoting this role."
+        );
+      }
+    }
+
+    // Admin elevation check: only owners can grant owner role
+    if (dto.role === "owner" && tenant.role !== "owner") {
+      throw new ForbiddenException(
+        "Only workspace owners can promote members to the Owner role."
+      );
+    }
+
+    const [updated] = await this.db
+      .update(schema.workspaceMembers)
+      .set({
+        role: dto.role,
+      })
+      .where(eq(schema.workspaceMembers.id, memberId))
+      .returning();
+
+    // Audit log
+    try {
+      await this.db.insert(schema.auditLogs).values({
+        workspaceId: tenant.workspaceId,
+        actorId: tenant.userId,
+        actorType: "user",
+        action: "team:role_updated",
+        resource: "workspace_members",
+        metadata: {
+          previousRole: member.role,
+          newRole: dto.role,
+          resourceId: memberId,
+          updatedBy: tenant.userId,
+        },
+      });
+    } catch {}
+
+    const members = await this.listMembers(tenant.workspaceId);
+    const updatedMember = members.find((m) => m.id === memberId);
+    return updatedMember!;
+  }
+
+  /**
+   * 5. Update member status (Active, Suspended)
+   */
+  async updateStatus(
+    tenant: TenantContext,
+    memberId: string,
+    dto: UpdateMemberStatusDto
+  ): Promise<TeamMemberResponse> {
+    const [member] = await this.db
+      .select()
+      .from(schema.workspaceMembers)
+      .where(
+        and(
+          eq(schema.workspaceMembers.id, memberId),
+          eq(schema.workspaceMembers.workspaceId, tenant.workspaceId)
+        )
+      )
+      .limit(1);
+
+    if (!member) {
+      throw new NotFoundException(`Team member '${memberId}' not found.`);
+    }
+
+    // Cannot suspend sole owner
+    if (member.role === "owner" && dto.status === "suspended") {
+      const allOwners = await this.db
+        .select()
+        .from(schema.workspaceMembers)
+        .where(
+          and(
+            eq(schema.workspaceMembers.workspaceId, tenant.workspaceId),
+            eq(schema.workspaceMembers.role, "owner"),
+            eq(schema.workspaceMembers.status, "active")
+          )
+        );
+
+      if (allOwners.length <= 1) {
+        throw new BadRequestException("Cannot suspend the sole active workspace owner.");
+      }
+    }
+
+    await this.db
+      .update(schema.workspaceMembers)
+      .set({
+        status: dto.status,
+      })
+      .where(eq(schema.workspaceMembers.id, memberId));
+
+    // Also update agent availability if applicable
+    if (dto.status === "suspended") {
+      await this.db
+        .update(schema.agents)
+        .set({
+          status: "offline",
+          isAvailableForRouting: false,
+          updatedAt: new Date(),
+        })
+        .where(
+          and(
+            eq(schema.agents.workspaceId, tenant.workspaceId),
+            eq(schema.agents.userId, member.userId)
+          )
+        );
+    } else if (dto.status === "active") {
+      await this.db
+        .update(schema.agents)
+        .set({
+          status: "active",
+          isAvailableForRouting: true,
+          updatedAt: new Date(),
+        })
+        .where(
+          and(
+            eq(schema.agents.workspaceId, tenant.workspaceId),
+            eq(schema.agents.userId, member.userId)
+          )
+        );
+    }
+
+    const members = await this.listMembers(tenant.workspaceId);
+    return members.find((m) => m.id === memberId)!;
+  }
+
+  /**
+   * 6. Remove member from workspace
+   */
+  async removeMember(
+    tenant: TenantContext,
+    memberId: string
+  ): Promise<{ success: boolean; message: string }> {
+    const [member] = await this.db
+      .select()
+      .from(schema.workspaceMembers)
+      .where(
+        and(
+          eq(schema.workspaceMembers.id, memberId),
+          eq(schema.workspaceMembers.workspaceId, tenant.workspaceId)
+        )
+      )
+      .limit(1);
+
+    if (!member) {
+      throw new NotFoundException(`Team member '${memberId}' not found.`);
+    }
+
+    if (member.role === "owner") {
+      const allOwners = await this.db
+        .select()
+        .from(schema.workspaceMembers)
+        .where(
+          and(
+            eq(schema.workspaceMembers.workspaceId, tenant.workspaceId),
+            eq(schema.workspaceMembers.role, "owner")
+          )
+        );
+
+      if (allOwners.length <= 1) {
+        throw new BadRequestException("Cannot remove the sole workspace owner.");
+      }
+    }
+
+    await this.db
+      .delete(schema.workspaceMembers)
+      .where(eq(schema.workspaceMembers.id, memberId));
+
+    // Deactivate agent if exists
+    await this.db
+      .update(schema.agents)
+      .set({
+        status: "offline",
+        isAvailableForRouting: false,
+        updatedAt: new Date(),
+      })
+      .where(
+        and(
+          eq(schema.agents.workspaceId, tenant.workspaceId),
+          eq(schema.agents.userId, member.userId)
+        )
+      );
+
+    try {
+      await this.db.insert(schema.auditLogs).values({
+        workspaceId: tenant.workspaceId,
+        actorId: tenant.userId,
+        actorType: "user",
+        action: "team:member_removed",
+        resource: "workspace_members",
+        metadata: {
+          removedUserId: member.userId,
+          removedRole: member.role,
+          resourceId: memberId,
+          removedBy: tenant.userId,
+        },
+      });
+    } catch {}
+
+    return {
+      success: true,
+      message: "Team member successfully removed from workspace.",
+    };
+  }
+
+  /**
+   * 7. Update agent routing rules (territory, specializations, weights, capacity)
+   */
+  async updateAgentRouting(
+    tenant: TenantContext,
+    agentId: string,
+    dto: UpdateAgentRoutingDto
+  ) {
+    const [agent] = await this.db
+      .select()
+      .from(schema.agents)
+      .where(
+        and(
+          eq(schema.agents.id, agentId),
+          eq(schema.agents.workspaceId, tenant.workspaceId)
+        )
+      )
+      .limit(1);
+
+    if (!agent) {
+      throw new NotFoundException(`Agent '${agentId}' not found in workspace.`);
+    }
+
+    const updates: Partial<typeof schema.agents.$inferInsert> = {
+      updatedAt: new Date(),
+    };
+
+    if (dto.territory !== undefined) updates.territory = dto.territory;
+    if (dto.specializations !== undefined) updates.specializations = dto.specializations;
+    if (dto.routingWeight !== undefined) updates.routingWeight = dto.routingWeight;
+    if (dto.isAvailableForRouting !== undefined) updates.isAvailableForRouting = dto.isAvailableForRouting;
+    if (dto.maxConcurrentLeads !== undefined) updates.maxConcurrentLeads = dto.maxConcurrentLeads;
+    if (dto.status !== undefined) updates.status = dto.status;
+
+    const [updated] = await this.db
+      .update(schema.agents)
+      .set(updates)
+      .where(eq(schema.agents.id, agentId))
+      .returning();
+
+    return updated;
+  }
+
+  /**
+   * 8. Static role definitions & RBAC permissions guide
+   */
+  getRoleDefinitions(): RoleDefinition[] {
+    return [
+      {
+        role: "owner",
+        title: "Workspace Owner",
+        description: "Unrestricted control over agency billing, team memberships, API keys, and workspace settings.",
+        badgeVariant: "rose",
+        permissions: ["All Permissions", "billing:manage", "workspace:delete", "members:manage"],
+      },
+      {
+        role: "admin",
+        title: "Operations Admin",
+        description: "Full management of sales agents, routing rules, property catalog, and AI voice configurations.",
+        badgeVariant: "indigo",
+        permissions: ["workspace:manage", "members:manage", "leads:write", "properties:manage", "calls:trigger"],
+      },
+      {
+        role: "sales_manager",
+        title: "Sales Director / Manager",
+        description: "Supervises pipeline velocity, resolves complex BANT objections, and conducts human broker takeovers.",
+        badgeVariant: "emerald",
+        permissions: ["leads:read", "leads:write", "calls:trigger", "properties:read", "handoff:takeover"],
+      },
+      {
+        role: "sales_agent",
+        title: "Licensed Luxury Broker",
+        description: "Assigned qualified buyer viewings, manages active prospect dossiers, and conducts in-person inspections.",
+        badgeVariant: "sky",
+        permissions: ["leads:read", "leads:write", "calls:trigger", "properties:read", "appointments:manage"],
+      },
+    ];
+  }
+
+  /**
+   * Helper: Ensure default Spacia brokers exist for a luxury workspace
+   */
+  private async ensureSeedBrokers(workspaceId: string): Promise<void> {
+    try {
+      const existingAgents = await this.db
+        .select({ id: schema.agents.id })
+        .from(schema.agents)
+        .where(eq(schema.agents.workspaceId, workspaceId))
+        .limit(1);
+
+      if (existingAgents.length > 0) return;
+
+      this.logger.log(`Provisioning baseline luxury brokers for workspace '${workspaceId}'...`);
+
+      for (const b of DEFAULT_BROKERS) {
+        const userId = `user_spacia_${b.name.toLowerCase().replace(/[^a-z]/g, "")}`;
+        const [firstName, ...rest] = b.name.split(" ");
+        const lastName = rest.join(" ");
+
+        await this.db
+          .insert(schema.users)
+          .values({
+            id: userId,
+            email: b.email,
+            firstName,
+            lastName,
+            imageUrl: `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(b.name)}`,
+          })
+          .onConflictDoNothing();
+
+        await this.db
+          .insert(schema.workspaceMembers)
+          .values({
+            workspaceId,
+            userId,
+            role: "sales_agent",
+            status: "active",
+            invitedEmail: b.email,
+          })
+          .onConflictDoNothing();
+
+        await this.db
+          .insert(schema.agents)
+          .values({
+            workspaceId,
+            userId,
+            name: b.name,
+            email: b.email,
+            phone: b.phone,
+            roleTitle: b.roleTitle,
+            territory: b.territory,
+            specializations: b.specializations,
+            maxConcurrentLeads: b.maxConcurrentLeads,
+            routingWeight: b.routingWeight,
+            status: "active",
+            isAvailableForRouting: true,
+          })
+          .onConflictDoNothing();
+      }
+    } catch (err: any) {
+      this.logger.debug(`Seed brokers check skipped: ${err.message}`);
+    }
+  }
+}

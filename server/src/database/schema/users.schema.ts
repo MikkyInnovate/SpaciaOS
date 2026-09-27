@@ -17,6 +17,13 @@ export const workspaceRoleEnum = pgEnum("workspace_role", [
   "sales_agent",
 ]);
 
+export const workspaceMemberStatusEnum = pgEnum("workspace_member_status", [
+  "active",
+  "invited",
+  "pending",
+  "suspended",
+]);
+
 export const users = pgTable("users", {
   id: varchar("id", { length: 64 }).primaryKey(), // Clerk user_id (e.g. user_2aX...)
   email: varchar("email", { length: 255 }).notNull().unique(),
@@ -38,12 +45,17 @@ export const workspaceMembers = pgTable(
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
     role: workspaceRoleEnum("role").notNull().default("sales_agent"),
+    status: varchar("status", { length: 50 }).notNull().default("active"),
+    invitedEmail: varchar("invited_email", { length: 255 }),
+    invitedAt: timestamp("invited_at", { withTimezone: true }),
+    joinedAt: timestamp("joined_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [
     uniqueIndex("uq_workspace_members_member").on(table.workspaceId, table.userId),
     index("idx_workspace_members_workspace").on(table.workspaceId),
     index("idx_workspace_members_user").on(table.userId),
+    index("idx_workspace_members_status").on(table.workspaceId, table.status),
   ]
 );
 
@@ -51,3 +63,5 @@ export type UserRecord = typeof users.$inferSelect;
 export type NewUserRecord = typeof users.$inferInsert;
 export type WorkspaceMemberRecord = typeof workspaceMembers.$inferSelect;
 export type NewWorkspaceMemberRecord = typeof workspaceMembers.$inferInsert;
+export type WorkspaceRole = (typeof workspaceRoleEnum.enumValues)[number];
+export type WorkspaceMemberStatus = "active" | "invited" | "pending" | "suspended";

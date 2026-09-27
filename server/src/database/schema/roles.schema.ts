@@ -46,6 +46,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<ClientRole, string[]> = {
   admin: [
     "workspace:manage",
     "members:manage",
+    "members:read",
     "leads:read",
     "leads:write",
     "calls:trigger",
@@ -54,6 +55,7 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<ClientRole, string[]> = {
     "events:read",
   ],
   sales_manager: [
+    "members:read",
     "leads:read",
     "leads:write",
     "calls:trigger",
@@ -61,12 +63,14 @@ export const DEFAULT_ROLE_PERMISSIONS: Record<ClientRole, string[]> = {
     "events:read",
   ],
   sales_agent: [
+    "members:read",
     "leads:read",
     "leads:write",
     "calls:trigger",
     "properties:read",
   ],
   viewer: [
+    "members:read",
     "leads:read",
     "properties:read",
   ],

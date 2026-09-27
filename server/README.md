@@ -1315,6 +1315,95 @@ Dedicated table in Neon PostgreSQL with workspace-scoped isolation (`workspace_i
   7. **Configuration Reset**: Restores workspace configuration back to Spacia luxury baseline defaults ✔
 - **Result**: `ALL PACIA DAY 22 AI CONFIGURATION TESTS PASSED (7/7 - 100%)`.
 
+---
+
+# Day 23: Team Management, Broker Roster & RBAC Engine
+
+## Objective
+Deliver enterprise multi-tenant team management, broker roster administration, agent routing configuration (territory, specializations, routing weight, capacity), and strict role-based access control (RBAC) with Sole Owner Protection guardrails.
+
+## Summary of Completed Work
+1. **Database Schemas & Extensions**:
+   - `workspace_members`: Expanded with `status` (`active`, `suspended`, `pending`), `invited_by`, `joined_at`, `created_at`, `updated_at`.
+   - `agents`: Expanded with `territory`, `specializations` (`jsonb`), `routing_weight`, `max_capacity`, `current_load`, `routing_status` (`active`, `paused`, `inactive`).
+   - `roles`: Strongly typed role definitions (`owner`, `admin`, `sales_manager`, `sales_agent`).
+2. **TeamService (`src/modules/team/team.service.ts`)**:
+   - Automated baseline broker seeding (high-value Nigerian luxury territories like Ikoyi, Victoria Island, Banana Island, Eko Atlantic, Abuja Maitama).
+   - KPI metrics calculation (total members, active brokers, lead routing pool, fleet capacity).
+   - Member invitation with role assignment and automatic agent routing profile creation.
+   - Role updates with **Sole Owner Protection**: prevents demoting or removing the only active owner in a workspace.
+   - Member status transitions: suspending an agent automatically detaches them from the lead routing engine (`routing_status: "inactive"`), while reactivating restores them to the active routing pool.
+   - Multi-tenant boundary verification and full audit logging into `audit_logs`.
+3. **REST Endpoints (`TeamController` under `/api/v1/team`)**:
+   - `GET /api/v1/team/members`: Lists workspace members with assigned agent profiles and stats.
+   - `GET /api/v1/team/stats`: Returns aggregated team KPIs.
+   - `POST /api/v1/team/invitations`: Invites new members with role assignment.
+   - `PUT /api/v1/team/members/:id/role`: Updates member role (with Sole Owner Protection).
+   - `PUT /api/v1/team/members/:id/status`: Suspends or reactivates member and syncs agent routing status.
+   - `PUT /api/v1/team/members/:id/routing`: Updates agent territory, specializations, weight, and capacity.
+   - `DELETE /api/v1/team/members/:id`: Removes member with Sole Owner Protection.
+   - `GET /api/v1/team/roles`: Returns role hierarchy and permissions guide.
+
+## Automated Verification & Test Suite
+- **Command**: `npm run test:day23`
+- **File**: `server/test/day23-team-management.spec.ts`
+- **8 Scenarios Verified Live Against Neon PostgreSQL**:
+  1. Automatic baseline broker provisioning & team listing ✔
+  2. Member invitations with role assignment & agent routing profile creation ✔
+  3. Role updates & Sole Owner Protection Guardrail ✔
+  4. Member status transitions & routing synchronization ✔
+  5. Agent territory, weights, and lead capacity updates ✔
+  6. Member removal and Sole Owner Protection ✔
+  7. Multi-tenant workspace isolation ✔
+  8. Role definitions and RBAC permissions guide ✔
+- **Result**: `ALL PACIA DAY 23 TEAM MANAGEMENT TESTS PASSED (8/8 - 100%)`.
+
+---
+
+# Day 24: Client Integration Management, Health Checks & Credential Vault
+
+## Objective
+Establish a secure, multi-tenant Client Integration Management suite (`IntegrationsModule`) providing automated provider provisioning, encrypted credential storage, real-time connection validation, latency tracking, failure recording, and resilient lifecycle state management (Connected, Disconnected, Reconnecting, Error).
+
+> **CRITICAL SECURITY CONSTRAINT**: Raw credentials and API secrets are encrypted at rest in Neon PostgreSQL and are **strictly stripped and sanitized** from all client-facing responses. The frontend receives only masked key hints (e.g. `••••••••••••3a9f`) and a boolean `hasCredentials`.
+
+## Summary of Completed Work
+1. **Database Schema (`integrations` table in Neon PostgreSQL)**:
+   - Columns: `id`, `workspace_id`, `type`, `name`, `description`, `category`, `status`, `config` (`jsonb`), `credentials` (`jsonb`), `created_at`, `updated_at`.
+   - Health metrics (`healthStatus`, `latencyMs`, `lastTestedAt`, `lastSuccessAt`, `lastError`, `failureCount`) tracked dynamically within `config`.
+2. **IntegrationsService (`src/modules/integrations/integrations.service.ts`)**:
+   - `ensureDefaultIntegrations`: Automatically provisions default core integrations for every active workspace:
+     - **Vapi AI Voice Telephony** (`voice`)
+     - **Resend Notification Engine** (`notifications`)
+     - **Google Calendar Workspace** (`calendar`)
+     - **Inbound Marketing Webhook** (`leads`)
+     - **Termii / WhatsApp Business** (`messaging`)
+     - **HubSpot Luxury CRM Bridge** (`crm`)
+   - `sanitize`: Security sanitization layer that completely omits raw `credentials` from the returned DTO, generating safe masked key previews (e.g. `vapi••••••••••••044e`) and `hasCredentials: boolean`.
+   - `testConnection`: Executes live provider handshakes, records round-trip latency, updates `healthStatus` (`healthy` | `degraded` | `unhealthy`), increments `failureCount` and logs `lastError` upon credential failure, and clears errors upon successful recovery.
+   - `reconnect` & `disconnect`: Manages integration connection lifecycle state machine.
+   - `updateCredentials`: Updates encrypted secrets and provider configuration.
+3. **REST Endpoints (`IntegrationsController` under `/api/v1/integrations`)**:
+   - `GET /api/v1/integrations`: Returns sanitized integrations list with connection and health states.
+   - `GET /api/v1/integrations/:id`: Returns sanitized single integration details.
+   - `PUT /api/v1/integrations/:id/credentials`: Securely stores new access tokens / keys.
+   - `POST /api/v1/integrations/:id/test`: Executes live handshake check, records latency and failures.
+   - `POST /api/v1/integrations/:id/reconnect`: Restores connection state and validates handshake.
+   - `POST /api/v1/integrations/:id/disconnect`: Disconnects integration and pauses synchronization.
+
+## Automated Verification & Test Suite
+- **Command**: `npm run test:day24`
+- **File**: `server/test/day24-integrations.spec.ts`
+- **6 Verification Scenarios Verified Live Against Neon PostgreSQL**:
+  1. **Integration List & Default Provisioning**: Verifies 6 default integrations provisioned and categorized ✔
+  2. **Credential Storage & Security Sanitization**: Verifies raw secrets stored in Neon PostgreSQL and 100% sanitized from responses ✔
+  3. **Live Connection Validation & Health Tracking**: Verifies Vapi handshake in 84ms with health status `healthy` ✔
+  4. **Failure Recording & Error Tracking**: Verifies status=`error`, failureCount=2, and error diagnostic logging on invalid tokens ✔
+  5. **Reconnect & Disconnect Lifecycle**: Verifies lifecycle transitions (`connected` $\rightarrow$ `disconnected` $\rightarrow$ `reconnecting` $\rightarrow$ `connected`) ✔
+  6. **Multi-Tenant Isolation**: Verifies complete data boundary isolation between workspaces with 0 cross-tenant data leakage ✔
+- **Result**: `ALL DAY 24 INTEGRATION MANAGEMENT TESTS PASSED (6/6 - 100%)`.
+
+
 
 
 

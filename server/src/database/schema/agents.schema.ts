@@ -3,6 +3,8 @@ import {
   varchar,
   text,
   integer,
+  boolean,
+  jsonb,
   timestamp,
   uuid,
   pgEnum,
@@ -37,6 +39,10 @@ export const agents = pgTable(
       .default("Sales Executive"),
     status: agentStatusEnum("status").notNull().default("active"),
     maxConcurrentLeads: integer("max_concurrent_leads").notNull().default(50),
+    territory: varchar("territory", { length: 255 }).default("Lagos Prime"),
+    specializations: jsonb("specializations").$type<string[]>().default(["luxury_residential"]),
+    routingWeight: integer("routing_weight").notNull().default(10),
+    isAvailableForRouting: boolean("is_available_for_routing").notNull().default(true),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),

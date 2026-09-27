@@ -21,6 +21,8 @@ import { AppointmentsModule } from "./modules/appointments/appointments.module";
 import { NotificationsModule } from "./modules/notifications/notifications.module";
 import { DashboardModule } from "./modules/dashboard/dashboard.module";
 import { AnalyticsModule } from "./modules/analytics/analytics.module";
+import { IntegrationsModule } from "./modules/integrations/integrations.module";
+import { TeamModule } from "./modules/team/team.module";
 import { AppController } from "./app.controller";
 
 @Module({
@@ -43,6 +45,8 @@ import { AppController } from "./app.controller";
     NotificationsModule,
     DashboardModule,
     AnalyticsModule,
+    IntegrationsModule,
+    TeamModule,
   ],
   controllers: [AppController],
   providers: [
