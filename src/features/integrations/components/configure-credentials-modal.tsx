@@ -26,6 +26,7 @@ import {
   KeyRound,
   Lock,
   RefreshCw,
+  RotateCcw,
   Server,
   ShieldCheck,
   Sparkles,
@@ -59,16 +60,24 @@ export function ConfigureCredentialsModal({
   // UI States
   const [copiedUrl, setCopiedUrl] = React.useState(false);
   const [copiedCurl, setCopiedCurl] = React.useState(false);
+  const [copiedSecret, setCopiedSecret] = React.useState(false);
   const [showPayloadGuide, setShowPayloadGuide] = React.useState(false);
   const [propertyProtocol, setPropertyProtocol] = React.useState<"pms_api" | "direct_db">("pms_api");
 
   React.useEffect(() => {
     if (integration) {
       const cfg = integration.config || {};
+      let initialSecret = "";
+      if (integration.type === "webhook" && !integration.hasCredentials) {
+        const array = new Uint8Array(20);
+        window.crypto.getRandomValues(array);
+        initialSecret = "whsec_live_" + Array.from(array, (b) => b.toString(16).padStart(2, "0")).join("");
+      }
+
       setFormData({
         // Webhook
-        webhookSecret: "",
-        signingSecret: "",
+        webhookSecret: initialSecret,
+        signingSecret: initialSecret,
         // Property DB
         endpointUrl: cfg.endpointUrl || "https://api.luxuryagency.com/v1/properties",
         apiKey: "",
@@ -111,11 +120,14 @@ export function ConfigureCredentialsModal({
     integration.config?.endpointUrl ||
     `https://api.spacia.ai/api/v1/leads/ingest?workspaceId=${integration.workspaceId || "org_dubai_palace"}`;
 
-  const copyToClipboard = (text: string, isCurl = false) => {
+  const copyToClipboard = (text: string, isCurl = false, isSecret = false) => {
     navigator.clipboard.writeText(text);
     if (isCurl) {
       setCopiedCurl(true);
       setTimeout(() => setCopiedCurl(false), 2000);
+    } else if (isSecret) {
+      setCopiedSecret(true);
+      setTimeout(() => setCopiedSecret(false), 2000);
     } else {
       setCopiedUrl(true);
       setTimeout(() => setCopiedUrl(false), 2000);
@@ -350,16 +362,17 @@ export function ConfigureCredentialsModal({
               {/* Webhook HMAC Signing Secret */}
               <div className="space-y-1.5 pt-1">
                 <div className="flex items-center justify-between text-xs">
-                  <label className="font-medium text-stone-800 flex items-center gap-1">
-                    Webhook HMAC Signing Secret <span className="text-red-500">*</span>
+                  <label className="font-medium text-stone-800">
+                    Webhook Signing Secret Token
                   </label>
                   <div className="flex items-center gap-3">
                     <button
                       type="button"
                       onClick={handleGenerateWebhookSecret}
-                      className="text-[#0d4a36] hover:text-[#0a3829] flex items-center gap-1 text-[11px] font-medium"
+                      className="text-stone-500 hover:text-stone-800 flex items-center gap-1 text-[11px] font-medium"
+                      title="Generate a new secret token"
                     >
-                      <Sparkles className="h-3 w-3" /> Auto-Generate
+                      <RotateCcw className="h-3 w-3" /> Roll New Secret
                     </button>
                     <button
                       type="button"
@@ -378,16 +391,44 @@ export function ConfigureCredentialsModal({
                     </button>
                   </div>
                 </div>
-                <Input
-                  type={visibleFields.webhookSecret ? "text" : "password"}
-                  placeholder="whsec_live_••••••••••••••••"
-                  value={formData.webhookSecret || ""}
-                  onChange={(e) => handleInputChange("webhookSecret", e.target.value)}
-                  className="font-mono text-xs border-stone-200 focus-visible:ring-1 focus-visible:ring-stone-400"
-                />
-                <p className="text-[11px] text-stone-500">
-                  Used to verify the <code className="text-[10px] bg-stone-100 px-1 py-0.5 rounded text-stone-800">X-Spacia-Signature</code> header on incoming HTTP POST payloads.
-                </p>
+                <div className="flex items-center gap-2">
+                  <Input
+                    type={visibleFields.webhookSecret ? "text" : "password"}
+                    placeholder={integration.maskedKey || "whsec_live_••••••••••••••••"}
+                    value={formData.webhookSecret || ""}
+                    onChange={(e) => handleInputChange("webhookSecret", e.target.value)}
+                    className="font-mono text-xs border-stone-200 focus-visible:ring-1 focus-visible:ring-stone-400 select-all"
+                  />
+                  {formData.webhookSecret && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => copyToClipboard(formData.webhookSecret, false, true)}
+                      className="h-9 px-3 shrink-0 text-xs border-stone-200 bg-white hover:bg-stone-50 font-medium gap-1.5"
+                    >
+                      {copiedSecret ? (
+                        <>
+                          <Check className="h-3.5 w-3.5 text-emerald-600" />
+                          <span className="text-emerald-700">Copied</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="h-3.5 w-3.5 text-stone-500" />
+                          <span>Copy</span>
+                        </>
+                      )}
+                    </Button>
+                  )}
+                </div>
+                <div className="rounded-md bg-stone-50 p-2.5 border border-stone-200/60 text-[11px] text-stone-600 space-y-1">
+                  <p>
+                    <span className="font-semibold text-stone-800">Where does this go?</span> Spacia provides this secret key to authenticate requests. Your website backend signs payloads using HMAC-SHA256 in the <code className="text-[10px] bg-stone-200/70 px-1 py-0.5 rounded text-stone-800 font-mono">X-Spacia-Signature</code> header.
+                  </p>
+                  <p className="text-stone-500 text-[10.5px]">
+                    Note: If your website uses standard forms (Webflow, WordPress Elementor, Zapier) without signature support, you only need to copy the Webhook URL above.
+                  </p>
+                </div>
               </div>
 
               {/* Collapsible Sample Payload & Curl Guide */}
