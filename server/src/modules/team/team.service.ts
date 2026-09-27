@@ -270,23 +270,31 @@ export class TeamService {
       );
     }
 
-    // 3. Provision user record
-    const targetUserId = `user_spacia_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+    // 3. Provision user record (reuse existing user if email already registered)
+    const [existingUser] = await this.db
+      .select({ id: schema.users.id })
+      .from(schema.users)
+      .where(sql`LOWER(${schema.users.email}) = LOWER(${normalizedEmail})`)
+      .limit(1);
+
     const firstName = dto.firstName || dto.email.split("@")[0];
     const lastName = dto.lastName || "Broker";
+    let targetUserId = existingUser?.id;
 
-    await this.db
-      .insert(schema.users)
-      .values({
-        id: targetUserId,
-        email: normalizedEmail,
-        firstName,
-        lastName,
-        imageUrl: `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(
-          `${firstName} ${lastName}`
-        )}`,
-      })
-      .onConflictDoNothing();
+    if (!targetUserId) {
+      targetUserId = `user_spacia_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+      await this.db
+        .insert(schema.users)
+        .values({
+          id: targetUserId,
+          email: normalizedEmail,
+          firstName,
+          lastName,
+          imageUrl: `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(
+            `${firstName} ${lastName}`
+          )}`,
+        });
+    }
 
     // 4. Provision workspace_members record (status: invited until accepted)
     const [createdMember] = await this.db

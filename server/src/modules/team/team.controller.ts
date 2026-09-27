@@ -14,6 +14,7 @@ import {
 import { ClerkAuthGuard } from "../../common/auth/clerk-auth.guard";
 import { WorkspaceMemberGuard } from "../../common/auth/workspace-member.guard";
 import { RequirePermissions } from "../../common/auth/permissions.decorator";
+import { Public } from "../../common/auth/public.decorator";
 import { CurrentTenant } from "../../common/tenant/tenant.decorator";
 import { TenantContext } from "../../common/tenant/tenant-context.interface";
 import { TeamService } from "./team.service";
@@ -22,6 +23,7 @@ import {
   UpdateMemberRoleDto,
   UpdateMemberStatusDto,
   UpdateAgentRoutingDto,
+  AcceptInvitationDto,
 } from "./dto/team.dto";
 
 @Controller("team")
@@ -191,4 +193,31 @@ export class TeamController {
       roles,
     };
   }
+
+  /**
+   * 10. Public: Retrieve invitation details for member onboarding
+   */
+  @Public()
+  @Get("invite/:id")
+  async getInvitation(@Param("id") id: string) {
+    const invitation = await this.teamService.getInvitation(id);
+    return {
+      success: true,
+      invitation,
+    };
+  }
+
+  /**
+   * 11. Public: Accept workspace invitation and complete agent onboarding
+   */
+  @Public()
+  @Post("invite/:id/accept")
+  async acceptInvitation(
+    @Param("id") id: string,
+    @Body() dto: AcceptInvitationDto
+  ) {
+    const result = await this.teamService.acceptInvitation(id, dto);
+    return result;
+  }
 }
+

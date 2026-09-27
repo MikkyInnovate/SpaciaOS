@@ -1337,12 +1337,19 @@ Deliver enterprise multi-tenant team management, broker roster administration, a
 3. **REST Endpoints (`TeamController` under `/api/v1/team`)**:
    - `GET /api/v1/team/members`: Lists workspace members with assigned agent profiles and stats.
    - `GET /api/v1/team/stats`: Returns aggregated team KPIs.
-   - `POST /api/v1/team/invitations`: Invites new members with role assignment.
+   - `POST /api/v1/team/invitations`: Invites new members with role assignment (idempotent user lookup by email).
+   - `POST /api/v1/team/members/:id/resend-invite`: Resends onboarding email to pending invitees via Resend.
+   - `GET /api/v1/team/invite/:id`: Public endpoint retrieving invitation metadata for member onboarding.
+   - `POST /api/v1/team/invite/:id/accept`: Public endpoint accepting workspace invite and completing onboarding (`AcceptInvitationDto`).
    - `PUT /api/v1/team/members/:id/role`: Updates member role (with Sole Owner Protection).
    - `PUT /api/v1/team/members/:id/status`: Suspends or reactivates member and syncs agent routing status.
    - `PUT /api/v1/team/members/:id/routing`: Updates agent territory, specializations, weight, and capacity.
    - `DELETE /api/v1/team/members/:id`: Removes member with Sole Owner Protection.
    - `GET /api/v1/team/roles`: Returns role hierarchy and permissions guide.
+
+4. **Onboarding & Auth Guard Enhancements**:
+   - **Idempotent User Provisioning**: In `TeamService.inviteMember`, searches existing users by lowercase email before creating a new user row, preventing duplicate unique constraint violations.
+   - **Dev Owner Context Adoption**: In `WorkspaceMemberGuard`, in development mode when `dev_user` accesses a real organization workspace that already has members, it adopts the workspace owner context to prevent accidental permission locks during local development.
 
 ## Automated Verification & Test Suite
 - **Command**: `npm run test:day23`
@@ -1376,11 +1383,12 @@ Establish a secure, multi-tenant Client Integration Management suite (`Integrati
      - **Vapi AI Voice Telephony** (`voice`)
      - **Resend Notification Engine** (`notifications`)
      - **Google Calendar Workspace** (`calendar`)
-     - **Inbound Marketing Webhook** (`leads`)
+     - **Inbound Marketing Webhook** (`leads`) — pre-generated `whsec_live_...` signing secret
      - **Termii / WhatsApp Business** (`messaging`)
      - **HubSpot Luxury CRM Bridge** (`crm`)
    - `sanitize`: Security sanitization layer that completely omits raw `credentials` from the returned DTO, generating safe masked key previews (e.g. `vapi••••••••••••044e`) and `hasCredentials: boolean`.
    - `testConnection`: Executes live provider handshakes, records round-trip latency, updates `healthStatus` (`healthy` | `degraded` | `unhealthy`), increments `failureCount` and logs `lastError` upon credential failure, and clears errors upon successful recovery.
+   - **Cross-Module Google Calendar Handshake**: Checks the active `calendar_connections` record in Neon PostgreSQL for the active workspace, providing live connection validation and genuine latency measurements instead of throwing false 401 handshake errors.
    - `reconnect` & `disconnect`: Manages integration connection lifecycle state machine.
    - `updateCredentials`: Updates encrypted secrets and provider configuration.
 3. **REST Endpoints (`IntegrationsController` under `/api/v1/integrations`)**:

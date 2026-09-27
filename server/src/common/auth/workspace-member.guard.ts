@@ -54,34 +54,10 @@ export class WorkspaceMemberGuard implements CanActivate {
       const request = context.switchToHttp().getRequest();
       if (request.tenantContext) {
         try {
-          let dbMember = await this.workspaceMembersService.findMember(
+          const dbMember = await this.workspaceMembersService.findMember(
             request.tenantContext.workspaceId,
             request.tenantContext.userId
           );
-
-          if (!dbMember) {
-            if (
-              process.env.NODE_ENV === "development" ||
-              process.env.ALLOW_MOCK_AUTH === "true"
-            ) {
-              const existingUser = await this.usersRepo.findById(
-                request.tenantContext.userId
-              );
-              if (!existingUser) {
-                await this.usersRepo.upsert({
-                  id: request.tenantContext.userId,
-                  email: `${request.tenantContext.userId}@pacia.dev`,
-                  firstName: "Active",
-                  lastName: "Member",
-                });
-              }
-              dbMember = await this.workspaceMembersService.addMember(
-                request.tenantContext.workspaceId,
-                request.tenantContext.userId,
-                "owner"
-              );
-            }
-          }
 
           if (dbMember) {
             const authoritativeRole = dbMember.role as ClientRole;
@@ -162,6 +138,18 @@ export class WorkspaceMemberGuard implements CanActivate {
         process.env.NODE_ENV === "development" ||
         process.env.ALLOW_MOCK_AUTH === "true"
       ) {
+        // If dev_user is calling a real org workspace that already has members, adopt existing owner context instead of polluting
+        if (tenantContext.userId === "dev_user" && tenantContext.workspaceId.startsWith("org_")) {
+          const orgMembers = await this.workspaceMembersService.listMembers(tenantContext.workspaceId);
+          if (orgMembers && orgMembers.length > 0) {
+            const realOwner = orgMembers.find((m: any) => m.role === "owner") || orgMembers[0];
+            tenantContext.userId = realOwner.userId;
+            tenantContext.role = realOwner.role as ClientRole;
+            tenantContext.permissions = DEFAULT_ROLE_PERMISSIONS[tenantContext.role] || [];
+            return true;
+          }
+        }
+
         // Ensure user exists in users table before creating membership (satisfies FK constraint)
         const existingUser = await this.usersRepo.findById(tenantContext.userId);
         if (!existingUser) {

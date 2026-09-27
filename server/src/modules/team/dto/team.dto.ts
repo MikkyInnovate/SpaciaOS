@@ -107,3 +107,16 @@ export class UpdateAgentRoutingDto {
   })
   status?: "active" | "busy" | "offline";
 }
+
+export class AcceptInvitationDto {
+  @IsString()
+  firstName!: string;
+
+  @IsString()
+  lastName!: string;
+
+  @IsOptional()
+  @IsString()
+  phone?: string;
+}
+
