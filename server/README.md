@@ -1212,9 +1212,9 @@ Aggregates revenue velocity and autonomous efficiency KPIs:
 - `grossInbound`: Total captured lead volume and period-over-period trend.
 - `qualificationRate`: Autonomous BANT pass rate (percentage & trend).
 - `bookedViewings`: Total verified inspections on closer calendars.
-- `pipelinePotential`: Total pipeline capital valuation formatted in Nigerian Naira (₦ Billions / Millions).
+- `pipelinePotential`: Active prospective buyer pipeline valuation formatted in Nigerian Naira (₦ Millions / Billions), dynamically calculated from active prospect budgets (excluding lost deals), with explicit subtext clarifying realized revenue is ₦0 until transactions close won.
 - `speedToLead`: Inbound-to-first-touch latency (sub-1 minute SLA).
-- `autonomousResolutionRate`: Percentage of leads handled without manual human friction.
+- `autonomousResolutionRate`: Real percentage of leads handled autonomously without manual human takeover friction.
 
 ### 3. 11. DAY 21 CHECKPOINT: 17-Point Operational Revenue Path (`GET /api/v1/analytics/revenue-path`)
 Certifies the complete 17-point end-to-end revenue path across 5 operational clusters:
