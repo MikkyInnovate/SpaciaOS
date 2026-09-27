@@ -2,7 +2,7 @@
 
 > **Spacia** is a high-performance, managed AI sales orchestration platform purpose-built for modern real-estate brokerages and development firms. It autonomously captures inbound property inquiries, engages prospects via natural voice and chat, qualifies buyers against stringent underwriting criteria, evaluates purchasing power and timeline, and seamlessly books qualified viewings directly onto connected sales agents' calendars.
 
-This repository houses the **production frontend and backend implementation for Days 1 through 21** of the Spacia MVP.
+This repository houses the **production frontend and backend implementation for Days 1 through 22** of the Spacia MVP.
 
 ---
 
@@ -1421,13 +1421,14 @@ The Pacia modular monolith backend resides in `/server` (NestJS 11 + Neon Postgr
 
 - **Day 21 — Operational Analytics & 17-Point Revenue Path Certification (`modules/analytics`)**:
   - **Frontend Experience (`/analytics`)**:
-    - **Executive Analytics Dashboard**: Dedicated route with dynamic timeframe switcher (`September 2026 MTD`, `August 2026`, `July 2026`, `Q3 2026`) and interactive popover calendar.
-    - **KPI Summary Metrics Strip (`AnalyticsSummaryCards`)**: High-contrast KPI cards covering Gross Inbound Prospects, Instant Qualification Rate, Booked Viewings, Pipeline Deal Potential (formatted in ₦ Billions), Speed-to-Lead SLA (48s), and Autonomous Resolution Rate (88.4%).
+    - **Executive Analytics Dashboard**: Dedicated route with dynamic timeframe switcher (`7 Days`, `30 Days`, `90 Days`, `MTD`, `All Time`) and interactive calendar popover for custom date ranges.
+    - **Cohesive Low-Fidelity Skeleton Loading State**: When loading, both the header timeframe filter and segmented view switcher enter low-fidelity skeleton pill mode (`animate-pulse`) alongside KPI metric cards and charts, ensuring zero UI layout shifts or flashing of mock data.
+    - **KPI Summary Metrics Strip (`AnalyticsSummaryCards`)**: High-contrast KPI cards covering Gross Inbound Prospects, Instant Qualification Rate, Booked Viewings, Active Pipeline Potential (formatted in ₦ Millions/Billions, dynamically summing prospective budgets of active leads while excluding lost deals, with explicit `₦0 closed won` subtext), Speed-to-Lead SLA (< 60s), and Autonomous Resolution Rate.
     - **8-Stage Operational Funnel (`FunnelStageChart`)**: Visual conversion funnel tracking `Leads` $\rightarrow$ `Contacted` $\rightarrow$ `Conversations` $\rightarrow$ `Qualified` $\rightarrow$ `Hot` $\rightarrow$ `Viewing Booked` $\rightarrow$ `Viewing Completed` $\rightarrow$ `Won` with step conversion rates, drop-off volume, and drop-off rate chips.
-    - **11. DAY 21 CHECKPOINT Certification Board (`RevenuePathStepper`)**: Complete 17-point operational revenue path interactive audit verifying 100% readiness across all 17 milestones from Website Lead to Human Handoff across 5 functional clusters (`Ingestion & Core`, `AI Underwriting`, `Voice Intelligence`, `Calendar Engine`, `Closing & Handoff`).
-    - **Operational Benchmarks**: Deep-dive analytics on sub-minute Speed-to-Lead, deterministic BANT+ accuracy, and +38% viewing velocity vs manual operations.
+    - **11. DAY 21 CHECKPOINT Certification Board (`RevenuePathStepper`)**: Complete 17-point operational revenue path interactive audit verifying 100% readiness across all 17 milestones from Website Lead to Human Handoff across 5 functional clusters (`Ingestion & Core`, `AI Underwriting`, `Voice Intelligence`, `Calendar Engine`, `Closing & Handoff`) with live Neon PostgreSQL event counts (`4 leads`, `2 properties`, `5 calls`, `16 bookings`, `3 takeovers`, etc.).
+    - **Spacia Design System Performance View**: Dedicated performance dashboard built using official `StatMetricCard` components with Lucide icons (`Clock`, `Zap`, `ShieldCheck`, `CalendarCheck`), paired with the conversion trajectory line chart and SLA benchmarks (`PipelineFunnel`).
   - **Backend Analytics Engine (`AnalyticsService`)**:
-    - Neon PostgreSQL SQL event aggregation across `leads`, `calls`, `appointments`, `notifications`, `system_events`, and `audit_logs`.
+    - Neon PostgreSQL SQL event aggregation across `leads`, `calls`, `appointments`, `properties`, `notifications`, `system_events`, and `audit_logs`.
     - Endpoints: `GET /api/v1/analytics/funnel`, `GET /api/v1/analytics/metrics`, `GET /api/v1/analytics/revenue-path`.
     - Enforced multi-tenant isolation with zero cross-tenant metrics leakage.
   - **Verification**: `npm run test:day21` passing 5/5 (100%).

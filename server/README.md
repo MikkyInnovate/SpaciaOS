@@ -1296,7 +1296,11 @@ Dedicated table in Neon PostgreSQL with workspace-scoped isolation (`workspace_i
 - `PUT /api/v1/ai-agent/config`: Updates all 8 configuration parameters with strict validation.
 - `PATCH /api/v1/ai-agent/config`: Partially updates configuration fields.
 - `POST /api/v1/ai-agent/config/reset`: Restores configuration to Spacia luxury baseline.
+- `POST /api/v1/ai-agent/pause`: Pauses outbound voice dialer and persists state in Neon PostgreSQL.
+- `POST /api/v1/ai-agent/resume`: Resumes outbound voice dialer and persists state in Neon PostgreSQL.
 - `GET /api/v1/ai-agent/status`: Returns live engine telemetry, uptime, and business-hours status.
+- `GET /api/v1/ai-agent/activities`: Returns chronological database-backed activity log.
+- `GET /api/v1/ai-agent/active-calls`: Returns active live call sessions.
 
 ## Automated Verification & Test Suite
 - **Command**: `npm run test:day22`
