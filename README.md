@@ -1472,7 +1472,42 @@ The Pacia modular monolith backend resides in `/server` (NestJS 11 + Neon Postgr
     6. Runtime business hours & human escalation checks ✔
     7. Resetting workspace configuration to baseline defaults ✔
 
-### Next Milestone:
-- **Day 23 — Communication Channels (WhatsApp, SMS, Email Dispatch)**:
-  - Multi-channel delivery routing, template management, and message threading.
+- **Day 23 — Team Management & Role-Based Access Control (RBAC)**:
+  - **Frontend Team Management Command Center (`src/app/(app)/team/page.tsx`, `src/features/team`)**:
+    - **KPI Summary Strip (`TeamStatsStrip`)**: 4 executive metric cards adhering strictly to the SpaciaOS homepage design standard (`StatMetricCard`):
+      1. `Total Workspace Members` (variant `sky`, icon `Users`, workforce & admins).
+      2. `Active Luxury Brokers` (variant `emerald`, icon `ShieldCheck`, online licensed advisors).
+      3. `Lead Routing Active` (variant `indigo`, icon `GitBranch`, automated territory dispatcher status).
+      4. `Available Lead Capacity` (variant `amber`, icon `Zap`, concurrent viewing slots with utilization %).
+    - **Team Roster Table (`TeamMemberTable`)**: Table with user avatar, name, email, role badge (`owner`, `admin`, `sales_manager`, `sales_agent`, `viewer`), status tag (`Active`, `Invited`, `Pending`, `Suspended` with pulsing color indicators), and territory routing details.
+    - **Member Invitation Modal (`InviteMemberModal`)**: Modal dialog allowing operators to invite new members with role assignment and optional real-estate routing profile (phone, role title, territory, specializations, routing weight, max concurrent leads).
+    - **Role Reassignment Modal (`EditRoleModal`)**: Dialog for modifying permissions with Sole Owner Protection guardrails.
+    - **Agent Routing Dossier (`AgentDetailDrawer`)**: Slide-over drawer with performance metrics, utilization bar, shift status toggle, and live configuration of territory, routing priority weight, and lead caps.
+    - **RBAC Matrix (`RoleGuidePanel`)**: Transparent breakdown of 4 role tiers and permissions.
+  - **Backend Team Management Engine (`TeamModule` in `server/src/modules/team`)**:
+    - Neon PostgreSQL schema extensions: `workspace_members` (`status`, `invited_email`, `invited_at`, `joined_at`) and `agents` (`territory`, `specializations`, `routing_weight`, `is_available_for_routing`).
+    - Automatic baseline broker provisioning (Tunde Bakare, Ngozi Eze, Femi Adeleke in prime Nigerian luxury corridors).
+    - Role assignment and Sole Owner Protection guardrails (cannot demote, suspend, or remove sole active owner).
+    - Dynamic agent routing availability synchronization upon member status toggle.
+    - Multi-tenant workspace isolation and compliance audit logging.
+    - Endpoints mounted at `/api/v1/team`:
+      - `GET /stats`: Aggregated team metrics and capacity.
+      - `GET /members`: Full team roster and member states.
+      - `POST /members/invite`: Invite member with role & optional agent profile.
+      - `PATCH /members/:id/role`: Update member role with guardrails.
+      - `PATCH /members/:id/status`: Toggle active / suspended access.
+      - `DELETE /members/:id`: Remove member from workspace.
+      - `GET /routing`: Filtered routing roster.
+      - `PUT /routing/:agentId`: Update agent territory, weight, and capacity.
+      - `GET /roles`: Role hierarchy and permissions guide.
+  - **Automated Verification**: `npm --prefix server run test:day23` passing 8/8 tests (100%).
+    1. Baseline luxury broker auto-seeding & team listing ✔
+    2. Member invitations with role assignment & agent routing profile creation ✔
+    3. Role updates & Sole Owner Protection guardrail ✔
+    4. Member status transitions & routing synchronization ✔
+    5. Agent territory, weights, and lead capacity updates ✔
+    6. Member removal and Sole Owner Protection ✔
+    7. Multi-tenant workspace isolation ✔
+    8. Role definitions and RBAC permissions guide ✔
+
 
