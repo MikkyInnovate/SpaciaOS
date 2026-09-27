@@ -1452,6 +1452,7 @@ Deliver a focused, high-density internal operations command surface (`OpsModule`
   5. **Fleet Integration Health & Reconnect Action**: Evaluates connector health across providers and executes 1-click reconnect with audit trail ✔
   6. **Audit Trail & AI Dialer Operational Controls**: Validates outbound AI dialer emergency pause (`engineStatus='paused'`), resume (`engineStatus='active'`), and compliance audit logging with severity classifications ✔
 - **Result**: `ALL PACIA DAY 25 INTERNAL OPERATIONS TESTS PASSED (6/6 - 100%)`.
+- **Failure Simulation**: `npm run simulate:failure` (simulates synthetic telephony failure for testing 1-click retry recovery in the operations UI).
 
 
 

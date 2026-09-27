@@ -1577,6 +1577,8 @@ The Pacia modular monolith backend resides in `/server` (NestJS 11 + Neon Postgr
       7. **Inspection Appointments (`appointments`)**: Real-time property inspection calendar showing confirmed/scheduled status, agent assignment, and virtual tour links.
       8. **Audit Activity (`audit`)**: Security & compliance event stream querying `audit_logs` with severity level badges, actor types, and IP metadata.
     - **Raw Execution Payload Inspector**: Modal dialog enabling operators to inspect formatted JSON execution parameters and error stack traces.
+    - **Navigation & Access**: Kept unlisted from standard customer/broker sidebar navigation to maintain clean multi-tenant SaaS UX; directly accessible to authorized internal operators at `/ops` with dedicated breadcrumb resolution.
+    - **Simulation Script**: Added `npm --prefix server run simulate:failure` allowing developers and operators to inject synthetic SIP trunk / telephony failures and test 1-click retry recovery live in the UI.
     - **Design System Mandate**: Strict SpaciaOS luxury stone aesthetics (`border-stone-200/90`, `bg-stone-50/60`, `bg-stone-900` buttons, `font-mono` numerals) with zero gaudy SaaS styling.
   - **Backend Operations Engine (`OpsModule` in `server/src/modules/ops`)**:
     - High-density operational data provider aggregating telemetry across Drizzle PostgreSQL tables: `workspaces`, `leads`, `calls`, `appointments`, `integrations`, `system_events`, `audit_logs`.
