@@ -4,6 +4,7 @@ import {
   BadRequestException,
   NotFoundException,
   ForbiddenException,
+  UnauthorizedException,
   Logger,
 } from "@nestjs/common";
 import { eq, and } from "drizzle-orm";
@@ -19,6 +20,9 @@ import { WorkspaceRecord } from "../../database/schema/workspaces.schema";
 import { properties, PropertyRecord } from "../../database/schema/properties.schema";
 import { leads, LeadRecord } from "../../database/schema/leads.schema";
 import { leadEvents } from "../../database/schema/leads.schema";
+import { integrations } from "../../database/schema/integrations.schema";
+import { WebhookVerifier } from "../../common/utils/webhook-verifier";
+import { PiiSanitizer } from "../../common/utils/pii-sanitizer";
 
 export interface IngestLeadResult {
   statusCode: number;
@@ -254,6 +258,48 @@ export class LeadsIngestService {
     // 1. Resolve workspace authoritatively
     const workspace = await this.resolveWorkspace(headers, dto, tenantContext);
 
+    // 1.1 Webhook HMAC-SHA256 signature verification (Timing-Safe)
+    const signature = (
+      (headers["x-webhook-signature"] as string) ||
+      (headers["x-signature"] as string) ||
+      (headers["x-hub-signature-256"] as string)
+    )?.trim();
+
+    const webhookIntegrations = await this.db
+      .select()
+      .from(integrations)
+      .where(
+        and(
+          eq(integrations.workspaceId, workspace.id),
+          eq(integrations.type, "webhook")
+        )
+      )
+      .limit(1);
+
+    const activeWebhook = webhookIntegrations[0];
+    const configuredSecret: string | undefined =
+      (activeWebhook?.credentials as any)?.webhookSecret ||
+      (activeWebhook?.credentials as any)?.secretKey ||
+      (headers["x-webhook-secret"] as string);
+
+    if (signature || (activeWebhook && activeWebhook.status === "connected" && configuredSecret)) {
+      if (!signature) {
+        throw new UnauthorizedException({
+          code: "WEBHOOK_SIGNATURE_MISSING",
+          message: "A valid webhook signature (X-Webhook-Signature) is required for this workspace.",
+        });
+      }
+      if (configuredSecret) {
+        const isValid = WebhookVerifier.verifyHmacSha256(dto, signature, configuredSecret);
+        if (!isValid) {
+          throw new UnauthorizedException({
+            code: "INVALID_WEBHOOK_SIGNATURE",
+            message: "Webhook HMAC-SHA256 signature verification failed. Request may be tampered with.",
+          });
+        }
+      }
+    }
+
     // 2. Concurrency-safe Idempotency Check & Reservation
     if (idempotencyKey) {
       const reservation = await this.idempotencyService.reserveKey(
@@ -431,7 +477,7 @@ export class LeadsIngestService {
             clientLeadId,
             propertyId: targetProperty?.id,
             propertySlug: targetProperty?.slug || dto.propertySlug,
-            rawPayload: dto,
+            rawPayload: PiiSanitizer.sanitizePayload(dto),
             isDuplicate: false,
           },
         });

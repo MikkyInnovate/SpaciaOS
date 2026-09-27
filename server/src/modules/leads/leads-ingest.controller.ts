@@ -12,6 +12,7 @@ import { Response, Request } from "express";
 import { LeadsIngestService } from "./leads-ingest.service";
 import { LeadIngestDto } from "./dto/lead-ingest.dto";
 import { Public } from "../../common/auth/public.decorator";
+import { RateLimit } from "../../common/guards/rate-limit.decorator";
 import { TenantContext } from "../../common/tenant/tenant-context.interface";
 
 @Controller("leads")
@@ -25,6 +26,7 @@ export class LeadsIngestController {
    */
   @Post("ingest")
   @Public()
+  @RateLimit({ points: 20, duration: 60, keyPrefix: "leads-ingest" })
   async ingestLead(
     @Headers() headers: Record<string, string | string[] | undefined>,
     @Body() dto: LeadIngestDto,

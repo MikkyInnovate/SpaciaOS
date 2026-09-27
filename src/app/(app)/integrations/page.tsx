@@ -39,6 +39,7 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils/cn";
+import { EmptyState } from "@/components/shared/empty-state";
 import { useWorkspace } from "@/lib/context/workspace-context";
 import { propertiesService } from "@/features/properties";
 import { appointmentsService } from "@/features/appointments";
@@ -611,31 +612,26 @@ export default function IntegrationsPage() {
           ))}
         </div>
       ) : (
-        <Card className="border-stone-200 border-dashed bg-stone-50/50 p-8 text-center">
-          <div className="max-w-xs mx-auto space-y-3">
-            <div className="h-10 w-10 rounded-full bg-stone-100 flex items-center justify-center mx-auto text-stone-500">
-              <Layers className="h-5 w-5" />
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-stone-800">No Integrations Found</p>
-              <p className="text-xs text-stone-500 mt-1">
-                No integration matches your current category or search criteria.
-              </p>
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                setSelectedCategory("all");
-                setSearchQuery("");
-                setStatusFilter("all");
-              }}
-              className="text-xs border-stone-200 text-stone-700"
-            >
-              Reset Filters
-            </Button>
-          </div>
-        </Card>
+        <EmptyState
+          preset={hasActiveFilters ? "no-search-results" : "no-integrations"}
+          title={hasActiveFilters ? "No Matching Integrations" : "No Connected Services"}
+          description={
+            hasActiveFilters
+              ? "No integration matches your current category or search criteria."
+              : "Connect Vapi, Google Calendar, Resend, or Webhooks to power real-time automated workflows."
+          }
+          actionLabel={hasActiveFilters ? "Reset Filters" : undefined}
+          onActionClick={
+            hasActiveFilters
+              ? () => {
+                  setSelectedCategory("all");
+                  setSearchQuery("");
+                  setStatusFilter("all");
+                }
+              : undefined
+          }
+          className="my-4"
+        />
       )}
 
       {/* Property Inventory Truth Layer (Day 7 Interactive Diagnostic) */}

@@ -7,6 +7,11 @@ import {
   CalendarX,
   Plus,
   RefreshCw,
+  UserCheck,
+  PlugZap,
+  GitBranch,
+  ShieldCheck,
+  CheckCircle2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils/cn";
@@ -15,6 +20,11 @@ export type EmptyStatePreset =
   | "no-leads"
   | "no-calls"
   | "no-appointments"
+  | "no-members"
+  | "no-integrations"
+  | "no-workflows"
+  | "no-errors"
+  | "no-audit-logs"
   | "no-search-results"
   | "no-data";
 
@@ -55,6 +65,33 @@ const PRESET_CONFIGS: Record<
     title: "No Viewings Scheduled",
     description: "Confirmed on-site inspections booked by the AI agent or sales brokers will show on your calendar timeline.",
     defaultActionLabel: "Schedule Inspection",
+  },
+  "no-members": {
+    icon: <UserCheck className="h-6 w-6 text-stone-400" />,
+    title: "No Team Members Enrolled",
+    description: "Invite brokers, closers, and managers to activate territory-based automated lead routing.",
+    defaultActionLabel: "Invite Team Member",
+  },
+  "no-integrations": {
+    icon: <PlugZap className="h-6 w-6 text-stone-400" />,
+    title: "No Connected Services",
+    description: "Connect Vapi, Google Calendar, Resend, or Webhooks to power real-time automated workflows.",
+    defaultActionLabel: "Configure Integration",
+  },
+  "no-workflows": {
+    icon: <GitBranch className="h-6 w-6 text-stone-400" />,
+    title: "No Active Workflows",
+    description: "Background execution queues are idle. Inbound lead events and telephony webhooks will stream here.",
+  },
+  "no-errors": {
+    icon: <CheckCircle2 className="h-6 w-6 text-emerald-500" />,
+    title: "All Systems Healthy",
+    description: "Zero platform failures, connector disconnects, or dead-letter exceptions discovered across subsystems.",
+  },
+  "no-audit-logs": {
+    icon: <ShieldCheck className="h-6 w-6 text-stone-400" />,
+    title: "No Audit Events Recorded",
+    description: "Administrative actions, role updates, and emergency AI overrides will be logged immutably here.",
   },
   "no-search-results": {
     icon: <SearchX className="h-6 w-6 text-stone-400" />,

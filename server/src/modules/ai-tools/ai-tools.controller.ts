@@ -7,6 +7,7 @@ import {
 } from "@nestjs/common";
 import { Request } from "express";
 import { RequirePermissions } from "../../common/auth/permissions.decorator";
+import { RateLimit } from "../../common/guards/rate-limit.decorator";
 import { CurrentTenant } from "../../common/tenant/tenant.decorator";
 import { TenantContext } from "../../common/tenant/tenant-context.interface";
 import { AiToolExecutorService } from "./services/ai-tool-executor.service";
@@ -46,6 +47,7 @@ export class AiToolsController {
    */
   @Post("execute")
   @RequirePermissions("leads:read")
+  @RateLimit({ points: 60, duration: 60, keyPrefix: "ai-tools" })
   async executeTool(
     @CurrentTenant() tenant: TenantContext,
     @Body() dto: ExecuteToolDto,

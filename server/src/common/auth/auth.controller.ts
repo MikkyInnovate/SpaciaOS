@@ -9,6 +9,7 @@ import {
 import { ClerkAuthGuard } from "./clerk-auth.guard";
 import { WorkspaceMemberGuard } from "./workspace-member.guard";
 import { SkipMembershipCheck } from "./skip-membership-check.decorator";
+import { RateLimit } from "../guards/rate-limit.decorator";
 import { CurrentTenant } from "../tenant/tenant.decorator";
 import { TenantContext } from "../tenant/tenant-context.interface";
 import { ProvisioningService } from "../../modules/workspaces/provisioning.service";
@@ -56,6 +57,7 @@ export class AuthController {
    */
   @Post("sync")
   @SkipMembershipCheck()
+  @RateLimit({ points: 20, duration: 60, keyPrefix: "auth-sync" })
   async syncProfile(
     @CurrentTenant() tenant: TenantContext,
     @Body() dto: SyncProfileDto

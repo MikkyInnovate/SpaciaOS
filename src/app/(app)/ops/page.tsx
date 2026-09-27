@@ -52,6 +52,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils/cn";
+import { EmptyState } from "@/components/shared/empty-state";
 import { useWorkspace } from "@/lib/context/workspace-context";
 import {
   opsService,
@@ -580,9 +581,17 @@ export default function OpsCommandPage() {
           </CardHeader>
           <CardContent className="p-0">
             {filteredWorkflows.length === 0 ? (
-              <div className="py-12 text-center text-xs text-stone-500">
-                No workflows match the selected filter.
-              </div>
+              <EmptyState
+                preset="no-workflows"
+                title={workflowStatusFilter !== "all" ? "No Matching Workflows" : "No Active Workflows"}
+                description={
+                  workflowStatusFilter !== "all"
+                    ? `No workflows discovered with status '${workflowStatusFilter}'. Adjust your filter to view all events.`
+                    : "Background execution queues are idle. Inbound lead events and telephony webhooks will stream here."
+                }
+                size="compact"
+                className="border-0 rounded-none bg-transparent py-10"
+              />
             ) : (
               <div className="overflow-x-auto">
                 <Table>
@@ -713,9 +722,17 @@ export default function OpsCommandPage() {
           </CardHeader>
           <CardContent className="p-4 space-y-3">
             {filteredErrors.length === 0 ? (
-              <div className="py-12 text-center text-xs text-stone-500">
-                No active errors logged across the system. All services operational.
-              </div>
+              <EmptyState
+                preset="no-errors"
+                title="All Systems Healthy"
+                description={
+                  errorSeverityFilter !== "all"
+                    ? `Zero errors with severity '${errorSeverityFilter}' discovered across subsystems.`
+                    : "Zero platform failures, connector disconnects, or dead-letter exceptions discovered across subsystems."
+                }
+                size="compact"
+                className="border-0 rounded-none bg-transparent py-10"
+              />
             ) : (
               filteredErrors.map((err) => (
                 <div
@@ -1178,7 +1195,24 @@ export default function OpsCommandPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredAuditLogs.map((log) => (
+                  {filteredAuditLogs.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={5} className="p-0 border-0">
+                        <EmptyState
+                          preset="no-audit-logs"
+                          title="No Audit Events Recorded"
+                          description={
+                            auditSeverityFilter !== "all"
+                              ? `No audit events with severity '${auditSeverityFilter}' found.`
+                              : "Administrative actions, role updates, and emergency AI overrides will be logged immutably here."
+                          }
+                          size="compact"
+                          className="border-0 rounded-none bg-transparent py-10"
+                        />
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    filteredAuditLogs.map((log) => (
                     <TableRow key={log.id} className="border-stone-100 hover:bg-stone-50/50">
                       <TableCell className="text-xs font-mono text-stone-500">
                         {new Date(log.createdAt).toLocaleTimeString()}
@@ -1209,7 +1243,8 @@ export default function OpsCommandPage() {
                         </Badge>
                       </TableCell>
                     </TableRow>
-                  ))}
+                  ))
+                )}
                 </TableBody>
               </Table>
             </div>

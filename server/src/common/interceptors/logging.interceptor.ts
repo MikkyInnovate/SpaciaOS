@@ -8,6 +8,7 @@ import {
 import { Observable } from "rxjs";
 import { tap } from "rxjs/operators";
 import { Request, Response } from "express";
+import { PiiSanitizer } from "../utils/pii-sanitizer";
 
 @Injectable()
 export class LoggingInterceptor implements NestInterceptor {
@@ -21,20 +22,30 @@ export class LoggingInterceptor implements NestInterceptor {
     const { method, originalUrl, ip } = req;
     const startTime = Date.now();
 
+    // Sanitize query params containing sensitive tokens or credentials
+    const sanitizedUrl = originalUrl.replace(
+      /(token|secret|api_?key|password|credential|authorization)=([^&]+)/gi,
+      "$1=••••••••"
+    );
+
     return next.handle().pipe(
       tap({
         next: () => {
           const duration = Date.now() - startTime;
           const statusCode = res.statusCode;
           this.logger.log(
-            `${method} ${originalUrl} ${statusCode} +${duration}ms - IP: ${ip || "::1"}`
+            `${method} ${sanitizedUrl} ${statusCode} +${duration}ms - IP: ${ip || "::1"}`
           );
         },
         error: (error) => {
           const duration = Date.now() - startTime;
           const statusCode = error?.status || 500;
+          const rawMessage = error?.message || "Unknown error";
+          const sanitizedMessage = typeof rawMessage === "string"
+            ? rawMessage.replace(/([a-zA-Z0-9_\-\.]{8,})/g, (m) => m.length > 24 ? PiiSanitizer.maskSecret(m) : m)
+            : "Unknown error";
           this.logger.warn(
-            `${method} ${originalUrl} ${statusCode} +${duration}ms - IP: ${ip || "::1"} - Error: ${error?.message || "Unknown error"}`
+            `${method} ${sanitizedUrl} ${statusCode} +${duration}ms - IP: ${ip || "::1"} - Error: ${sanitizedMessage}`
           );
         },
       })

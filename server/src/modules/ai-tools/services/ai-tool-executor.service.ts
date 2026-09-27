@@ -22,6 +22,7 @@ import { GetAgentTool } from "../tools/get-agent.tool";
 import { BookPropertyInspectionTool } from "../tools/book-property-inspection.tool";
 import { DRIZZLE_DATABASE, DrizzleDb } from "../../../database/database.provider";
 import * as schema from "../../../database/schema";
+import { PiiSanitizer } from "../../../common/utils/pii-sanitizer";
 
 /**
  * AI TOOL EXECUTOR SERVICE (Controlled AI Tools Runtime)
@@ -129,10 +130,11 @@ export class AiToolExecutorService {
     }
 
     // 3. Inside-the-tool authorization check
-    if (tool.requiredPermission && context.permissions && context.permissions.length > 0) {
+    if (tool.requiredPermission) {
+      const permissions = context.permissions || [];
       const hasPerm =
-        context.permissions.includes("*") ||
-        context.permissions.includes(tool.requiredPermission);
+        permissions.includes("*") ||
+        permissions.includes(tool.requiredPermission);
       if (!hasPerm) {
         const errorMsg = `Forbidden: Caller does not possess required permission [${tool.requiredPermission}] for tool [${toolName}].`;
         await this.recordAuditLog(
@@ -236,7 +238,7 @@ export class AiToolExecutorService {
           ipAddress: context.ipAddress,
           metadata: {
             toolName,
-            parameters: params,
+            parameters: PiiSanitizer.sanitizePayload(params),
             success,
             durationMs,
             error,

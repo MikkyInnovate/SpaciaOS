@@ -109,8 +109,9 @@ export class WorkspaceMemberGuard implements CanActivate {
     }
     if (!workspace) {
       if (
-        process.env.NODE_ENV === "development" ||
-        process.env.ALLOW_MOCK_AUTH === "true"
+        process.env.NODE_ENV !== "test" &&
+        (process.env.NODE_ENV === "development" ||
+          process.env.ALLOW_MOCK_AUTH === "true")
       ) {
         this.logger.log(
           `JIT provisioning workspace '${tenantContext.workspaceId}' for local development.`
@@ -164,8 +165,9 @@ export class WorkspaceMemberGuard implements CanActivate {
 
     if (!member) {
       if (
-        process.env.NODE_ENV === "development" ||
-        process.env.ALLOW_MOCK_AUTH === "true"
+        process.env.NODE_ENV !== "test" &&
+        (process.env.NODE_ENV === "development" ||
+          process.env.ALLOW_MOCK_AUTH === "true")
       ) {
         // If dev_user is calling a real org workspace that already has members, adopt existing owner context instead of polluting
         if (tenantContext.userId === "dev_user" && tenantContext.workspaceId.startsWith("org_")) {

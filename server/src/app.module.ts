@@ -7,6 +7,7 @@ import { AuthModule } from "./common/auth/auth.module";
 import { ClerkAuthGuard } from "./common/auth/clerk-auth.guard";
 import { WorkspaceMemberGuard } from "./common/auth/workspace-member.guard";
 import { PermissionsGuard } from "./common/auth/permissions.guard";
+import { RateLimiterGuard } from "./common/guards/rate-limiter.guard";
 import { HealthModule } from "./modules/health/health.module";
 import { WorkspacesModule } from "./modules/workspaces/workspaces.module";
 import { TesterModule } from "./modules/tester/tester.module";
@@ -63,6 +64,10 @@ import { AppController } from "./app.controller";
     {
       provide: APP_GUARD,
       useClass: PermissionsGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: RateLimiterGuard,
     },
   ],
 })

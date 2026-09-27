@@ -15,6 +15,7 @@ import { ClerkAuthGuard } from "../../common/auth/clerk-auth.guard";
 import { WorkspaceMemberGuard } from "../../common/auth/workspace-member.guard";
 import { RequirePermissions } from "../../common/auth/permissions.decorator";
 import { Public } from "../../common/auth/public.decorator";
+import { RateLimit } from "../../common/guards/rate-limit.decorator";
 import { CurrentTenant } from "../../common/tenant/tenant.decorator";
 import { TenantContext } from "../../common/tenant/tenant-context.interface";
 import { TeamService } from "./team.service";
@@ -198,6 +199,7 @@ export class TeamController {
    * 10. Public: Retrieve invitation details for member onboarding
    */
   @Public()
+  @RateLimit({ points: 30, duration: 60, keyPrefix: "team-invite" })
   @Get("invite/:id")
   async getInvitation(@Param("id") id: string) {
     const invitation = await this.teamService.getInvitation(id);
@@ -211,6 +213,7 @@ export class TeamController {
    * 11. Public: Accept workspace invitation and complete agent onboarding
    */
   @Public()
+  @RateLimit({ points: 15, duration: 60, keyPrefix: "team-invite" })
   @Post("invite/:id/accept")
   async acceptInvitation(
     @Param("id") id: string,

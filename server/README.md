@@ -1454,6 +1454,87 @@ Deliver a focused, high-density internal operations command surface (`OpsModule`
 - **Result**: `ALL PACIA DAY 25 INTERNAL OPERATIONS TESTS PASSED (6/6 - 100%)`.
 - **Failure Simulation**: `npm run simulate:failure` (simulates synthetic telephony failure for testing 1-click retry recovery in the operations UI).
 
+---
+
+# Day 26: Platform Security & UX Hardening
+
+## Objective
+Execute a comprehensive security and UX hardening pass across the modular monolith backend and client frontend. Eliminate threat vectors including credential leakage, prompt injection / cross-workspace parameter spoofing, webhook replay / forgery, abusive traffic bursts, and unauthorized mutations, while ensuring robust accessibility, visible focus indicators, responsive table overflow wrappers, and unified, actionable empty and error states.
+
+---
+
+## Backend Security Architecture & Hardening Measures
+
+### 1. Sliding-Window Rate Limiting Engine (`RateLimiterGuard` & `@RateLimit`)
+* **Location**: `src/common/guards/rate-limiter.guard.ts`, `src/common/guards/rate-limit.decorator.ts`.
+* **Registration**: Globally registered as an `APP_GUARD` in `AppModule`.
+* **Identification Strategy**: Hierarchical client identification (`user:userId` $\rightarrow$ `ws:workspaceId:clientIp` $\rightarrow$ `ip:clientIp`).
+* **Sliding Window Algorithm**: Prunes timestamps outside sliding window duration ($T - \text{duration}$); evaluates usage against points threshold.
+* **RFC Compliance**: Stamping standard HTTP rate-limiting headers:
+  - `X-RateLimit-Limit`: Maximum requests permitted in window.
+  - `X-RateLimit-Remaining`: Remaining request quota.
+  - `X-RateLimit-Reset`: Unix timestamp when current window resets.
+  - `Retry-After`: Seconds to wait when HTTP 429 (`TOO_MANY_REQUESTS`) is returned.
+* **Declarative Protection**:
+  - `POST /api/v1/leads/ingest`: `@RateLimit({ points: 20, duration: 60, keyPrefix: 'leads-ingest' })`
+  - `POST /api/v1/auth/sync`: `@RateLimit({ points: 20, duration: 60, keyPrefix: 'auth-sync' })`
+  - `GET /api/v1/team/invite/:id`: `@RateLimit({ points: 30, duration: 60, keyPrefix: 'team-invite' })`
+  - `POST /api/v1/team/invite/:id/accept`: `@RateLimit({ points: 15, duration: 60, keyPrefix: 'team-invite' })`
+  - `POST /api/v1/ai-tools/execute`: `@RateLimit({ points: 60, duration: 60, keyPrefix: 'ai-tools' })`
+
+### 2. Timing-Safe Webhook HMAC-SHA256 Signature Verification (`WebhookVerifier`)
+* **Location**: `src/common/utils/webhook-verifier.ts`.
+* **Vulnerability Mitigated**: Timing attacks and unauthorized payload injection.
+* **Mechanism**: Computes HMAC-SHA256 hash using the workspace's configured signing secret and executes `crypto.timingSafeEqual` between raw hex buffers of equal byte length.
+* **Lead Ingestion Webhook Gate**: In `LeadsIngestService.ingestLead`, if `X-Webhook-Signature` (or `X-Signature`, `X-Hub-Signature-256`) is sent, or if the active workspace has a connected webhook integration with a secret:
+  - Rejects missing signature with `401 Unauthorized` (`code: 'WEBHOOK_SIGNATURE_MISSING'`).
+  - Rejects tampered payloads or altered signatures with `401 Unauthorized` (`code: 'INVALID_WEBHOOK_SIGNATURE'`).
+
+### 3. PII Sanitization & Data Scrubbing (`PiiSanitizer`)
+* **Location**: `src/common/utils/pii-sanitizer.ts`.
+* **Vulnerability Mitigated**: Accidental disclosure of sensitive PII (Personally Identifiable Information) and API credentials in diagnostic traces, application logs, and database metadata.
+* **Masking Rules**:
+  - Emails: `folake.solanke@spacia.ng` $\longrightarrow$ `f***e@spacia.ng`
+  - Phones: `+2348011223344` $\longrightarrow$ `+234••••••3344`
+  - Secrets: `whsec_live_1234567890abcdef` $\longrightarrow$ `••••••••••••cdef`
+* **Deep Recursive Sanitization**: `PiiSanitizer.sanitizePayload(data)` recursively traverses arbitrary nested JSON objects, scrub-masking sensitive keys (`password`, `secret`, `apiKey`, `token`, `authorization`, `creditcard`, `cvv`, `ssn`).
+* **Integration**:
+  - `LoggingInterceptor`: Sanitizes query strings and error message strings before emitting to Winston/Nest loggers.
+  - `LeadsIngestService`: Sanitizes `rawPayload` in `lead_events.metadata`.
+  - `AiToolExecutorService`: Sanitizes `parameters` before persisting to `audit_logs.metadata`.
+
+### 4. Controlled AI Tool Authorization & Prompt Injection Mitigation
+* **Location**: `src/modules/ai-tools/services/ai-tool-executor.service.ts`.
+* **Prompt Injection / Cross-Tenant Spoofing**: Inspects input parameters for `workspaceId`. If the caller attempts to inject an explicit workspace identifier different from the verified `context.workspaceId`, execution is instantly aborted with `UnauthorizedException` and an immutable `critical` severity audit event is recorded.
+* **Inside-the-Tool Authorization**: Enforces `tool.requiredPermission` strictly within the execution boundary, ensuring callers lacking explicit permissions cannot trigger mutating tools.
+* **Audit Trail Sanitization**: Records duration, source verification provenance, and PII-sanitized execution parameters.
+
+### 5. Multi-Tenant Boundary & Sole Owner Protection
+* **Multi-Tenant Scoping**: All database operations execute through `where(eq(table.workspaceId, workspaceId))`. Cross-workspace property attachment in lead ingestion is blocked with `400 PROPERTY_NOT_FOUND_IN_WORKSPACE`.
+* **Sole Owner Protection**: Prevents accidental owner lockout:
+  - `TeamService.updateRole`: Prevents demoting the sole owner of a workspace.
+  - `TeamService.removeMember`: Prevents removing the sole owner of a workspace.
+  - `WorkspaceMemberGuard`: In test mode (`NODE_ENV=test`), JIT auto-provisioning is strictly disabled to guarantee deterministic authorization assertion.
+
+### 6. Durable Compliance Audit Trail Integrity
+* **Schema**: `audit_logs` table with `ON DELETE RESTRICT` foreign key to `workspaces`.
+* **Compliance Preservation**: Workspace operational data cascades on deletion, but regulatory and security compliance audit trails are preserved immutably.
+
+---
+
+## Automated Verification & Test Suite
+- **Command**: `npm run test:day26`
+- **File**: `server/test/day26-security-ux.spec.ts`
+- **7 Verification Scenarios Verified Live Against Neon PostgreSQL**:
+  1. **Rate Limiting Guard & Sliding Window Throttling**: Verifies points allowance, remaining quota tracking, sliding window reset, and HTTP 429 response with `Retry-After` header ✔
+  2. **Webhook Signature Verification (HMAC-SHA256)**: Verifies valid signature acceptance and timing-safe rejection of tampered payloads and forged signatures (401) ✔
+  3. **PII Sanitizer & Sensitive Data Scrubbing**: Verifies email masking, phone masking, secret redaction, and deep recursive payload sanitization ✔
+  4. **Controlled AI Tool Authorization & Injection Mitigation**: Verifies cross-workspace injection rejection, inside-the-tool permission checks, and PII-sanitized audit log persistence ✔
+  5. **Client Credential Security & Masking Guarantee**: Verifies zero raw secrets or access tokens leaked in API responses (returning masked previews only) ✔
+  6. **Multi-Tenant Isolation & Sole Owner Guardrails**: Verifies cross-workspace entity isolation and sole owner demotion/removal protection ✔
+  7. **Durable Compliance Audit Trail**: Verifies audit log capture across security events and `ON DELETE RESTRICT` compliance governance ✔
+- **Result**: `ALL PACIA DAY 26 SECURITY & UX TESTS PASSED (7/7 - 100%)`.
+
 
 
 

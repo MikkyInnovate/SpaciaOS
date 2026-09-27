@@ -132,7 +132,7 @@ export function TeamMemberTable({
             <TableRow>
               <TableCell colSpan={6} className="p-0 border-0">
                 <EmptyState
-                  preset="no-leads"
+                  preset="no-members"
                   title="No Team Members Found"
                   description="No members match your active filters. Clear your search or invite a new member."
                   size="compact"
