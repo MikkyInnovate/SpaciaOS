@@ -89,6 +89,30 @@ export class AiAgentController {
     };
   }
 
+  @Post("pause")
+  @RequirePermissions("leads:write")
+  async pauseOutbound(@CurrentTenant() tenant: TenantContext) {
+    const config = await this.aiConfigService.setOutboundStatus(tenant.workspaceId, false);
+    return {
+      success: true,
+      isOutboundPaused: true,
+      config,
+      message: "AI voice dialer outbound calling paused by operator.",
+    };
+  }
+
+  @Post("resume")
+  @RequirePermissions("leads:write")
+  async resumeOutbound(@CurrentTenant() tenant: TenantContext) {
+    const config = await this.aiConfigService.setOutboundStatus(tenant.workspaceId, true);
+    return {
+      success: true,
+      isOutboundPaused: false,
+      config,
+      message: "AI voice dialer outbound calling resumed.",
+    };
+  }
+
   @Get("status")
   @RequirePermissions("leads:read")
   async getStatusTelemetry(@CurrentTenant() tenant: TenantContext) {

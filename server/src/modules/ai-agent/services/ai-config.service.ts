@@ -299,6 +299,24 @@ export class AiConfigService {
   }
 
   /**
+   * Sets or toggles active dialer status for a workspace.
+   */
+  async setOutboundStatus(workspaceId: string, isActive: boolean): Promise<AiAgentConfigRecord> {
+    await this.getOrCreateConfig(workspaceId);
+    const [updated] = await this.db
+      .update(schema.aiAgentConfigs)
+      .set({
+        isActive,
+        updatedAt: new Date(),
+      })
+      .where(eq(schema.aiAgentConfigs.workspaceId, workspaceId))
+      .returning();
+
+    await this.syncLegacyAgentTable(workspaceId, updated);
+    return updated;
+  }
+
+  /**
    * Helper to synchronize configuration into legacy ai_agents table.
    */
   private async syncLegacyAgentTable(

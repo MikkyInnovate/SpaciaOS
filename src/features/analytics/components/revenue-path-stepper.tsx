@@ -294,11 +294,21 @@ export function RevenuePathStepper({
                           ? `${node.eventsRecorded} ${node.eventsRecorded === 1 ? "lead" : "leads"}`
                           : node.key === "call" || node.key === "ai_contact" || node.key === "conversation"
                           ? `${node.eventsRecorded} ${node.eventsRecorded === 1 ? "call" : "calls"}`
+                          : node.key === "transcript"
+                          ? `${node.eventsRecorded} ${node.eventsRecorded === 1 ? "transcript" : "transcripts"}`
+                          : node.key === "summary"
+                          ? `${node.eventsRecorded} ${node.eventsRecorded === 1 ? "summary" : "summaries"}`
+                          : node.key === "follow_up"
+                          ? `${node.eventsRecorded} ${node.eventsRecorded === 1 ? "follow-up" : "follow-ups"}`
                           : node.key.includes("viewing") || node.key === "calendar_availability"
                           ? `${node.eventsRecorded} ${node.eventsRecorded === 1 ? "booking" : "bookings"}`
+                          : node.key === "email_confirmation"
+                          ? `${node.eventsRecorded} ${node.eventsRecorded === 1 ? "confirmation" : "confirmations"}`
+                          : node.key === "sales_notification"
+                          ? `${node.eventsRecorded} ${node.eventsRecorded === 1 ? "alert" : "alerts"}`
                           : node.key === "human_handoff"
                           ? `${node.eventsRecorded} ${node.eventsRecorded === 1 ? "takeover" : "takeovers"}`
-                          : `${node.eventsRecorded} dispatched`}
+                          : `${node.eventsRecorded} events`}
                       </div>
                     </div>
 
