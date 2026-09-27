@@ -38,6 +38,7 @@
     "test:day23": "NODE_ENV=test ts-node test/day23-team-management.spec.ts",
     "test:day24": "NODE_ENV=test ts-node test/day24-integrations.spec.ts",
     "test:day25": "NODE_ENV=test ts-node test/day25-internal-ops.spec.ts",
+    "simulate:failure": "ts-node scripts/simulate-failure.ts",
     "demo:tools": "ts-node scripts/demo-tools.ts",
     "demo:ai-agent": "ts-node scripts/demo-ai-agent.ts",
     "demo:handoff": "NODE_ENV=test AI_PROVIDER=mock VAPI_PROVIDER=mock ts-node scripts/demo-handoff.ts"
