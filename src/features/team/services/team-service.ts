@@ -235,6 +235,14 @@ class TeamService {
     const response = await apiClient.put<any>(`/api/v1/team/routing/${agentId}`, payload);
     return response.agent || response;
   }
+
+  /**
+   * 9. Resend invitation email to pending member
+   */
+  async resendInvite(memberId: string): Promise<{ success: boolean; message: string }> {
+    const response = await apiClient.post<any>(`/api/v1/team/members/${memberId}/resend-invite`, {});
+    return response;
+  }
 }
 
 export const teamService = new TeamService();

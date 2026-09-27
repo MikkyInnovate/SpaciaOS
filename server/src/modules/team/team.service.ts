@@ -1,6 +1,7 @@
 import {
   Injectable,
   Inject,
+  Optional,
   NotFoundException,
   BadRequestException,
   ConflictException,
@@ -10,6 +11,7 @@ import {
 import { eq, and, sql, desc } from "drizzle-orm";
 import { DRIZZLE_DATABASE, DrizzleDb } from "../../database/database.provider";
 import * as schema from "../../database/schema";
+import { ResendNotificationAdapter } from "../notifications/adapters/resend-notification.adapter";
 import { TenantContext } from "../../common/tenant/tenant-context.interface";
 import {
   InviteMemberDto,
@@ -63,7 +65,9 @@ export class TeamService {
 
   constructor(
     @Inject(DRIZZLE_DATABASE)
-    private readonly db: DrizzleDb
+    private readonly db: DrizzleDb,
+    @Optional()
+    private readonly resendAdapter?: ResendNotificationAdapter
   ) {}
 
   /**
@@ -283,17 +287,17 @@ export class TeamService {
       })
       .onConflictDoNothing();
 
-    // 4. Provision workspace_members record
+    // 4. Provision workspace_members record (status: invited until accepted)
     const [createdMember] = await this.db
       .insert(schema.workspaceMembers)
       .values({
         workspaceId: tenant.workspaceId,
         userId: targetUserId,
         role: dto.role,
-        status: "active",
+        status: "invited",
         invitedEmail: normalizedEmail,
         invitedAt: new Date(),
-        joinedAt: new Date(),
+        joinedAt: null,
       })
       .returning();
 
@@ -338,6 +342,9 @@ export class TeamService {
       });
     } catch {}
 
+    // 7. Dispatch invitation email via Resend
+    await this.sendInvitationEmail(normalizedEmail, firstName, dto.role);
+
     this.logger.log(
       `Invited member '${normalizedEmail}' as role '${dto.role}' in workspace '${tenant.workspaceId}'`
     );
@@ -347,7 +354,7 @@ export class TeamService {
       workspaceId: createdMember.workspaceId,
       userId: targetUserId,
       role: createdMember.role as WorkspaceRole,
-      status: "active",
+      status: (createdMember.status as any) || "invited",
       invitedEmail: normalizedEmail,
       invitedAt: createdMember.invitedAt,
       joinedAt: createdMember.joinedAt,
@@ -759,6 +766,114 @@ export class TeamService {
       }
     } catch (err: any) {
       this.logger.debug(`Seed brokers check skipped: ${err.message}`);
+    }
+  }
+
+  /**
+   * Resend invitation email to an existing pending/invited member
+   */
+  async resendInvitation(
+    tenant: TenantContext,
+    memberId: string
+  ): Promise<{ success: boolean; message: string }> {
+    const [member] = await this.db
+      .select({
+        id: schema.workspaceMembers.id,
+        role: schema.workspaceMembers.role,
+        status: schema.workspaceMembers.status,
+        invitedEmail: schema.workspaceMembers.invitedEmail,
+        userId: schema.workspaceMembers.userId,
+      })
+      .from(schema.workspaceMembers)
+      .where(
+        and(
+          eq(schema.workspaceMembers.id, memberId),
+          eq(schema.workspaceMembers.workspaceId, tenant.workspaceId)
+        )
+      )
+      .limit(1);
+
+    if (!member) {
+      throw new NotFoundException(`Team member '${memberId}' not found.`);
+    }
+
+    if (member.status !== "invited" && member.status !== "pending") {
+      throw new BadRequestException("This team member has already joined and is currently active.");
+    }
+
+    const email = member.invitedEmail;
+    if (!email) {
+      throw new BadRequestException("No invitation email recorded for this team member.");
+    }
+
+    const [user] = await this.db
+      .select({ firstName: schema.users.firstName })
+      .from(schema.users)
+      .where(eq(schema.users.id, member.userId))
+      .limit(1);
+
+    const firstName = user?.firstName || email.split("@")[0];
+    await this.sendInvitationEmail(email, firstName, member.role);
+
+    return {
+      success: true,
+      message: `Invitation email resent successfully to ${email}.`,
+    };
+  }
+
+  /**
+   * Helper: Dispatches luxury branded workspace invitation email
+   */
+  private async sendInvitationEmail(
+    toEmail: string,
+    firstName: string,
+    role: string,
+    workspaceName: string = "Spacia Luxury Agency"
+  ): Promise<void> {
+    if (!this.resendAdapter) return;
+
+    const roleTitleMap: Record<string, string> = {
+      owner: "Workspace Owner",
+      admin: "Operations Administrator",
+      sales_manager: "Sales Director / Manager",
+      sales_agent: "Licensed Luxury Broker",
+    };
+    const roleTitle = roleTitleMap[role] || "Team Member";
+    const inviteLink = `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/sign-up?invitedEmail=${encodeURIComponent(toEmail)}`;
+
+    const html = `
+      <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 580px; margin: 0 auto; padding: 32px 24px; background: #ffffff; color: #1c1917; border: 1px solid #e7e5e4; border-radius: 12px;">
+        <div style="margin-bottom: 24px;">
+          <span style="font-size: 18px; font-weight: 700; color: #0d4a36; letter-spacing: -0.02em;">Spacia<span style="color: #059669;">OS</span></span>
+          <span style="font-size: 11px; margin-left: 8px; background: #ecfdf5; color: #065f46; padding: 2px 6px; border-radius: 4px; font-weight: 600;">WORKSPACE INVITATION</span>
+        </div>
+        <h2 style="font-size: 20px; font-weight: 600; color: #1c1917; margin: 0 0 12px 0;">You've been invited to join ${workspaceName}</h2>
+        <p style="font-size: 14px; line-height: 1.6; color: #44403c; margin: 0 0 20px 0;">
+          Hello ${firstName},<br/><br/>
+          You have been granted access to the <strong>${workspaceName}</strong> workspace on SpaciaOS with the role of <strong>${roleTitle}</strong>.
+        </p>
+        <div style="margin: 28px 0;">
+          <a href="${inviteLink}" style="display: inline-block; background: #0d4a36; color: #ffffff; padding: 12px 24px; font-size: 13px; font-weight: 600; border-radius: 8px; text-decoration: none; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+            Accept Invitation &amp; Join Workspace &rarr;
+          </a>
+        </div>
+        <p style="font-size: 12px; color: #78716c; line-height: 1.5; margin: 24px 0 0 0; border-top: 1px solid #f5f5f4; padding-top: 16px;">
+          If the button above does not work, copy and paste this link into your browser:<br/>
+          <a href="${inviteLink}" style="color: #0d4a36; word-break: break-all;">${inviteLink}</a>
+        </p>
+      </div>
+    `;
+
+    try {
+      await this.resendAdapter.sendEmail({
+        to: toEmail,
+        subject: `You've been invited to join ${workspaceName} on SpaciaOS`,
+        html,
+        text: `You have been invited to join ${workspaceName} on SpaciaOS as ${roleTitle}. Accept your invitation here: ${inviteLink}`,
+      });
+      this.logger.log(`[TeamService] Invitation email successfully dispatched to ${toEmail}`);
+    } catch (err: any) {
+      this.logger.warn(`[TeamService] Failed to dispatch invitation email to ${toEmail}: ${err.message}`);
     }
   }
 }

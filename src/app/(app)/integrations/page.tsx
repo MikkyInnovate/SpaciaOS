@@ -44,7 +44,6 @@ import {
 const CATEGORIES: { id: IntegrationCategory; label: string }[] = [
   { id: "all", label: "All Integrations" },
   { id: "leads", label: "Lead Ingestion" },
-  { id: "calendar", label: "Calendars" },
   { id: "properties", label: "Property Inventory" },
   { id: "crm", label: "CRMs" },
 ];
@@ -74,6 +73,10 @@ export default function IntegrationsPage() {
   const [activeProvider, setActiveProvider] = React.useState<"spacia_native" | "mock_pms">("spacia_native");
   const [probeResult, setProbeResult] = React.useState<any>(null);
   const [isProbing, setIsProbing] = React.useState(false);
+
+  // External PMS Gateway Form State
+  const [pmsEndpointUrl, setPmsEndpointUrl] = React.useState("https://api.luxuryagency.com/v1/properties");
+  const [pmsApiKey, setPmsApiKey] = React.useState("");
 
   const loadIntegrations = React.useCallback(async (silent = false) => {
     if (!silent) setIsLoading(true);
@@ -132,6 +135,37 @@ export default function IntegrationsPage() {
       setProbeResult({ error: err.message, timestamp: new Date().toLocaleTimeString() });
       toast.error("Probe Failed", {
         description: err.message,
+      });
+    } finally {
+      setIsProbing(false);
+    }
+  };
+
+  const propertyDbItem = integrations.find((i) => i.type === "property_db");
+
+  React.useEffect(() => {
+    if (propertyDbItem?.config?.endpointUrl) {
+      setPmsEndpointUrl(propertyDbItem.config.endpointUrl);
+    }
+  }, [propertyDbItem]);
+
+  const handleSaveAndProbePms = async () => {
+    setIsProbing(true);
+    try {
+      if (propertyDbItem) {
+        await integrationsService.updateCredentials(propertyDbItem.id, {
+          credentials: pmsApiKey.trim() ? { apiKey: pmsApiKey.trim() } : {},
+          config: { endpointUrl: pmsEndpointUrl.trim(), syncMode: "realtime" },
+        });
+        toast.success("PMS Gateway Configuration Saved", {
+          description: "Encrypted credentials updated in Neon database.",
+        });
+      }
+      await runLiveProbe();
+      await loadIntegrations(true);
+    } catch (err: any) {
+      toast.error("Failed to Save PMS Configuration", {
+        description: err.message || "Could not persist credentials.",
       });
     } finally {
       setIsProbing(false);
@@ -603,7 +637,8 @@ export default function IntegrationsPage() {
                   </label>
                   <Input
                     type="text"
-                    defaultValue="https://api.luxuryagency.com/v1/properties"
+                    value={pmsEndpointUrl}
+                    onChange={(e) => setPmsEndpointUrl(e.target.value)}
                     className="h-8 text-xs font-mono bg-white border-stone-200"
                     placeholder="https://your-crm.com/api/properties"
                   />
@@ -614,9 +649,14 @@ export default function IntegrationsPage() {
                   </label>
                   <Input
                     type="password"
-                    defaultValue="pms_live_••••••••••••••••"
+                    value={pmsApiKey}
+                    onChange={(e) => setPmsApiKey(e.target.value)}
                     className="h-8 text-xs font-mono bg-white border-stone-200"
-                    placeholder="pms_sec_••••••••••••"
+                    placeholder={
+                      propertyDbItem?.hasCredentials
+                        ? propertyDbItem.maskedKey || "pms_sec_••••••••••••"
+                        : "Enter API authorization token..."
+                    }
                   />
                 </div>
               </div>
@@ -627,7 +667,7 @@ export default function IntegrationsPage() {
                 </span>
                 <Button
                   size="sm"
-                  onClick={runLiveProbe}
+                  onClick={handleSaveAndProbePms}
                   disabled={isProbing}
                   className="h-7 text-xs bg-[#0d4a36] hover:bg-[#0a3829] text-white font-medium gap-1.5 shadow-2xs"
                 >

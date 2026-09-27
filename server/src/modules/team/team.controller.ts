@@ -74,6 +74,19 @@ export class TeamController {
   }
 
   /**
+   * 3b. Resend invitation email
+   */
+  @Post("members/:id/resend-invite")
+  @RequirePermissions("members:manage")
+  async resendInvite(
+    @CurrentTenant() tenant: TenantContext,
+    @Param("id") memberId: string
+  ) {
+    const result = await this.teamService.resendInvitation(tenant, memberId);
+    return result;
+  }
+
+  /**
    * 4. Assign or mutate member role with owner protection guardrails
    */
   @Patch("members/:id/role")

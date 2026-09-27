@@ -10,6 +10,7 @@ import {
   RefreshCw,
   Zap,
 } from "lucide-react";
+import { cn } from "@/lib/utils/cn";
 import type { IntegrationItem } from "../types";
 
 interface IntegrationsSummaryCardsProps {
@@ -34,9 +35,9 @@ export function IntegrationsSummaryCards({
   const avgLatency =
     validLatencies.length > 0
       ? Math.round(validLatencies.reduce((a, b) => a + b, 0) / validLatencies.length)
-      : 34;
+      : null;
 
-  const healthScore = total > 0 ? Math.round((healthyCount / total) * 100) : 100;
+  const healthScore = connectedCount > 0 ? Math.round((healthyCount / connectedCount) * 100) : null;
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -60,7 +61,7 @@ export function IntegrationsSummaryCards({
             </span>
           </div>
           <p className="mt-1 text-xs text-stone-500 font-normal truncate">
-            Client data & calendar connectors
+            Client data & external connectors
           </p>
         </CardContent>
       </Card>
@@ -77,15 +78,27 @@ export function IntegrationsSummaryCards({
             </div>
           </div>
           <div className="mt-2 flex items-center gap-2">
-            <span className="font-display text-2xl font-bold tracking-tight text-emerald-800 tabular-nums leading-none">
+            <span
+              className={cn(
+                "font-display text-2xl font-bold tracking-tight tabular-nums leading-none",
+                connectedCount > 0 ? "text-emerald-800" : "text-stone-900"
+              )}
+            >
               {connectedCount} / {total}
             </span>
-            <span className="inline-flex items-center rounded-md px-1.5 py-0.5 text-[10px] font-semibold border leading-none shrink-0 bg-emerald-50 text-emerald-700 border-emerald-200">
-              Online
+            <span
+              className={cn(
+                "inline-flex items-center rounded-md px-1.5 py-0.5 text-[10px] font-semibold border leading-none shrink-0",
+                connectedCount > 0
+                  ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                  : "bg-stone-100 text-stone-600 border-stone-200"
+              )}
+            >
+              {connectedCount > 0 ? "Online" : "Pending Setup"}
             </span>
           </div>
           <p className="mt-1 text-xs text-stone-500 font-normal truncate">
-            Live authenticated sessions
+            {connectedCount > 0 ? "Live authenticated sessions" : "No active connections"}
           </p>
         </CardContent>
       </Card>
@@ -103,14 +116,27 @@ export function IntegrationsSummaryCards({
           </div>
           <div className="mt-2 flex items-center gap-2">
             <span className="font-display text-2xl font-bold tracking-tight text-stone-900 tabular-nums leading-none">
-              {healthScore}%
+              {healthScore !== null ? `${healthScore}%` : "—"}
             </span>
-            <span className="inline-flex items-center rounded-md px-1.5 py-0.5 text-[10px] font-semibold border leading-none shrink-0 bg-emerald-50 text-emerald-700 border-emerald-200">
-              Operational
+            <span
+              className={cn(
+                "inline-flex items-center rounded-md px-1.5 py-0.5 text-[10px] font-semibold border leading-none shrink-0",
+                healthScore !== null && healthScore >= 80
+                  ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                  : "bg-stone-100 text-stone-600 border-stone-200"
+              )}
+            >
+              {healthScore !== null
+                ? healthScore >= 80
+                  ? "Operational"
+                  : "Degraded"
+                : "Awaiting Setup"}
             </span>
           </div>
           <p className="mt-1 text-xs text-stone-500 font-normal truncate">
-            Zero protocol handshake collisions
+            {healthScore !== null
+              ? "Protocol handshake validated"
+              : "Connect services to benchmark"}
           </p>
         </CardContent>
       </Card>
@@ -129,17 +155,24 @@ export function IntegrationsSummaryCards({
           <div className="mt-2 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="font-display text-2xl font-bold tracking-tight text-stone-900 tabular-nums leading-none">
-                {avgLatency}ms
+                {avgLatency !== null ? `${avgLatency}ms` : "—"}
               </span>
-              <span className="inline-flex items-center rounded-md px-1.5 py-0.5 text-[10px] font-semibold border leading-none shrink-0 bg-sky-50 text-sky-700 border-sky-200">
-                Sub-second
+              <span
+                className={cn(
+                  "inline-flex items-center rounded-md px-1.5 py-0.5 text-[10px] font-semibold border leading-none shrink-0",
+                  avgLatency !== null
+                    ? "bg-sky-50 text-sky-700 border-sky-200"
+                    : "bg-stone-100 text-stone-600 border-stone-200"
+                )}
+              >
+                {avgLatency !== null ? "Sub-second" : "Untested"}
               </span>
             </div>
             <Button
               variant="outline"
               size="sm"
               onClick={onTestAll}
-              disabled={isTestingAll || total === 0}
+              disabled={isTestingAll || connectedCount === 0}
               className="h-7 px-2.5 text-[11px] border-stone-200 text-stone-700 hover:bg-stone-50 font-medium gap-1 shadow-2xs"
             >
               <RefreshCw className={`h-3 w-3 text-stone-500 ${isTestingAll ? "animate-spin" : ""}`} />
@@ -147,7 +180,7 @@ export function IntegrationsSummaryCards({
             </Button>
           </div>
           <p className="mt-1 text-xs text-stone-500 font-normal truncate">
-            Fastest provider handshake
+            {avgLatency !== null ? "Fastest provider handshake" : "Run diagnostics after connecting"}
           </p>
         </CardContent>
       </Card>

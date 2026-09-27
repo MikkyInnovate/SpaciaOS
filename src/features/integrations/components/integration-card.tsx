@@ -19,6 +19,7 @@ import {
   KeyRound,
   Lock,
   MoreVertical,
+  Plug,
   Power,
   RefreshCw,
   Settings,
@@ -213,6 +214,13 @@ export function IntegrationCard({
   const isErrorOrDisconnected =
     integration.status === "disconnected" || integration.status === "error";
 
+  // Determine if this is a brand-new unconfigured integration
+  const isUnconfigured =
+    !integration.hasCredentials &&
+    integration.status === "disconnected" &&
+    integration.healthStatus === "untested" &&
+    !integration.lastError;
+
   const formattedLastTested = integration.lastTestedAt
     ? new Date(integration.lastTestedAt).toLocaleTimeString([], {
         hour: "2-digit",
@@ -220,6 +228,51 @@ export function IntegrationCard({
       })
     : "Never";
 
+  /* ─── UNCONFIGURED EMPTY STATE ─── */
+  if (isUnconfigured) {
+    return (
+      <Card className="flex flex-col justify-between border-stone-200/60 border-dashed shadow-none hover:border-stone-300 hover:shadow-2xs transition-all bg-white/60 rounded-xl overflow-hidden">
+        <CardHeader className="p-4.5 pb-3">
+          <div className="flex items-start gap-3">
+            {renderCompanyBrandIcon(integration.type)}
+            <div>
+              <CardTitle className="text-sm font-semibold text-stone-900 leading-tight">
+                {integration.name}
+              </CardTitle>
+              <span className="inline-block text-[10px] font-semibold text-stone-400 uppercase tracking-wider mt-1">
+                {integration.category}
+              </span>
+            </div>
+          </div>
+        </CardHeader>
+
+        <CardContent className="p-4.5 pt-0 space-y-4 text-xs flex-1 flex flex-col justify-between">
+          <p className="text-stone-500 text-xs leading-relaxed">
+            {integration.description}
+          </p>
+
+          <div className="flex items-center gap-2 p-3 rounded-lg bg-stone-50/60 border border-stone-200/50 text-stone-400">
+            <Plug className="h-4 w-4 text-stone-300 shrink-0" />
+            <span className="text-[11px] font-medium">Not yet connected</span>
+          </div>
+        </CardContent>
+
+        <CardFooter className="p-3 px-4.5 border-t border-stone-100/60 bg-stone-50/30 rounded-b-xl">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onConfigure(integration)}
+            className="h-8 text-xs font-semibold gap-1.5 flex-1 border-stone-800 text-stone-800 bg-white hover:bg-stone-900 hover:text-white transition-colors shadow-2xs"
+          >
+            <Plug className="h-3.5 w-3.5" />
+            Connect
+          </Button>
+        </CardFooter>
+      </Card>
+    );
+  }
+
+  /* ─── CONFIGURED / ACTIVE STATE (full diagnostic card) ─── */
   return (
     <Card className="flex flex-col justify-between border-stone-200/80 shadow-2xs hover:border-stone-300 transition-all bg-white rounded-xl overflow-hidden">
       <CardHeader className="p-4.5 pb-3">
@@ -388,3 +441,4 @@ export function IntegrationCard({
     </Card>
   );
 }
+

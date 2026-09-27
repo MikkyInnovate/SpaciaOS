@@ -157,41 +157,22 @@ export class IntegrationsService {
       {
         type: "webhook",
         name: "Website Inbound Lead Webhook",
-        status: "connected",
-        credentials: { webhookSecret: "whsec_spacia_inbound_98124b" },
+        status: "disconnected",
+        credentials: {},
         config: {
-          healthStatus: "healthy",
-          latencyMs: 18,
-          lastTestedAt: new Date().toISOString(),
-          lastSuccessAt: new Date().toISOString(),
+          healthStatus: "untested",
           failureCount: 0,
-          endpointUrl: "https://api.spacia.io/api/v1/leads/ingest",
+          endpointUrl: `https://api.spacia.ai/api/v1/leads/ingest?workspaceId=${workspaceId}`,
         },
       },
-      {
-        type: "google_calendar",
-        name: "Google Calendar Workspace",
-        status: "connected",
-        credentials: { accessToken: "ya29.spacia_oauth_token_verified", calendarId: "primary" },
-        config: {
-          healthStatus: "healthy",
-          latencyMs: 98,
-          lastTestedAt: new Date().toISOString(),
-          lastSuccessAt: new Date().toISOString(),
-          failureCount: 0,
-          syncIntervalMinutes: 5,
-        },
-      },
+
       {
         type: "property_db",
         name: "External Property Database / PMS Gateway",
-        status: "connected",
-        credentials: { apiKey: "pms_sec_live_9941a", endpointUrl: "https://api.luxuryagency.com/v1/properties" },
+        status: "disconnected",
+        credentials: {},
         config: {
-          healthStatus: "healthy",
-          latencyMs: 34,
-          lastTestedAt: new Date().toISOString(),
-          lastSuccessAt: new Date().toISOString(),
+          healthStatus: "untested",
           failureCount: 0,
           syncMode: "realtime",
         },
@@ -237,8 +218,9 @@ export class IntegrationsService {
       .orderBy(schema.integrations.createdAt);
 
     // Filter out internal platform infrastructure from client integrations list
+    // google_calendar is managed by the platform on the Appointments page (Day 15)
     const clientRecords = records.filter(
-      (r) => r.type !== "vapi" && r.type !== "resend" && r.type !== "whatsapp"
+      (r) => r.type !== "vapi" && r.type !== "resend" && r.type !== "whatsapp" && r.type !== "google_calendar"
     );
 
     // If clientRecords doesn't contain property_db yet (e.g. from earlier seed), insert it
@@ -250,16 +232,10 @@ export class IntegrationsService {
           workspaceId,
           type: "property_db",
           name: "External Property Database / PMS Gateway",
-          status: "connected",
-          credentials: {
-            apiKey: "pms_sec_live_9941a",
-            endpointUrl: "https://api.luxuryagency.com/v1/properties",
-          },
+          status: "disconnected",
+          credentials: {},
           config: {
-            healthStatus: "healthy",
-            latencyMs: 34,
-            lastTestedAt: new Date().toISOString(),
-            lastSuccessAt: new Date().toISOString(),
+            healthStatus: "untested",
             failureCount: 0,
             syncMode: "realtime",
           },
@@ -398,11 +374,7 @@ export class IntegrationsService {
     const simulatedLatency = Math.floor(Math.random() * 50) + 45;
     const latencyMs = Math.max(Date.now() - startTime, simulatedLatency);
     const nowIso = new Date().toISOString();
-
-    const isFailing =
-      containsInvalid ||
-      (!hasAnyValidCred && Object.keys(creds).length > 0) ||
-      existing.status === "disconnected";
+    const isFailing = containsInvalid || !hasAnyValidCred;
 
     if (isFailing) {
       // Record failure

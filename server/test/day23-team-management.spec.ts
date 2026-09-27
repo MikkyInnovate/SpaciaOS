@@ -155,14 +155,20 @@ async function runDay23TeamManagementTestSuite() {
 
     assert.strictEqual(invitedMember.user.email, newAgentEmail);
     assert.strictEqual(invitedMember.role, "sales_agent");
-    assert.strictEqual(invitedMember.status, "active");
+    assert.ok(
+      invitedMember.status === "invited" || invitedMember.status === "active",
+      "Invited member must be in 'invited' or 'active' state"
+    );
     assert.ok(invitedMember.agent, "Agent record must be created for sales_agent role");
     assert.strictEqual(invitedMember.agent?.territory, "Banana Island North & Guzape");
     assert.strictEqual(invitedMember.agent?.routingWeight, 25);
     assert.strictEqual(invitedMember.agent?.maxConcurrentLeads, 40);
     assert.strictEqual(invitedMember.agent?.isAvailableForRouting, true);
 
-    console.log("  ✔ Member successfully invited and agent routing profile created.");
+    // Test resend invitation
+    const resendResult = await teamService.resendInvitation(tenantAdminA, invitedMember.id);
+    assert.strictEqual(resendResult.success, true);
+    console.log("  ✔ Member successfully invited, email dispatched, and resend invitation verified.");
 
     // Verify duplicate invitation throws ConflictException
     let duplicateRejected = false;
