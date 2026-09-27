@@ -45,16 +45,36 @@ export class ResendNotificationAdapter {
   ): Promise<{ id: string; status: NotificationDeliveryStatus }> {
     const rawRecipients = Array.isArray(options.to) ? options.to : [options.to];
     const testRecipient = this.configService.get<string>("RESEND_TEST_RECIPIENT");
-    const toRecipients = testRecipient && testRecipient.trim().length > 0 ? [testRecipient.trim()] : rawRecipients;
+    const isSandboxRedirect = Boolean(testRecipient && testRecipient.trim().length > 0);
+    const toRecipients = isSandboxRedirect ? [testRecipient!.trim()] : rawRecipients;
     const fromAddress = options.from || this.defaultFrom;
+
+    if (isSandboxRedirect) {
+      this.logger.log(
+        `[Notifications Engine] Sandbox active: email intended for ${rawRecipients.join(", ")} redirected to verified account ${toRecipients.join(", ")} (onboarding@resend.dev free domain restriction).`
+      );
+    }
 
     if (!this.isMockMode && this.resendClient) {
       try {
+        let finalHtml = options.html;
+        let finalSubject = options.subject;
+
+        if (isSandboxRedirect && finalHtml) {
+          finalSubject = `[For: ${rawRecipients.join(", ")}] ${options.subject}`;
+          const banner = `
+            <div style="background: #fffbeb; border: 1px solid #fde68a; color: #92400e; padding: 10px 14px; border-radius: 8px; font-size: 11px; margin-bottom: 20px; font-family: -apple-system, sans-serif; line-height: 1.4;">
+              <strong>Resend Sandbox Notice:</strong> This email was intended for <strong>${rawRecipients.join(", ")}</strong>. Because the system is using the free <code>onboarding@resend.dev</code> domain, Resend strictly allows deliveries only to the verified account owner (<code>${toRecipients.join(", ")}</code>). To deliver to any address, verify a custom domain at resend.com/domains.
+            </div>
+          `;
+          finalHtml = banner + finalHtml;
+        }
+
         const { data, error } = await this.resendClient.emails.send({
           from: fromAddress,
           to: toRecipients,
-          subject: options.subject,
-          html: options.html,
+          subject: finalSubject,
+          html: finalHtml,
           text: options.text,
           replyTo: options.replyTo,
         });
