@@ -1411,6 +1411,48 @@ Establish a secure, multi-tenant Client Integration Management suite (`Integrati
   6. **Multi-Tenant Isolation**: Verifies complete data boundary isolation between workspaces with 0 cross-tenant data leakage ✔
 - **Result**: `ALL DAY 24 INTEGRATION MANAGEMENT TESTS PASSED (6/6 - 100%)`.
 
+---
+
+# Day 25: Internal Operations Command Suite & Observability
+
+## Objective
+Deliver a focused, high-density internal operations command surface (`OpsModule`) providing infrastructure health telemetry, cross-tenant entity observability (Workspaces, Leads, Calls, Appointments), background queue monitoring, failure diagnostics with 1-click retry, integration fleet recovery, compliance audit trails, and emergency operational controls (outbound AI dialer pause/resume).
+
+> **CRITICAL ARCHITECTURAL DIRECTIVE**: Build only the operational surface required to run the MVP. Avoid sprawling SaaS admin overhead while ensuring internal Spacia operators have direct, real-time observability and controls over platform subsystems.
+
+## Summary of Completed Work
+1. **OpsModule Architecture (`server/src/modules/ops/`)**:
+   - `OpsModule`: Injects Drizzle database provider, `IntegrationsService`, `AiConfigService`, `BullMQQueueService`, and `UsersModule`.
+   - `OpsService`: Implements platform-wide telemetry aggregation, cross-workspace querying, workflow retry execution, failure diagnostics consolidation, integration health probes, and AI dialer operational controls.
+   - `OpsController`: Exposes 14 secure REST endpoints protected by `ClerkAuthGuard`, `WorkspaceMemberGuard`, and `RequirePermissions("workspace:manage")`.
+2. **REST Endpoints (`/api/v1/ops/`)**:
+   - `GET /api/v1/ops/overview`: Aggregated real-time pulse (total workspaces, leads, active vs. failed workflows, calls, appointments, error count, integrations health ratio, and AI dialer state).
+   - `GET /api/v1/ops/workspaces`: Lists tenant workspaces with member counts, active leads, calls, and AI status.
+   - `GET /api/v1/ops/leads`: Cross-workspace inbound lead monitor with score, status, and budget.
+   - `GET /api/v1/ops/workflows`: Background queue events query (`system_events` table) with status filtering (`emitted`, `processing`, `completed`, `failed`).
+   - `POST /api/v1/ops/workflows/:id/retry`: 1-click workflow retry action: resets status to `processing`, increments `retryCount`, stamps `retriedBy`, re-enqueues into BullMQ, and records an immutable audit log.
+   - `GET /api/v1/ops/calls`: Vapi voice telephony calls across workspaces with duration and outcomes.
+   - `GET /api/v1/ops/appointments`: Inspection bookings across workspaces with start/end time and virtual tour links.
+   - `GET /api/v1/ops/errors`: Unified error diagnostics stream consolidating failed workflows, degraded/unhealthy integrations, failed call recordings, and critical audit logs with `retryable` flags.
+   - `GET /api/v1/ops/integrations`: Aggregated health telemetry across all external connectors with latency measurements and failure counts.
+   - `POST /api/v1/ops/integrations/:id/reconnect`: 1-click integration reconnect action from ops command with audit logging.
+   - `GET /api/v1/ops/audit`: Real-time query into `audit_logs` table supporting severity (`info`, `warning`, `critical`) and actor type filters.
+   - `POST /api/v1/ops/ai/pause`: Emergency killswitch pausing outbound AI voice dialing and logging an audit event.
+   - `POST /api/v1/ops/ai/resume`: Resumes outbound AI voice dialer and records an audit log.
+   - `GET /api/v1/ops/ai/status`: Returns current AI dialer operational state and telemetry.
+
+## Automated Verification & Test Suite
+- **Command**: `npm run test:day25`
+- **File**: `server/test/day25-internal-ops.spec.ts`
+- **6 Verification Scenarios Verified Live Against Neon PostgreSQL**:
+  1. **Operational Pulse Overview Telemetry**: Computes total workspaces, leads, calls, appointments, failed workflows, integrations health ratio, and system status ✔
+  2. **Operational Entity Views**: Verifies multi-workspace entity retrieval across Workspaces, Leads, Calls, and Appointments ✔
+  3. **Workflow Telemetry & 1-Click Retry Execution**: Validates failed workflow recovery: status transition (`failed` $\rightarrow$ `processing`), retry metadata stamping (`retryCount=1`), and BullMQ re-queue ✔
+  4. **Unified Error Observability Aggregation**: Consolidates failure events across workflows, integrations, and calls with severity and retryability flags ✔
+  5. **Fleet Integration Health & Reconnect Action**: Evaluates connector health across providers and executes 1-click reconnect with audit trail ✔
+  6. **Audit Trail & AI Dialer Operational Controls**: Validates outbound AI dialer emergency pause (`engineStatus='paused'`), resume (`engineStatus='active'`), and compliance audit logging with severity classifications ✔
+- **Result**: `ALL PACIA DAY 25 INTERNAL OPERATIONS TESTS PASSED (6/6 - 100%)`.
+
 
 
 
