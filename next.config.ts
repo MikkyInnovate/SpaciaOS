@@ -23,6 +23,14 @@ const nextConfig: NextConfig = {
       "@radix-ui/react-tooltip",
     ],
   },
+  compiler: {
+    removeConsole:
+      process.env.NODE_ENV === "production"
+        ? {
+            exclude: ["error"],
+          }
+        : false,
+  },
   async rewrites() {
     const backendUrl = process.env.BACKEND_API_URL || "http://localhost:8000";
     return [

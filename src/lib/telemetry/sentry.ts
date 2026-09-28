@@ -153,8 +153,23 @@ class TelemetryClient {
     return result;
   }
 
+  private silenceConsoleInProduction(): void {
+    if (typeof window === "undefined") return;
+    if (process.env.NODE_ENV === "production") {
+      const noop = () => {};
+      window.console.log = noop;
+      window.console.info = noop;
+      window.console.debug = noop;
+      window.console.warn = noop;
+      window.console.table = noop;
+      window.console.dir = noop;
+    }
+  }
+
   private setupGlobalHandlers(): void {
     if (typeof window === "undefined") return;
+
+    this.silenceConsoleInProduction();
 
     window.addEventListener("error", (event) => {
       this.captureException(event.error || event.message, {
