@@ -2,7 +2,7 @@
 
 > **Spacia** is a high-performance, managed AI sales orchestration platform purpose-built for modern real-estate brokerages and development firms. It autonomously captures inbound property inquiries, engages prospects via natural voice and chat, qualifies buyers against stringent underwriting criteria, evaluates purchasing power and timeline, and seamlessly books qualified viewings directly onto connected sales agents' calendars.
 
-This repository houses the **production frontend and backend implementation for Days 1 through 27** of the Spacia MVP.
+This repository houses the **production frontend and backend implementation for Days 1 through 29** of the Spacia MVP.
 
 ---
 
@@ -1378,7 +1378,55 @@ Interactive operational pipeline certification board verifying that the complete
 
 ---
 
-## 33. Git Workflow & Branching Conventions
+## 33. Day 28 — Stabilization, Concurrency Hardening & UI Resilience
+
+Day 28 focused on zero-defect hardening across frontend UI primitives, race-condition elimination, and background workflow resilience:
+
+### 1. Frontend UI Resilience & Defensive Domain Normalization
+- **ScoreIndicator Resilience**: Normalized score category resolution to be case-insensitive (`"hot"` / `"HOT"`), safely clamped scores within bounds `[0 - 100]`, and rendered graceful `"Pending"` state badges when scores are `null` or `undefined`.
+- **StatusBadge Normalization**: Mapped snake_case telephony, booking, and handoff outcomes (`viewing_booked`, `in_conversation`, `escalated_takeover`, `callback_requested`, `voicemail`, `human_managed`, `no_show`) to luxury design system colorways.
+- **CommandSearch Index Safety**: Added bounds guards protecting against zero-item search states and keyboard index out-of-range exceptions.
+
+### 2. Backend Concurrency Locks & Failure Cascades
+- **In-Flight Viewing Concurrency Locks**: In-memory mutex (`bookingLocks`) combined with database slot collision checks preventing double-booking race conditions during simultaneous booking requests.
+- **BullMQ Queue Re-Engagement Differentiation**: Differentiated BullMQ job IDs for re-engagements vs. fresh intake, preventing false idempotency suppression.
+- **Resilient AI & Telephony Timeouts**: Implemented 25s timeout with executive fallback for OpenRouter LLM calls and 12s timeout with automated OAuth token refresh on HTTP 401 for Google Calendar integrations.
+- **1-Click Workflow Retry**: Enhanced `/ops` retry endpoint supporting aggregate workflows with unique retry job IDs.
+
+### 3. Automated Verification
+- **Frontend Stabilization Tests**: `npm run test:frontend -- stabilization` (6/6 passed).
+- **Backend Stabilization Tests**: `npm --prefix server run test:day28` (10/10 pillars passed).
+
+---
+
+## 34. Day 29 — Production Readiness, Health Probes, Sentry & Telemetry
+
+Day 29 establishes enterprise production readiness across client crash resilience, secrets masking, deep health probes, and compiler-level optimization:
+
+### 1. Frontend Production Readiness & Sentry Telemetry
+- **Next.js Compiler Console Stripping (`next.config.ts`)**: Configured Turbopack/SWC `removeConsole: process.env.NODE_ENV === "production" ? { exclude: ["error"] } : false` to physically purge non-error logs (`console.log`, `info`, `debug`, `table`) from production bundles.
+- **Hierarchical Crash Boundaries (`src/app/(app)/error.tsx`, `src/app/global-error.tsx`)**: Route-level React error boundaries isolate component crashes, preserving the luxury sidebar, header, and workspace switcher. Displays human-readable error digest IDs with **"Reload Component"** and **"Return to Overview"** actions.
+- **Zero-Dependency Sentry Client Telemetry (`src/lib/telemetry/sentry.ts`)**: Captures unhandled exceptions and async rejections, correlates them with `err_*` trace IDs, buffers up to 50 breadcrumbs, and enforces recursive zero-trust PII scrubbing (redacting emails, Nigerian phone numbers `+234...` / `080...`, and API keys `sk_live_*`).
+
+### 2. Backend Production Hardening & Subsystem Probes
+- **Production Environment Guardrails (`server/src/config/env.schema.ts`)**: Strict Zod schema disallowing `ALLOW_MOCK_AUTH="true"` when `NODE_ENV="production"`.
+- **Neon Serverless WebSocket Resiliency (`server/src/database/database.provider.ts`)**: Added proactive `pool.on("error")` listener preventing unhandled socket drop crashes on transient network blips.
+- **Drizzle Migration Pipeline Integrity**: Verified 6 versioned SQL migration files (`0000_omniscient_toxin.sql` to `0005_icy_firebird.sql`) covering all 19 domain tables.
+- **Redis TLS & BullMQ Production Standards (`server/src/modules/queue/redis-connection.service.ts`)**: Full `rediss://` TLS support with exponential backoff and `maxRetriesPerRequest: null`.
+- **Backend Sentry & Exception Tracking (`server/src/common/services/backend-telemetry.service.ts`)**: Correlates 5xx exceptions with request correlation IDs and scrubs credentials before logging or Sentry dispatch.
+- **Subsystem Liveness & Deep Readiness Probes (`server/src/modules/health/`)**:
+  - `GET /api/v1/health`: Fast liveness check verifying HTTP event loop and Neon DB ping.
+  - `GET /api/v1/health/readiness`: Deep readiness check reporting database latency, Redis connectivity, memory RSS/heap metrics, and process uptime.
+
+### 3. Verification & Test Certification
+- **Frontend Verification**: `npm run test:frontend` (66/66 tests passing, 100%).
+- **Backend Verification**: `npm --prefix server run test:day29` (6/6 pillars passing, 100%).
+- **Master Full-Spectrum Matrix**: `npm run test:backend` (102/102 tests passing across 12 categories, 100%).
+- **Grand Total**: **168/168 tests passing (100%)**.
+
+---
+
+## 35. Git Workflow & Branching Conventions
 
 - **Dedicated Frontend Branch**: All Day 1 through Day 14 frontend foundation code resides on the `frontend` branch.
 - **Feature Branches**: Day 15 through Day 19 unified full-stack code resides on `feature/backend-foundation`.
@@ -1391,7 +1439,7 @@ Interactive operational pipeline certification board verifying that the complete
 
 ---
 
-## 34. Contribution & Development Guidelines
+## 36. Contribution & Development Guidelines
 
 1. Always run `npm run lint` and `npm run type-check` before committing. Zero errors and zero warnings are required.
 2. Keep pages server-rendered where possible; designate `"use client"` only when user interaction, state, or browser APIs are required.
@@ -1400,7 +1448,7 @@ Interactive operational pipeline certification board verifying that the complete
 
 ---
 
-## 35. Backend Architecture & Milestones (`/server`)
+## 37. Backend Architecture & Milestones (`/server`)
 
 The Pacia modular monolith backend resides in `/server` (NestJS 11 + Neon PostgreSQL + Drizzle ORM + BullMQ + Redis). Full technical documentation and verification runbooks are recorded in [`server/README.md`](server/README.md).
 
