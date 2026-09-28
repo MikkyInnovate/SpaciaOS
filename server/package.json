@@ -11,7 +11,7 @@
     "type-check": "tsc --noEmit",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "ts-node src/database/migrate.ts",
-    "db:studio": "drizzle-kit studio",
+    "test": "npm run test:backend",
     "test:backend": "ts-node -r dotenv/config --transpile-only test/runner.ts",
     "test:isolation": "NODE_ENV=test ts-node test/tenant-isolation.spec.ts",
     "test:e2e": "NODE_ENV=test ts-node test/auth-tenant.e2e.spec.ts",

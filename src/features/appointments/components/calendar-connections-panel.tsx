@@ -29,8 +29,10 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils/cn";
+import { useRouter } from "next/navigation";
 
 export function CalendarConnectionsPanel() {
+  const router = useRouter();
   const [connections, setConnections] = React.useState<CalendarConnection[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
   const [isSyncingAll, setIsSyncingAll] = React.useState(false);
@@ -70,7 +72,7 @@ export function CalendarConnectionsPanel() {
 
           // If initiated from integrations page, redirect back there with query param
           if (state && (state.includes("integrations") || state.includes("from_integrations"))) {
-            window.location.href = `/integrations?calendar=connected&email=${encodeURIComponent(result.accountEmail || "")}`;
+            router.push(`/integrations?calendar=connected&email=${encodeURIComponent(result.accountEmail || "")}`);
             return;
           }
         } catch {

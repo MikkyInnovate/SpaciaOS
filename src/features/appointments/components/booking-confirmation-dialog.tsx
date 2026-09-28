@@ -161,6 +161,7 @@ ${meetLink ? `Google Meet: ${meetLink}\n` : ""}Status: Confirmed. AI outreach st
             <div className="overflow-hidden rounded-lg border border-stone-200 bg-white">
               <div className="flex items-center gap-3 px-3.5 py-3">
                 {appointment.propertyImage ? (
+                  // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={appointment.propertyImage}
                     alt={appointment.propertyTitle}
