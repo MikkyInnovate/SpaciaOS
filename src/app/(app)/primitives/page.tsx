@@ -54,6 +54,7 @@ import {
   Bell,
   BellRing,
   User,
+  ShieldCheck,
 } from "lucide-react";
 import {
   BuyerIntentBadge,
@@ -94,6 +95,7 @@ import {
   appointmentsService,
   type ViewingSlot,
 } from "@/features/appointments";
+import { NotificationMenu } from "@/components/layout/notification-menu";
 
 interface SampleLead {
   id: string;
@@ -1994,6 +1996,94 @@ export default function PrimitivesShowcasePage() {
               </Badge>
             </div>
           )}
+        </CardContent>
+      </Card>
+
+      {/* ========================================================================= */}
+      {/* 15. RESPONSIVE NOTIFICATION MODAL & OPERATIONAL ALERTS CENTER */}
+      {/* ========================================================================= */}
+      <Card className="border-border bg-white shadow-2xs">
+        <CardHeader className="border-b border-border bg-stone-50/50 p-4">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <CardTitle className="text-sm font-bold text-stone-900 flex items-center gap-2">
+              <Bell className="h-4 w-4 text-[#0d4a36]" />
+              <span>15. Responsive Notification Modal & Operational Alerts Center</span>
+            </CardTitle>
+            <div className="flex flex-wrap items-center gap-1.5">
+              <Badge variant="outline" className="text-[10px] bg-white border-stone-200 text-stone-700">
+                WAI-ARIA Dialog
+              </Badge>
+              <Badge variant="outline" className="text-[10px] bg-white border-stone-200 text-stone-700">
+                Keyboard Trap
+              </Badge>
+              <Badge variant="outline" className="text-[10px] bg-white border-stone-200 text-stone-700">
+                Screen Reader Ready
+              </Badge>
+              <Badge className="bg-[#0d4a36] text-white hover:bg-[#0a3829] text-[10px]">
+                Mobile Drawer + Desktop Modal
+              </Badge>
+            </div>
+          </div>
+          <CardDescription className="text-xs text-stone-500 mt-1">
+            Enterprise sales operational alerts modal featuring Radix dialog focus trapping, mobile slide-up sheet adaptation (&lt;640px), high-contrast focus rings, unread badge counters, and screen-reader polite live announcements.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="p-4 space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Live Interactive Trigger Panel */}
+            <div className="rounded-xl border border-stone-200 bg-stone-50/50 p-4 flex flex-col justify-between space-y-3">
+              <div>
+                <span className="text-xs font-semibold text-stone-800 flex items-center gap-1.5">
+                  <BellRing className="h-3.5 w-3.5 text-[#0d4a36]" />
+                  <span>Live Operational Notification Center</span>
+                </span>
+                <p className="text-[11px] text-stone-500 mt-1">
+                  Click the bell below or press Enter/Space while focused. Press <kbd className="px-1 py-0.5 rounded bg-stone-200 text-[10px] font-mono">Esc</kbd> to dismiss and automatically restore focus.
+                </p>
+              </div>
+
+              <div className="p-3 rounded-lg border border-stone-200/80 bg-white flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-medium text-stone-700">AppHeader Preview:</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <NotificationMenu />
+                </div>
+              </div>
+            </div>
+
+            {/* Accessibility & Focus Specifications */}
+            <div className="rounded-xl border border-stone-200 bg-stone-50/50 p-4 space-y-3">
+              <span className="text-xs font-semibold text-stone-800 flex items-center gap-1.5">
+                <ShieldCheck className="h-3.5 w-3.5 text-emerald-700" />
+                <span>WCAG 2.1 AA Compliance Specifications</span>
+              </span>
+              <ul className="text-[11px] text-stone-600 space-y-1.5 list-disc pl-4">
+                <li><strong className="text-stone-800">Focus Trapping:</strong> Tab and Shift+Tab cycle strictly inside modal boundary.</li>
+                <li><strong className="text-stone-800">Focus Restoration:</strong> Closing modal via Esc or Close button restores focus directly to trigger bell.</li>
+                <li><strong className="text-stone-800">Focus Visibility:</strong> Standardized <code className="font-mono text-[10px] bg-stone-100 px-1 py-0.2 rounded">focus-visible:ring-2 focus-visible:ring-emerald-700</code> across all elements.</li>
+                <li><strong className="text-stone-800">Screen Readers:</strong> Polymorphic live region (<code className="font-mono text-[10px] bg-stone-100 px-1 py-0.2 rounded">aria-live=&quot;polite&quot;</code>) announces read updates and badge state.</li>
+              </ul>
+            </div>
+
+            {/* Responsive Viewport Specifications */}
+            <div className="rounded-xl border border-stone-200 bg-stone-50/50 p-4 space-y-3">
+              <span className="text-xs font-semibold text-stone-800 flex items-center gap-1.5">
+                <Sliders className="h-3.5 w-3.5 text-indigo-600" />
+                <span>Responsive Viewport States</span>
+              </span>
+              <div className="space-y-2 text-[11px] text-stone-600">
+                <div className="p-2 rounded border border-stone-200 bg-white">
+                  <div className="font-semibold text-stone-800">Desktop Viewport (&ge; 640px)</div>
+                  <div className="text-stone-500">Floating anchored command modal with top-right origin and subtle backdrop blur.</div>
+                </div>
+                <div className="p-2 rounded border border-stone-200 bg-white">
+                  <div className="font-semibold text-stone-800">Mobile Viewport (&lt; 640px)</div>
+                  <div className="text-stone-500">Full-width bottom-sheet drawer with grab handle and thumb-friendly touch targets.</div>
+                </div>
+              </div>
+            </div>
+          </div>
         </CardContent>
       </Card>
 

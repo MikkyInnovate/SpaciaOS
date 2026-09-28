@@ -8,7 +8,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint src",
-    "type-check": "tsc --noEmit"
+    "type-check": "tsc --noEmit",
+    "test:frontend": "node -e \"require('./test/frontend/setup.ts'); require('./test/frontend/runner.ts');\"",
+    "test:backend": "npm --prefix server run test:backend"
   },
   "dependencies": {
     "@clerk/nextjs": "^7.9.2",

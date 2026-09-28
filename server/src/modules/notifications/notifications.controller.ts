@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Post,
+  Patch,
   Param,
   Query,
   Body,
@@ -21,15 +22,35 @@ export class NotificationsController {
   @Get()
   async getNotifications(
     @CurrentTenant() tenant: TenantContext,
+    @Query("filter") filter?: "all" | "unread",
     @Query("type") type?: string,
     @Query("limit") limit?: string
   ) {
     const wsId = tenant.workspaceId || "default";
-    const data = await this.notificationsService.getNotifications(wsId, {
+    return this.notificationsService.getNotifications(wsId, {
+      filter,
       type,
       limit: limit ? parseInt(limit, 10) : 50,
     });
-    return { notifications: data, count: data.length };
+  }
+
+  @Patch(":id/read")
+  async markAsRead(
+    @CurrentTenant() tenant: TenantContext,
+    @Param("id") id: string
+  ) {
+    const wsId = tenant.workspaceId || "default";
+    const notification = await this.notificationsService.markAsRead(wsId, id);
+    return {
+      success: true,
+      notification,
+    };
+  }
+
+  @Post("mark-all-read")
+  async markAllAsRead(@CurrentTenant() tenant: TenantContext) {
+    const wsId = tenant.workspaceId || "default";
+    return this.notificationsService.markAllAsRead(wsId);
   }
 
   @Get("appointments/:id")
@@ -41,7 +62,7 @@ export class NotificationsController {
     const data = await this.notificationsService.getNotifications(wsId, {
       entityId: appointmentId,
     });
-    return { notifications: data, count: data.length };
+    return { notifications: data.notifications, count: data.count };
   }
 
   @Post("appointments/:id/remind")

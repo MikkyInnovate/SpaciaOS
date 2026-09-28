@@ -114,9 +114,12 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
                   const isAvailable = item.isAvailable !== false;
                   const isActive =
                     isAvailable &&
-                    (item.href === "/"
-                      ? pathname === "/"
-                      : pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href)));
+                    Boolean(
+                      pathname &&
+                        (item.href === "/"
+                          ? pathname === "/"
+                          : pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href)))
+                    );
 
                   if (!isAvailable) {
                     return (

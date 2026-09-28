@@ -15,13 +15,18 @@ import {
   renderProspectViewingReminder,
   renderCompanyNewAppointmentAlert,
 } from "./templates/email-templates";
+import {
+  FormattedNotificationDto,
+  NotificationPriority,
+  NotificationsListResponseDto,
+} from "./dto/notifications.dto";
 
 @Injectable()
 export class NotificationsService {
   private readonly logger = new Logger(NotificationsService.name);
 
   // In-memory fallback cache when PostgreSQL is not accessible
-  private readonly memoryNotifications = new Map<string, NotificationResult[]>();
+  private readonly memoryNotifications = new Map<string, any[]>();
 
   constructor(
     private readonly resendAdapter: ResendNotificationAdapter,
@@ -294,36 +299,244 @@ export class NotificationsService {
   }
 
   /**
-   * Retrieves notification history for an appointment or workspace
+   * Evaluates alert priority from type or metadata.
+   */
+  private determinePriority(type?: string, metaPriority?: string): NotificationPriority {
+    if (metaPriority === "urgent" || metaPriority === "high" || metaPriority === "medium" || metaPriority === "low") {
+      return metaPriority;
+    }
+    const t = (type || "").toLowerCase();
+    if (t.includes("escalation") || t.includes("failure") || t.includes("alert")) {
+      return "urgent";
+    }
+    if (t.includes("qualified") || t.includes("booked") || t.includes("viewing") || t.includes("confirmation")) {
+      return "high";
+    }
+    if (t.includes("reminder") || t.includes("call")) {
+      return "medium";
+    }
+    return "low";
+  }
+
+  /**
+   * Resolves deep link destination based on entity type.
+   */
+  private determineActionUrl(entityType?: string | null, entityId?: string | null, type?: string): string | undefined {
+    const t = (type || "").toLowerCase();
+    if (entityType === "lead" && entityId) return `/leads`;
+    if (entityType === "appointment" || t.includes("viewing") || t.includes("booking") || t.includes("reminder")) return `/appointments`;
+    if (entityType === "call" || t.includes("call")) return `/calls`;
+    return undefined;
+  }
+
+  /**
+   * Formats database or memory records to AppNotification contract.
+   */
+  public formatNotification(record: any): FormattedNotificationDto {
+    const isRead = Boolean(record.isRead ?? record.read);
+    const createdAt = record.createdAt ? new Date(record.createdAt).toISOString() : new Date().toISOString();
+    const meta = (record.metadata as Record<string, any>) || {};
+
+    return {
+      id: record.id,
+      workspaceId: record.workspaceId || "default",
+      type: record.type || record.templateType || "system",
+      title: record.title || record.subject || "Notification Alert",
+      message: record.message || record.body || record.htmlBody?.replace(/<[^>]+>/g, " ").slice(0, 150) || "Operational update",
+      priority: this.determinePriority(record.type, meta.priority),
+      read: isRead,
+      isRead: isRead,
+      timestamp: createdAt,
+      actionUrl: meta.actionUrl || this.determineActionUrl(record.entityType, record.entityId, record.type),
+      entityType: record.entityType,
+      entityId: record.entityId,
+      metadata: meta,
+    };
+  }
+
+  /**
+   * Creates and persists a direct in-app notification.
+   */
+  async createNotification(
+    workspaceId: string,
+    data: {
+      type: string;
+      title: string;
+      message: string;
+      entityType?: string;
+      entityId?: string | null;
+      metadata?: Record<string, any>;
+    }
+  ): Promise<FormattedNotificationDto> {
+    const notifId = randomUUID();
+    const newRecord = {
+      id: notifId,
+      workspaceId,
+      type: data.type,
+      title: data.title,
+      message: data.message,
+      entityType: data.entityType || null,
+      entityId: this.isUuid(data.entityId || undefined) ? data.entityId! : null,
+      metadata: data.metadata || {},
+    };
+
+    await this.persistNotificationRecord(workspaceId, newRecord);
+    return this.formatNotification({ ...newRecord, isRead: false, createdAt: new Date() });
+  }
+
+  /**
+   * Retrieves notification history for an appointment or workspace.
    */
   async getNotifications(
     workspaceId: string,
-    filters?: { entityId?: string; entityType?: string; type?: string; limit?: number }
-  ): Promise<any[]> {
+    filters?: {
+      entityId?: string;
+      entityType?: string;
+      type?: string;
+      filter?: "all" | "unread";
+      limit?: number;
+    }
+  ): Promise<NotificationsListResponseDto> {
+    let allRecords: any[] = [];
+
     if (this.db) {
       try {
-        let query = this.db
+        const records = await this.db
           .select()
           .from(schema.notifications)
           .where(eq(schema.notifications.workspaceId, workspaceId))
           .orderBy(desc(schema.notifications.createdAt));
-
-        const records = await query;
-        let filtered = records;
-        if (filters?.entityId) {
-          filtered = filtered.filter((r) => r.entityId === filters.entityId);
-        }
-        if (filters?.type) {
-          filtered = filtered.filter((r) => r.type === filters.type);
-        }
-        return filtered.slice(0, filters?.limit || 50);
+        allRecords = records;
       } catch (err) {
         this.logger.warn(`Could not query notifications from DB: ${(err as Error).message}`);
+        allRecords = this.memoryNotifications.get(workspaceId) || [];
+      }
+    } else {
+      allRecords = this.memoryNotifications.get(workspaceId) || [];
+    }
+
+    // Format all records
+    const formatted = allRecords.map((r) => this.formatNotification(r));
+
+    // Calculate unread count across workspace
+    const unreadCount = formatted.filter((n) => !n.read).length;
+
+    // Apply filters
+    let filtered = formatted;
+    if (filters?.entityId) {
+      filtered = filtered.filter((n) => n.entityId === filters.entityId);
+    }
+    if (filters?.type) {
+      filtered = filtered.filter((n) => n.type === filters.type);
+    }
+    if (filters?.filter === "unread") {
+      filtered = filtered.filter((n) => !n.read);
+    }
+
+    const limit = filters?.limit || 50;
+    const finalNotifications = filtered.slice(0, limit);
+
+    return {
+      notifications: finalNotifications,
+      unreadCount,
+      count: finalNotifications.length,
+    };
+  }
+
+  /**
+   * Marks a specific notification as read with strict multi-tenant isolation.
+   */
+  async markAsRead(
+    workspaceId: string,
+    notificationId: string
+  ): Promise<FormattedNotificationDto> {
+    // 1. Update in Neon PostgreSQL
+    if (this.db) {
+      try {
+        const [updated] = await this.db
+          .update(schema.notifications)
+          .set({ isRead: true })
+          .where(
+            and(
+              eq(schema.notifications.id, notificationId),
+              eq(schema.notifications.workspaceId, workspaceId)
+            )
+          )
+          .returning();
+
+        if (updated) {
+          // Also update cache if present
+          const list = this.memoryNotifications.get(workspaceId) || [];
+          const item = list.find((n: any) => n.id === notificationId);
+          if (item) {
+            item.isRead = true;
+            item.read = true;
+          }
+          return this.formatNotification(updated);
+        }
+      } catch (err) {
+        this.logger.warn(`Could not mark notification as read in DB: ${(err as Error).message}`);
       }
     }
 
-    const cached = this.memoryNotifications.get(workspaceId) || [];
-    return cached.slice(0, filters?.limit || 50);
+    // 2. Update in-memory fallback
+    const list = this.memoryNotifications.get(workspaceId) || [];
+    const item = list.find((n: any) => n.id === notificationId);
+    if (item) {
+      item.isRead = true;
+      item.read = true;
+      return this.formatNotification(item);
+    }
+
+    return {
+      id: notificationId,
+      workspaceId,
+      type: "system",
+      title: "Notification",
+      message: "Alert marked as read",
+      priority: "low",
+      read: true,
+      isRead: true,
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  /**
+   * Atomically marks all pending notifications in a workspace as read.
+   */
+  async markAllAsRead(workspaceId: string): Promise<{ success: boolean; count: number }> {
+    let affectedCount = 0;
+
+    if (this.db) {
+      try {
+        const updatedRecords = await this.db
+          .update(schema.notifications)
+          .set({ isRead: true })
+          .where(
+            and(
+              eq(schema.notifications.workspaceId, workspaceId),
+              eq(schema.notifications.isRead, false)
+            )
+          )
+          .returning();
+
+        affectedCount = updatedRecords.length;
+      } catch (err) {
+        this.logger.warn(`Could not mark all notifications as read in DB: ${(err as Error).message}`);
+      }
+    }
+
+    // Update in-memory fallback
+    const list = this.memoryNotifications.get(workspaceId) || [];
+    for (const item of list) {
+      if (!item.isRead && !item.read) {
+        item.isRead = true;
+        item.read = true;
+        if (!this.db) affectedCount++;
+      }
+    }
+
+    return { success: true, count: affectedCount };
   }
 
   /**
@@ -337,11 +550,29 @@ export class NotificationsService {
       type: string;
       title: string;
       message: string;
-      entityType: string;
+      entityType: string | null;
       entityId: string | null;
       metadata: Record<string, any>;
     }
   ): Promise<void> {
+    // In-memory caching for immediate fast read
+    const memoryRecord = {
+      id: record.id,
+      workspaceId: record.workspaceId,
+      type: record.type,
+      title: record.title,
+      message: record.message,
+      entityType: record.entityType,
+      entityId: record.entityId,
+      isRead: false,
+      read: false,
+      metadata: record.metadata,
+      createdAt: new Date(),
+    };
+    const list = this.memoryNotifications.get(workspaceId) || [];
+    list.unshift(memoryRecord);
+    this.memoryNotifications.set(workspaceId, list);
+
     if (this.db) {
       try {
         await this.db.insert(schema.notifications).values({

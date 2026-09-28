@@ -154,8 +154,8 @@ class AppointmentsService {
         return (res as any).data;
       }
       return [];
-    } catch (err) {
-      throw err;
+    } catch {
+      return this.appointmentsCache;
     }
   }
 

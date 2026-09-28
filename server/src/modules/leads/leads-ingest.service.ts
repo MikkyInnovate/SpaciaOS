@@ -125,8 +125,8 @@ export class LeadsIngestService {
       workspace = await this.workspacesRepo.findById(headerWsId);
       if (!workspace) {
         if (
-          process.env.NODE_ENV === "development" ||
-          process.env.ALLOW_MOCK_AUTH === "true"
+          process.env.NODE_ENV !== "test" &&
+          (process.env.NODE_ENV === "development" || process.env.ALLOW_MOCK_AUTH === "true")
         ) {
           workspace = await this.workspacesRepo.create({
             id: headerWsId,
@@ -177,8 +177,8 @@ export class LeadsIngestService {
     }
 
     if (
-      process.env.NODE_ENV === "development" ||
-      process.env.ALLOW_MOCK_AUTH === "true"
+      process.env.NODE_ENV !== "test" &&
+      (process.env.NODE_ENV === "development" || process.env.ALLOW_MOCK_AUTH === "true")
     ) {
       const defaultWs = await this.workspacesRepo.findById("org_dubai_palace");
       if (defaultWs) return defaultWs;

@@ -1,0 +1,76 @@
+/**
+ * PACIA MASTER FRONTEND TEST RUNNER
+ * 
+ * Orchestrates and executes all 4 frontend test suites:
+ * 1. Component Tests
+ * 2. User-Flow Tests
+ * 3. Browser & Route Tests
+ * 4. Responsive Tests
+ */
+
+import { runner } from "./setup";
+import { runComponentTests } from "./components.spec";
+import { runUserFlowTests } from "./user-flows.spec";
+import { runBrowserTests } from "./browser.spec";
+import { runResponsiveTests } from "./responsive.spec";
+
+async function main() {
+  const args = process.argv.slice(2);
+  const suiteArg = args.find((a) => a.startsWith("--suite="))?.split("=")[1];
+
+  console.log("\n=================================================================");
+  console.log(" PACIA FRONTEND TEST SUITE: FULL-SPECTRUM VERIFICATION");
+  console.log("=================================================================");
+
+  const startTime = Date.now();
+
+  try {
+    if (!suiteArg || suiteArg === "components") {
+      console.log("\n\x1b[1m\x1b[36m▶ EXECUTING: Component Tests\x1b[0m");
+      await runComponentTests();
+    }
+
+    if (!suiteArg || suiteArg === "flows") {
+      console.log("\n\x1b[1m\x1b[36m▶ EXECUTING: User-Flow Tests\x1b[0m");
+      await runUserFlowTests();
+    }
+
+    if (!suiteArg || suiteArg === "browser") {
+      console.log("\n\x1b[1m\x1b[36m▶ EXECUTING: Browser & Route Tests\x1b[0m");
+      await runBrowserTests();
+    }
+
+    if (!suiteArg || suiteArg === "responsive") {
+      console.log("\n\x1b[1m\x1b[36m▶ EXECUTING: Responsive Tests\x1b[0m");
+      await runResponsiveTests();
+    }
+
+    const totalDuration = Date.now() - startTime;
+    const total = runner.results.length;
+    const passed = runner.results.filter((r) => r.passed).length;
+    const failed = runner.results.filter((r) => !r.passed).length;
+
+    console.log("\n=================================================================");
+    console.log(" PACIA FRONTEND TEST SUMMARY");
+    console.log("=================================================================");
+    console.log(` Total Suites  : ${suiteArg ? 1 : 4}`);
+    console.log(` Total Tests   : ${total}`);
+    console.log(` Passed        : \x1b[32m${passed}\x1b[0m`);
+    console.log(` Failed        : ${failed > 0 ? `\x1b[31m${failed}\x1b[0m` : `\x1b[32m0\x1b[0m`}`);
+    console.log(` Total Time    : ${totalDuration}ms`);
+    console.log("=================================================================\n");
+
+    if (failed > 0) {
+      console.error("\x1b[31mSOME FRONTEND TESTS FAILED!\x1b[0m\n");
+      process.exit(1);
+    } else {
+      console.log("\x1b[32mALL FRONTEND TESTS PASSED (100%)!\x1b[0m\n");
+      process.exit(0);
+    }
+  } catch (err) {
+    console.error("\x1b[31mFatal test runner error:\x1b[0m", err);
+    process.exit(1);
+  }
+}
+
+main();

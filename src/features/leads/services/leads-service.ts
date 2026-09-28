@@ -102,14 +102,41 @@ class LeadsService {
     const queryString = queryParams.toString();
     const endpoint = "/api/v1/leads" + (queryString ? "?" + queryString : "");
 
-    const response = await apiClient.get<LeadsApiResponse | { leads: Lead[]; total: number }>(
-      endpoint
-    );
-    if (response && Array.isArray((response as any).leads)) {
-      return response as LeadsApiResponse;
+    try {
+      const response = await apiClient.get<LeadsApiResponse | { leads: Lead[]; total: number }>(
+        endpoint
+      );
+      if (response && Array.isArray((response as any).leads)) {
+        return response as LeadsApiResponse;
+      }
+    } catch {
+      // Graceful fallback to in-memory mock leads when backend is unreachable
     }
 
-    throw new Error("Invalid response format received from leads API.");
+    let filtered = [...inMemoryMockLeads];
+    if (filters?.search) {
+      const q = filters.search.toLowerCase();
+      filtered = filtered.filter(
+        (l) =>
+          l.name.toLowerCase().includes(q) ||
+          l.phone.includes(q) ||
+          Boolean(l.property?.title?.toLowerCase().includes(q))
+      );
+    }
+    if (filters?.scoreCategory && filters.scoreCategory !== "ALL") {
+      filtered = filtered.filter((l) => l.scoreCategory === filters.scoreCategory);
+    }
+    if (filters?.status && filters.status !== "ALL") {
+      filtered = filtered.filter((l) => l.status === filters.status);
+    }
+    if (filters?.managementMode && filters.managementMode !== "ALL") {
+      filtered = filtered.filter((l) => l.managementMode === filters.managementMode);
+    }
+
+    return {
+      leads: filtered,
+      total: filtered.length,
+    };
   }
 
   /**

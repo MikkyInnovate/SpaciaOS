@@ -62,9 +62,12 @@ export function Sidebar({ className, onItemClick, ...props }: SidebarProps) {
             <ul className="space-y-0.5" role="list">
               {section.items.map((item) => {
                 const isActive =
-                  item.href === "/"
-                    ? pathname === "/"
-                    : pathname.startsWith(item.href);
+                  Boolean(
+                    pathname &&
+                      (item.href === "/"
+                        ? pathname === "/"
+                        : pathname.startsWith(item.href))
+                  );
 
                 return (
                   <li key={item.href}>

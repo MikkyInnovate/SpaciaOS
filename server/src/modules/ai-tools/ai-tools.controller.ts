@@ -65,10 +65,15 @@ export class AiToolsController {
       callId: dto.callId,
     };
 
-    return this.executorService.executeTool(
+    const result = await this.executorService.executeTool(
       dto.toolName,
       dto.parameters || {},
       context
     );
+
+    return {
+      message: "Tool executed successfully.",
+      data: result,
+    };
   }
 }

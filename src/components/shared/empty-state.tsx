@@ -12,6 +12,7 @@ import {
   GitBranch,
   ShieldCheck,
   CheckCircle2,
+  BellOff,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils/cn";
@@ -26,6 +27,7 @@ export type EmptyStatePreset =
   | "no-errors"
   | "no-audit-logs"
   | "no-search-results"
+  | "no-notifications"
   | "no-data";
 
 export interface EmptyStateProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -98,6 +100,12 @@ const PRESET_CONFIGS: Record<
     title: "No Matching Records Found",
     description: "Try adjusting your search terms, removing filter constraints, or resetting your query parameters.",
     defaultActionLabel: "Clear Search Filters",
+  },
+  "no-notifications": {
+    icon: <BellOff className="h-6 w-6 text-stone-400" />,
+    title: "All Caught Up",
+    description: "No pending operational alerts or unread notifications in this workspace.",
+    defaultActionLabel: "Refresh Alerts",
   },
   "no-data": {
     icon: <FolderOpen className="h-6 w-6 text-stone-400" />,
