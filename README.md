@@ -1836,3 +1836,46 @@ The Pacia modular monolith backend resides in `/server` (NestJS 11 + Neon Postgr
     - Backend Day 28 Tests: `npm --prefix server run test:day28` — **All 10 pillars passing (100%)**.
     - Backend Category Runner: `npm --prefix server run test:backend -- --category=stabilization` — **PASSED (100%)**.
     - Type Check: `tsc --noEmit` — **0 errors** across frontend and backend.
+
+- **Day 29 — Production Readiness, Telemetry & Health Probes**:
+  - **Frontend Production Hardening**:
+    - Compiled standalone production bundle via Next.js 16 App Router Turbopack, removing `console.log/info/debug` in production.
+    - Sentry client telemetry module (`src/lib/telemetry/sentry.ts`) with automatic error correlation IDs (`err_*`) and breadcrumb ring buffer (capped at 50 items).
+    - Recursive PII scrubbing utility redacting customer emails, Nigerian phone numbers (`+234...`, `080...`), and secret tokens before telemetry dispatch.
+    - Hierarchical `AppErrorBoundary` (`src/app/(app)/error.tsx`) displaying luxury alert UI, Next.js error digest, trace ID, component reload, and safe return-to-dashboard controls.
+  - **Backend Production Readiness (`server`)**:
+    - Strict production environment validation (`server/src/config/env.schema.ts`) with Zod refinement automatically disallowing `ALLOW_MOCK_AUTH="true"` when `NODE_ENV="production"`.
+    - Resilient connection pool listener (`pool.on("error")`) for Neon serverless PostgreSQL, swallowing transient socket drops without process crashes.
+    - Redis TLS support (`rediss://`) and non-blocking availability ping (`RedisConnectionService.isAvailable()`).
+    - Backend telemetry service (`BackendTelemetryService`) with canonical HTTP exception filter integration and PII scrubbing.
+    - Granular health probes: `/api/v1/health` (liveness) and `/api/v1/health/readiness` (deep readiness with Neon DB latency, Redis status, and memory metrics).
+  - **Automated Verification**:
+    - Frontend Tests: `npm run test:frontend` — **66/66 passing across 6 suites (100%)**.
+    - Backend Day 29 Tests: `npm --prefix server run test:day29` — **6/6 pillars passing (100%)**.
+
+- **Day 30 — Final Deployment, Containerization, Smoke Testing & Production Launch Sign-Off**:
+  - **Multi-Stage Container Architecture**:
+    - Frontend Dockerfile (`Dockerfile`): Alpine Node 20 base, multi-stage caching (`deps`, `builder`, `runner`), non-root system user (`nextjs:nodejs`, UID 1001), standalone Next.js 16 output, exposed on port 3000.
+    - Backend Dockerfile (`server/Dockerfile`): Alpine Node 20 base, multi-stage caching (`deps`, `builder`, `runner`), pruned production dependencies, non-root user (`nestjs:nodejs`, UID 1001), built-in container `HEALTHCHECK` probe against `/api/v1/health`, exposed on port 8000.
+    - Docker Compose Orchestration (`docker-compose.yml`): Full-stack local and production orchestration uniting Redis 7 Alpine, NestJS backend, and Next.js frontend with service-level health checks and dependency management.
+    - Clean Build Ignores (`.dockerignore`, `server/.dockerignore`): Excludes `node_modules`, `.next`, `.git`, `.env*`, and build logs from container contexts.
+  - **Automated Production Smoke Test Bench (`scripts/production-smoke-test.ts` & `npm run test:smoke`)**:
+    - Validates 5 critical production checkpoints in under 5 seconds:
+      1. Backend Liveness: HTTP 200 with active Neon database connection.
+      2. Backend Deep Readiness: HTTP 200 with DB latency (< 2000ms), Redis queue connectivity, and memory metrics (< 512MB heap).
+      3. Security Boundary: HTTP 401 Unauthorized rejection on protected lead endpoints without valid credentials.
+      4. Webhook Ingestion Barrier: HTTP 400 Canonical Error Envelope on malformed payloads.
+      5. Frontend SSR Gateway: HTTP 200 Next.js 16 App Router server-side stream.
+  - **Production Deployment Guide & Operations Runbook (`docs/PRODUCTION_DEPLOYMENT_GUIDE.md`)**:
+    - Complete infrastructure topology diagram covering Edge CDN, Next.js 16, NestJS 11, Neon PostgreSQL, Upstash Redis, Vapi Voice Telephony, and OpenRouter AI.
+    - Comprehensive environment secrets matrix for frontend and backend deployments.
+    - Zero-downtime database migration rollout instructions using Drizzle ORM.
+    - Emergency operations playbooks: 1-Click Telephony Freeze Killswitch (`POST /api/v1/ops/ai/pause`), 1-Click Dead-Letter Queue Retry (`POST /api/v1/ops/workflows/:id/retry`), and recursive PII redaction guarantees.
+  - **Automated Verification & Release Sign-Off**:
+    - Frontend Tests: `npm run test:frontend` — **66/66 passing across 6 suites (100%)**.
+    - Backend Day 30 Tests: `npm --prefix server run test:day30` — **6/6 pillars passing (100%)**.
+    - Backend Master Orchestrator: `npm --prefix server run test:backend` — **All 13 categories passing (100%)** in 340s.
+    - Production Smoke Bench: `npm run test:smoke` — **5/5 checks passed (100%)**.
+    - Type Checking: `npm run type-check && npm --prefix server run type-check` — **0 errors**.
+    - ESLint AST & Compiler: `npm run lint` — **0 fatal errors**.
+    - Production Build: `npm run build` — **18/18 routes statically compiled in 1,214ms**.

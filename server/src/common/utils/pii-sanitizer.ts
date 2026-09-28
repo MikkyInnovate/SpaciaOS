@@ -93,9 +93,9 @@ export class PiiSanitizer {
           sanitized[key] = this.sanitizePayload(value, maxDepth - 1);
         } else if (SENSITIVE_KEYS.has(normalizedKey)) {
           sanitized[key] = typeof value === "string" ? this.maskSecret(value) : "[REDACTED]";
-        } else if (normalizedKey === "email" && typeof value === "string") {
+        } else if (normalizedKey.includes("email") && typeof value === "string") {
           sanitized[key] = this.maskEmail(value);
-        } else if (normalizedKey === "phone" && typeof value === "string") {
+        } else if (normalizedKey.includes("phone") && typeof value === "string") {
           sanitized[key] = this.maskPhone(value);
         } else {
           sanitized[key] = this.sanitizePayload(value, maxDepth - 1);

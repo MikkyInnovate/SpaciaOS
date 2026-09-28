@@ -645,7 +645,7 @@ export class LeadScoringService {
     // 6. OBJECTION DEDUCTIONS (-5 to -15 pts)
     // ==========================================
     let penalty = 0;
-    for (const obj of signals.objections) {
+    for (const obj of signals.objections || []) {
       if (obj.title.includes("Price")) {
         penalty += 5;
         riskFactors.push({

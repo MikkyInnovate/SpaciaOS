@@ -43,6 +43,7 @@
     "test:day27": "NODE_ENV=test NOTIFICATION_PROVIDER=mock CALENDAR_PROVIDER=mock ts-node test/day27-notifications-security-audit.spec.ts",
     "test:day28": "NODE_ENV=test NOTIFICATION_PROVIDER=mock CALENDAR_PROVIDER=mock AI_PROVIDER=mock ts-node test/day28-stabilization.spec.ts",
     "test:day29": "NODE_ENV=test ts-node test/day29-production-readiness.spec.ts",
+    "test:day30": "NODE_ENV=test ts-node test/day30-production-launch.spec.ts",
     "simulate:failure": "ts-node scripts/simulate-failure.ts",
     "demo:tools": "ts-node scripts/demo-tools.ts",
     "demo:ai-agent": "ts-node scripts/demo-ai-agent.ts",

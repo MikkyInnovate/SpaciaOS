@@ -85,6 +85,11 @@ const CATEGORIES: TestCategory[] = [
     name: "12. Production Readiness Tests (Day 29 Env, Secrets, Health & Sentry)",
     file: "day29-production-readiness.spec.ts",
   },
+  {
+    id: "launch",
+    name: "13. Production Launch Tests (Day 30 Container, Smoke & Sign-Off)",
+    file: "day30-production-launch.spec.ts",
+  },
 ];
 
 interface ExecutionResult {
