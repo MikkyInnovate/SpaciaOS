@@ -27,12 +27,7 @@ import { EmptyState } from "@/components/shared/empty-state";
 import { ErrorState } from "@/components/shared/error-state";
 
 export function NotificationMenu() {
-  let router: any = null;
-  try {
-    router = useRouter();
-  } catch {
-    // Outside Next.js App Router context (e.g. static server markup/test harness)
-  }
+  const router = useRouter();
   const [isOpen, setIsOpen] = React.useState(false);
   const [notifications, setNotifications] = React.useState<AppNotification[]>([]);
   const [unreadCount, setUnreadCount] = React.useState<number>(0);
@@ -112,11 +107,7 @@ export function NotificationMenu() {
     const targetUrl = resolveNotificationTarget(item);
     if (targetUrl) {
       setIsOpen(false);
-      if (router?.push) {
-        router.push(targetUrl);
-      } else if (typeof window !== "undefined") {
-        window.location.href = targetUrl;
-      }
+      router.push(targetUrl);
     }
   };
 

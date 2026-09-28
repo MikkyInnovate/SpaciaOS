@@ -51,9 +51,15 @@ export function OperationsActivityFeed({
     return filteredFeed.slice(0, INITIAL_LIMIT);
   }, [filteredFeed, showAll]);
 
+  const [mountedAt, setMountedAt] = React.useState<number>(0);
+  React.useEffect(() => {
+    setMountedAt(Date.now());
+  }, []);
+
   const formatRelativeTime = (timestamp: string) => {
     try {
-      const diffMs = Date.now() - new Date(timestamp).getTime();
+      const now = mountedAt || new Date(timestamp).getTime();
+      const diffMs = Math.max(0, now - new Date(timestamp).getTime());
       const diffMins = Math.floor(diffMs / 60000);
       if (diffMins < 1) return "Just now";
       if (diffMins < 60) return `${diffMins}m ago`;

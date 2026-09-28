@@ -112,6 +112,11 @@ export default function AppointmentsPage() {
     setIsBookModalOpen(true);
   };
 
+  const [cutoffTimestamp, setCutoffTimestamp] = React.useState<number>(0);
+  React.useEffect(() => {
+    setCutoffTimestamp(Date.now() - 1000 * 60 * 60 * 4);
+  }, []);
+
   // Filtered Appointments
   const filteredAppointments = React.useMemo(() => {
     return allAppointments.filter((apt) => {
@@ -120,7 +125,7 @@ export default function AppointmentsPage() {
         if (statusFilter === "UPCOMING") {
           const isUpcoming =
             (apt.status === "scheduled" || apt.status === "confirmed") &&
-            new Date(apt.endTime).getTime() >= Date.now() - 1000 * 60 * 60 * 4;
+            (!cutoffTimestamp || new Date(apt.endTime).getTime() >= cutoffTimestamp);
           if (!isUpcoming) return false;
         } else if (statusFilter === "rescheduled") {
           const isRescheduled =

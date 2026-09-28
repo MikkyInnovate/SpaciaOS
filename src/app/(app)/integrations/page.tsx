@@ -889,7 +889,7 @@ export default function IntegrationsPage() {
             <div className="rounded-lg border border-blue-100 bg-blue-50/40 p-3 text-xs text-blue-900 flex items-center gap-2.5">
               <ExternalLink className="h-4 w-4 text-blue-600 shrink-0" />
               <span>
-                Clicking below will securely redirect you to Google's official sign-in screen to authorize your Google account.
+                Clicking below will securely redirect you to Google&apos;s official sign-in screen to authorize your Google account.
               </span>
             </div>
           </div>
