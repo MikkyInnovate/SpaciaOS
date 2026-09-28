@@ -50,8 +50,9 @@ class TelemetryClient {
   public captureException(error: Error | unknown, context?: TelemetryContext): string {
     const errorId = `err_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
     const sanitizedContext = this.sanitize(context || {});
-    const errorMessage = error instanceof Error ? error.message : String(error);
-    const stack = error instanceof Error ? error.stack : undefined;
+    const rawMessage = error instanceof Error ? error.message : String(error);
+    const errorMessage = this.scrubString(rawMessage);
+    const stack = error instanceof Error && error.stack ? this.scrubString(error.stack) : undefined;
 
     if (process.env.NODE_ENV !== "production") {
       console.warn(`[Telemetry] Captured exception [${errorId}]:`, errorMessage, {
@@ -147,6 +148,8 @@ class TelemetryClient {
     let result = str.replace(/[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+/g, "[REDACTED_EMAIL]");
     // Scrub Nigerian phone formats: +234..., 080..., 090..., 070..., 081...
     result = result.replace(/(?:\+234|0)[789][01]\d{8}/g, "[REDACTED_PHONE]");
+    // Scrub API keys / tokens (sk_live_..., whsec_...)
+    result = result.replace(/(?:sk|whsec|key|token)_[a-zA-Z0-9_-]+/gi, "[REDACTED_SECRET]");
     return result;
   }
 
