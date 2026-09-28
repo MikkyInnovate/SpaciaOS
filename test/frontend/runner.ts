@@ -13,6 +13,8 @@ import { runComponentTests } from "./components.spec";
 import { runUserFlowTests } from "./user-flows.spec";
 import { runBrowserTests } from "./browser.spec";
 import { runResponsiveTests } from "./responsive.spec";
+import { runStabilizationTests } from "./stabilization.spec";
+import { runProductionReadinessTests } from "./production-readiness.spec";
 
 async function main() {
   const args = process.argv.slice(2);
@@ -45,6 +47,16 @@ async function main() {
       await runResponsiveTests();
     }
 
+    if (!suiteArg || suiteArg === "stabilization") {
+      console.log("\n\x1b[1m\x1b[36m▶ EXECUTING: Stabilization Tests\x1b[0m");
+      await runStabilizationTests();
+    }
+
+    if (!suiteArg || suiteArg === "production") {
+      console.log("\n\x1b[1m\x1b[36m▶ EXECUTING: Production Readiness Tests\x1b[0m");
+      await runProductionReadinessTests();
+    }
+
     const totalDuration = Date.now() - startTime;
     const total = runner.results.length;
     const passed = runner.results.filter((r) => r.passed).length;
@@ -53,7 +65,7 @@ async function main() {
     console.log("\n=================================================================");
     console.log(" PACIA FRONTEND TEST SUMMARY");
     console.log("=================================================================");
-    console.log(` Total Suites  : ${suiteArg ? 1 : 4}`);
+    console.log(` Total Suites  : ${suiteArg ? 1 : 6}`);
     console.log(` Total Tests   : ${total}`);
     console.log(` Passed        : \x1b[32m${passed}\x1b[0m`);
     console.log(` Failed        : ${failed > 0 ? `\x1b[31m${failed}\x1b[0m` : `\x1b[32m0\x1b[0m`}`);

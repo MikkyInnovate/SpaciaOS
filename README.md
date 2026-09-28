@@ -48,6 +48,7 @@ Spacia acts as an automated sales acceleration layer positioned between inbound 
 | **Day 25: Internal Operations & Observability UI** | **COMPLETE & VERIFIED** | Enterprise Internal Operations Command Center (`/ops`, `features/ops`): dedicated operational surface purpose-built for internal Spacia operators. Features live system pulse strip (Workspaces, Active & Failed Workflows, System Errors, Integration Fleet Health ratio, Platform Activity), 8 segmented operational views (Workflows & Queues with 1-click retry, Consolidated Error Diagnostics with severity filtering and recovery actions, Integration Fleet with latency telemetry and 1-click reconnect, Workspaces Fleet, Inbound Leads Monitor, Telephony Call Logs, Inspection Appointments with virtual tour links, and Security & Compliance Audit Trail), raw execution payload inspector dialog, and emergency AI Outbound Voice Dialer pause/resume controls. |
 | **Day 26: Security & UX Hardening UI** | **COMPLETE & VERIFIED** | Comprehensive accessibility, responsiveness, and empty/error state hardening: accessible skip-to-main-content navigation landmark (`#main-content`, `focus:not-sr-only`), strict `focus-visible` styling across interactive elements, responsive QA with horizontal table overflow scrolling (`overflow-x-auto`) preserving mobile layout integrity, accessible and actionable `EmptyState` presets (`no-members`, `no-integrations`, `no-workflows`, `no-errors`, `no-audit-logs`, `no-search-results`), backwards-compatible `EmptyStateCard` adapter, integrated empty states across `/team`, `/integrations`, and `/ops`, and verified separation of internal `/ops` command center from standard client/broker sidebar navigation. |
 | **Day 27: Full-Spectrum Frontend Test Architecture** | **COMPLETE & VERIFIED** | Comprehensive zero-dependency headless testing harness (`test/frontend/setup.ts`, `runner.ts`) executing across 4 core dimensions (56/56 tests passing 100%): Component UI primitives & gauges, 5 core end-to-end user flows (lead intake, call transcript & takeover, inspection booking & cancellation, team roster, ops retry), route & export resolution for 11 core screens, navigation integrity, and responsive layout scaling across mobile, tablet, and luxury desktop viewports. |
+| **Day 28: Stabilization, Concurrency Resilience & Error Recovery UI** | **COMPLETE & VERIFIED** | Frontend stabilization and error protection: defensive `ScoreIndicator` normalization, case-insensitive scoring categories with graceful fallback, strict bounds clamping [0-100], `StatusBadge` domain mapping for telephony/booking outcomes (`viewing_booked`, `in_conversation`, `escalated_takeover`, `callback_requested`, `voicemail`, `human_managed`), safe command search index boundary guards, client error boundaries (`src/app/(app)/error.tsx`) with user recovery actions, and PII-scrubbed Sentry telemetry (`src/lib/telemetry/sentry.ts`). 66/66 frontend tests passing across 6 suites (100%). |
 
 ### Backend Implementation Status (`/server` — NestJS + Neon PostgreSQL)
 
@@ -82,16 +83,18 @@ Spacia acts as an automated sales acceleration layer positioned between inbound 
 | **Day 25: Internal Operations & Observability Engine** | **COMPLETE & VERIFIED** | Enterprise internal operations and observability engine (`OpsModule` in `/server`). Endpoints under `/api/v1/ops`: `GET /overview` (real-time platform pulse), `GET /workspaces`, `GET /leads`, `GET /workflows`, `POST /workflows/:id/retry` (1-click retry with status transition, retryCount increment, and BullMQ re-queue), `GET /calls`, `GET /appointments`, `GET /errors` (consolidated error stream with retryability flags), `GET /integrations`, `POST /integrations/:id/reconnect` (1-click connector reconnect), `GET /audit` (audit trail with severity filters), `POST /ai/pause`, `POST /ai/resume`, and `GET /ai/status` (outbound dialer emergency controls). 6/6 automated integration tests passing (100%). |
 | **Day 26: Security & UX Hardening Engine** | **COMPLETE & VERIFIED** | Enterprise security and resilience hardening engine across the modular monolith (`/server`). Features global sliding-window rate limiting guard (`RateLimiterGuard`, `@RateLimit`) with RFC-compliant headers (`X-RateLimit-*`, `Retry-After`), timing-safe HMAC-SHA256 webhook signature verification (`WebhookVerifier`), recursive PII data sanitization and log scrubbing (`PiiSanitizer`), controlled AI tool prompt-injection defense mitigating cross-tenant parameter spoofing, inside-the-tool authorization, zero-trust credential masking in client responses, multi-tenant database isolation, Sole Owner Protection guardrails, and compliance audit trail integrity with `ON DELETE RESTRICT` constraints. 7/7 automated integration tests passing (100%). |
 | **Day 27: Full-Spectrum Backend Test Architecture** | **COMPLETE & VERIFIED** | Unified master test orchestrator (`server/test/runner.ts`) executing across all 10 backend testing categories (89/89 tests passing 100%): Unit tests (BANT qualification & property adapter), API tests (Leads REST endpoints), Database tests (Drizzle ORM domain schema & FK constraints), Workflow tests (BullMQ queues & retry), Webhook tests (Lead intake deduplication), Authorization tests (RBAC & permissions), Tenant isolation tests (workspace partitioning), AI tool tests (controlled sandbox), Vapi tests (voice telephony & human takeover), and Calendar tests (inspection booking & Google sync). |
+| **Day 28: Stabilization, Concurrency Locks & Production Resilience** | **COMPLETE & VERIFIED** | Comprehensive backend stabilization eliminating race conditions and failure cascades across 10 pillars: in-flight slot concurrency locks (`bookingLocks`) and database interval overlap lockout preventing duplicate bookings, differentiated BullMQ job IDs for re-engagement vs intake, resilient webhook idempotency key handling, OpenRouter AI fetch timeouts (25s) with executive fallback and high-severity audit logging, Google Calendar adapter timeout (12s) with automatic OAuth token refresh on HTTP 401, human broker takeover preservation in `updateLeadStatus`, integer score clamping [0-100], and Ops 1-click workflow retry supporting aggregateType `workflow` with unique retry job IDs. 10/10 pillars verified (100%). |
+| **Day 29: Production Readiness, Health Probes, Sentry & Telemetry** | **COMPLETE & VERIFIED** | Enterprise production readiness across frontend and backend: Next.js production build (`next build`) certified with zero errors across 18 routes, hierarchical error boundaries (`src/app/(app)/error.tsx`) preserving workspace navigation shell during crashes, zero-dependency client telemetry & Sentry integration (`src/lib/telemetry/sentry.ts`) with recursive PII scrubbing for emails & Nigerian phone numbers, strict production environment validation (`env.schema.ts`) disallowing mock auth in production, Neon serverless pool error listeners preventing unhandled socket drops, Drizzle migration integrity verification (6 SQL migrations), backend Sentry error dispatcher with request correlation IDs (`err_*`), and deep health probes (`GET /api/v1/health/readiness`) reporting database latency, Redis connection, memory RSS/heap, and process uptime. 6/6 automated integration tests passing (100%). |
 
 ---
 
 ## Full-Spectrum Testing Framework & Verification Guide
 
-SpaciaOS includes an industrial-grade, zero-external-dependency automated testing architecture validating both frontend user journeys and backend services with **100% pass rates (145/145 total tests)**:
+SpaciaOS includes an industrial-grade, zero-external-dependency automated testing architecture validating both frontend user journeys and backend services with **100% pass rates (168/168 total tests)**:
 
 ```text
 ========================================================================================
- SPACIAPRO TEST MATRIX: COMPLETE VERIFICATION (100% PASSING)
+ PACIAPRO TEST MATRIX: COMPLETE VERIFICATION (100% PASSING)
 ========================================================================================
  WORKSTREAM     SUITE / CATEGORY                                   TESTS    STATUS
 ----------------------------------------------------------------------------------------
@@ -99,7 +102,9 @@ SpaciaOS includes an industrial-grade, zero-external-dependency automated testin
  Frontend       2. Core Real-Estate User Flows                      5       PASSED
  Frontend       3. Browser Route Exports & Navigation Taxonomy      14       PASSED
  Frontend       4. Responsive Viewport Scaling (Mobile/Tablet/Desk) 6       PASSED
-                ↳ Total Frontend Verified                           56/56   100%
+ Frontend       5. Day 28 Stabilization: Score & Status Resilience  6       PASSED
+ Frontend       6. Day 29 Production Readiness: Telemetry & Errors  4       PASSED
+                ↳ Total Frontend Verified                           66/66   100%
 ----------------------------------------------------------------------------------------
  Backend        1. Unit Tests (Qualification Scoring & BANT)        8       PASSED
  Backend        2. API Tests (Leads Management Endpoints)          10       PASSED
@@ -111,9 +116,11 @@ SpaciaOS includes an industrial-grade, zero-external-dependency automated testin
  Backend        8. AI Tool Tests (Controlled Execution Sandbox)    11       PASSED
  Backend        9. Vapi Tests (Voice Telephony & Human Takeover)    8       PASSED
  Backend        10. Calendar Tests (Inspection Booking & Google)    8       PASSED
-                ↳ Total Backend Verified                            89/89   100%
+ Backend        11. Stabilization Tests (Day 28 Concurrency Locks)  7       PASSED
+ Backend        12. Production Readiness Tests (Day 29 Health/Env)  6       PASSED
+                ↳ Total Backend Verified                            102/102 100%
 ========================================================================================
- GRAND TOTAL    14 TEST SUITES & CATEGORIES                        145/145  100% PASS
+ GRAND TOTAL    18 TEST SUITES & CATEGORIES                        168/168  100% PASS
 ========================================================================================
 ```
 
@@ -1741,4 +1748,42 @@ The Pacia modular monolith backend resides in `/server` (NestJS 11 + Neon Postgr
   - **Automated Verification**:
     - Frontend Tests: `npx tsx test/frontend/runner.ts` — **56/56 passing (100%)**.
     - Backend Tests: `npm run test:day27` — **All 8 pillars passing (100%)**.
+    - Type Check: `tsc --noEmit` — **0 errors** across frontend and backend.
+
+- **Day 28 — Production Stabilization, Concurrency Hardening & Failure Resilience**:
+  - **Core Focus**: Zero major new features. Laser focus on: Bugs, Race conditions, Duplicate jobs, Duplicate bookings, Failed webhooks, Failed AI calls, Failed calendar requests, Incorrect lead states, Incorrect scores, and UI defects.
+  - **10 Core Resilience & Stabilization Pillars**:
+    1. **In-Flight Slot Concurrency Lockout (`AppointmentsService`)**:
+       - Implemented in-flight concurrency lock `bookingLocks: Set<string>` on key `${workspaceId}:${propertyId}:${startTime}` inside `createAppointment`, released deterministically in a `finally` block.
+       - Guarantees immediate `409 ConflictException` ("Another booking for this property slot is currently in progress") if concurrent requests race for the exact same slot.
+    2. **Database Overlap Lockout (`appointments` table)**:
+       - Enforced SQL interval overlap check query (`scheduledStartAt < endTime AND scheduledEndAt > startTime AND status != 'cancelled'`).
+       - Prevents double-booking collisions even across multi-process cluster nodes.
+    3. **Queue Job Deduplication (`BullMQQueueService`)**:
+       - Initial intake uses deterministic deduplication `jobId: lead_wf_${ws}_${leadId}` to collapse concurrent webhook bursts into a single execution.
+       - Repeat inquiries / re-engagements use distinct timestamped job IDs (`lead_reengage_${ws}_${leadId}_${Date.now()}`) ensuring repeat customer interest is never dropped by queue deduplication.
+    4. **Webhook Failure & Idempotency Recovery (`VapiWebhookService`)**:
+       - Nested `try...catch` around idempotency key failure status writes so that database connection or schema errors do not mask or replace the underlying webhook error.
+       - Hardened `deriveCallOutcome` against edge ended reasons (`call-failed`, `carrier-error`, `pipeline-error`).
+    5. **AI Gateway Resilience & Executive Fallback (`OpenRouter` & `AiOrchestratorService`)**:
+       - Configured 25-second `AbortController` timeout on OpenRouter HTTP calls to eliminate hanging client requests.
+       - Wrapped LLM tool-loop chat completions in defensive error handling. On provider failure or timeout, logs a high-severity audit log (`action: 'ai_agent:completion_failed'`, `severity: 'warning'`), returns a polite executive fallback reply, and prevents 502/503 HTTP gateway crashes.
+    6. **Calendar Adapter Timeout & OAuth Token Auto-Refresh (`GoogleCalendarAdapter`)**:
+       - Configured 12-second `AbortController` timeout on Google Calendar API requests.
+       - Added automatic token refresh (`refreshAccessToken`) and automatic retry on HTTP 401 Unauthorized before falling back to local simulation.
+    7. **Human Broker Takeover Preservation (`LeadsService`)**:
+       - In `updateLeadStatus`, added protection for active human takeovers: if `existingLead.isAiStopped && existingLead.managementMode === "human_managed"`, status transitions to `"Qualified"`, `"Contacting"`, or `"In Conversation"` preserve the takeover and do not re-enable autonomous AI calling.
+    8. **Score Clamping & Case-Insensitive Categorization (`LeadScoringService`, `ScoreIndicator`)**:
+       - Clamped underwriting scores strictly to integer range `[0, 100]` (`Math.max(0, Math.min(100, Math.round(totalScore)))`).
+       - Frontend `ScoreIndicator` handles lowercase, uppercase, and unexpected categories without throwing `TypeError: Cannot read properties of undefined (reading 'badge')`.
+    9. **Ops Workflow Recovery (`OpsService`)**:
+       - Updated `retryWorkflow` to handle `aggregateType: 'workflow'` in addition to `'lead'`, allowing BullMQ-emitted system events to be retried via 1-click Ops UI.
+       - Emits custom unique `jobId: lead_retry_${ws}_${aggregateId}_${retryCount}` to prevent BullMQ job collision on retries.
+    10. **UI Defect Protection & Sentry Telemetry (`src/app/(app)/error.tsx`, `src/lib/telemetry/sentry.ts`)**:
+       - Luxury error boundary UI rendering error digest, trace ID, component reload, and return-to-overview actions.
+       - Sentry client telemetry with recursive PII scrubbing for emails, phone numbers, and secrets.
+  - **Automated Verification**:
+    - Frontend Tests: `npm run test:frontend` — **66/66 passing across 6 suites (100%)**.
+    - Backend Day 28 Tests: `npm --prefix server run test:day28` — **All 10 pillars passing (100%)**.
+    - Backend Category Runner: `npm --prefix server run test:backend -- --category=stabilization` — **PASSED (100%)**.
     - Type Check: `tsc --noEmit` — **0 errors** across frontend and backend.

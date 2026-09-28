@@ -62,18 +62,26 @@ export class OpenRouterProvider implements IAiProvider {
     }
 
     const startTime = Date.now();
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 25000);
 
     try {
-      const response = await fetch(endpoint, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${apiKey}`,
-          "HTTP-Referer": "https://spacia.io",
-          "X-Title": "SpaciaOS",
-        },
-        body: JSON.stringify(requestBody),
-      });
+      let response: Response;
+      try {
+        response = await fetch(endpoint, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${apiKey}`,
+            "HTTP-Referer": "https://spacia.io",
+            "X-Title": "SpaciaOS",
+          },
+          body: JSON.stringify(requestBody),
+          signal: controller.signal,
+        });
+      } finally {
+        clearTimeout(timeoutId);
+      }
 
       const latencyMs = Date.now() - startTime;
 

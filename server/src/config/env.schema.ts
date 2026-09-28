@@ -31,7 +31,20 @@ export const envSchema = z.object({
   RESEND_FROM_EMAIL: z.string().default("Spacia <onboarding@resend.dev>"),
   RESEND_TEST_RECIPIENT: z.string().optional(),
   NOTIFICATION_PROVIDER: z.enum(["resend", "mock"]).default("mock"),
-});
+  SENTRY_DSN: z.string().optional(),
+}).refine(
+  (data) => {
+    // Production Safety Guard: Never permit mock auth in production
+    if (data.NODE_ENV === "production" && (data.ALLOW_MOCK_AUTH === "true" || data.ALLOW_MOCK_AUTH === "1")) {
+      return false;
+    }
+    return true;
+  },
+  {
+    message: "ALLOW_MOCK_AUTH cannot be enabled when NODE_ENV=production",
+    path: ["ALLOW_MOCK_AUTH"],
+  }
+);
 
 export type EnvConfig = z.infer<typeof envSchema>;
 

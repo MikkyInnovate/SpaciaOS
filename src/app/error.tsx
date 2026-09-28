@@ -4,6 +4,7 @@ import * as React from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle, RotateCcw } from "lucide-react";
+import { telemetry } from "@/lib/telemetry/sentry";
 
 export default function RootError({
   error,
@@ -15,7 +16,8 @@ export default function RootError({
   const router = useRouter();
 
   React.useEffect(() => {
-    // Log non-sensitive error metadata for development inspection
+    // Record to Sentry / client telemetry
+    telemetry.captureException(error, { extra: { digest: error.digest } });
     console.error("Root error boundary caught:", error.message);
   }, [error]);
 

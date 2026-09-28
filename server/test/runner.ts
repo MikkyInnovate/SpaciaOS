@@ -75,6 +75,16 @@ const CATEGORIES: TestCategory[] = [
     name: "10. Calendar Tests (Inspection Booking & Google Sync)",
     file: "day15-calendar-booking.spec.ts",
   },
+  {
+    id: "stabilization",
+    name: "11. Stabilization Tests (Day 28 Concurrency, Resilience & Edge States)",
+    file: "day28-stabilization.spec.ts",
+  },
+  {
+    id: "production",
+    name: "12. Production Readiness Tests (Day 29 Env, Secrets, Health & Sentry)",
+    file: "day29-production-readiness.spec.ts",
+  },
 ];
 
 interface ExecutionResult {

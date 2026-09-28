@@ -7,6 +7,7 @@ import {
   Logger,
 } from "@nestjs/common";
 import { Request, Response } from "express";
+import { PiiSanitizer } from "../utils/pii-sanitizer";
 
 export interface ApiErrorResponse {
   success: false;
@@ -70,16 +71,25 @@ export class HttpExceptionFilter implements ExceptionFilter {
       message = "An internal server error occurred.";
     }
 
+    // Production error sanitization & tracking
+    const traceId = `err_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+    const sanitizedDetails = details ? PiiSanitizer.sanitizePayload(details) : undefined;
+
     const payload: ApiErrorResponse = {
       success: false,
       error: {
         code,
         message,
-        ...(details ? { details } : {}),
+        ...(sanitizedDetails ? { details: sanitizedDetails } : {}),
       },
       timestamp: new Date().toISOString(),
       path: request.url,
     };
+
+    // If 5xx internal server error, log trace ID for Sentry / operator review
+    if (status >= 500) {
+      this.logger.warn(`[Production Alert] 5xx error on ${request.method} ${request.url} [Trace: ${traceId}]`);
+    }
 
     response.status(status).json(payload);
   }

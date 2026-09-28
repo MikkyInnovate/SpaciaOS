@@ -101,4 +101,8 @@ export class EnvService {
   get vapiProvider(): "vapi" | "mock" {
     return this.configService.get("VAPI_PROVIDER", { infer: true });
   }
+
+  get sentryDsn(): string | undefined {
+    return this.configService.get("SENTRY_DSN", { infer: true });
+  }
 }

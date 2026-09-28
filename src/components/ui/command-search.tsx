@@ -107,24 +107,32 @@ export function CommandSearch({ open, onOpenChange }: CommandSearchProps) {
   // Transform leads for display (real live leads preferred, graceful fallback)
   const displayLeads: DisplayLead[] = React.useMemo(() => {
     if (liveLeads.length > 0) {
-      return liveLeads.slice(0, 6).map((lead) => ({
-        id: lead.id,
-        name: lead.name,
-        score: lead.score ?? 0,
-        scoreCategory: lead.scoreCategory || "COLD",
-        propertyTitle:
-          lead.propertyTitle ||
-          lead.property?.title ||
-          lead.location ||
-          "Luxury Residential Inquiry",
-        budget:
-          lead.budget ||
-          (lead.property ? lead.property.formattedPrice : undefined) ||
-          "₦0",
-        location: lead.location || lead.property?.location,
-        phone: lead.phone,
-        status: lead.status || "New",
-      }));
+      return liveLeads.slice(0, 6).map((lead) => {
+        const rawScore = lead.score ?? 0;
+        const normScore = Math.max(0, Math.min(100, Math.round(rawScore)));
+        const fallbackCat = normScore >= 80 ? "HOT" : normScore >= 60 ? "WARM" : "COLD";
+        const rawCat = lead.scoreCategory ? String(lead.scoreCategory).toUpperCase().trim() : fallbackCat;
+        const scoreCategory = (rawCat === "HOT" || rawCat === "WARM" || rawCat === "COLD") ? rawCat : fallbackCat;
+
+        return {
+          id: lead.id,
+          name: lead.name,
+          score: normScore,
+          scoreCategory: scoreCategory as "HOT" | "WARM" | "COLD",
+          propertyTitle:
+            lead.propertyTitle ||
+            lead.property?.title ||
+            lead.location ||
+            "Luxury Residential Inquiry",
+          budget:
+            lead.budget ||
+            (lead.property ? lead.property.formattedPrice : undefined) ||
+            "₦0",
+          location: lead.location || lead.property?.location,
+          phone: lead.phone,
+          status: lead.status || "New",
+        };
+      });
     }
 
     // Graceful fallback to mock dashboard leads if live leads returned 0 and not actively searching

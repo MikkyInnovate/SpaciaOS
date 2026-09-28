@@ -71,8 +71,10 @@ export function ScoreIndicator({
   }
 
   const normalizedScore = Math.max(0, Math.min(100, Math.round(score)));
-  const category = propCategory || resolveScoreCategory(normalizedScore);
-  const styles = CATEGORY_STYLES[category];
+  const resolvedFallback = resolveScoreCategory(normalizedScore);
+  const rawCat = (propCategory ? String(propCategory).toUpperCase().trim() : resolvedFallback) as "HOT" | "WARM" | "COLD";
+  const category: "HOT" | "WARM" | "COLD" = (rawCat === "HOT" || rawCat === "WARM" || rawCat === "COLD") ? rawCat : resolvedFallback;
+  const styles = CATEGORY_STYLES[category] || CATEGORY_STYLES[resolvedFallback];
 
   // 1. Compact Badge Variant (Ideal for table cells)
   if (variant === "badge") {

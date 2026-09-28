@@ -288,9 +288,12 @@ export class LeadsService {
       dto.status === "Contacting" ||
       dto.status === "In Conversation"
     ) {
-      updateData.managementMode = "ai_autonomous";
-      updateData.isAiStopped = false;
-      updateData.aiStoppedReason = null;
+      // Respect active human broker takeover: never silently re-enable AI if manually halted
+      if (!existingLead.isAiStopped || existingLead.managementMode !== "human_managed") {
+        updateData.managementMode = "ai_autonomous";
+        updateData.isAiStopped = false;
+        updateData.aiStoppedReason = null;
+      }
     }
 
     // Update lead record

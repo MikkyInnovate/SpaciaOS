@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { telemetry } from "@/lib/telemetry/sentry";
 
 export default function GlobalError({
   error,
@@ -10,6 +11,7 @@ export default function GlobalError({
   reset: () => void;
 }) {
   React.useEffect(() => {
+    telemetry.captureException(error, { extra: { digest: error.digest, type: "global_fatal" } });
     console.error("Global crash caught:", error.message);
   }, [error]);
 

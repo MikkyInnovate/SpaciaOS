@@ -167,16 +167,45 @@ export class AiOrchestratorService {
     };
 
     while (iteration <= maxIterations) {
-      const completion = await this.aiProvider.chatCompletion(
-        activeMessages,
-        toolDefs,
-        {
-          workspaceId: tenant.workspaceId,
-          actorId: tenant.userId,
-          conversationId: conversation.id,
-          leadId: dto.leadId,
-        }
-      );
+      let completion;
+      try {
+        completion = await this.aiProvider.chatCompletion(
+          activeMessages,
+          toolDefs,
+          {
+            workspaceId: tenant.workspaceId,
+            actorId: tenant.userId,
+            conversationId: conversation.id,
+            leadId: dto.leadId,
+          }
+        );
+      } catch (providerErr: any) {
+        this.logger.error(
+          `[AI Provider Error] chatCompletion failed for conversation [${conversation.id}]: ${providerErr.message}`,
+          providerErr.stack
+        );
+
+        finalContent =
+          "Thank you for contacting us. I am currently experiencing higher than normal network volume, but our senior sales advisory team has received your message and will follow up with you directly.";
+
+        try {
+          await this.db.insert(schema.auditLogs).values({
+            workspaceId: tenant.workspaceId,
+            actorId: tenant.userId || "ai_agent",
+            actorType: "system",
+            severity: "warning",
+            action: "ai_agent:completion_failed",
+            resource: `conversation:${conversation.id}`,
+            metadata: {
+              error: providerErr.message,
+              model: this.envService.openRouterDefaultModel,
+              leadId: dto.leadId,
+            },
+          });
+        } catch {}
+
+        break;
+      }
 
       lastUsage = completion.usage;
 

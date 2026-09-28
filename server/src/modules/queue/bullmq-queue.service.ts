@@ -158,10 +158,13 @@ export class BullMQQueueService implements OnModuleInit, OnApplicationShutdown {
       this.initQueueAndWorker();
     }
 
-    // Deterministic idempotency key: prevents duplicate concurrent job submission
+    // Deterministic idempotency key: prevents duplicate concurrent job submission on initial intake,
+    // while allowing subsequent re-engagements and explicit retries to create distinct jobs.
     const jobId =
       customOpts?.jobId ||
-      `lead_wf_${payload.workspaceId}_${payload.leadId}`;
+      (payload.isReEngagement
+        ? `lead_reengage_${payload.workspaceId}_${payload.leadId}_${Date.now()}`
+        : `lead_wf_${payload.workspaceId}_${payload.leadId}`);
 
     const job = await this.queue!.add(
       JOB_NAMES.PROCESS_NEW_LEAD,

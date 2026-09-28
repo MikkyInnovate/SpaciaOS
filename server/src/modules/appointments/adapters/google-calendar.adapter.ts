@@ -478,17 +478,52 @@ export class GoogleCalendarAdapter implements ICalendarProviderAdapter {
           } : undefined,
         };
 
-        const res = await fetch(
-          `${this.GOOGLE_CALENDAR_BASE_URL}/calendars/primary/events?conferenceDataVersion=1&sendUpdates=all`,
-          {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${tokenData.accessToken}`,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(googleEventPayload),
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 12000);
+
+        let res: Response;
+        try {
+          res = await fetch(
+            `${this.GOOGLE_CALENDAR_BASE_URL}/calendars/primary/events?conferenceDataVersion=1&sendUpdates=all`,
+            {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${tokenData.accessToken}`,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(googleEventPayload),
+              signal: controller.signal,
+            }
+          );
+        } finally {
+          clearTimeout(timeoutId);
+        }
+
+        // Automatic token refresh & single retry on 401 Unauthorized
+        if (res.status === 401 && tokenData.refreshToken) {
+          this.logger.warn(`[Google Calendar] Access token expired on event creation (HTTP 401). Refreshing token and retrying...`);
+          try {
+            const refreshed = await this.refreshAccessToken(workspaceId, tokenData);
+            if (refreshed.accessToken) {
+              const retryRes = await fetch(
+                `${this.GOOGLE_CALENDAR_BASE_URL}/calendars/primary/events?conferenceDataVersion=1&sendUpdates=all`,
+                {
+                  method: "POST",
+                  headers: {
+                    Authorization: `Bearer ${refreshed.accessToken}`,
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify(googleEventPayload),
+                }
+              );
+              if (retryRes.ok) {
+                res = retryRes;
+              }
+            }
+          } catch (refreshErr) {
+            this.logger.warn(`Token refresh retry failed: ${(refreshErr as Error).message}`);
           }
-        );
+        }
 
         if (res.ok) {
           const created = await res.json();

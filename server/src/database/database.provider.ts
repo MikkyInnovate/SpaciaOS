@@ -22,6 +22,12 @@ export const databaseProviders: Provider[] = [
     useFactory: (envService: EnvService) => {
       const connectionString = envService.databaseUrl;
       const pool = new Pool({ connectionString });
+
+      // Resilience guard: Handle transient Neon WebSocket error events gracefully
+      pool.on("error", (err: any) => {
+        logger.warn(`Neon serverless pool connection notice: ${err?.message || err}`);
+      });
+
       return pool;
     },
   },

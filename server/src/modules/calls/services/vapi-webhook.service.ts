@@ -219,16 +219,20 @@ export class VapiWebhookService {
       };
     } catch (err: any) {
       this.logger.error(`Error processing Vapi webhook: ${err.message}`, err.stack);
-      // Mark key failed so retries can be attempted
-      await this.db
-        .update(schema.idempotencyKeys)
-        .set({ status: "failed", updatedAt: new Date() })
-        .where(
-          and(
-            eq(schema.idempotencyKeys.workspaceId, workspaceId),
-            eq(schema.idempotencyKeys.key, idempotencyKey)
-          )
-        );
+      // Mark key failed so retries can be attempted without masking the original exception
+      try {
+        await this.db
+          .update(schema.idempotencyKeys)
+          .set({ status: "failed", updatedAt: new Date() })
+          .where(
+            and(
+              eq(schema.idempotencyKeys.workspaceId, workspaceId),
+              eq(schema.idempotencyKeys.key, idempotencyKey)
+            )
+          );
+      } catch (keyErr: any) {
+        this.logger.warn(`Could not update idempotency key to failed status: ${keyErr.message}`);
+      }
       throw err;
     }
   }

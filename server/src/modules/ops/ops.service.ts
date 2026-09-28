@@ -370,18 +370,23 @@ export class OpsService {
       .where(eq(schema.systemEvents.id, workflowId))
       .returning();
 
-    // Re-queue into BullMQ if active and aggregate is lead
+    // Re-queue into BullMQ if active and aggregate is lead or workflow
     try {
-      if (event.aggregateType === "lead") {
-        await this.queueService.dispatchLeadWorkflow({
-          workspaceId: event.workspaceId,
-          leadId: event.aggregateId,
-          phone: payload.phone || "+2348000000000",
-          email: payload.email,
-          source: payload.source || "ops_retry",
-          isReEngagement: true,
-          metadata: payload,
-        });
+      if (event.aggregateType === "lead" || event.aggregateType === "workflow") {
+        await this.queueService.dispatchLeadWorkflow(
+          {
+            workspaceId: event.workspaceId,
+            leadId: event.aggregateId,
+            phone: payload.phone || "+2348000000000",
+            email: payload.email,
+            source: payload.source || "ops_retry",
+            isReEngagement: true,
+            metadata: payload,
+          },
+          {
+            jobId: `lead_retry_${event.workspaceId}_${event.aggregateId}_${retryCount}`,
+          }
+        );
       }
     } catch (err: any) {
       this.logger.warn(`BullMQ re-queue fallback for ${event.eventName}: ${err.message}`);

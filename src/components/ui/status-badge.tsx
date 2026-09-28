@@ -125,24 +125,26 @@ const VARIANT_CONFIGS: Record<StatusBadgeVariant, VariantConfig> = {
 };
 
 function resolveVariantForStatus(status: string): StatusBadgeVariant {
-  const normalized = status.trim().toLowerCase();
+  const normalized = status.trim().toLowerCase().replace(/[_-]/g, " ");
 
   switch (normalized) {
     case "hot":
     case "escalated":
+    case "escalated takeover":
       return "hot";
     case "warm":
     case "contacting":
     case "pending":
+    case "callback requested":
       return "warm";
     case "cold":
-    case "follow-up":
+    case "follow up":
       return "cold";
     case "nurture":
       return "nurture";
     case "human managed":
-    case "human-managed":
     case "human takeover":
+    case "human handoff":
       return "humanManaged";
     case "qualified":
     case "completed":
@@ -160,8 +162,7 @@ function resolveVariantForStatus(status: string): StatusBadgeVariant {
     case "in conversation":
       return "inConversation";
     case "rescheduled":
-    case "no_show":
-    case "no-show":
+    case "no show":
       return "warning";
     case "cancelled":
     case "lost":
@@ -171,6 +172,7 @@ function resolveVariantForStatus(status: string): StatusBadgeVariant {
     case "paused":
     case "offline":
     case "no answer":
+    case "voicemail":
       return "neutral";
     case "new":
     default:

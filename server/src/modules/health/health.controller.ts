@@ -18,6 +18,15 @@ export class HealthController {
     };
   }
 
+  @Get("readiness")
+  async getReadiness() {
+    const data = await this.healthService.checkReadiness();
+    return {
+      message: "Pacia production readiness probe verified",
+      data,
+    };
+  }
+
   @Post("test-validation")
   testValidation(@Body() dto: TestValidationDto) {
     return {

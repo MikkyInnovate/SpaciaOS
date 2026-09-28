@@ -1535,6 +1535,127 @@ Execute a comprehensive security and UX hardening pass across the modular monoli
   7. **Durable Compliance Audit Trail**: Verifies audit log capture across security events and `ON DELETE RESTRICT` compliance governance ✔
 - **Result**: `ALL PACIA DAY 26 SECURITY & UX TESTS PASSED (7/7 - 100%)`.
 
+---
+
+# Day 27: Full-Spectrum Master Test Runner, Operational Notifications & Live Command Intelligence
+
+## Objective
+Establish a unified master test orchestrator across all backend testing categories, operationalize the multi-tenant notifications engine with database persistence, and conduct an 8-point enterprise security and compliance audit.
+
+## Summary of Completed Work
+1. **Unified Test Orchestrator (`server/test/runner.ts`)**:
+   - Master test runner supporting 10 distinct categories: `unit`, `api`, `database`, `workflow`, `webhook`, `authorization`, `isolation`, `ai-tools`, `vapi`, `calendar`.
+   - Filterable via `--category=<name>` argument.
+2. **Operational Notifications Module (`src/modules/notifications`)**:
+   - Strongly-typed DTOs (`NotificationsQueryDto`, `MarkNotificationReadDto`).
+   - Endpoints: `GET /api/v1/notifications` (category and unread filtering), `PATCH /api/v1/notifications/:id/read` (optimistic single read toggle), `POST /api/v1/notifications/mark-all-read` (bulk read clearance).
+   - Database audit persistence in Neon PostgreSQL `notifications` table.
+3. **8-Point Enterprise Security & Compliance Audit**:
+   - Tested live against Neon PostgreSQL via `server/test/day27-notifications-security-audit.spec.ts`.
+
+## Automated Verification & Test Suite
+- **Command**: `npm run test:day27`
+- **File**: `server/test/day27-notifications-security-audit.spec.ts`
+- **Result**: `ALL PACIA DAY 27 NOTIFICATIONS & SECURITY AUDIT TESTS PASSED (8/8 - 100%)`.
+
+---
+
+# Day 28: Production Stabilization, Concurrency Hardening & Failure Resilience
+
+## Objective
+Harden the entire production backend against race conditions, duplicate operations, third-party provider timeouts, and edge state transitions. Strictly zero major new features—comprehensive focus on bugs, race conditions, duplicate jobs, duplicate bookings, failed webhooks, failed AI calls, failed calendar requests, incorrect lead states, incorrect scores, and UI defects.
+
+## 10 Core Stabilization Pillars Implemented
+
+### 1. In-Flight Slot Concurrency Lockout (`AppointmentsService`)
+- **Location**: `server/src/modules/appointments/appointments.service.ts`
+- **Mechanism**: Implemented in-flight concurrency lock `bookingLocks: Set<string>` on key `${workspaceId}:${propertyId}:${startTime}` inside `createAppointment`.
+- **Guarantee**: Concurrent HTTP requests racing for the exact same slot immediately trigger a `409 ConflictException` ("Another booking for this property slot is currently in progress"). Released deterministically inside a `finally` block.
+
+### 2. Database Overlap Lockout (`appointments` table)
+- **Location**: `server/src/modules/appointments/appointments.service.ts`
+- **Mechanism**: Enforced SQL interval overlap check query (`scheduledStartAt < endTime AND scheduledEndAt > startTime AND status != 'cancelled'`).
+- **Guarantee**: Prevents double-booking collisions across distributed multi-process cluster nodes.
+
+### 3. Queue Job Deduplication (`BullMQQueueService`)
+- **Location**: `server/src/modules/queue/bullmq-queue.service.ts`
+- **Mechanism**: Initial intake uses deterministic deduplication `jobId: lead_wf_${ws}_${leadId}` to collapse concurrent webhook bursts into a single execution.
+- **Guarantee**: Repeat inquiries / re-engagements use distinct timestamped job IDs (`lead_reengage_${ws}_${leadId}_${Date.now()}`) ensuring repeat customer interest is never dropped by queue deduplication.
+
+### 4. Webhook Failure & Idempotency Recovery (`VapiWebhookService`)
+- **Location**: `server/src/modules/calls/services/vapi-webhook.service.ts`
+- **Mechanism**: Wrapped idempotency key failure status writes in a nested `try...catch`.
+- **Guarantee**: Database write failures do not mask or replace the root webhook processing error. Edge ended reasons (`call-failed`, `carrier-error`, `pipeline-error`) cleanly resolved.
+
+### 5. AI Gateway Resilience & Executive Fallback (`OpenRouter` & `AiOrchestratorService`)
+- **Location**: `server/src/modules/ai-agent/providers/openrouter.provider.ts`, `ai-orchestrator.service.ts`
+- **Mechanism**: Configured 25-second `AbortController` timeout on OpenRouter HTTP calls to eliminate hanging requests.
+- **Guarantee**: Tool-loop chat completions wrapped in defensive error handling. On provider failure or timeout, logs high-severity audit event (`action: 'ai_agent:completion_failed'`, `severity: 'warning'`), provides a polite executive fallback reply, and prevents 502/503 HTTP gateway crashes.
+
+### 6. Calendar Adapter Timeout & OAuth Token Auto-Refresh (`GoogleCalendarAdapter`)
+- **Location**: `server/src/modules/appointments/adapters/google-calendar.adapter.ts`
+- **Mechanism**: Configured 12-second `AbortController` timeout on Google Calendar API requests.
+- **Guarantee**: Added automatic token refresh (`refreshAccessToken`) and automatic retry on HTTP 401 Unauthorized before falling back to local simulation.
+
+### 7. Human Broker Takeover Preservation (`LeadsService`)
+- **Location**: `server/src/modules/leads/leads.service.ts`
+- **Mechanism**: In `updateLeadStatus`, added protection for active human takeovers.
+- **Guarantee**: If `existingLead.isAiStopped && existingLead.managementMode === "human_managed"`, status transitions to `"Qualified"`, `"Contacting"`, or `"In Conversation"` preserve the takeover and do not re-enable autonomous AI calling.
+
+### 8. Score Clamping & Integer Precision (`LeadScoringService`)
+- **Location**: `server/src/modules/leads/services/lead-scoring.service.ts`
+- **Mechanism**: Clamped underwriting scores strictly to integer range `[0, 100]` (`Math.max(0, Math.min(100, Math.round(totalScore)))`).
+- **Guarantee**: Eliminates floating-point discrepancies and out-of-bounds scores.
+
+### 9. Ops Workflow Recovery & Unique Retry Job ID (`OpsService`)
+- **Location**: `server/src/modules/ops/ops.service.ts`
+- **Mechanism**: Updated `retryWorkflow` condition to `if (event.aggregateType === "lead" || event.aggregateType === "workflow")`.
+- **Guarantee**: BullMQ-emitted system events can be retried via 1-click Ops UI, generating custom unique `jobId: lead_retry_${ws}_${aggregateId}_${retryCount}` to prevent BullMQ job collision on retries.
+
+### 10. Sunday Scheduling Guardrail (`AppointmentsService`)
+- **Location**: `server/src/modules/appointments/appointments.service.ts`
+- **Mechanism**: Enforced strict day-of-week validation rejecting Sunday inspection slots (`400 BadRequestException`).
+
+## Automated Verification & Test Suite
+- **Command**: `npm run test:day28`
+- **Category Runner**: `npm run test:backend -- --category=stabilization`
+- **File**: `server/test/day28-stabilization.spec.ts`
+- **Result**: `ALL DAY 28 STABILIZATION TESTS PASSED (10/10 PILLARS - 100%)`.
+
+---
+
+# Day 29: Production Readiness, Health Probes, Sentry & Telemetry
+
+## Objective
+Establish enterprise production readiness across the modular monolith backend, including strict production environment validation, zero-trust secrets safety, idempotent database migrations, Redis/BullMQ worker resilience, backend Sentry exception tracking, structured production logging, and granular health/readiness probes.
+
+## Summary of Completed Work
+1. **Production Environment & Security Hardening (`server/src/config/env.schema.ts`)**:
+   - Added `SENTRY_DSN` optional parameter with validation.
+   - Enforced strict Zod production refinement: automatically rejects `ALLOW_MOCK_AUTH="true"` when `NODE_ENV="production"`, preventing security bypass in live deployments.
+   - Exposed `sentryDsn` getter in `EnvService`.
+2. **Neon Connection Pool Resiliency (`server/src/database/database.provider.ts`)**:
+   - Added proactive `pool.on("error")` event listener on `@neondatabase/serverless` pool.
+   - Traps transient WebSocket socket drops or cold-start drops gracefully without throwing unhandled Node `ErrorEvent` exceptions.
+3. **Database Migration Pipeline (`server/src/database/migrate.ts`)**:
+   - Verified automated Drizzle migration execution across 6 versioned SQL migration files (`0000` to `0005`).
+4. **Redis & BullMQ Production Configuration (`server/src/modules/queue/redis-connection.service.ts`)**:
+   - Production options supporting TLS encryption (`rediss://`), `connectTimeout: 5000ms`, `maxRetriesPerRequest: null`, and exponential backoff retry.
+   - Non-blocking `isAvailable()` bounded PING health check for queue resilience.
+5. **Backend Sentry & Exception Tracking (`server/src/common/services/backend-telemetry.service.ts`)**:
+   - Built zero-dependency backend telemetry service capturing unhandled 5xx exceptions with unique trace IDs (`err_*`).
+   - Integrated with `HttpExceptionFilter` to sanitize all error envelopes and scrub PII (emails, Nigerian phone numbers, tokens).
+6. **Subsystem Health & Readiness Probes (`server/src/modules/health/`)**:
+   - Fast Liveness Probe: `GET /api/v1/health` verifying application loop and Neon DB ping.
+   - Deep Readiness Probe: `GET /api/v1/health/readiness` returning DB connection latency, Redis connection status, memory telemetry (RSS MB, heapUsed MB, heapTotal MB), and process uptime in seconds. Returns HTTP 503 if the core database is unreachable.
+
+## Automated Verification & Test Suite
+- **Command**: `npm run test:day29`
+- **Category Runner**: `npm run test:backend -- --category=production`
+- **File**: `server/test/day29-production-readiness.spec.ts`
+- **Result**: `ALL DAY 29 PRODUCTION READINESS TESTS PASSED (6/6 PILLARS - 100%)`.
+
+
 
 
 

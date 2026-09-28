@@ -11,7 +11,7 @@ import { UpdateAppointmentStatusDto } from "./dto/update-appointment-status.dto"
 import { CalendarAdapterService } from "./calendar-adapter.service";
 import { DRIZZLE_DATABASE, DrizzleDb } from "../../database/database.provider";
 import * as schema from "../../database/schema";
-import { eq, and, inArray } from "drizzle-orm";
+import { eq, and, inArray, ne, lt, gt } from "drizzle-orm";
 import { randomUUID } from "crypto";
 
 import { NotificationsService } from "../notifications/notifications.service";
@@ -22,6 +22,9 @@ export class AppointmentsService {
 
   // In-memory appointments store scoped by workspace
   private appointments: Map<string, AppointmentEntity[]> = new Map();
+
+  // In-flight concurrency lock preventing race-condition double bookings
+  private readonly bookingLocks: Set<string> = new Set();
 
   constructor(
     private readonly calendarAdapter: CalendarAdapterService,
@@ -314,27 +317,62 @@ export class AppointmentsService {
     const leadName = identity.leadName;
     const propertyTitle = identity.propertyTitle;
 
-    // Inviolable double-booking collision lockout: check if slot overlaps an existing booking
-    const existingAppointments = await this.getAppointments(tenant);
-    const hasCollision = existingAppointments.some(
-      (a) =>
-        a.status !== "cancelled" &&
-        (
-          (dto.propertyId && a.propertyId === dto.propertyId) ||
-          (propertyTitle && a.propertyTitle === propertyTitle) ||
-          (dto.assignedBrokerId && a.assignedBrokerId === dto.assignedBrokerId)
-        ) &&
-        new Date(a.startTime).getTime() < endTime.getTime() &&
-        new Date(a.endTime).getTime() > startTime.getTime()
-    );
-    if (hasCollision) {
+    // In-flight concurrency lock: prevents simultaneous requests from double-booking the exact same slot
+    const lockKey = `${wsId}:${dto.propertyId || propertyTitle || dto.assignedBrokerId || "default"}:${startTime.getTime()}`;
+    if (this.bookingLocks.has(lockKey)) {
       throw new ConflictException(
-        "The selected viewing slot is already booked. Please choose another time slot."
+        "The selected viewing slot is currently being reserved by another request. Please choose another time slot."
       );
     }
+    this.bookingLocks.add(lockKey);
 
-    // Synchronize event with external calendar (Google Calendar)
-    const calendarSync = await this.calendarAdapter.createCalendarEvent(wsId, {
+    try {
+      // Inviolable double-booking collision lockout: check if slot overlaps an existing booking
+      const existingAppointments = await this.getAppointments(tenant);
+      const hasCollision = existingAppointments.some(
+        (a) =>
+          a.status !== "cancelled" &&
+          (
+            (dto.propertyId && a.propertyId === dto.propertyId) ||
+            (propertyTitle && a.propertyTitle === propertyTitle) ||
+            (dto.assignedBrokerId && a.assignedBrokerId === dto.assignedBrokerId)
+          ) &&
+          new Date(a.startTime).getTime() < endTime.getTime() &&
+          new Date(a.endTime).getTime() > startTime.getTime()
+      );
+      if (hasCollision) {
+        throw new ConflictException(
+          "The selected viewing slot is already booked. Please choose another time slot."
+        );
+      }
+
+      if (this.db) {
+        try {
+          const overlappingDb = await this.db
+            .select({ id: schema.appointments.id })
+            .from(schema.appointments)
+            .where(
+              and(
+                eq(schema.appointments.workspaceId, wsId),
+                ne(schema.appointments.status, "cancelled"),
+                lt(schema.appointments.scheduledStartAt, endTime),
+                gt(schema.appointments.scheduledEndAt, startTime)
+              )
+            )
+            .limit(1);
+
+          if (overlappingDb.length > 0) {
+            throw new ConflictException(
+              "The selected viewing slot is already booked. Please choose another time slot."
+            );
+          }
+        } catch (err: any) {
+          if (err instanceof ConflictException) throw err;
+        }
+      }
+
+      // Synchronize event with external calendar (Google Calendar)
+      const calendarSync = await this.calendarAdapter.createCalendarEvent(wsId, {
       leadName,
       leadEmail: identity.leadEmail || "prospect@spacia.io",
       leadPhone: identity.leadPhone || "",
@@ -498,7 +536,10 @@ export class AppointmentsService {
       `[Appointment Created] ID: ${newApt.id} for property ${newApt.propertyTitle} at ${newApt.startTime} (Calendar: ${calendarSync.provider}, Event: ${calendarSync.calendarEventId})`
     );
 
-    return newApt;
+      return newApt;
+    } finally {
+      this.bookingLocks.delete(lockKey);
+    }
   }
 
   /**
