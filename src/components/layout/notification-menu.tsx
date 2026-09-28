@@ -127,9 +127,9 @@ export function NotificationMenu() {
         {announcement}
       </div>
 
-      <DialogPrimitive.Root open={isOpen} onOpenChange={setIsOpen}>
+      <PopoverPrimitive.Root open={isOpen} onOpenChange={setIsOpen}>
         {/* Accessible Bell Trigger */}
-        <DialogPrimitive.Trigger asChild>
+        <PopoverPrimitive.Trigger asChild>
           <button
             ref={triggerRef}
             id="notification-bell-trigger"
@@ -141,8 +141,6 @@ export function NotificationMenu() {
               isOpen && "bg-stone-100 text-stone-900"
             )}
             aria-label={`Notifications, ${unreadCount} unread`}
-            aria-haspopup="dialog"
-            aria-expanded={isOpen}
           >
             <Bell className="h-4.5 w-4.5" />
             {unreadCount > 0 && (
@@ -152,71 +150,55 @@ export function NotificationMenu() {
               </span>
             )}
           </button>
-        </DialogPrimitive.Trigger>
+        </PopoverPrimitive.Trigger>
 
-        {/* Modal Portal with Backdrop */}
-        <DialogPrimitive.Portal>
-          {/* Backdrop overlay */}
-          <DialogPrimitive.Overlay
+        {/* Dropdown Content - Anchored directly to bell without any page blur or backdrop overlay */}
+        <PopoverPrimitive.Portal>
+          <PopoverPrimitive.Content
+            align="end"
+            sideOffset={8}
             className={cn(
-              "fixed inset-0 z-50 bg-stone-900/40 backdrop-blur-xs transition-opacity duration-200",
+              "z-50 flex flex-col bg-white border border-stone-200/90 shadow-2xl rounded-2xl outline-none overflow-hidden",
+              "w-[calc(100vw-2rem)] sm:w-[420px] max-h-[85vh] sm:max-h-[580px]",
               "data-[state=open]:animate-in data-[state=closed]:animate-out",
-              "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0"
-            )}
-          />
-
-          {/* Responsive Dialog Content:
-              - Mobile (<640px): Bottom-sheet drawer with slide-up animation.
-              - Desktop (>=640px): Anchored floating modal from top-right. */}
-          <DialogPrimitive.Content
-            className={cn(
-              "fixed z-50 flex flex-col bg-white border border-stone-200 shadow-2xl focus:outline-none",
-              // Mobile layout (< 640px): bottom drawer
-              "inset-x-0 bottom-0 max-h-[85vh] rounded-t-2xl",
-              "data-[state=open]:animate-in data-[state=closed]:animate-out",
-              "data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom duration-250",
-              // Desktop layout (>= 640px): top-right floating command modal
-              "sm:inset-auto sm:top-16 sm:right-6 sm:w-[420px] sm:max-w-md sm:rounded-xl sm:border",
-              "sm:data-[state=closed]:slide-out-to-top-2 sm:data-[state=open]:slide-in-from-top-2 sm:data-[state=open]:zoom-in-98"
+              "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
+              "data-[side=bottom]:slide-in-from-top-2 data-[side=top]:slide-in-from-bottom-2 duration-150"
             )}
             aria-labelledby="notification-modal-title"
             aria-describedby="notification-modal-desc"
           >
-            {/* Mobile Grab Bar */}
-            <div className="sm:hidden mx-auto mt-2.5 h-1.5 w-12 rounded-full bg-stone-300 shrink-0" />
-
-            {/* Modal Header */}
+            {/* Dropdown Header */}
             <div className="flex items-center justify-between border-b border-stone-200/80 p-4 pb-3 bg-stone-50/70 shrink-0">
               <div className="flex items-center gap-2">
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200/70">
                   <Bell className="h-4 w-4" />
                 </div>
                 <div>
-                  <DialogPrimitive.Title
+                  <h3
                     id="notification-modal-title"
                     className="font-display font-bold text-sm text-stone-900"
                   >
                     Operational Alerts
-                  </DialogPrimitive.Title>
-                  <DialogPrimitive.Description
+                  </h3>
+                  <p
                     id="notification-modal-desc"
                     className="text-[11px] text-stone-500"
                   >
                     Real-time sales autonomy & dispatch telemetry
-                  </DialogPrimitive.Description>
+                  </p>
                 </div>
               </div>
 
               {/* Close Button */}
-              <DialogPrimitive.Close
+              <PopoverPrimitive.Close
                 className={cn(
                   "flex h-8 w-8 items-center justify-center rounded-lg text-stone-400 hover:text-stone-700 hover:bg-stone-200/60 transition-colors cursor-pointer",
                   "focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:outline-none"
                 )}
-                aria-label="Close notifications modal"
+                aria-label="Close notifications menu"
               >
                 <X className="h-4 w-4" />
-              </DialogPrimitive.Close>
+              </PopoverPrimitive.Close>
             </div>
 
             {/* Filter Tabs & Quick Actions Bar */}
@@ -464,18 +446,18 @@ export function NotificationMenu() {
                 <span>Refresh alerts</span>
               </button>
 
-              <DialogPrimitive.Close
+              <PopoverPrimitive.Close
                 className={cn(
                   "text-stone-600 hover:text-stone-900 font-semibold text-xs cursor-pointer py-1 px-2 rounded",
                   "focus-visible:ring-2 focus-visible:ring-emerald-700 focus-visible:outline-none"
                 )}
               >
                 Close
-              </DialogPrimitive.Close>
+              </PopoverPrimitive.Close>
             </div>
-          </DialogPrimitive.Content>
-        </DialogPrimitive.Portal>
-      </DialogPrimitive.Root>
+          </PopoverPrimitive.Content>
+        </PopoverPrimitive.Portal>
+      </PopoverPrimitive.Root>
     </>
   );
 }

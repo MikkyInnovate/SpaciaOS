@@ -78,6 +78,17 @@ export function Header({ className, ...props }: HeaderProps) {
           </kbd>
         </Button>
 
+        {/* Mobile Search Trigger Icon */}
+        <Button
+          variant="ghost"
+          size="icon"
+          className="sm:hidden h-8 w-8 text-stone-500 cursor-pointer"
+          onClick={() => setSearchOpen(true)}
+          aria-label="Search leads and modules"
+        >
+          <Search className="h-4 w-4" />
+        </Button>
+
         {/* Global Command Palette Dialog */}
         <CommandSearch open={searchOpen} onOpenChange={setSearchOpen} />
 

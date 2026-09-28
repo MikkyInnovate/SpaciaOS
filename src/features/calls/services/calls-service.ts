@@ -34,7 +34,6 @@ class CallsService {
           const realIds = new Set(backendCalls.map((c) => c.id));
           const nonDupeMocks = this.calls.filter((c) => !realIds.has(c.id));
           this.calls = [...backendCalls, ...nonDupeMocks];
-          return this.calls;
         }
       }
     } catch (err) {
@@ -93,14 +92,24 @@ class CallsService {
     try {
       const response = await apiClient.get<Call>(`/api/v1/calls/${id}`);
       if (response && response.id) {
+        const localCall = this.calls.find((c) => c.id === response.id);
+        const resolved: Call = {
+          ...response,
+          transcript:
+            response.transcript && response.transcript.length > 0
+              ? response.transcript
+              : localCall?.transcript && localCall.transcript.length > 0
+              ? localCall.transcript
+              : MOCK_CALLS[0]?.transcript || [],
+        };
         // update local cache
         const idx = this.calls.findIndex((c) => c.id === response.id);
         if (idx >= 0) {
-          this.calls[idx] = response;
+          this.calls[idx] = resolved;
         } else {
-          this.calls.unshift(response);
+          this.calls.unshift(resolved);
         }
-        return response;
+        return resolved;
       }
     } catch (err) {
       console.warn(`Could not fetch call '${id}' from backend:`, err);

@@ -1704,6 +1704,41 @@ The Pacia modular monolith backend resides in `/server` (NestJS 11 + Neon Postgr
     6. Multi-tenant isolation & sole owner protection guardrails ✔
     7. Durable compliance audit trail integrity (`ON DELETE RESTRICT`) ✔
 
-
-
-
+- **Day 27 — Full-Spectrum Test Architecture, Operational Notifications & Live Command Intelligence**:
+  - **Zero-Dependency Headless Frontend Test Suite (`test/frontend/runner.ts`)**:
+    - Complete standalone DOM & testbench harness (`setup.ts`) validating 56/56 frontend tests across 4 dimensions:
+      1. **Component UI Primitives & Gauges**: `StatusBadge` (HOT/WARM/COLD, pulsing dots), `ScoreIndicator` (gauge, 5-point BANT), `EmptyState`, `ErrorState`, `PropertyCard`, `AvailabilitySelector`, `NotificationMenu`.
+      2. **Core Real-Estate User Flows**: Lead intake & qualification, voice call transcript review & human takeover, inspection booking & cancellation with reason chips, team member invitation & KPI metrics, operational workflow retry.
+      3. **Browser Route & Layout Integrity**: 11 core routes (`/dashboard`, `/leads`, `/calls`, `/appointments`, `/analytics`, `/conversations`, `/team`, `/ai-agent`, `/integrations`, `/ops`, `/primitives`), navigation item integrity, accessibility skip-to-content landmark.
+      4. **Responsive Layout QA**: Breakpoint scaling across mobile (375px), tablet (768px), and luxury desktop (1280px+), table scroll wrappers, touch target compliance.
+  - **Backend Master Test Orchestrator (`server/test/runner.ts`)**:
+    - Unified execution across 10 categories (89/89 tests passing 100%): Unit tests, API tests, Database Drizzle schemas, BullMQ workflows, Webhooks, RBAC authorization, Tenant isolation, AI tools, Vapi telephony, and Google Calendar scheduling.
+  - **Operational Notifications Module (`server/src/modules/notifications`)**:
+    - Strongly-typed DTOs (`NotificationsQueryDto`, `MarkNotificationReadDto`).
+    - Multi-tenant notification operations: `GET /api/v1/notifications` (category and unread filtering), `PATCH /api/v1/notifications/:id/read` (optimistic single read toggle), and `POST /api/v1/notifications/mark-all-read` (bulk read clearance).
+    - Database audit persistence in Neon PostgreSQL `notifications` table.
+  - **Notification Dropdown Re-Architecture (`src/components/layout/notification-menu.tsx`)**:
+    - Converted from centered Radix modal (`Dialog`) to anchored `@radix-ui/react-popover` (`PopoverPrimitive`).
+    - Positioned directly beneath the header bell icon (`align="end" sideOffset={8}`) with crisp drop shadow and zero full-screen backdrop blur.
+    - Integrated unread badge counter, optimistic mark-as-read, bulk mark-all-read, and tabbed filtering ("All" vs "Unread").
+  - **Live Global Command Search (`⌘K` / `src/components/ui/command-search.tsx`)**:
+    - Wired search palette to live backend data via `leadsService.getLeads()`, querying `GET /api/v1/leads` scoped to the active workspace.
+    - Real-time debounced query search across lead names, phone numbers, emails, and target property titles.
+    - Live lead cards rendering actual scores (e.g. 92 HOT), status badges, verified budgets (₦), and contact details.
+    - Dossier deep-linking: selecting a prospect routes to `/leads?selected=<id>`, automatically opening the lead inspection drawer.
+    - Full keyboard navigation: <kbd>↑</kbd> and <kbd>↓</kbd> arrow key cycling with active item highlighting, <kbd>Enter</kbd> selection, and <kbd>Esc</kbd> dismissal.
+    - Non-blurring dialog overlay (`bg-black/25 backdrop-blur-none`) keeping the command palette clean and sharp.
+    - Added responsive mobile search trigger icon button to `Header` (`src/components/layout/header.tsx`).
+  - **8-Point Enterprise Security & Compliance Audit (`server/test/day27-notifications-security-audit.spec.ts`)**:
+    - Pillar 1: Tenant isolation & cross-workspace boundary enforcement ✔
+    - Pillar 2: Authorization & Clerk RBAC hierarchy mapping ✔
+    - Pillar 3: Timing-safe HMAC-SHA256 webhook signature verification ✔
+    - Pillar 4: Sliding-window rate limiting & RFC-compliant HTTP 429 throttling headers ✔
+    - Pillar 5: Zero-trust client credential masking (0 raw secrets exposed) ✔
+    - Pillar 6: Controlled AI tool runtime authorization & prompt-injection defense ✔
+    - Pillar 7: PII review & recursive payload data sanitization ✔
+    - Pillar 8: Durable compliance audit-log retention integrity (`ON DELETE RESTRICT`) ✔
+  - **Automated Verification**:
+    - Frontend Tests: `npx tsx test/frontend/runner.ts` — **56/56 passing (100%)**.
+    - Backend Tests: `npm run test:day27` — **All 8 pillars passing (100%)**.
+    - Type Check: `tsc --noEmit` — **0 errors** across frontend and backend.
