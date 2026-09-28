@@ -2,7 +2,7 @@
 
 > **Spacia** is a high-performance, managed AI sales orchestration platform purpose-built for modern real-estate brokerages and development firms. It autonomously captures inbound property inquiries, engages prospects via natural voice and chat, qualifies buyers against stringent underwriting criteria, evaluates purchasing power and timeline, and seamlessly books qualified viewings directly onto connected sales agents' calendars.
 
-This repository houses the **production frontend and backend implementation for Days 1 through 29** of the Spacia MVP.
+This repository houses the **production frontend and backend implementation for Days 1 through 30** of the Spacia MVP.
 
 ---
 
@@ -50,6 +50,7 @@ Spacia acts as an automated sales acceleration layer positioned between inbound 
 | **Day 27: Full-Spectrum Frontend Test Architecture** | **COMPLETE & VERIFIED** | Comprehensive zero-dependency headless testing harness (`test/frontend/setup.ts`, `runner.ts`) executing across 4 core dimensions (56/56 tests passing 100%): Component UI primitives & gauges, 5 core end-to-end user flows (lead intake, call transcript & takeover, inspection booking & cancellation, team roster, ops retry), route & export resolution for 11 core screens, navigation integrity, and responsive layout scaling across mobile, tablet, and luxury desktop viewports. |
 | **Day 28: Stabilization, Concurrency Resilience & Error Recovery UI** | **COMPLETE & VERIFIED** | Frontend stabilization and error protection: defensive `ScoreIndicator` normalization, case-insensitive scoring categories with graceful fallback, strict bounds clamping [0-100], `StatusBadge` domain mapping for telephony/booking outcomes (`viewing_booked`, `in_conversation`, `escalated_takeover`, `callback_requested`, `voicemail`, `human_managed`), safe command search index boundary guards, client error boundaries (`src/app/(app)/error.tsx`) with user recovery actions, and PII-scrubbed Sentry telemetry (`src/lib/telemetry/sentry.ts`). 66/66 frontend tests passing across 6 suites (100%). |
 | **Day 29: Production Readiness, Telemetry & Crash Protection UI** | **COMPLETE & VERIFIED** | Enterprise client crash resilience and telemetry integration: Next.js production compiler console stripping (`removeConsole`), global fatal crash catchers (`src/app/global-error.tsx`, `src/app/error.tsx`), route error boundaries (`src/app/(app)/error.tsx`) with digest IDs and component recovery, Sentry client telemetry with recursive PII scrubbing for Nigerian phone numbers, emails, and auth tokens, and automated test suite (`test/frontend/production-readiness.spec.ts`). |
+| **Day 30: Final Deployment, Containerization & Smoke Testing** | **COMPLETE & CERTIFIED** | Multi-stage production Dockerfile (`Dockerfile`) with unprivileged `nextjs` user, standalone Turbopack compilation (18 routes in 1.2s), automated production smoke testing bench (`scripts/production-smoke-test.ts`), and Docker Compose orchestration (`docker-compose.yml`). |
 
 ### Backend Implementation Status (`/server` — NestJS + Neon PostgreSQL)
 
@@ -86,12 +87,13 @@ Spacia acts as an automated sales acceleration layer positioned between inbound 
 | **Day 27: Full-Spectrum Backend Test Architecture** | **COMPLETE & VERIFIED** | Unified master test orchestrator (`server/test/runner.ts`) executing across all 10 backend testing categories (89/89 tests passing 100%): Unit tests (BANT qualification & property adapter), API tests (Leads REST endpoints), Database tests (Drizzle ORM domain schema & FK constraints), Workflow tests (BullMQ queues & retry), Webhook tests (Lead intake deduplication), Authorization tests (RBAC & permissions), Tenant isolation tests (workspace partitioning), AI tool tests (controlled sandbox), Vapi tests (voice telephony & human takeover), and Calendar tests (inspection booking & Google sync). |
 | **Day 28: Stabilization, Concurrency Locks & Production Resilience** | **COMPLETE & VERIFIED** | Comprehensive backend stabilization eliminating race conditions and failure cascades across 10 pillars: in-flight slot concurrency locks (`bookingLocks`) and database interval overlap lockout preventing duplicate bookings, differentiated BullMQ job IDs for re-engagement vs intake, resilient webhook idempotency key handling, OpenRouter AI fetch timeouts (25s) with executive fallback and high-severity audit logging, Google Calendar adapter timeout (12s) with automatic OAuth token refresh on HTTP 401, human broker takeover preservation in `updateLeadStatus`, integer score clamping [0-100], and Ops 1-click workflow retry supporting aggregateType `workflow` with unique retry job IDs. 10/10 pillars verified (100%). |
 | **Day 29: Production Readiness, Health Probes, Sentry & Telemetry** | **COMPLETE & VERIFIED** | Enterprise production readiness across frontend and backend: Next.js production build (`next build`) certified with zero errors across 18 routes, hierarchical error boundaries (`src/app/(app)/error.tsx`) preserving workspace navigation shell during crashes, zero-dependency client telemetry & Sentry integration (`src/lib/telemetry/sentry.ts`) with recursive PII scrubbing for emails & Nigerian phone numbers, strict production environment validation (`env.schema.ts`) disallowing mock auth in production, Neon serverless pool error listeners preventing unhandled socket drops, Drizzle migration integrity verification (6 SQL migrations), backend Sentry error dispatcher with request correlation IDs (`err_*`), and deep health probes (`GET /api/v1/health/readiness`) reporting database latency, Redis connection, memory RSS/heap, and process uptime. 6/6 automated integration tests passing (100%). |
+| **Day 30: Production Launch, Containerization, Smoke Testing & Release Sign-Off** | **COMPLETE & CERTIFIED** | Multi-stage backend Dockerfile (`server/Dockerfile`) with non-root `nestjs` user, built-in container `HEALTHCHECK` probe, Redis/Backend/Frontend full-stack Docker Compose (`docker-compose.yml`), automated production smoke testing bench (`npm run test:smoke`), Category 13 backend launch test suite (`day30-production-launch.spec.ts`), and production operations runbook (`docs/PRODUCTION_DEPLOYMENT_GUIDE.md`). 6/6 automated integration tests passing (100%). |
 
 ---
 
 ## Full-Spectrum Testing Framework & Verification Guide
 
-SpaciaOS includes an industrial-grade, zero-external-dependency automated testing architecture validating both frontend user journeys and backend services with **100% pass rates (168/168 total tests)**:
+SpaciaOS includes an industrial-grade, zero-external-dependency automated testing architecture validating both frontend user journeys and backend services with **100% pass rates (179/179 total tests)**:
 
 ```text
 ========================================================================================
@@ -119,37 +121,59 @@ SpaciaOS includes an industrial-grade, zero-external-dependency automated testin
  Backend        10. Calendar Tests (Inspection Booking & Google)    8       PASSED
  Backend        11. Stabilization Tests (Day 28 Concurrency Locks)  7       PASSED
  Backend        12. Production Readiness Tests (Day 29 Health/Env)  6       PASSED
-                ↳ Total Backend Verified                            102/102 100%
+ Backend        13. Production Launch Tests (Day 30 Containers/Ops) 6       PASSED
+                ↳ Total Backend Verified                            108/108 100%
+----------------------------------------------------------------------------------------
+ Smoke Bench    Production Subsystem Smoke Verification Bench       5/5     100%
 ========================================================================================
- GRAND TOTAL    18 TEST SUITES & CATEGORIES                        168/168  100% PASS
+ GRAND TOTAL    20 TEST SUITES & CATEGORIES                        179/179  100% PASS
 ========================================================================================
 ```
 
 ### Running the Test Suites
 
-#### 1. Frontend Test Suite (Zero Dependencies, ~2 seconds)
+#### 1. Full-Spectrum Test Runner (Frontend + Backend)
+```bash
+npm test
+```
+
+#### 2. Automated Production Smoke Test Bench (Live Endpoints)
+```bash
+npm run test:smoke
+```
+
+#### 3. Frontend Test Suite (Zero Dependencies, ~2 seconds)
 ```bash
 npm run test:frontend
 ```
 
-#### 2. Backend Test Suite (Master Orchestrator, All 10 Categories)
+#### 4. Backend Test Suite (Master Orchestrator, All 13 Categories)
 ```bash
 npm run test:backend
 ```
 
-#### 3. Run Specific Backend Categories
+#### 5. Run Specific Backend Categories
 ```bash
+# Run Day 30 production launch certification (~15s)
+npm --prefix server run test:backend -- --category=launch
+
+# Run Day 29 production readiness & health probes (~15s)
+npm --prefix server run test:backend -- --category=production
+
 # Run multi-tenant workspace isolation test (~9s)
 npm --prefix server run test:backend -- --category=isolation
 
-# Run Drizzle ORM schema & FK lifecycle test (~11s)
-npm --prefix server run test:backend -- --category=database
-
-# Run controlled AI tool execution sandbox test (~17s)
+# Run controlled AI tool execution sandbox test (~20s)
 npm --prefix server run test:backend -- --category=ai-tools
+```
 
-# Run RBAC authorization & permissions test (~40s)
-npm --prefix server run test:backend -- --category=authorization
+#### 6. Full-Stack Container Orchestration (Docker Compose)
+```bash
+# Launch Redis, NestJS Backend, and Next.js Frontend together
+docker compose up -d --build
+
+# Inspect logs
+docker compose logs -f
 ```
 
 ## 3. Technology Stack
