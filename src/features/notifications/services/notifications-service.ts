@@ -35,7 +35,7 @@ export function resolveNotificationTarget(item: AppNotification): string | null 
   return null;
 }
 
-const INITIAL_FALLBACK_NOTIFICATIONS: AppNotification[] = [
+export const INITIAL_TEST_NOTIFICATIONS: AppNotification[] = [
   {
     id: "notif_takeover_01",
     workspaceId: "ws_default",
@@ -91,9 +91,16 @@ const INITIAL_FALLBACK_NOTIFICATIONS: AppNotification[] = [
 ];
 
 class NotificationsService {
-  private cache: AppNotification[] = JSON.parse(
-    JSON.stringify(INITIAL_FALLBACK_NOTIFICATIONS)
-  );
+  // Defaults to empty array for authentic clean slate onboarding
+  private cache: AppNotification[] = [];
+
+  seedNotifications(notifications: AppNotification[]) {
+    this.cache = JSON.parse(JSON.stringify(notifications));
+  }
+
+  clearNotifications() {
+    this.cache = [];
+  }
 
   async getNotifications(filters?: {
     type?: string;

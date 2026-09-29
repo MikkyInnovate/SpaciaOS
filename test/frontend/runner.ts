@@ -18,6 +18,8 @@ import { runProductionReadinessTests } from "./production-readiness.spec";
 import { seedInMemoryLeads, clearInMemoryLeads } from "@/features/leads/services/leads-service";
 import { seedInMemoryProperties, clearInMemoryProperties } from "@/features/properties/services/properties-service";
 import { callsService } from "@/features/calls/services/calls-service";
+import { notificationsService, INITIAL_TEST_NOTIFICATIONS } from "@/features/notifications/services/notifications-service";
+import { appointmentsService, INITIAL_TEST_APPOINTMENTS } from "@/features/appointments/services/appointments-service";
 import { MOCK_LEADS } from "@/features/leads/data/mock-leads";
 import { MOCK_PROPERTIES } from "@/features/properties/data/mock-properties";
 import { MOCK_CALLS } from "@/features/calls/data/mock-calls";
@@ -30,10 +32,15 @@ async function main() {
   console.log(" PACIA FRONTEND TEST SUITE: FULL-SPECTRUM VERIFICATION");
   console.log("=================================================================");
 
+  // Enforce isolated offline test execution so tests are independent of live DB state
+  process.env.BACKEND_API_URL = "http://offline";
+
   // Provision isolated in-memory test fixtures for headless test harness execution
   seedInMemoryLeads(MOCK_LEADS);
   seedInMemoryProperties(MOCK_PROPERTIES);
   callsService.seedCalls(MOCK_CALLS);
+  notificationsService.seedNotifications(INITIAL_TEST_NOTIFICATIONS);
+  appointmentsService.seedAppointments(INITIAL_TEST_APPOINTMENTS);
 
   const startTime = Date.now();
 
@@ -83,6 +90,12 @@ async function main() {
     console.log(` Total Time    : ${totalDuration}ms`);
     console.log("=================================================================\n");
 
+    clearInMemoryLeads();
+    clearInMemoryProperties();
+    callsService.clearCalls();
+    notificationsService.clearNotifications();
+    appointmentsService.clearAppointments();
+
     if (failed > 0) {
       console.error("\x1b[31mSOME FRONTEND TESTS FAILED!\x1b[0m\n");
       process.exit(1);
@@ -91,6 +104,11 @@ async function main() {
       process.exit(0);
     }
   } catch (err) {
+    clearInMemoryLeads();
+    clearInMemoryProperties();
+    callsService.clearCalls();
+    notificationsService.clearNotifications();
+    appointmentsService.clearAppointments();
     console.error("\x1b[31mFatal test runner error:\x1b[0m", err);
     process.exit(1);
   }
