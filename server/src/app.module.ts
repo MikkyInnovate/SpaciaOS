@@ -25,6 +25,7 @@ import { AnalyticsModule } from "./modules/analytics/analytics.module";
 import { IntegrationsModule } from "./modules/integrations/integrations.module";
 import { TeamModule } from "./modules/team/team.module";
 import { OpsModule } from "./modules/ops/ops.module";
+import { WaitlistModule } from "./modules/waitlist/waitlist.module";
 import { AppController } from "./app.controller";
 
 @Module({
@@ -50,6 +51,7 @@ import { AppController } from "./app.controller";
     IntegrationsModule,
     TeamModule,
     OpsModule,
+    WaitlistModule,
   ],
   controllers: [AppController],
   providers: [

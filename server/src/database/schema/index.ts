@@ -16,3 +16,4 @@ export * from "./integrations.schema";
 export * from "./ai.schema";
 export * from "./notifications.schema";
 export * from "./idempotency.schema";
+export * from "./waitlist.schema";
