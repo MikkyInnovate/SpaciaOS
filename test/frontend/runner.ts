@@ -15,6 +15,12 @@ import { runBrowserTests } from "./browser.spec";
 import { runResponsiveTests } from "./responsive.spec";
 import { runStabilizationTests } from "./stabilization.spec";
 import { runProductionReadinessTests } from "./production-readiness.spec";
+import { seedInMemoryLeads, clearInMemoryLeads } from "@/features/leads/services/leads-service";
+import { seedInMemoryProperties, clearInMemoryProperties } from "@/features/properties/services/properties-service";
+import { callsService } from "@/features/calls/services/calls-service";
+import { MOCK_LEADS } from "@/features/leads/data/mock-leads";
+import { MOCK_PROPERTIES } from "@/features/properties/data/mock-properties";
+import { MOCK_CALLS } from "@/features/calls/data/mock-calls";
 
 async function main() {
   const args = process.argv.slice(2);
@@ -23,6 +29,11 @@ async function main() {
   console.log("\n=================================================================");
   console.log(" PACIA FRONTEND TEST SUITE: FULL-SPECTRUM VERIFICATION");
   console.log("=================================================================");
+
+  // Provision isolated in-memory test fixtures for headless test harness execution
+  seedInMemoryLeads(MOCK_LEADS);
+  seedInMemoryProperties(MOCK_PROPERTIES);
+  callsService.seedCalls(MOCK_CALLS);
 
   const startTime = Date.now();
 

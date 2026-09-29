@@ -23,7 +23,8 @@ import {
 } from "@/components/ui/select";
 import { leadsService } from "../services/leads-service";
 import type { CreateLeadInput, DuplicateMatch, Lead } from "../types";
-import { MOCK_PROPERTIES } from "@/features/properties/data/mock-properties";
+import { propertiesService } from "@/features/properties/services/properties-service";
+import type { Property } from "@/features/properties/types";
 import {
   AlertTriangle,
   ArrowRight,
@@ -68,13 +69,29 @@ export function LeadIntakeDialog({
   const [email, setEmail] = React.useState("");
   const [source, setSource] = React.useState("Meta Ads");
   const [budget, setBudget] = React.useState("₦250,000,000");
-  const [propertyTitle, setPropertyTitle] = React.useState(
-    MOCK_PROPERTIES[0]?.title || "3-Bedroom Contemporary Flat"
-  );
+  const [propertyTitle, setPropertyTitle] = React.useState("");
+  const [availableProperties, setAvailableProperties] = React.useState<Property[]>([]);
   const [timeline, setTimeline] = React.useState("< 30 days");
   const [intent, setIntent] = React.useState<"Purchase" | "Rental" | "Investment">("Purchase");
   const [notes, setNotes] = React.useState("");
   const [isSubmitting, setIsSubmitting] = React.useState(false);
+
+  React.useEffect(() => {
+    let isMounted = true;
+    if (open) {
+      propertiesService.getProperties().then((res) => {
+        if (isMounted && res?.properties) {
+          setAvailableProperties(res.properties);
+          if (res.properties.length > 0 && !propertyTitle) {
+            setPropertyTitle(res.properties[0].title);
+          }
+        }
+      });
+    }
+    return () => {
+      isMounted = false;
+    };
+  }, [open, propertyTitle]);
 
   // Live duplicate detection derived cleanly without cascading effect setState
   const duplicateMatches: DuplicateMatch[] = React.useMemo(() => {
@@ -88,7 +105,7 @@ export function LeadIntakeDialog({
     setEmail("");
     setSource("Meta Ads");
     setBudget("₦250,000,000");
-    setPropertyTitle(MOCK_PROPERTIES[0]?.title || "3-Bedroom Contemporary Flat");
+    setPropertyTitle(availableProperties[0]?.title || "");
     setTimeline("< 30 days");
     setIntent("Purchase");
     setNotes("");
@@ -109,7 +126,7 @@ export function LeadIntakeDialog({
     setIsSubmitting(true);
 
     try {
-      const selectedProp = MOCK_PROPERTIES.find((p) => p.title === propertyTitle);
+      const selectedProp = availableProperties.find((p) => p.title === propertyTitle);
 
       const payload: CreateLeadInput = {
         name: name.trim(),
@@ -117,8 +134,8 @@ export function LeadIntakeDialog({
         email: email.trim() || undefined,
         source,
         budget: budget.trim() || "₦250,000,000",
-        propertyTitle,
-        location: selectedProp?.location || "Lekki, Lagos",
+        propertyTitle: propertyTitle.trim() || "General Property Inquiry",
+        location: selectedProp?.location || "Lagos, Nigeria",
         intent,
         timeline,
         notes: notes.trim() || undefined,
@@ -327,19 +344,28 @@ export function LeadIntakeDialog({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <FormField>
                 <FormLabel>Property of Interest</FormLabel>
-                <Select value={propertyTitle} onValueChange={setPropertyTitle}>
-                  <SelectTrigger className="h-8.5 text-xs border-stone-200 bg-white truncate focus:ring-[#0d4a36]/20 focus:border-[#0d4a36]">
-                    <SelectValue placeholder="Select target property" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {MOCK_PROPERTIES.map((prop) => (
-                      <SelectItem key={prop.id} value={prop.title} className="text-xs">
-                        <span className="font-medium text-stone-900">{prop.title}</span>
-                        <span className="text-stone-400 ml-1.5 font-mono">({prop.formattedPrice})</span>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                {availableProperties.length > 0 ? (
+                  <Select value={propertyTitle} onValueChange={setPropertyTitle}>
+                    <SelectTrigger className="h-8.5 text-xs border-stone-200 bg-white truncate focus:ring-[#0d4a36]/20 focus:border-[#0d4a36]">
+                      <SelectValue placeholder="Select target property" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableProperties.map((prop) => (
+                        <SelectItem key={prop.id} value={prop.title} className="text-xs">
+                          <span className="font-medium text-stone-900">{prop.title}</span>
+                          <span className="text-stone-400 ml-1.5 font-mono">({prop.formattedPrice})</span>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <Input
+                    value={propertyTitle}
+                    onChange={(e) => setPropertyTitle(e.target.value)}
+                    placeholder="e.g. Lekki Penthouse or General Inquiry"
+                    className="h-8.5 text-xs border-stone-200 bg-white focus-visible:ring-[#0d4a36]/20 focus-visible:border-[#0d4a36]"
+                  />
+                )}
               </FormField>
 
               <FormField>

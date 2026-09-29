@@ -79,8 +79,17 @@ function resolveLeadId(id: string): string {
   return LEAD_ALIAS_MAP[id] || id;
 }
 
-// In-memory mock session store for client-side state transitions
-const inMemoryMockLeads: Lead[] = JSON.parse(JSON.stringify(MOCK_LEADS));
+// In-memory session store for client-side state transitions (defaults empty for clean scratch onboarding)
+const inMemoryMockLeads: Lead[] = [];
+
+export function seedInMemoryLeads(leads: Lead[]) {
+  inMemoryMockLeads.length = 0;
+  inMemoryMockLeads.push(...JSON.parse(JSON.stringify(leads)));
+}
+
+export function clearInMemoryLeads() {
+  inMemoryMockLeads.length = 0;
+}
 
 class LeadsService {
   /**
@@ -157,9 +166,7 @@ class LeadsService {
       }
     }
     const targetId = resolveLeadId(id);
-    const found =
-      inMemoryMockLeads.find((l) => l.id === id || l.id === targetId) ||
-      MOCK_LEADS.find((l) => l.id === id || l.id === targetId);
+    const found = inMemoryMockLeads.find((l) => l.id === id || l.id === targetId);
     return found ? JSON.parse(JSON.stringify(found)) : null;
   }
 
@@ -184,7 +191,7 @@ class LeadsService {
       }
     }
 
-    // Local fallback for mock leads or offline backend
+    // Local fallback for in-memory leads or offline backend
     const isHuman = newStatus === "Human Managed";
     const targetId = resolveLeadId(id);
     const index = inMemoryMockLeads.findIndex((l) => l.id === id || l.id === targetId);
@@ -200,29 +207,7 @@ class LeadsService {
       return JSON.parse(JSON.stringify(updated));
     }
 
-    const fallbackLead = MOCK_LEADS.find((l) => l.id === id || l.id === targetId);
-    if (fallbackLead) {
-      const updated: Lead = {
-        ...fallbackLead,
-        status: newStatus,
-        managementMode: isHuman ? "human_managed" : fallbackLead.managementMode,
-        isAiStopped: isHuman ? true : fallbackLead.isAiStopped,
-      };
-      inMemoryMockLeads.push(updated);
-      return JSON.parse(JSON.stringify(updated));
-    }
-
-    // Synthesize fallback to prevent UI crash
-    const synthesized: Lead = {
-      ...MOCK_LEADS[0],
-      id,
-      name: id.replace("lead_", "").replace(/^\w/, (c) => c.toUpperCase()) + " (Lead)",
-      status: newStatus,
-      managementMode: isHuman ? "human_managed" : "ai_autonomous",
-      isAiStopped: isHuman ? true : false,
-    };
-    inMemoryMockLeads.push(synthesized);
-    return synthesized;
+    throw new Error(`Lead '${id}' not found in workspace.`);
   }
 
   /**

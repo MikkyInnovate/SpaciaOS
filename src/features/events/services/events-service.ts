@@ -20,9 +20,17 @@ import { MOCK_WORKFLOW_EVENTS } from "../data/mock-events";
  * status transitions, backoff countdowns, and instant retries.
  */
 
-const inMemoryEvents: WorkflowActivityEvent[] = JSON.parse(
-  JSON.stringify(MOCK_WORKFLOW_EVENTS)
-);
+// In-memory events store (defaults empty for clean scratch onboarding)
+const inMemoryEvents: WorkflowActivityEvent[] = [];
+
+export function seedInMemoryEvents(events: WorkflowActivityEvent[]) {
+  inMemoryEvents.length = 0;
+  inMemoryEvents.push(...JSON.parse(JSON.stringify(events)));
+}
+
+export function clearInMemoryEvents() {
+  inMemoryEvents.length = 0;
+}
 
 class EventsService {
   /**

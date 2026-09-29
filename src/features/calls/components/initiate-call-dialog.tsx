@@ -19,7 +19,6 @@ import {
 } from "@/components/ui/select";
 import { callsService } from "../services/calls-service";
 import type { Call } from "../types";
-import { MOCK_LEADS } from "@/features/leads/data/mock-leads";
 import { leadsService } from "@/features/leads";
 import {
   PhoneCall,
@@ -59,8 +58,8 @@ export function InitiateCallDialog({
   defaultLeadId,
   onCallCompleted,
 }: InitiateCallDialogProps) {
-  const [availableLeads, setAvailableLeads] = React.useState<any[]>(MOCK_LEADS);
-  const [selectedLeadId, setSelectedLeadId] = React.useState(defaultLeadId || MOCK_LEADS[0]?.id || "");
+  const [availableLeads, setAvailableLeads] = React.useState<any[]>([]);
+  const [selectedLeadId, setSelectedLeadId] = React.useState(defaultLeadId || "");
   const [personaId, setPersonaId] = React.useState("victoria");
   const [callState, setCallState] = React.useState<"idle" | "dialing" | "active" | "completing">("idle");
   const [activeSeconds, setActiveSeconds] = React.useState(0);
@@ -96,7 +95,7 @@ export function InitiateCallDialog({
     return (
       availableLeads.find((l) => l.id === effectiveLeadId) ||
       availableLeads[0] ||
-      MOCK_LEADS[0]
+      null
     );
   }, [availableLeads, effectiveLeadId]);
 
@@ -120,6 +119,11 @@ export function InitiateCallDialog({
   };
 
   const handleStartDialing = async () => {
+    if (!targetLead) {
+      toast.error("No lead selected", { description: "Please create or select a lead before dispatching a call." });
+      return;
+    }
+
     setActiveSeconds(0);
     setCallState("dialing");
 
@@ -262,7 +266,7 @@ export function InitiateCallDialog({
                 <div className="text-[11px] font-semibold text-stone-500 uppercase tracking-wider">
                   Target Prospect
                 </div>
-                {!defaultLeadId ? (
+                {availableLeads.length > 0 ? (
                   <Select value={selectedLeadId} onValueChange={setSelectedLeadId}>
                     <SelectTrigger className="h-8.5 text-xs border-stone-200 bg-white focus:ring-[#0d4a36]/20 focus:border-[#0d4a36]">
                       <SelectValue placeholder="Select target lead" />
@@ -276,18 +280,22 @@ export function InitiateCallDialog({
                       ))}
                     </SelectContent>
                   </Select>
-                ) : (
+                ) : targetLead ? (
                   <div className="flex items-center justify-between">
                     <div>
                       <div className="text-xs font-semibold text-stone-900">{targetLead.name}</div>
                       <div className="text-[11px] text-stone-500 font-mono">{targetLead.phone}</div>
                     </div>
                     <div className="text-right">
-                      <div className="text-xs font-semibold text-stone-900">{targetLead.budget}</div>
+                      <div className="text-xs font-semibold text-stone-900">{targetLead.budget || "Market Tier"}</div>
                       <div className="text-[10px] text-stone-400 truncate max-w-[160px]">
-                        {targetLead.propertyTitle}
+                        {targetLead.propertyTitle || "Luxury Development"}
                       </div>
                     </div>
+                  </div>
+                ) : (
+                  <div className="py-2 px-3 text-xs text-stone-500 bg-stone-50 rounded border border-stone-200">
+                    No leads available in workspace. Create or intake a lead first.
                   </div>
                 )}
               </div>
@@ -418,7 +426,8 @@ export function InitiateCallDialog({
                 type="button"
                 size="sm"
                 onClick={handleStartDialing}
-                className="h-8 text-xs bg-[#0d4a36] hover:bg-[#093829] text-white gap-1.5 cursor-pointer shadow-2xs font-medium px-3.5"
+                disabled={!targetLead}
+                className="h-8 text-xs bg-[#0d4a36] hover:bg-[#093829] text-white gap-1.5 cursor-pointer shadow-2xs font-medium px-3.5 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <PhoneCall className="h-3.5 w-3.5" />
                 <span>Dispatch Vapi Call</span>

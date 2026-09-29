@@ -22,8 +22,8 @@ import {
 import { appointmentsService } from "../services/appointments-service";
 import { ViewingSlot, CreateAppointmentPayload } from "../types";
 import { AvailabilitySelector } from "./availability-selector";
-import { MOCK_PROPERTIES } from "@/features/properties/data/mock-properties";
-import { MOCK_LEADS } from "@/features/leads/data/mock-leads";
+import { propertiesService } from "@/features/properties/services/properties-service";
+import { leadsService } from "@/features/leads/services/leads-service";
 import {
   CalendarDays,
   Building2,
@@ -60,18 +60,47 @@ export function BookInspectionModal({
   propertyTitle: initialPropertyTitle,
   onBookingSuccess,
 }: BookInspectionModalProps) {
+  const [availableLeads, setAvailableLeads] = React.useState<any[]>([]);
+  const [availableProperties, setAvailableProperties] = React.useState<any[]>([]);
+
   // Selected Lead State
   const [selectedLeadId, setSelectedLeadId] = React.useState<string>(
-    initialLeadId || MOCK_LEADS[0]?.id || "lead_01"
+    initialLeadId || ""
   );
   
   // Selected Property State
   const [selectedPropertyId, setSelectedPropertyId] = React.useState<string>(
-    initialPropertyId || MOCK_PROPERTIES[0]?.id || "prop_lekki_01"
+    initialPropertyId || ""
   );
 
+  React.useEffect(() => {
+    let isMounted = true;
+    if (open) {
+      Promise.all([
+        leadsService.getLeads().catch(() => ({ leads: [] })),
+        propertiesService.getProperties().catch(() => ({ properties: [] })),
+      ]).then(([leadsRes, propsRes]) => {
+        if (!isMounted) return;
+        const leads = (leadsRes as any)?.leads || [];
+        const props = (propsRes as any)?.properties || [];
+        setAvailableLeads(leads);
+        setAvailableProperties(props);
+
+        if (!selectedLeadId && leads.length > 0) {
+          setSelectedLeadId(leads[0].id);
+        }
+        if (!selectedPropertyId && props.length > 0) {
+          setSelectedPropertyId(props[0].id);
+        }
+      });
+    }
+    return () => {
+      isMounted = false;
+    };
+  }, [open, selectedLeadId, selectedPropertyId]);
+
   const activeLead = React.useMemo(() => {
-    const found = MOCK_LEADS.find((l) => l.id === selectedLeadId);
+    const found = availableLeads.find((l) => l.id === selectedLeadId);
     if (found) return found;
     return {
       id: selectedLeadId,
@@ -79,7 +108,7 @@ export function BookInspectionModal({
       phone: initialLeadPhone || "",
       email: initialLeadEmail || "client@spacia.io",
     };
-  }, [selectedLeadId, initialLeadName, initialLeadPhone, initialLeadEmail]);
+  }, [availableLeads, selectedLeadId, initialLeadName, initialLeadPhone, initialLeadEmail]);
 
   // Client Email State for real-time notification routing
   const [clientEmail, setClientEmail] = React.useState<string>(
@@ -93,13 +122,13 @@ export function BookInspectionModal({
   }, [activeLead]);
 
   const activeProperty = React.useMemo(() => {
-    return MOCK_PROPERTIES.find((p) => p.id === selectedPropertyId) || {
+    return availableProperties.find((p) => p.id === selectedPropertyId) || {
       id: selectedPropertyId,
       title: initialPropertyTitle || "Select Property",
       location: "Lagos, Nigeria",
       formattedPrice: "",
     };
-  }, [selectedPropertyId, initialPropertyTitle]);
+  }, [availableProperties, selectedPropertyId, initialPropertyTitle]);
 
   const [selectedDate, setSelectedDate] = React.useState<string>(() => {
     const d = new Date();
@@ -201,25 +230,31 @@ export function BookInspectionModal({
                 value={selectedLeadId}
                 onValueChange={(val) => {
                   setSelectedLeadId(val);
-                  const matched = MOCK_LEADS.find((l) => l.id === val);
+                  const matched = availableLeads.find((l) => l.id === val);
                   if (matched?.email) setClientEmail(matched.email);
                 }}
               >
                 <SelectTrigger className="bg-white text-xs min-h-[50px] h-auto py-2 px-3 border-stone-200 [&>span]:line-clamp-none [&>span]:flex-1 text-left">
-                  <SelectValue placeholder="Select Client" />
+                  <SelectValue placeholder={availableLeads.length > 0 ? "Select Client" : "No Leads Available"} />
                 </SelectTrigger>
                 <SelectContent className="max-h-60">
-                  {MOCK_LEADS.map((lead) => (
-                    <SelectItem key={lead.id} value={lead.id} className="text-xs py-2 cursor-pointer">
-                      <div className="flex flex-col text-left">
-                        <div className="flex items-center gap-2">
-                          <span className="font-semibold text-stone-900">{lead.name}</span>
-                          <span className="text-[10px] text-stone-400 font-mono">{lead.phone}</span>
+                  {availableLeads.length > 0 ? (
+                    availableLeads.map((lead) => (
+                      <SelectItem key={lead.id} value={lead.id} className="text-xs py-2 cursor-pointer">
+                        <div className="flex flex-col text-left">
+                          <div className="flex items-center gap-2">
+                            <span className="font-semibold text-stone-900">{lead.name}</span>
+                            <span className="text-[10px] text-stone-400 font-mono">{lead.phone}</span>
+                          </div>
+                          <span className="text-[11px] text-[#0d4a36] font-medium mt-0.5">{lead.email}</span>
                         </div>
-                        <span className="text-[11px] text-[#0d4a36] font-medium mt-0.5">{lead.email}</span>
-                      </div>
-                    </SelectItem>
-                  ))}
+                      </SelectItem>
+                    ))
+                  ) : (
+                    <div className="p-3 text-xs text-stone-500 text-center">
+                      No leads found in workspace. Create a lead first.
+                    </div>
+                  )}
                 </SelectContent>
               </Select>
             </div>
@@ -232,17 +267,23 @@ export function BookInspectionModal({
               </label>
               <Select value={selectedPropertyId} onValueChange={setSelectedPropertyId}>
                 <SelectTrigger className="bg-white text-xs min-h-[50px] h-auto py-2 px-3 border-stone-200 [&>span]:line-clamp-none [&>span]:flex-1 text-left">
-                  <SelectValue placeholder="Select Property" />
+                  <SelectValue placeholder={availableProperties.length > 0 ? "Select Property" : "No Properties Available"} />
                 </SelectTrigger>
                 <SelectContent className="max-h-56">
-                  {MOCK_PROPERTIES.map((prop) => (
-                    <SelectItem key={prop.id} value={prop.id} className="text-xs py-2">
-                      <div className="flex flex-col text-left">
-                        <span className="font-medium text-stone-900">{prop.title}</span>
-                        <span className="text-[10px] text-stone-400 mt-0.5">{prop.location} • {prop.formattedPrice}</span>
-                      </div>
-                    </SelectItem>
-                  ))}
+                  {availableProperties.length > 0 ? (
+                    availableProperties.map((prop) => (
+                      <SelectItem key={prop.id} value={prop.id} className="text-xs py-2">
+                        <div className="flex flex-col text-left">
+                          <span className="font-medium text-stone-900">{prop.title}</span>
+                          <span className="text-[10px] text-stone-400 mt-0.5">{prop.location} • {prop.formattedPrice}</span>
+                        </div>
+                      </SelectItem>
+                    ))
+                  ) : (
+                    <div className="p-3 text-xs text-stone-500 text-center">
+                      No properties found in workspace. Add a property first.
+                    </div>
+                  )}
                 </SelectContent>
               </Select>
             </div>

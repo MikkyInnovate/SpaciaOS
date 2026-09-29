@@ -20,6 +20,8 @@ async function runDay12VapiTests() {
   console.log(" PACIA DAY 12: CONNECT VAPI VOICE TELEPHONY ENGINE SUITE");
   console.log("=========================================================\n");
 
+  process.env.VAPI_PROVIDER = "mock";
+  process.env.AI_PROVIDER = "mock";
   const app = await NestFactory.create(AppModule, { logger: false });
 
   app.setGlobalPrefix("api/v1");

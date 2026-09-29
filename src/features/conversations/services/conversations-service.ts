@@ -23,13 +23,26 @@ import { MOCK_CONVERSATIONS, MOCK_MESSAGES } from "../data/mock-conversations";
  * sending replies, status transitions) update this local session store optimistically.
  */
 
-const inMemoryConversations: Conversation[] = JSON.parse(
-  JSON.stringify(MOCK_CONVERSATIONS)
-);
+// In-memory session store (defaults empty for clean scratch onboarding)
+const inMemoryConversations: Conversation[] = [];
+const inMemoryMessages: Record<string, ConversationMessage[]> = {};
 
-const inMemoryMessages: Record<string, ConversationMessage[]> = JSON.parse(
-  JSON.stringify(MOCK_MESSAGES)
-);
+export function seedInMemoryConversations(
+  conversations: Conversation[],
+  messages?: Record<string, ConversationMessage[]>
+) {
+  inMemoryConversations.length = 0;
+  inMemoryConversations.push(...JSON.parse(JSON.stringify(conversations)));
+  if (messages) {
+    Object.keys(inMemoryMessages).forEach((k) => delete inMemoryMessages[k]);
+    Object.assign(inMemoryMessages, JSON.parse(JSON.stringify(messages)));
+  }
+}
+
+export function clearInMemoryConversations() {
+  inMemoryConversations.length = 0;
+  Object.keys(inMemoryMessages).forEach((k) => delete inMemoryMessages[k]);
+}
 
 class ConversationsService {
   /**

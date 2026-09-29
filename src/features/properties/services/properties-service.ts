@@ -2,8 +2,17 @@ import type { Property, PropertyFilterParams } from "../types";
 import { MOCK_PROPERTIES } from "../data/mock-properties";
 import { apiClient } from "@/lib/api/client";
 
-// In-memory property registry for optimistic session updates
-const inMemoryProperties: Property[] = JSON.parse(JSON.stringify(MOCK_PROPERTIES));
+// In-memory property registry for optimistic session updates (defaults empty for clean scratch onboarding)
+const inMemoryProperties: Property[] = [];
+
+export function seedInMemoryProperties(properties: Property[]) {
+  inMemoryProperties.length = 0;
+  inMemoryProperties.push(...JSON.parse(JSON.stringify(properties)));
+}
+
+export function clearInMemoryProperties() {
+  inMemoryProperties.length = 0;
+}
 
 export class PropertiesService {
   /**

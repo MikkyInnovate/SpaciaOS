@@ -1,5 +1,4 @@
 import { apiClient } from "@/lib/api/client";
-import { MOCK_CALLS } from "../data/mock-calls";
 import type { Call, CallFilters } from "../types";
 
 function createUniqueId(prefix: string): string {
@@ -7,7 +6,16 @@ function createUniqueId(prefix: string): string {
 }
 
 class CallsService {
-  private calls: Call[] = [...MOCK_CALLS];
+  // Defaults to empty for clean scratch onboarding
+  private calls: Call[] = [];
+
+  seedCalls(calls: Call[]) {
+    this.calls = [...calls];
+  }
+
+  clearCalls() {
+    this.calls = [];
+  }
 
   async getCalls(filters?: CallFilters): Promise<Call[]> {
     try {
@@ -100,7 +108,7 @@ class CallsService {
               ? response.transcript
               : localCall?.transcript && localCall.transcript.length > 0
               ? localCall.transcript
-              : MOCK_CALLS[0]?.transcript || [],
+              : [],
         };
         // update local cache
         const idx = this.calls.findIndex((c) => c.id === response.id);

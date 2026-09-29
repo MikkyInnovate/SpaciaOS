@@ -20,7 +20,6 @@ import {
 } from "lucide-react";
 import { leadsService } from "@/features/leads/services/leads-service";
 import type { Lead } from "@/features/leads";
-import { MOCK_DASHBOARD_LEADS } from "@/features/dashboard/data/mock-data";
 import { NAVIGATION_SECTIONS } from "@/lib/constants/navigation";
 import { useWorkspace } from "@/lib/context/workspace-context";
 
@@ -135,40 +134,8 @@ export function CommandSearch({ open, onOpenChange }: CommandSearchProps) {
       });
     }
 
-    // Graceful fallback to mock dashboard leads if live leads returned 0 and not actively searching
-    if (!query.trim()) {
-      return MOCK_DASHBOARD_LEADS.slice(0, 4).map((l) => ({
-        id: l.id,
-        name: l.name,
-        score: l.score,
-        scoreCategory: l.scoreCategory,
-        propertyTitle: l.propertyTitle,
-        budget: l.budget,
-        location: l.location,
-        status: l.status,
-      }));
-    }
-
-    // If searched and liveLeads is empty, check mock leads as offline/test fallback
-    const q = query.toLowerCase().trim();
-    const fallbackMatches = MOCK_DASHBOARD_LEADS.filter(
-      (l) =>
-        l.name.toLowerCase().includes(q) ||
-        l.propertyTitle.toLowerCase().includes(q) ||
-        l.location.toLowerCase().includes(q)
-    );
-
-    return fallbackMatches.map((l) => ({
-      id: l.id,
-      name: l.name,
-      score: l.score,
-      scoreCategory: l.scoreCategory,
-      propertyTitle: l.propertyTitle,
-      budget: l.budget,
-      location: l.location,
-      status: l.status,
-    }));
-  }, [liveLeads, query]);
+    return [];
+  }, [liveLeads]);
 
   // Filter navigation links
   const filteredNavigation = React.useMemo(() => {
