@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Manrope } from "next/font/google";
+import { Caveat, Instrument_Serif, Inter, Outfit } from "next/font/google";
 import { ClerkProvider } from "@clerk/nextjs";
 import { siteConfig } from "@/lib/config/site";
 import { isClerkConfigured } from "@/lib/config/env";
@@ -13,8 +13,23 @@ const inter = Inter({
   display: "swap",
 });
 
-const manrope = Manrope({
+const outfit = Outfit({
   variable: "--font-display",
+  subsets: ["latin"],
+  display: "swap",
+});
+
+// Accent faces. Loaded here (not via a CSS @import, which was never applied)
+const instrumentSerif = Instrument_Serif({
+  variable: "--font-instrument",
+  subsets: ["latin"],
+  weight: "400",
+  style: ["normal", "italic"],
+  display: "swap",
+});
+
+const caveat = Caveat({
+  variable: "--font-caveat",
   subsets: ["latin"],
   display: "swap",
 });
@@ -60,6 +75,22 @@ const clerkAppearance = {
   },
 };
 
+// Our own copy for the sign-in / sign-up start screens (otherwise Clerk shows its dashboard app name)
+const clerkLocalization = {
+  signIn: {
+    start: {
+      title: "Sign in to Spacia",
+      subtitle: "Welcome back. Every lead, still answered.",
+    },
+  },
+  signUp: {
+    start: {
+      title: "Create your Spacia account",
+      subtitle: "Set up in minutes. We handle the rest.",
+    },
+  },
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -69,7 +100,7 @@ export default function RootLayout({
     return (
       <html
         lang="en"
-        className={`${inter.variable} ${manrope.variable} h-full antialiased`}
+        className={`${inter.variable} ${outfit.variable} ${instrumentSerif.variable} ${caveat.variable} h-full antialiased`}
         suppressHydrationWarning
       >
         <body className="min-h-full flex flex-col font-sans bg-background text-foreground">
@@ -80,13 +111,19 @@ export default function RootLayout({
   }
 
   return (
-    <ClerkProvider appearance={clerkAppearance}>
+    <ClerkProvider appearance={clerkAppearance} localization={clerkLocalization}>
       <html
         lang="en"
-        className={`${inter.variable} ${manrope.variable} h-full antialiased`}
+        className={`${inter.variable} ${outfit.variable} ${instrumentSerif.variable} ${caveat.variable} h-full antialiased`}
         suppressHydrationWarning
       >
         <head>
+          <link rel="preconnect" href="https://fonts.googleapis.com" />
+          <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+          <link
+            rel="stylesheet"
+            href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+          />
           <script
             dangerouslySetInnerHTML={{
               __html: `
