@@ -339,7 +339,7 @@ class CallsService {
             recordingUrl: "https://api.vapi.ai/recordings/demo-recording.mp3",
             transcript:
               params.transcript ||
-              `AI: Good day ${params.leadName || "prospect"}, reaching out from Spacia regarding ${params.propertyTitle || "the luxury villa"}.\nProspect: Hello! Yes, I saw the listing. I have a budget of ₦1.5 Billion and would like to inspect the property this weekend.\nAI: Wonderful! I have reserved Saturday at 11 AM for your private tour.`,
+              `AI: Good day ${params.leadName || "prospect"}, reaching out from SpaciaOS regarding ${params.propertyTitle || "the luxury villa"}.\nProspect: Hello! Yes, I saw the listing. I have a budget of ₦1.5 Billion and would like to inspect the property this weekend.\nAI: Wonderful! I have reserved Saturday at 11 AM for your private tour.`,
             summary:
               params.summary ||
               `Prospect confirmed interest in ${params.propertyTitle || "development"}. Budget confirmed, requested weekend private inspection.`,

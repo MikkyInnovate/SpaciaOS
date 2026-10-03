@@ -83,7 +83,7 @@ export function AIAgentStatusCard({
             <div>
               <div className="flex items-center gap-2">
                 <CardTitle className="font-display text-base font-bold text-stone-900 tracking-tight">
-                  Spacia Voice Core Telemetry
+                  SpaciaOS Voice Core Telemetry
                 </CardTitle>
                 <span className="rounded bg-emerald-50 px-1.5 py-0.2 text-[10px] font-semibold text-emerald-800 border border-emerald-200/80">
                   Engine v2.4

@@ -423,7 +423,7 @@ export function ConfigureCredentialsModal({
                 </div>
                 <div className="rounded-md bg-stone-50 p-2.5 border border-stone-200/60 text-[11px] text-stone-600 space-y-1">
                   <p>
-                    <span className="font-semibold text-stone-800">Where does this go?</span> Spacia provides this secret key to authenticate requests. Your website backend signs payloads using HMAC-SHA256 in the <code className="text-[10px] bg-stone-200/70 px-1 py-0.5 rounded text-stone-800 font-mono">X-Spacia-Signature</code> header.
+                    <span className="font-semibold text-stone-800">Where does this go?</span> SpaciaOS provides this secret key to authenticate requests. Your website backend signs payloads using HMAC-SHA256 in the <code className="text-[10px] bg-stone-200/70 px-1 py-0.5 rounded text-stone-800 font-mono">X-Spacia-Signature</code> header.
                   </p>
                   <p className="text-stone-500 text-[10.5px]">
                     Note: If your website uses standard forms (Webflow, WordPress Elementor, Zapier) without signature support, you only need to copy the Webhook URL above.
@@ -519,7 +519,7 @@ export function ConfigureCredentialsModal({
                       className="font-mono text-xs border-stone-200 focus-visible:ring-1 focus-visible:ring-stone-400"
                     />
                     <p className="text-[11px] text-stone-500">
-                      The REST API endpoint where Spacia AI queries live listing inventory and floor plans.
+                      The REST API endpoint where SpaciaOS AI queries live listing inventory and floor plans.
                     </p>
                   </div>
 

@@ -60,7 +60,7 @@ export function ConversationMessageItem({
           {/* Header Metadata */}
           <div className="flex flex-wrap items-center gap-1.5 text-xs">
             <span className="font-semibold text-stone-900">
-              {message.senderName || "Spacia AI"}
+              {message.senderName || "SpaciaOS AI"}
             </span>
             <Badge
               variant="outline"

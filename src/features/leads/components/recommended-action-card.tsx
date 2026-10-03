@@ -168,7 +168,7 @@ export function RecommendedActionCard({
               `Drafting outbound executive email for ${leadName || "prospect"}${leadEmail ? ` (${leadEmail})` : ""}`
             );
             if (leadEmail) {
-              window.location.href = `mailto:${leadEmail}?subject=${encodeURIComponent(`Spacia Advisory: ${action.title}`)}`;
+              window.location.href = `mailto:${leadEmail}?subject=${encodeURIComponent(`SpaciaOS Advisory: ${action.title}`)}`;
             }
           }}
         >

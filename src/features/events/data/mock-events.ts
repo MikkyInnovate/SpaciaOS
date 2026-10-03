@@ -8,12 +8,12 @@ export const MOCK_WORKFLOW_EVENTS: WorkflowActivityEvent[] = [
     entityType: "lead",
     title: "Autonomous AI Qualification Call Completed",
     description:
-      "Spacia Voice Core engaged Dr. Babatunde Adeleke regarding the 5-Bed Fully Detached Contemporary Villa in Lekki Phase 1. Verified budget of ₦850,000,000 via corporate equity sale.",
+      "SpaciaOS Voice Core engaged Dr. Babatunde Adeleke regarding the 5-Bed Fully Detached Contemporary Villa in Lekki Phase 1. Verified budget of ₦850,000,000 via corporate equity sale.",
     category: "voice_call",
     status: "completed",
     actor: {
       type: "ai_agent",
-      name: "Spacia Voice Core",
+      name: "SpaciaOS Voice Core",
       role: "Autonomous Sales Associate",
       modelIdentifier: "Neural Executive v2.4 (Lagos Neutral)",
       latencyMs: 380,
@@ -41,7 +41,7 @@ export const MOCK_WORKFLOW_EVENTS: WorkflowActivityEvent[] = [
     status: "retrying",
     actor: {
       type: "ai_agent",
-      name: "Spacia Telephony Dispatcher",
+      name: "SpaciaOS Telephony Dispatcher",
       role: "Autonomous Dialing Gateway",
       modelIdentifier: "SIP Trunk Relay v3.1",
       latencyMs: 410,

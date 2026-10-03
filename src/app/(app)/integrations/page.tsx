@@ -447,7 +447,7 @@ export default function IntegrationsPage() {
       <PageHeader
         title="Client Integrations"
         description={`Manage credentials, connection health, and real-time handshakes for ${
-          currentWorkspace?.name || "Spacia Luxury Workspace"
+          currentWorkspace?.name || "SpaciaOS Luxury Workspace"
         }.`}
         actions={
           <div className="flex items-center gap-2">
@@ -726,7 +726,7 @@ export default function IntegrationsPage() {
                 </span>
               </div>
               <p className="text-xs text-stone-500 leading-relaxed">
-                Paste your external property inventory API endpoint and secret access key. Spacia queries this endpoint in real-time during AI calls to ground property specifications and check availability.
+                Paste your external property inventory API endpoint and secret access key. SpaciaOS queries this endpoint in real-time during AI calls to ground property specifications and check availability.
               </p>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
@@ -780,7 +780,7 @@ export default function IntegrationsPage() {
               <div className="flex items-center gap-2.5">
                 <Database className="h-4 w-4 text-stone-600" />
                 <span>
-                  Using <strong className="text-stone-900 font-semibold">Native Neon DB</strong>: Property inventory is securely stored and managed in Spacia’s multi-tenant database.
+                  Using <strong className="text-stone-900 font-semibold">Native Neon DB</strong>: Property inventory is securely stored and managed in SpaciaOS’s multi-tenant database.
                 </span>
               </div>
               <Badge variant="outline" className="text-[11px] bg-white border-stone-200 text-stone-700 shadow-2xs">

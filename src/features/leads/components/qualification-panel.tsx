@@ -282,9 +282,9 @@ Next Action: ${lead.nextAction}`;
             >
               <a
                 href={`mailto:?subject=${encodeURIComponent(
-                  `Spacia Qualification Dossier: ${lead.name} (${lead.propertyTitle})`
+                  `SpaciaOS Qualification Dossier: ${lead.name} (${lead.propertyTitle})`
                 )}&body=${encodeURIComponent(
-                  `Spacia Underwriting & Qualification Brief for ${lead.name} (${lead.propertyTitle}):\nScore: ${lead.score}/100\nBudget: ${profile.budgetAnalysis.declared}\nTimeline: ${profile.timelineWindow}\nPhone: ${lead.phone}\nEmail: ${lead.email}`
+                  `SpaciaOS Underwriting & Qualification Brief for ${lead.name} (${lead.propertyTitle}):\nScore: ${lead.score}/100\nBudget: ${profile.budgetAnalysis.declared}\nTimeline: ${profile.timelineWindow}\nPhone: ${lead.phone}\nEmail: ${lead.email}`
                 )}`}
                 title="Email Qualification Brief"
               >

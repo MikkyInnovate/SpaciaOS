@@ -41,8 +41,8 @@ export function LeadIntakeTable({
       <div className="flex items-center justify-between border-b border-border p-4 bg-stone-50/50">
         <div>
           <div className="flex items-center gap-2">
-            <h2 className="font-display text-base font-bold text-stone-900">
-              Lead Qualification Feed
+            <h2 className="font-display text-[17px] font-normal tracking-[-0.02em] text-[#14231d]">
+              Latest leads
             </h2>
             <span className="flex items-center gap-1.5 rounded-full border border-stone-200 bg-white px-2 py-0.5 text-[11px] font-medium text-stone-600 shadow-2xs">
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-600" />
@@ -50,7 +50,7 @@ export function LeadIntakeTable({
             </span>
           </div>
           <p className="text-xs text-stone-500 mt-0.5">
-            Website inquiries qualified via AI conversation & verified property data
+            New enquiries, called and qualified by your AI agent.
           </p>
         </div>
 

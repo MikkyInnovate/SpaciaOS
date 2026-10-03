@@ -99,7 +99,7 @@ export function AutomationEventFeed({
           status: "retrying",
           actor: {
             type: "ai_agent",
-            name: "Spacia Voice Core",
+            name: "SpaciaOS Voice Core",
             role: "Autonomous Sales Associate",
             modelIdentifier: "Neural Executive v2.4",
             latencyMs: 395,

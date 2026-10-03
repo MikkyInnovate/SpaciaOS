@@ -113,7 +113,7 @@ export default function AiAgentPage() {
       const reset = await aiAgentService.resetConfig();
       setConfiguration(reset);
       toast.info("Configuration reset", {
-        description: "Restored baseline Spacia luxury parameters.",
+        description: "Restored baseline SpaciaOS luxury parameters.",
       });
     } catch {
       toast.error("Failed to reset configuration");
@@ -201,7 +201,7 @@ export default function AiAgentPage() {
             {/* Workspace Identifier matching Homepage */}
             <div className="flex items-center gap-1.5 h-8 rounded-md border border-stone-200 bg-white px-2.5 text-xs font-medium text-stone-700 shadow-2xs whitespace-nowrap">
               <Building2 className="h-3.5 w-3.5 text-stone-400 shrink-0" aria-hidden="true" />
-              <span>{currentWorkspace?.name || "Spacia Luxury Hub"}</span>
+              <span>{currentWorkspace?.name || "SpaciaOS Luxury Hub"}</span>
             </div>
 
             {/* AI Status Indicator Pill - High visual bang when paused */}

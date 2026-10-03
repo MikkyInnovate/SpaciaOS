@@ -248,7 +248,7 @@ export const MOCK_AI_OPERATIONS: DashboardAICallEvent[] = [
     transcript: [
       {
         speaker: "agent",
-        speakerName: "Spacia AI Agent",
+        speakerName: "SpaciaOS AI Agent",
         time: "00:04",
         message:
           "Hello Michael Adeleke, this is Sarah from Premier Realty following up on your inquiry for the 3-Bedroom Contemporary Flat in Lekki Phase 1. Did you have a quick moment to discuss your preferred timeline?",
@@ -262,7 +262,7 @@ export const MOCK_AI_OPERATIONS: DashboardAICallEvent[] = [
       },
       {
         speaker: "agent",
-        speakerName: "Spacia AI Agent",
+        speakerName: "SpaciaOS AI Agent",
         time: "01:05",
         message:
           "That is wonderful! The property is verified available, and the title deeds are fully clear. Regarding acquisition budget, the property is listed at ₦85,000,000. Does that match your planned allocation?",
@@ -294,10 +294,10 @@ export const MOCK_AI_OPERATIONS: DashboardAICallEvent[] = [
     transcript: [
       {
         speaker: "agent",
-        speakerName: "Spacia AI Agent",
+        speakerName: "SpaciaOS AI Agent",
         time: "00:05",
         message:
-          "Good morning Sarah, this is Alex from Spacia on behalf of Premier Realty regarding your inquiry for the Waterfront Penthouse in Banana Island.",
+          "Good morning Sarah, this is Alex from SpaciaOS on behalf of Premier Realty regarding your inquiry for the Waterfront Penthouse in Banana Island.",
       },
       {
         speaker: "prospect",
@@ -308,7 +308,7 @@ export const MOCK_AI_OPERATIONS: DashboardAICallEvent[] = [
       },
       {
         speaker: "agent",
-        speakerName: "Spacia AI Agent",
+        speakerName: "SpaciaOS AI Agent",
         time: "01:12",
         message:
           "Yes, indeed. The title deed guarantees 2 private jetty berths and dedicated underground concierge parking. At ₦240,000,000, we have verified availability for immediate handover.",
@@ -322,7 +322,7 @@ export const MOCK_AI_OPERATIONS: DashboardAICallEvent[] = [
       },
       {
         speaker: "agent",
-        speakerName: "Spacia AI Agent",
+        speakerName: "SpaciaOS AI Agent",
         time: "02:35",
         message:
           "Slot reserved! Agent Marcus Vance is confirmed for Friday at 11:00 AM. I have sent the gate pass authorization to your email.",
@@ -347,7 +347,7 @@ export const MOCK_AI_OPERATIONS: DashboardAICallEvent[] = [
     transcript: [
       {
         speaker: "agent",
-        speakerName: "Spacia AI Agent",
+        speakerName: "SpaciaOS AI Agent",
         time: "00:03",
         message:
           "Hello Dr. Babatunde, thank you for reaching out regarding the 4-Bedroom Detached Villa in Victoria Island.",
@@ -361,7 +361,7 @@ export const MOCK_AI_OPERATIONS: DashboardAICallEvent[] = [
       },
       {
         speaker: "agent",
-        speakerName: "Spacia AI Agent",
+        speakerName: "SpaciaOS AI Agent",
         time: "00:54",
         message:
           "Certainly, Doctor. The developer offers a 30-40-30 milestone structure tied directly to roof beam and interior handover milestones.",
@@ -375,7 +375,7 @@ export const MOCK_AI_OPERATIONS: DashboardAICallEvent[] = [
       },
       {
         speaker: "agent",
-        speakerName: "Spacia AI Agent",
+        speakerName: "SpaciaOS AI Agent",
         time: "02:05",
         message:
           "The verified documents are being dispatched to your WhatsApp immediately. Our property advisor will follow up tomorrow.",
@@ -400,7 +400,7 @@ export const MOCK_AI_OPERATIONS: DashboardAICallEvent[] = [
     transcript: [
       {
         speaker: "agent",
-        speakerName: "Spacia AI Agent",
+        speakerName: "SpaciaOS AI Agent",
         time: "00:04",
         message:
           "Hello Elena, calling from Premier Realty concerning the corporate serviced suite in Old Ikoyi.",
@@ -414,7 +414,7 @@ export const MOCK_AI_OPERATIONS: DashboardAICallEvent[] = [
       },
       {
         speaker: "agent",
-        speakerName: "Spacia AI Agent",
+        speakerName: "SpaciaOS AI Agent",
         time: "00:45",
         message:
           "The estate features dual synchronized CAT generators, biometric access, and certified perimeter security.",
@@ -446,7 +446,7 @@ export const MOCK_AI_OPERATIONS: DashboardAICallEvent[] = [
     transcript: [
       {
         speaker: "agent",
-        speakerName: "Spacia AI Agent",
+        speakerName: "SpaciaOS AI Agent",
         time: "00:05",
         message:
           "Good afternoon Tariq, touching base regarding the Commercial Retail Arcade in Oniru.",
@@ -460,7 +460,7 @@ export const MOCK_AI_OPERATIONS: DashboardAICallEvent[] = [
       },
       {
         speaker: "agent",
-        speakerName: "Spacia AI Agent",
+        speakerName: "SpaciaOS AI Agent",
         time: "01:10",
         message:
           "Historical gross yield is 11.2% with 94% occupancy across anchor grocery and banking tenants.",
@@ -492,7 +492,7 @@ export const MOCK_AI_OPERATIONS: DashboardAICallEvent[] = [
     transcript: [
       {
         speaker: "agent",
-        speakerName: "Spacia AI Agent",
+        speakerName: "SpaciaOS AI Agent",
         time: "00:04",
         message:
           "Hello Mr. Bakare, following up on your inquiry for the 5-Bedroom Duplex in Osapa London.",
@@ -506,7 +506,7 @@ export const MOCK_AI_OPERATIONS: DashboardAICallEvent[] = [
       },
       {
         speaker: "agent",
-        speakerName: "Spacia AI Agent",
+        speakerName: "SpaciaOS AI Agent",
         time: "00:55",
         message:
           "Yes sir, Governor's Consent is fully perfected and lodged with Lagos State Land Registry.",

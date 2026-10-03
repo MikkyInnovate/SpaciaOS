@@ -22,12 +22,13 @@ import { siteConfig } from "@/lib/config/site";
 import { useWorkspace } from "@/lib/context/workspace-context";
 import { useAuth } from "@/lib/context/auth-context";
 import { NavIcon } from "./nav-icon";
+import { WorkspaceSwitcher } from "./workspace-switcher";
+import { SpaciaLogo, SpaciaMark } from "@/components/brand/spacia-logo";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { NAVIGATION_SECTIONS } from "@/lib/constants/navigation";
 import {
   Building2,
-  Sparkles,
   ChevronDown,
   ChevronUp,
   User,
@@ -71,32 +72,15 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar collapsible="icon" variant="sidebar" {...props}>
       {/* Sidebar Header: Brand & Workspace */}
-      <SidebarHeader className="bg-white">
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <div className="flex items-center gap-3 px-1 py-1">
-              <div className="flex h-8.5 w-8.5 shrink-0 items-center justify-center rounded-lg bg-[#0d4a36] text-white shadow-xs border border-[#093829]">
-                <Sparkles className="h-4 w-4 text-emerald-200" aria-hidden="true" />
-              </div>
-              <div className="flex flex-col min-w-0 flex-1 group-data-[collapsible=icon]:hidden">
-                <div className="flex items-center gap-1.5">
-                  <span className="font-display font-bold text-sm text-stone-900 tracking-tight truncate">
-                    {siteConfig.name}
-                  </span>
-                  <span className="rounded bg-emerald-50 px-1.5 py-0.2 text-[10px] font-semibold text-emerald-800 border border-emerald-200/60">
-                    OS
-                  </span>
-                </div>
-                <div className="flex items-center gap-1 text-xs text-stone-500 truncate mt-0.5">
-                  <Building2 className="h-3 w-3 shrink-0 text-stone-400" aria-hidden="true" />
-                  <span className="truncate font-medium text-stone-600">
-                    {currentWorkspace?.name || "Workspace"}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </SidebarMenuItem>
-        </SidebarMenu>
+      <SidebarHeader className="gap-3 border-b border-zinc-100 bg-white px-3 pb-3 pt-4">
+        <Link href="/dashboard" aria-label={`${siteConfig.name} home`} className="flex h-8 items-center px-1">
+          <SpaciaLogo className="text-[18px] group-data-[collapsible=icon]:hidden" />
+          <SpaciaMark className="hidden h-5 w-5 text-zinc-950 group-data-[collapsible=icon]:block" />
+        </Link>
+        {/* the one workspace control in the app */}
+        <div className="group-data-[collapsible=icon]:hidden">
+          <WorkspaceSwitcher fullWidth />
+        </div>
       </SidebarHeader>
 
       {/* Sidebar Content: Navigation Sections */}
@@ -104,7 +88,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
         {NAVIGATION_SECTIONS.map((section, idx) => (
           <SidebarGroup key={section.label || idx}>
             {section.label && (
-              <SidebarGroupLabel className="text-stone-400 font-medium text-[11px] tracking-wider uppercase">
+              <SidebarGroupLabel className="font-mono text-[10px] uppercase tracking-[0.16em] text-zinc-400">
                 {section.label}
               </SidebarGroupLabel>
             )}
@@ -149,24 +133,19 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
                         asChild
                         isActive={isActive}
                         tooltip={item.title}
-                        className={
+                        className={cn(
+                          "relative h-8 rounded-[6px] text-[13px] transition-colors",
                           isActive
-                            ? "bg-emerald-50/80 text-emerald-950 font-semibold border-l-2 border-[#0d4a36] rounded-l-none pl-2.5"
-                            : "text-stone-600 hover:text-stone-900 hover:bg-stone-50"
-                        }
+                            ? "bg-[#15803d]/[0.07] font-medium text-zinc-950 before:absolute before:left-0 before:top-1.5 before:bottom-1.5 before:w-[2px] before:bg-[#15803d] hover:bg-[#15803d]/[0.1]"
+                            : "text-zinc-600 hover:bg-zinc-50 hover:text-zinc-950"
+                        )}
                       >
                         <Link href={item.href} prefetch={false}>
                           <NavIcon
                             name={item.iconName}
-                            className={isActive ? "text-[#0d4a36]" : "text-stone-400"}
+                            className={cn("h-4 w-4", isActive ? "text-[#15803d]" : "text-zinc-400")}
                           />
                           <span className="truncate">{item.title}</span>
-                          {isActive && (
-                            <span
-                              className="ml-auto h-1.5 w-1.5 rounded-full bg-[#0d4a36]"
-                              aria-hidden="true"
-                            />
-                          )}
                         </Link>
                       </SidebarMenuButton>
                       {item.badge && !isActive && (
@@ -186,24 +165,15 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
       {/* Sidebar Footer: AI Engine Status & User Profile */}
       <SidebarFooter className="bg-white">
         {/* Live AI Engine Status Box (Calm & Restrained) */}
-        <div className="rounded-md border border-stone-200 bg-stone-50/70 p-2.5 group-data-[collapsible=icon]:hidden">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-600" />
-              </span>
-              <span className="text-[11px] font-semibold text-stone-900">
-                AI Sales Core
-              </span>
-            </div>
-            <span className="rounded bg-stone-200/70 px-1.5 py-0.2 text-[10px] font-medium text-stone-700">
-              Active
+        <div className="rounded-[6px] border border-zinc-200 bg-[#f7f7f5] p-2.5 group-data-[collapsible=icon]:hidden">
+          <div className="flex items-center gap-2">
+            <span className="relative flex h-2 w-2">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#22c55e] opacity-70" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-[#15803d]" />
             </span>
+            <span className="font-mono text-[10px] uppercase tracking-[0.14em] text-zinc-950">AI agent · On</span>
           </div>
-          <p className="mt-1 text-[11px] text-stone-500 leading-tight">
-            Autonomous qualification running
-          </p>
+          <p className="mt-1 text-[11px] leading-tight text-zinc-500">Calling and qualifying new leads</p>
         </div>
 
         {/* User Account with Interactive Popover & Sign Out */}
@@ -326,7 +296,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
                 className="flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-xs font-medium text-rose-700 hover:bg-rose-50 hover:text-rose-800 transition-colors"
               >
                 <LogOut className="h-3.5 w-3.5 text-rose-600" />
-                <span>Sign out of Spacia</span>
+                <span>Sign out of SpaciaOS</span>
               </button>
             </div>
           )}

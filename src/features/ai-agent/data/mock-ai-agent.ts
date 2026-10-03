@@ -26,7 +26,7 @@ export const MOCK_AI_AGENT_CONFIG: AIAgentConfiguration = {
   tone: "luxury_professional",
   language: "en-NG",
   greeting:
-    "Good day. Thank you for contacting Spacia. I am Amara, your personal luxury real estate advisor. How may I assist your property acquisition today?",
+    "Good day. Thank you for contacting SpaciaOS. I am Amara, your personal luxury real estate advisor. How may I assist your property acquisition today?",
   businessHours: {
     enabled: true,
     start: "08:00",
@@ -68,7 +68,7 @@ export const MOCK_AI_AGENT_CONFIG: AIAgentConfiguration = {
     voiceModel: "en-NG-EzinneNeural (Lagos Neutral)",
     accent: "Nigerian Business English (Executive Lagos Neutral)",
     greeting:
-      "Good day. Thank you for contacting Spacia. I am Amara, your personal luxury real estate advisor. How may I assist your property acquisition today?",
+      "Good day. Thank you for contacting SpaciaOS. I am Amara, your personal luxury real estate advisor. How may I assist your property acquisition today?",
     temperature: 0.35,
     interruptionToleranceMs: 420,
     speechSpeed: 1.0,
