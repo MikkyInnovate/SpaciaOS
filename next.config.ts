@@ -34,10 +34,6 @@ const nextConfig: NextConfig = {
           }
         : false,
   },
-  // Waitlist-only deployment: the home page is the waitlist
-  async redirects() {
-    return [{ source: "/", destination: "/waitlist", permanent: false }];
-  },
 };
 
 export default nextConfig;

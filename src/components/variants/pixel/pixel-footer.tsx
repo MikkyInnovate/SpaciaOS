@@ -23,9 +23,10 @@ const COLUMNS: { title: FooterKey; links: { label: FooterKey | { tool: MarqueeKe
   {
     title: "product",
     links: [
-      { label: "overview", href: `${WAITLIST_HREF}#perks` },
-      { label: "howItWorks", href: `${WAITLIST_HREF}#how` },
-      { label: "faq", href: `${WAITLIST_HREF}#faq` },
+      { label: "overview", href: "/#system" },
+      { label: "howItWorks", href: "/#process" },
+      { label: "pricing", href: "/#pricing-grid" },
+      { label: "faq", href: "/#faq-grid" },
       { label: "privacy", href: "/privacy" },
     ],
   },
@@ -39,9 +40,9 @@ const COLUMNS: { title: FooterKey; links: { label: FooterKey | { tool: MarqueeKe
   {
     title: "worksWith",
     links: [
-      { label: { tool: "whatsapp" }, href: `${WAITLIST_HREF}#how` },
-      { label: { tool: "googleCalendar" }, href: `${WAITLIST_HREF}#how` },
-      { label: { tool: "hubspot" }, href: `${WAITLIST_HREF}#how` },
+      { label: { tool: "whatsapp" }, href: "/#system" },
+      { label: { tool: "googleCalendar" }, href: "/#system" },
+      { label: { tool: "hubspot" }, href: "/#system" },
     ],
     soon: true,
   },
