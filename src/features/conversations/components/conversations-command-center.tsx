@@ -128,7 +128,7 @@ export function ConversationsCommandCenter() {
     try {
       const updatedConv = await conversationsService.executeTakeover(
         selectedConversation.id,
-        "Marcus Vance"
+        "Agent"
       );
       setSelectedConversation(updatedConv);
 
@@ -161,7 +161,7 @@ export function ConversationsCommandCenter() {
         const newMsg = await conversationsService.sendMessage(
           selectedConversation.id,
           text,
-          "Marcus Vance"
+          "Agent"
         );
 
         setMessages((prev) => [...prev, newMsg]);

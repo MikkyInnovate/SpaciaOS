@@ -257,7 +257,7 @@ class LeadsService {
    */
   async takeoverLead(
     id: string,
-    brokerName = "Marcus Vance",
+    brokerName = "Agent",
     reason = "Manual broker takeover initiated"
   ): Promise<Lead> {
     if (isUuid(id)) {

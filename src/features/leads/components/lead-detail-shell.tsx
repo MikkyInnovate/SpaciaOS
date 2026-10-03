@@ -744,7 +744,7 @@ export function LeadDetailShell({
           call={selectedCallForCockpit}
           onClose={() => setSelectedCallForCockpit(null)}
           onTakeover={(call) => {
-            onTakeover?.(lead?.id || "", "Marcus Vance", `Takeover from Call ${call.id}`);
+            onTakeover?.(lead?.id || "", "Agent", `Takeover from Call ${call.id}`);
             setSelectedCallForCockpit(null);
           }}
         />

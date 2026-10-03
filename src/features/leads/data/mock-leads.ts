@@ -422,7 +422,7 @@ const RAW_MOCK_LEADS: Lead[] = [
     createdAt: "12m ago",
     aiNotes: "Budget pre-confirmed. Pre-qualified buyer ready for viewing this Thursday afternoon.",
     source: "Instagram Inbound Lead Ad",
-    assignedBroker: "Marcus Vance",
+    assignedBroker: "Agent",
     propertyId: MOCK_PROPERTIES[0].id,
     property: MOCK_PROPERTIES[0],
     propertyDetails: {
@@ -564,7 +564,7 @@ const RAW_MOCK_LEADS: Lead[] = [
     createdAt: "34m ago",
     aiNotes: "AI booked calendar slot with Agent Marcus for Friday 2:00 PM. Access pass requested.",
     source: "Google Luxury Property Search",
-    assignedBroker: "Marcus Vance",
+    assignedBroker: "Agent",
     propertyId: MOCK_PROPERTIES[1].id,
     property: MOCK_PROPERTIES[1],
     propertyDetails: {
@@ -598,7 +598,7 @@ const RAW_MOCK_LEADS: Lead[] = [
     },
     nextActionDirective: {
       action: "Execute In-Person Inspection at Banana Island Gate",
-      assignedTo: "Marcus Vance",
+      assignedTo: "Agent",
       priority: "Scheduled",
       dueDate: "Friday, 2:00 PM",
       protocolRecommendation: "Meet prospect at Oceanview security pavilion; prepare title deed summary.",
@@ -632,7 +632,7 @@ const RAW_MOCK_LEADS: Lead[] = [
         timestamp: "25m ago",
         channel: "Calendar Connector",
         meta: {
-          brokerName: "Marcus Vance",
+          brokerName: "Agent",
           viewingDate: "Friday, 2:00 PM",
         },
       },
@@ -957,7 +957,7 @@ const RAW_MOCK_LEADS: Lead[] = [
     createdAt: "6h ago",
     aiNotes: "Mortgage pre-approved with Stanbic IBTC. Inspection set for Saturday 11:00 AM.",
     source: "PropertyPro Portal",
-    assignedBroker: "Marcus Vance",
+    assignedBroker: "Agent",
     propertyId: MOCK_PROPERTIES[6].id,
     property: MOCK_PROPERTIES[6],
     propertyDetails: {
@@ -991,7 +991,7 @@ const RAW_MOCK_LEADS: Lead[] = [
     },
     nextActionDirective: {
       action: "Send Google Maps Pin & Gated Security Protocol",
-      assignedTo: "Marcus Vance",
+      assignedTo: "Agent",
       priority: "Scheduled",
       dueDate: "Friday, 4:00 PM",
       protocolRecommendation: "Dispatch gate security access code and parking instructions for Saturday walkthrough.",
@@ -1013,7 +1013,7 @@ const RAW_MOCK_LEADS: Lead[] = [
         timestamp: "5h ago",
         channel: "SpaciaOS Voice Core",
         meta: {
-          brokerName: "Marcus Vance",
+          brokerName: "Agent",
           viewingDate: "Saturday, 11:00 AM",
         },
       },
@@ -1155,7 +1155,7 @@ export const MOCK_DAY13_EXTENSIONS: Record<string, Partial<Lead>> = {
       ],
       unresolvedObjections: ["Dual diesel generator uptime SLA"],
       handedOffAt: "10 mins ago",
-      brokerName: "Marcus Vance",
+      brokerName: "Agent",
     },
     followUpSchedule: {
       scheduledAt: "2026-09-20T14:30:00Z",
@@ -1190,7 +1190,7 @@ export const MOCK_DAY13_EXTENSIONS: Record<string, Partial<Lead>> = {
   lead_03: {
     status: "Human Managed",
     managementMode: "human_managed",
-    assignedBroker: "Marcus Vance",
+    assignedBroker: "Agent",
     isAiStopped: true,
     aiStoppedReason: "Broker Marcus Vance initiated manual takeover following direct commission and price negotiation.",
     handoffContext: {
@@ -1202,7 +1202,7 @@ export const MOCK_DAY13_EXTENSIONS: Record<string, Partial<Lead>> = {
       ],
       unresolvedObjections: ["Price negotiation beyond autonomous margin gate"],
       handedOffAt: "18 mins ago",
-      brokerName: "Marcus Vance",
+      brokerName: "Agent",
     },
     recommendedAction: {
       title: "Direct Phone Call: Negotiate ₦135M Counter-Offer",

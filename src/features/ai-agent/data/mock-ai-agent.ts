@@ -209,7 +209,7 @@ export const MOCK_SAMPLE_INTENTS: BuyerIntentEvaluation[] = [
       title: "On-Site Physical Inspection · Lekki Phase 1 Villa",
       scheduledTime: "Thursday, Oct 24 @ 11:00 AM",
       calendarSynced: true,
-      assignedBroker: "Marcus Vance",
+      assignedBroker: "Agent",
     },
     humanActionStage: "awaiting_closing_payment",
     intentSignals: [

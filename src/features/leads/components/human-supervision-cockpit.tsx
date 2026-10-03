@@ -55,7 +55,7 @@ export function HumanSupervisionCockpit({
   const handleTakeoverClick = async () => {
     setIsActing(true);
     try {
-      await onTakeover?.("Marcus Vance", "Broker manual takeover from lead dossier");
+      await onTakeover?.("Agent", "Broker manual takeover from lead dossier");
       toast.success("Broker Takeover Complete", {
         description: `Autonomous AI paused. You now have full operational leadership over ${lead.name}.`,
       });

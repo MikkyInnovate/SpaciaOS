@@ -154,7 +154,7 @@ class ConversationsService {
   async sendMessage(
     conversationId: string,
     content: string,
-    senderName: string = "Marcus Vance"
+    senderName: string = "Agent"
   ): Promise<ConversationMessage> {
     try {
       const response = await apiClient.post<ConversationMessage>(
@@ -216,7 +216,7 @@ class ConversationsService {
    */
   async executeTakeover(
     conversationId: string,
-    brokerName: string = "Marcus Vance"
+    brokerName: string = "Agent"
   ): Promise<Conversation> {
     try {
       const response = await apiClient.post<{ conversation: Conversation }>(

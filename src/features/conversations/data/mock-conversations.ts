@@ -37,7 +37,7 @@ export const MOCK_CONVERSATIONS: Conversation[] = [
       sender: "ai_agent",
     },
     assignedBroker: {
-      name: "Marcus Vance",
+      name: "Agent",
       role: "Senior Sales Associate (Lekki & Eko Atlantic)",
     },
     bantSummary: {
@@ -393,7 +393,7 @@ export const MOCK_MESSAGES: Record<string, ConversationMessage[]> = {
         viewingDate: "Saturday, Sep 20, 2026",
         viewingTime: "11:30 AM (WAT)",
         viewingLocation: "Plot 14, Azuri Peninsula, Eko Atlantic",
-        viewingBroker: "Marcus Vance",
+        viewingBroker: "Agent",
         viewingStatus: "confirmed",
       },
     },
