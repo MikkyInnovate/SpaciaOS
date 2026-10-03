@@ -30,10 +30,10 @@ export default function NotFound() {
             Back to home <ArrowRight className="h-3.5 w-3.5" />
           </Link>
           <Link
-            href="/dashboard"
+            href="/waitlist"
             className="inline-flex items-center gap-2 bg-white px-5 py-3 font-mono text-[12px] uppercase tracking-[0.12em] text-zinc-800 ring-1 ring-zinc-300 transition-colors duration-300 hover:text-[#15803d] hover:ring-[#15803d]"
           >
-            Go to dashboard
+            Join the waitlist
           </Link>
         </div>
       </main>
