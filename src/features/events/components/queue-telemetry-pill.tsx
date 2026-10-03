@@ -35,7 +35,7 @@ const DEFAULT_QUEUE_JOBS: QueueJob[] = [
     category: "underwriting",
     status: "completed",
     latencyFormatted: "140ms",
-    channel: "Spacia BANT Engine",
+    channel: "SpaciaOS BANT Engine",
     timeAgo: "12s ago",
   },
   {

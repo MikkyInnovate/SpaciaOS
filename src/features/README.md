@@ -1,4 +1,4 @@
-# Spacia Feature Architecture Conventions
+# SpaciaOS Feature Architecture Conventions
 
 This directory is the designated home for domain-specific feature modules.
 
@@ -23,7 +23,7 @@ features/<feature-name>/
 
 ## 2. Planned PRD Feature Domains
 
-As defined in the Spacia Product Requirements Document (PRD V1), future vertical slices include:
+As defined in the SpaciaOS Product Requirements Document (PRD V1), future vertical slices include:
 
 - `leads`: Intake, qualification scoring (Hot/Warm/Cold), timeline, budget, and assignment.
 - `conversations`: AI conversational qualification logs, message streams, transcript review.

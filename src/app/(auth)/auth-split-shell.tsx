@@ -15,7 +15,7 @@ export interface AuthSplitShellProps {
 const HEADLINES = [
   "Every viewing booked, qualified and ready for your team.",
   "Every property lead, called in seconds.",
-  "Your agents close. Spacia does the chasing.",
+  "Your agents close. SpaciaOS does the chasing.",
 ];
 
 /** Typed headline. The full line reserves its space invisibly, so typing never reflows or clips. */
@@ -158,7 +158,7 @@ export function AuthSplitShell({ children }: AuthSplitShellProps) {
       {/* Right: form panel */}
       <div className="flex w-full flex-1 flex-col px-5 py-5 sm:px-10 lg:h-full lg:w-1/2 lg:overflow-y-auto lg:px-14 xl:px-20">
         <header className="flex shrink-0 items-center justify-between border-b border-zinc-200 pb-5">
-          <Link href="/" aria-label="Spacia home">
+          <Link href="/" aria-label="SpaciaOS home">
             <SpaciaLogo className="text-[19px]" />
           </Link>
           <span className="inline-flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.14em] text-zinc-500">
@@ -195,7 +195,7 @@ export function AuthSplitShell({ children }: AuthSplitShellProps) {
 
         <footer className="flex shrink-0 items-center justify-between border-t border-zinc-200 pt-5 font-mono text-[10px] uppercase tracking-[0.14em] text-zinc-400">
           <span>
-            © {new Date().getFullYear()} Spacia ·{" "}
+            © {new Date().getFullYear()} SpaciaOS ·{" "}
             <Link href="/privacy" className="underline-offset-4 hover:text-[#15803d] hover:underline">
               Privacy
             </Link>

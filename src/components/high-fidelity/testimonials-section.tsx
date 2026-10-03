@@ -7,7 +7,7 @@ import { Reveal, Stagger, StaggerItem } from "@/components/marketing/motion";
 const TESTIMONIALS = [
   {
     quote:
-      "Spacia reduced our response time from 3 hours to under 3 seconds. In our first 60 days, verified property inspection bookings surged by 340% without hiring additional coordinators.",
+      "SpaciaOS reduced our response time from 3 hours to under 3 seconds. In our first 60 days, verified property inspection bookings surged by 340% without hiring additional coordinators.",
     author: "Babatunde Adeleke",
     role: "Senior Partner",
     company: "Eko Atlantic Luxury Developments",

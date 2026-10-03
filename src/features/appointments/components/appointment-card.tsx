@@ -54,7 +54,7 @@ export function AppointmentCard({
     new Date().toDateString() === startDate.toDateString();
 
   const handleCopyWhatsAppInvite = () => {
-    const text = `🏡 *Property Inspection Confirmation — Spacia*\n\n` +
+    const text = `🏡 *Property Inspection Confirmation — SpaciaOS*\n\n` +
       `*Client:* ${appointment.leadName}\n` +
       `*Property:* ${appointment.propertyTitle}\n` +
       `*Date:* ${formattedDate}\n` +

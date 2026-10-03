@@ -75,7 +75,7 @@ export function AboutSection() {
               Brokers Retain 100% Control
             </h3>
             <p className="text-xs sm:text-sm text-zinc-600 leading-relaxed">
-              Spacia does not replace your brokers — it empowers them. Live transcripts, instant alerts,
+              SpaciaOS does not replace your brokers — it empowers them. Live transcripts, instant alerts,
               and seamless calendar slotting ensure your team always maintains the human relationship.
             </p>
           </StaggerItem>

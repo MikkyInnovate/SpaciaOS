@@ -92,7 +92,7 @@ const SCENARIOS: Scenario[] = [
     conversation: [
       {
         speaker: "ai",
-        text: "Hello Engr. Okonjo, welcome to Spacia. I see you downloaded the prospectus for the Civic Tower office floor. What square footage is your syndicate targeting?",
+        text: "Hello Engr. Okonjo, welcome to SpaciaOS. I see you downloaded the prospectus for the Civic Tower office floor. What square footage is your syndicate targeting?",
         timestamp: "00:03",
       },
       {
@@ -262,7 +262,7 @@ export function CockpitSimulator() {
                 >
                   <div className="flex items-center justify-between text-[10px] text-stone-400 font-mono mb-1">
                     <span className="font-semibold text-stone-600">
-                      {turn.speaker === "ai" ? "Spacia Neural Associate" : scenario.name}
+                      {turn.speaker === "ai" ? "SpaciaOS Neural Associate" : scenario.name}
                     </span>
                     <span>{turn.timestamp}</span>
                   </div>

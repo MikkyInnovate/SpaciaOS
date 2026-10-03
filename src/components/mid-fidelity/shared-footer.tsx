@@ -15,7 +15,7 @@ export function SharedFooter() {
                 S
               </div>
               <span className="font-display font-bold text-base tracking-tight text-[#18181b]">
-                Spacia<span className="text-[#0d4a36]">OS</span>
+                SpaciaOS<span className="text-[#0d4a36]">OS</span>
               </span>
             </div>
             <p className="text-stone-500 max-w-sm leading-relaxed">
@@ -104,7 +104,7 @@ export function SharedFooter() {
 
         {/* Bottom Bar */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-stone-500">
-          <p>© {new Date().getFullYear()} Spacia Technologies Ltd. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} SpaciaOS Technologies Ltd. All rights reserved.</p>
           <div className="flex items-center gap-4">
             <span className="font-mono">LAGOS • LONDON • SAN FRANCISCO</span>
             <span>•</span>

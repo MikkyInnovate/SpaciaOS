@@ -50,7 +50,7 @@ interface RawPmsRecord {
  * 
  * Purpose:
  * Proves provider-agnosticism by translating foreign PMS records into
- * Spacia's canonical domain contracts. Clearly isolated as reference infrastructure.
+ * SpaciaOS's canonical domain contracts. Clearly isolated as reference infrastructure.
  */
 @Injectable()
 export class MockPmsPropertyAdapter implements IPropertyAdapter {

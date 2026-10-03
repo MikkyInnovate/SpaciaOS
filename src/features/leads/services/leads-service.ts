@@ -623,7 +623,7 @@ class LeadsService {
       channel: "OpenRouter LLM",
       actor: {
         type: "ai_agent",
-        name: "Spacia Underwriting Core",
+        name: "SpaciaOS Underwriting Core",
         role: "Autonomous Underwriter",
         modelIdentifier: "Claude 3.5 Sonnet via OpenRouter",
         confidenceScore: 95,

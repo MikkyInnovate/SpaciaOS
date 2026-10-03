@@ -954,7 +954,7 @@ export default function PrimitivesShowcasePage() {
                   <AIActivityIndicator
                     actor={{
                       type: "ai_agent",
-                      name: "Spacia Voice Core",
+                      name: "SpaciaOS Voice Core",
                       role: "Autonomous Sales Associate",
                       modelIdentifier: "Neural Executive v2.4 (Lagos)",
                       latencyMs: 380,
@@ -969,7 +969,7 @@ export default function PrimitivesShowcasePage() {
                     <AIActivityIndicator
                       actor={{
                         type: "ai_agent",
-                        name: "Spacia Voice Core",
+                        name: "SpaciaOS Voice Core",
                         role: "Autonomous Sales Associate",
                         modelIdentifier: "Neural Executive v2.4",
                       }}
@@ -1079,12 +1079,12 @@ export default function PrimitivesShowcasePage() {
                 workflowId: "wf_primitives_01",
                 title: "Autonomous Voice Qualification Completed",
                 description:
-                  "Spacia Voice Core engaged prospect for 4m 18s. Verified budget of ₦850,000,000 via corporate equity liquidation.",
+                  "SpaciaOS Voice Core engaged prospect for 4m 18s. Verified budget of ₦850,000,000 via corporate equity liquidation.",
                 category: "voice_call",
                 status: "completed",
                 actor: {
                   type: "ai_agent",
-                  name: "Spacia Voice Core",
+                  name: "SpaciaOS Voice Core",
                   role: "Autonomous Sales Associate",
                   modelIdentifier: "Neural Executive v2.4 (Lagos)",
                   latencyMs: 380,
@@ -1416,11 +1416,11 @@ export default function PrimitivesShowcasePage() {
                   id: "demo_2",
                   conversationId: "demo",
                   sender: "ai_agent",
-                  senderName: "Spacia AI Sales Associate",
+                  senderName: "SpaciaOS AI Sales Associate",
                   content: "Yes, Chief Cole. The Azuri Peninsula Smart Villa includes a deeded 60-ft private marina berth with 24/7 shore power at ₦450,000,000.",
                   timestamp: "2026-09-19T04:20:45Z",
                   aiMetadata: {
-                    model: "Spacia Voice & Chat v2.4",
+                    model: "SpaciaOS Voice & Chat v2.4",
                     latencyMs: 380,
                     confidence: 96,
                   },
@@ -1443,11 +1443,11 @@ export default function PrimitivesShowcasePage() {
                   id: "demo_3",
                   conversationId: "demo",
                   sender: "ai_agent",
-                  senderName: "Spacia AI Sales Associate",
+                  senderName: "SpaciaOS AI Sales Associate",
                   content: "Underwriting criteria met. Bank draft liquidity verified for Q3 acquisition window.",
                   timestamp: "2026-09-19T04:22:00Z",
                   aiMetadata: {
-                    model: "Spacia Voice & Chat v2.4",
+                    model: "SpaciaOS Voice & Chat v2.4",
                     latencyMs: 410,
                     confidence: 98,
                   },
@@ -1491,7 +1491,7 @@ export default function PrimitivesShowcasePage() {
                   id: "demo_6",
                   conversationId: "demo",
                   sender: "ai_agent",
-                  senderName: "Spacia AI Sales Associate",
+                  senderName: "SpaciaOS AI Sales Associate",
                   content: "VIP Physical viewing confirmed on connected calendar.",
                   timestamp: "2026-09-19T04:27:00Z",
                   artifact: {

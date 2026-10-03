@@ -296,7 +296,7 @@ export function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
                 className="flex w-full items-center gap-2 rounded-md px-2.5 py-1.5 text-xs font-medium text-rose-700 hover:bg-rose-50 hover:text-rose-800 transition-colors"
               >
                 <LogOut className="h-3.5 w-3.5 text-rose-600" />
-                <span>Sign out of Spacia</span>
+                <span>Sign out of SpaciaOS</span>
               </button>
             </div>
           )}

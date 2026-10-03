@@ -18,7 +18,7 @@ export function SharedHeader() {
               S
             </div>
             <span className="font-display font-bold text-base tracking-tight text-[#18181b]">
-              Spacia<span className="text-[#0d4a36]">OS</span>
+              SpaciaOS<span className="text-[#0d4a36]">OS</span>
             </span>
           </Link>
           <div className="hidden sm:inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-stone-100 border border-stone-200 text-[10px] font-mono text-stone-600">

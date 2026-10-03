@@ -79,13 +79,13 @@ const clerkAppearance = {
 const clerkLocalization = {
   signIn: {
     start: {
-      title: "Sign in to Spacia",
+      title: "Sign in to SpaciaOS",
       subtitle: "Welcome back. Every lead, still answered.",
     },
   },
   signUp: {
     start: {
-      title: "Create your Spacia account",
+      title: "Create your SpaciaOS account",
       subtitle: "Set up in minutes. We handle the rest.",
     },
   },

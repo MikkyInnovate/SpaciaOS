@@ -121,7 +121,7 @@ export const aiAgentConfigs = pgTable(
     greeting: text("greeting")
       .notNull()
       .default(
-        "Good day. Thank you for contacting Spacia. I am Amara, your personal luxury real estate advisor. How may I assist your property acquisition today?"
+        "Good day. Thank you for contacting SpaciaOS. I am Amara, your personal luxury real estate advisor. How may I assist your property acquisition today?"
       ),
     businessHours: jsonb("business_hours").$type<BusinessHoursConfig>().notNull().default({
       enabled: true,

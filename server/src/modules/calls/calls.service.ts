@@ -90,7 +90,7 @@ export class CallsService {
 
     // 2. Resolve Property Context if specified
     const propertyId = dto.propertyId || lead.propertyId || undefined;
-    let propertyTitle = "Spacia Luxury Portfolio";
+    let propertyTitle = "SpaciaOS Luxury Portfolio";
     let propertyLocation = lead.locationPreference || "Lagos";
 
     if (propertyId) {
@@ -315,7 +315,7 @@ export class CallsService {
       const transcript = transcriptMap.get(c.id);
       return this.toCallResponseDto(
         c,
-        "Spacia Portfolio",
+        "SpaciaOS Portfolio",
         "Lagos",
         "Declared",
         summary || null,
@@ -379,7 +379,7 @@ export class CallsService {
       )
       .limit(1);
 
-    let propertyTitle = "Spacia Luxury Portfolio";
+    let propertyTitle = "SpaciaOS Luxury Portfolio";
     let propertyLocation = "Lagos, Nigeria";
     let declaredBudget = "₦250,000,000";
 

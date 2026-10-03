@@ -454,7 +454,7 @@ export class AnalyticsService {
       {
         step: 2,
         key: "spacia_core",
-        label: "Spacia Ingestion",
+        label: "SpaciaOS Ingestion",
         description: "Idempotency reservation, deduplication & multi-tenant isolation",
         category: "ingestion",
         status: "operational",

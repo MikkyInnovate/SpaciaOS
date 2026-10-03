@@ -212,7 +212,7 @@ export function AIAgentConfigPresentation({
   };
 
   const handleResetToBaseline = async () => {
-    if (!confirm("Are you sure you want to reset all AI agent parameters to Spacia luxury baseline?")) {
+    if (!confirm("Are you sure you want to reset all AI agent parameters to SpaciaOS luxury baseline?")) {
       return;
     }
     setIsResetting(true);
@@ -222,7 +222,7 @@ export function AIAgentConfigPresentation({
       }
       setIsEditing(false);
       toast.info("Configuration Reset", {
-        description: "Restored baseline Spacia luxury settings.",
+        description: "Restored baseline SpaciaOS luxury settings.",
       });
     } catch {
       toast.error("Failed to reset configuration");

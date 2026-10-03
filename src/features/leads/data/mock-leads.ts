@@ -473,7 +473,7 @@ const RAW_MOCK_LEADS: Lead[] = [
         status: "retrying",
         actor: {
           type: "ai_agent",
-          name: "Spacia Voice Core",
+          name: "SpaciaOS Voice Core",
           role: "Autonomous Dialing Gateway",
           modelIdentifier: "SIP Relay v3 (Lagos)",
           latencyMs: 390,
@@ -500,11 +500,11 @@ const RAW_MOCK_LEADS: Lead[] = [
         title: "Autonomous Voice Qualification Completed",
         description: "Voice agent engaged prospect for 2m 45s. Verified budget of ₦85M and 30-day buying timeline.",
         timestamp: "9m ago",
-        channel: "Spacia Voice Core",
+        channel: "SpaciaOS Voice Core",
         status: "completed",
         actor: {
           type: "ai_agent",
-          name: "Spacia Voice Core",
+          name: "SpaciaOS Voice Core",
           role: "Autonomous Sales Associate",
           modelIdentifier: "Neural Executive v2.4 (Lagos Neutral)",
           latencyMs: 380,
@@ -618,7 +618,7 @@ const RAW_MOCK_LEADS: Lead[] = [
         title: "AI Voice Consultation & Calendar Discovery",
         description: "Autonomous voice engine checked broker availability and coordinated inspection date.",
         timestamp: "28m ago",
-        channel: "Spacia Voice Core",
+        channel: "SpaciaOS Voice Core",
         meta: {
           duration: "3m 12s",
           outcome: "Viewing Requested",
@@ -709,7 +709,7 @@ const RAW_MOCK_LEADS: Lead[] = [
         title: "Initial Autonomous Qualification Outreach",
         description: "AI addressed inquiries regarding service charges and deed of assignment timeline.",
         timestamp: "45m ago",
-        channel: "Spacia Voice Core",
+        channel: "SpaciaOS Voice Core",
         meta: {
           duration: "2m 10s",
           outcome: "Follow-up In Progress",
@@ -855,7 +855,7 @@ const RAW_MOCK_LEADS: Lead[] = [
         title: "VIP Autonomous Concierge Screening",
         description: "Concierge verified commercial criteria and property preferences.",
         timestamp: "2h 45m ago",
-        channel: "Spacia Voice Core",
+        channel: "SpaciaOS Voice Core",
         meta: {
           duration: "4m 15s",
           outcome: "Qualified — HOT (95/100)",
@@ -1011,7 +1011,7 @@ const RAW_MOCK_LEADS: Lead[] = [
         title: "Inspection Booked via AI",
         description: "Confirmed viewing slot for Saturday 11:00 AM.",
         timestamp: "5h ago",
-        channel: "Spacia Voice Core",
+        channel: "SpaciaOS Voice Core",
         meta: {
           brokerName: "Marcus Vance",
           viewingDate: "Saturday, 11:00 AM",
@@ -1251,7 +1251,7 @@ export const MOCK_DAY13_EXTENSIONS: Record<string, Partial<Lead>> = {
       directive: "Send curated Lekki Phase 1 capital appreciation report.",
       priority: "Routine",
       suggestedChannel: "email",
-      actionProtocol: "Dispatch Q3 Lekki luxury index PDF to keep Spacia top-of-mind.",
+      actionProtocol: "Dispatch Q3 Lekki luxury index PDF to keep SpaciaOS top-of-mind.",
       dueTimeFormatted: "In 14 days",
     },
   },

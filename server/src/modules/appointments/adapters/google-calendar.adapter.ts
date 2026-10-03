@@ -465,7 +465,7 @@ export class GoogleCalendarAdapter implements ICalendarProviderAdapter {
         const isVirtual = payload.meetingType === "video_call" || payload.meetingType === "virtual_tour";
         const googleEventPayload = {
           summary: `${payload.propertyTitle} - Inspection (${payload.leadName})`,
-          description: `${payload.notes || "Booked via Spacia OS"}\n\nClient Phone: ${payload.leadPhone || "N/A"}\nFormat: ${payload.meetingType}`,
+          description: `${payload.notes || "Booked via SpaciaOS OS"}\n\nClient Phone: ${payload.leadPhone || "N/A"}\nFormat: ${payload.meetingType}`,
           start: { dateTime: payload.startTime },
           end: { dateTime: payload.endTime },
           location: payload.location || payload.propertyTitle,

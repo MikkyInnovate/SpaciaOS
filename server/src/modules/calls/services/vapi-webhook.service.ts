@@ -106,7 +106,7 @@ export class VapiWebhookService {
       this.logger.warn(`Received webhook for unknown call: localId=${localCallId}, vapiId=${vapiCallId}`);
       throw new NotFoundException({
         code: "CALL_NOT_FOUND",
-        message: `Call record not found in Spacia database.`,
+        message: `Call record not found in SpaciaOS database.`,
       });
     }
 

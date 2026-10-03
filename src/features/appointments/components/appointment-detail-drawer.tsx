@@ -46,7 +46,7 @@ function providerLabel(provider?: Appointment["calendarProvider"]): string {
   if (provider === "google_calendar") return "Google Calendar";
   if (provider === "outlook") return "Outlook";
   if (provider === "cal_com") return "Cal.com";
-  return "Spacia calendar";
+  return "SpaciaOS calendar";
 }
 
 function referenceFor(appointment: Appointment): string {

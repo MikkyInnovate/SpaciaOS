@@ -132,7 +132,7 @@ export class CompanyPolicyService {
       category,
       policies: filtered,
       lastAuditedAt: "2026-09-20T00:00:00.000Z",
-      complianceOfficer: "Spacia Legal & Compliance Directorate",
+      complianceOfficer: "SpaciaOS Legal & Compliance Directorate",
     };
 
     const sourceVerification: SourceVerification = {

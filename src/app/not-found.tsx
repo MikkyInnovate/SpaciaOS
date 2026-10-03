@@ -7,7 +7,7 @@ export default function NotFound() {
   return (
     <div className="flex min-h-screen w-full flex-col bg-[#f4f4f2] px-5 py-5 sm:px-10">
       <header className="flex items-center justify-between">
-        <Link href="/" aria-label="Spacia home">
+        <Link href="/" aria-label="SpaciaOS home">
           <SpaciaLogo className="text-[19px]" />
         </Link>
         <span className="font-mono text-[11px] uppercase tracking-[0.14em] text-zinc-400">Error 404</span>

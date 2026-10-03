@@ -158,7 +158,7 @@ export function LeadDossierPanel({ lead, onClose, onTakeover, callEvent }: LeadD
                 <span>Executive AI Call Summary</span>
               </div>
               <p className="text-xs text-stone-800 leading-relaxed font-normal">
-                {callEvent?.summary || lead.aiNotes || "Inbound enquiry qualified by Spacia. All intent parameters verified."}
+                {callEvent?.summary || lead.aiNotes || "Inbound enquiry qualified by SpaciaOS. All intent parameters verified."}
               </p>
             </div>
 
@@ -193,7 +193,7 @@ export function LeadDossierPanel({ lead, onClose, onTakeover, callEvent }: LeadD
                     <div className="flex items-center justify-between text-[11px] font-semibold text-stone-700">
                       <span className="flex items-center gap-1">
                         <Sparkles className="h-3 w-3 text-emerald-700" />
-                        Spacia AI Agent
+                        SpaciaOS AI Agent
                       </span>
                       <span className="text-stone-400 font-mono">00:04</span>
                     </div>
@@ -216,7 +216,7 @@ export function LeadDossierPanel({ lead, onClose, onTakeover, callEvent }: LeadD
                     <div className="flex items-center justify-between text-[11px] font-semibold text-stone-700">
                       <span className="flex items-center gap-1">
                         <Sparkles className="h-3 w-3 text-emerald-700" />
-                        Spacia AI Agent
+                        SpaciaOS AI Agent
                       </span>
                       <span className="text-stone-400 font-mono">01:05</span>
                     </div>

@@ -200,7 +200,7 @@ export function LabSkyline({ mode, className }: { mode: LabMode; className?: str
       ripples = [];
       arcs = [];
       modeTag = null;
-      // Spacia hub: tallest tower in the mid-town cluster
+      // SpaciaOS hub: tallest tower in the mid-town cluster
       hub = candidates.reduce((best, i) => {
         const t = bMid(i) / w;
         if (t < 0.4 || t > 0.8) return best;

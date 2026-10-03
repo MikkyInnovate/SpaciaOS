@@ -202,7 +202,7 @@ export function LandingFooter() {
                       href="#about"
                       className="block text-sm font-semibold text-zinc-900 hover:text-[#15803d] transition-colors"
                     >
-                      About Spacia
+                      About SpaciaOS
                     </a>
                     <a
                       href="#testimonials"
@@ -235,7 +235,7 @@ export function LandingFooter() {
                       href="#about"
                       className="block text-sm font-semibold text-zinc-900 hover:text-[#15803d] transition-colors"
                     >
-                      About Spacia
+                      About SpaciaOS
                     </a>
                     <Link
                       href="/waitlist#perks"
@@ -263,7 +263,7 @@ export function LandingFooter() {
             {/* Bottom Row */}
             <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 mt-12">
               <div className="text-[12.5px] font-medium text-zinc-400">
-                © {new Date().getFullYear()} Spacia Technologies Ltd. All rights reserved.
+                © {new Date().getFullYear()} SpaciaOS Technologies Ltd. All rights reserved.
               </div>
 
               <div className="flex flex-col gap-3.5">

@@ -32,7 +32,7 @@ export interface AIActorDetails {
   type: "ai_agent";
   name: string;
   role: string;
-  modelIdentifier: string; // e.g. "Spacia Neural Voice Core v2.4"
+  modelIdentifier: string; // e.g. "SpaciaOS Neural Voice Core v2.4"
   latencyMs?: number;
   confidenceScore?: number; // 0-100
   isStreaming?: boolean;

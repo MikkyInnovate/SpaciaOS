@@ -25,11 +25,11 @@ import { currencyFromHeaders } from "@/components/variants/pixel/currency-region
 import { LandingIntro } from "@/components/variants/pixel/landing-intro";
 
 export const metadata: Metadata = {
-  title: { absolute: "Spacia · The AI Sales System for Real Estate" },
+  title: { absolute: "SpaciaOS · The AI Sales System for Real Estate" },
   description:
-    "Spacia installs an AI sales system into your real estate business. It answers every enquiry in seconds, qualifies and scores buyers, follows up, books viewings and hands your best leads to your agents.",
+    "SpaciaOS installs an AI sales system into your real estate business. It answers every enquiry in seconds, qualifies and scores buyers, follows up, books viewings and hands your best leads to your agents.",
   openGraph: {
-    title: "Spacia · The AI Sales System for Real Estate",
+    title: "SpaciaOS · The AI Sales System for Real Estate",
     description: "Answer, qualify, follow up and book viewings for every lead, automatically. Your team closes."
   },
 };

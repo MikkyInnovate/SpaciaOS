@@ -85,7 +85,7 @@ export function BookingConfirmationDialog({
 
   const confirmationSummary = appointment
     ? appointment.shareableSummary ||
-      `Property Inspection Confirmed — Spacia
+      `Property Inspection Confirmed — SpaciaOS
 Reference: #${referenceCode}
 Listing: ${appointment.propertyTitle}
 Location: ${appointment.location}

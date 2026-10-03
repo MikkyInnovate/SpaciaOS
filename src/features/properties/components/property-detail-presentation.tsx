@@ -94,7 +94,7 @@ Here is the exclusive portfolio dossier for ${property.title}:
 
 Would you like to schedule a private physical inspection this week?
 
-— Spacia Real-Estate Sales Command`;
+— SpaciaOS Real-Estate Sales Command`;
 
     // Copy to clipboard
     if (typeof navigator !== "undefined" && navigator.clipboard) {
@@ -297,7 +297,7 @@ Would you like to schedule a private physical inspection this week?
       doc.rect(0, 282, 210, 15, "F");
       doc.setTextColor(140, 140, 140);
       doc.setFontSize(8);
-      doc.text("Spacia Real-Estate Sales OS • Confidential Investment Factsheet", 105, 290, { align: "center" });
+      doc.text("SpaciaOS Real-Estate Sales OS • Confidential Investment Factsheet", 105, 290, { align: "center" });
 
       // Save PDF file
       const fileName = `${property.slug || property.id}-brochure.pdf`;

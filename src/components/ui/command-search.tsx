@@ -385,7 +385,7 @@ export function CommandSearch({ open, onOpenChange }: CommandSearchProps) {
           <div className="flex items-center gap-1.5">
             <Bot className="h-3.5 w-3.5 text-[#0d4a36]" />
             <span className="font-medium text-stone-700">
-              Spacia Command Intelligence
+              SpaciaOS Command Intelligence
             </span>
             {currentWorkspace && (
               <span className="text-stone-400 hidden sm:inline">

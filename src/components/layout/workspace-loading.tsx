@@ -1,7 +1,7 @@
 import { SpaciaMark } from "@/components/brand/spacia-logo";
 
 /* Route loading screen (dashboard and app pages). Pure CSS so it animates before any
-   JavaScript runs: the Spacia mark breathes and a light sweeps along a pixel bar. */
+   JavaScript runs: the SpaciaOS mark breathes and a light sweeps along a pixel bar. */
 
 const CELLS = 18;
 

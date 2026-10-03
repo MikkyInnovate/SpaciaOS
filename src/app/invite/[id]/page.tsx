@@ -228,7 +228,7 @@ export default function InviteOnboardingPage() {
       <div className="hidden lg:block relative h-full max-h-screen w-full lg:w-1/2 bg-stone-950 overflow-hidden">
         <Image
           src="/images/auth-real-estate.jpg"
-          alt="Spacia Real Estate Advisory"
+          alt="SpaciaOS Real Estate Advisory"
           fill
           priority
           sizes="50vw"

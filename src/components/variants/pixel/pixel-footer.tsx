@@ -49,7 +49,7 @@ const COLUMNS: { title: FooterKey; links: { label: FooterKey | { tool: MarqueeKe
   },
 ];
 
-// TODO: swap in Spacia's real profile URLs
+// TODO: swap in SpaciaOS's real profile URLs
 const SOCIALS = [
   { name: "LinkedIn", icon: "linkedin", href: "https://www.linkedin.com/" },
   { name: "Instagram", icon: "instagram", href: "https://www.instagram.com/" },
@@ -175,7 +175,7 @@ export function PixelFooter() {
         {/* bottom row */}
         <div className="mt-14 grid items-end gap-10 lg:mt-20 lg:grid-cols-[1fr_auto]">
           <div className="font-display text-[clamp(64px,13vw,200px)] font-light leading-[0.86] tracking-[-0.055em] text-[#14231d]">
-            Spacia
+            SpaciaOS
             <span className="mt-6 block font-mono text-[11px] font-normal uppercase leading-snug tracking-[0.18em] text-zinc-400 sm:text-[12px]">
               © {new Date().getFullYear()} {t.rights} ·{" "}
               <Link href="/privacy" className="underline-offset-4 hover:text-[#15803d] hover:underline">

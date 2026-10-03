@@ -5,7 +5,7 @@ import {
 } from "../interfaces/notification.interface";
 
 /**
- * Base styling wrapper for luxury Spacia HTML emails
+ * Base styling wrapper for luxury SpaciaOS HTML emails
  */
 function wrapLuxuryEmail(title: string, bodyContent: string): string {
   return `<!DOCTYPE html>
@@ -33,14 +33,14 @@ function wrapLuxuryEmail(title: string, bodyContent: string): string {
 <body>
   <div class="container">
     <div class="header">
-      <div class="header-logo">Spacia</div>
+      <div class="header-logo">SpaciaOS</div>
       <div class="header-tag">Private Wealth & Luxury Real Estate</div>
     </div>
     <div class="content">
       ${bodyContent}
     </div>
     <div class="footer">
-      <p style="margin: 0 0 6px 0;">Spacia • Private Wealth &amp; Luxury Real Estate</p>
+      <p style="margin: 0 0 6px 0;">SpaciaOS • Private Wealth &amp; Luxury Real Estate</p>
       <p style="margin: 0;">This communication is confidential and intended solely for the recipient.</p>
     </div>
   </div>
@@ -66,7 +66,7 @@ export function renderProspectBookingConfirmation(data: ProspectConfirmationData
   const gcalEnd = formatGcalDate(data.scheduledEndAt);
   const gcalTitle = encodeURIComponent(`Property Inspection: ${data.propertyTitle}`);
   const gcalDetails = encodeURIComponent(
-    `Private Property Inspection with Spacia.\nBooking Reference: #${data.referenceCode}\nAssigned Closer: ${data.assignedBrokerName}\nFormat: ${data.meetingType.replace(/_/g, " ")}${data.gatePassCode ? `\nSecurity Pass: ${data.gatePassCode}` : ""}\nLocation: ${data.propertyLocation}${data.notes ? `\nNotes: ${data.notes}` : ""}`
+    `Private Property Inspection with SpaciaOS.\nBooking Reference: #${data.referenceCode}\nAssigned Closer: ${data.assignedBrokerName}\nFormat: ${data.meetingType.replace(/_/g, " ")}${data.gatePassCode ? `\nSecurity Pass: ${data.gatePassCode}` : ""}\nLocation: ${data.propertyLocation}${data.notes ? `\nNotes: ${data.notes}` : ""}`
   );
   const gcalLoc = encodeURIComponent(data.propertyLocation);
   const gcalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${gcalTitle}&dates=${gcalStart}/${gcalEnd}&details=${gcalDetails}&location=${gcalLoc}`;
@@ -123,7 +123,7 @@ export function renderProspectBookingConfirmation(data: ProspectConfirmationData
     <div class="card">
       <div class="section-title">Assigned Luxury Closer</div>
       <p style="margin: 0 0 4px 0; font-size: 13px; font-weight: 600; color: #1c1917;">${data.assignedBrokerName}</p>
-      <p style="margin: 0; font-size: 12px; color: #78716c;">Senior Luxury Real Estate Advisor • Spacia Advisory Group</p>
+      <p style="margin: 0; font-size: 12px; color: #78716c;">Senior Luxury Real Estate Advisor • SpaciaOS Advisory Group</p>
       ${data.assignedBrokerPhone ? `<p style="margin: 4px 0 0 0; font-size: 12px; color: #0d4a36;">Direct: ${data.assignedBrokerPhone}</p>` : ""}
     </div>
 
@@ -134,7 +134,7 @@ export function renderProspectBookingConfirmation(data: ProspectConfirmationData
   `;
 
   const html = wrapLuxuryEmail(subject, bodyContent);
-  const text = `Spacia - Viewing Confirmed: ${data.propertyTitle}\nRef: #${data.referenceCode}\nDate: ${formattedDate} (${formattedTime})\nLocation: ${data.propertyLocation}\nCloser: ${data.assignedBrokerName}\nSecurity Code: ${data.gatePassCode || "Standard access"}`;
+  const text = `SpaciaOS - Viewing Confirmed: ${data.propertyTitle}\nRef: #${data.referenceCode}\nDate: ${formattedDate} (${formattedTime})\nLocation: ${data.propertyLocation}\nCloser: ${data.assignedBrokerName}\nSecurity Code: ${data.gatePassCode || "Standard access"}`;
 
   return { subject, html, text };
 }
@@ -176,7 +176,7 @@ export function renderProspectViewingReminder(data: ProspectReminderData): { sub
       const gcalEnd = formatGcalDate(data.scheduledEndAt);
       const gcalTitle = encodeURIComponent(`Inspection Reminder: ${data.propertyTitle}`);
       const gcalDetails = encodeURIComponent(
-        `Upcoming Inspection with Spacia.\nRef: #${data.referenceCode}\nCloser: ${data.assignedBrokerName}\nLocation: ${data.propertyLocation}`
+        `Upcoming Inspection with SpaciaOS.\nRef: #${data.referenceCode}\nCloser: ${data.assignedBrokerName}\nLocation: ${data.propertyLocation}`
       );
       const gcalLoc = encodeURIComponent(data.propertyLocation);
       const gcalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${gcalTitle}&dates=${gcalStart}/${gcalEnd}&details=${gcalDetails}&location=${gcalLoc}`;
@@ -197,7 +197,7 @@ export function renderProspectViewingReminder(data: ProspectReminderData): { sub
   `;
 
   const html = wrapLuxuryEmail(subject, bodyContent);
-  const text = `Spacia Viewing Reminder: ${data.propertyTitle}\nTime: ${formattedDate} at ${formattedTime}\nAddress: ${data.propertyLocation}\nCloser: ${data.assignedBrokerName}\nGate Pass: ${data.gatePassCode || "Standard Access"}`;
+  const text = `SpaciaOS Viewing Reminder: ${data.propertyTitle}\nTime: ${formattedDate} at ${formattedTime}\nAddress: ${data.propertyLocation}\nCloser: ${data.assignedBrokerName}\nGate Pass: ${data.gatePassCode || "Standard Access"}`;
 
   return { subject, html, text };
 }
@@ -221,7 +221,7 @@ export function renderCompanyNewAppointmentAlert(data: CompanyAppointmentData): 
       <h1 style="font-size: 20px; font-weight: 700; color: #0d4a36; margin: 0;">New Appointment Secured</h1>
       <span class="${scoreBadgeClass}">${data.leadContext.scoreCategory} (${data.leadContext.score}/100)</span>
     </div>
-    <p style="font-size: 13px; color: #57534e; margin: 0 0 20px 0;">An inspection has been booked by an autonomously qualified prospect via Spacia.</p>
+    <p style="font-size: 13px; color: #57534e; margin: 0 0 20px 0;">An inspection has been booked by an autonomously qualified prospect via SpaciaOS.</p>
 
     <!-- 1. LEAD CONTEXT -->
     <div class="card">
@@ -324,7 +324,7 @@ export function renderCompanyNewAppointmentAlert(data: CompanyAppointmentData): 
   `;
 
   const html = wrapLuxuryEmail(subject, bodyContent);
-  const text = `Spacia Company Alert: New Viewing Booked\nProspect: ${data.leadContext.name} (${data.leadContext.score}/100)\nProperty: ${data.propertyContext.title} (${data.propertyContext.price})\nDate: ${formattedDate} at ${formattedTime}\nCloser: ${data.meetingDetails.assignedCloser}\nSummary: ${data.aiSummary.synthesis}`;
+  const text = `SpaciaOS Company Alert: New Viewing Booked\nProspect: ${data.leadContext.name} (${data.leadContext.score}/100)\nProperty: ${data.propertyContext.title} (${data.propertyContext.price})\nDate: ${formattedDate} at ${formattedTime}\nCloser: ${data.meetingDetails.assignedCloser}\nSummary: ${data.aiSummary.synthesis}`;
 
   return { subject, html, text };
 }

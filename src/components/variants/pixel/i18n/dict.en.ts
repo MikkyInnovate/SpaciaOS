@@ -9,7 +9,7 @@ export const en = {
   switcher: { label: "Language" },
 
   common: {
-    homeAria: "Spacia home",
+    homeAria: "SpaciaOS home",
     joinWaitlist: "Join waitlist",
     joinTheWaitlist: "Join the waitlist",
     seeHow: "See how it works",
@@ -22,7 +22,7 @@ export const en = {
     statusLabel: "Live",
     feed: ["Portal lead → called 00:03", "WhatsApp lead → qualified", "Ad lead → viewing booked", "Web lead → agent took over"],
     title: "Autonomous sales speed for luxury real estate.",
-    body: "Spacia is the AI sales system for real estate teams. It answers every new enquiry in seconds, qualifies and follows up with buyers, books viewings, and hands your best leads to your agents."
+    body: "SpaciaOS is the AI sales system for real estate teams. It answers every new enquiry in seconds, qualifies and follows up with buyers, books viewings, and hands your best leads to your agents."
   },
 
   marquee: {
@@ -151,11 +151,11 @@ export const en = {
     live: "Live",
     takeOver: "Take over",
     transcript: [
-      "Spacia · Hi Adaeze, calling about the Ikoyi duplex.",
+      "SpaciaOS · Hi Adaeze, calling about the Ikoyi duplex.",
       "Buyer · Is it still available?",
-      "Spacia · It is. What's your budget?",
+      "SpaciaOS · It is. What's your budget?",
       "Buyer · Around ₦450 million.",
-      "Spacia · Can you view Saturday at 10?",
+      "SpaciaOS · Can you view Saturday at 10?",
       "Buyer · Saturday works.",
     ],
     summary: "Summary · Budget ₦450m · Viewing Sat 10:00",
@@ -249,7 +249,7 @@ export const en = {
     waitlistSubtitle: "Everything teams ask before getting early access.",
     stillQuestion: "Still have a question?",
     stillBody: "Join the waitlist and reply to the welcome email. A real person on our team will answer.",
-    supportAlt: "A member of the Spacia team, smiling",
+    supportAlt: "A member of the SpaciaOS team, smiling",
     product: [
       { q: "Is this a chatbot?", a: "No. SpaciaOS makes real phone calls. It talks to the buyer, asks the right questions and books the inspection. No forms, no typing." },
       { q: "How fast does it call a new lead?", a: "Within seconds of the enquiry arriving, day or night, while the buyer is still looking at your listing." },
@@ -303,9 +303,9 @@ export const en = {
     specs: ["The AI sales system for real estate", "Answers every lead in under 3 seconds", "Qualifies, follows up · books viewings"],
     featureCaption: "Every listing, answered",
     featureAlts: ["A white villa with a pool", "A modern apartment building", "A bright, modern living room"],
-    rights: "Spacia Technologies Ltd. All rights reserved.",
+    rights: "SpaciaOS Technologies Ltd. All rights reserved.",
     backToTop: "Back to top",
-    socialAria: "Spacia on {name}",
+    socialAria: "SpaciaOS on {name}",
   },
 
   waitlistPage: {
@@ -407,8 +407,8 @@ export const en = {
         id: "who-we-are",
         title: "Who we are",
         blocks: [
-          { p: "Spacia Technologies Ltd (“Spacia”, “we”, “us”) builds and runs an AI sales system for real estate companies. This policy explains how we handle personal data when you visit our website, join our waitlist, or work with us as a customer." },
-          { p: "For data you give us directly (for example, joining the waitlist), Spacia is the **data controller**. For data our customers send through Spacia (for example, their buyers' enquiries), the customer is the controller and Spacia acts as their **data processor**. See “Data we process for our customers” below." },
+          { p: "SpaciaOS Technologies Ltd (“SpaciaOS”, “we”, “us”) builds and runs an AI sales system for real estate companies. This policy explains how we handle personal data when you visit our website, join our waitlist, or work with us as a customer." },
+          { p: "For data you give us directly (for example, joining the waitlist), SpaciaOS is the **data controller**. For data our customers send through SpaciaOS (for example, their buyers' enquiries), the customer is the controller and SpaciaOS acts as their **data processor**. See “Data we process for our customers” below." },
         ],
       },
       {
@@ -419,7 +419,7 @@ export const en = {
           { ul: ["Your work email address", "If you choose to tell us: your name, phone number, company name, company website and team size", "Your referral code, and the code of whoever invited you"] },
           { p: "Automatically, to keep the waitlist fair and free of spam:" },
           { ul: ["A one-way scrambled (hashed) version of your IP address, never the IP address itself", "Your browser type (user agent) and the time you signed up"] },
-          { p: "When you use your Spacia account, we also store your sign-in details and the settings and integrations you set up." },
+          { p: "When you use your SpaciaOS account, we also store your sign-in details and the settings and integrations you set up." },
         ],
       },
       {
@@ -441,15 +441,15 @@ export const en = {
         id: "customer-data",
         title: "Data we process for our customers",
         blocks: [
-          { p: "When a real estate company uses Spacia, we handle their buyers' enquiries on their behalf, including contact details, call recordings and transcripts, qualification answers and booked viewings." },
-          { p: "We process this data only to provide the service to that company and on their instructions. If you're a buyer who was contacted through Spacia, the real estate company you enquired with is responsible for your data, so please contact them first. We'll help them respond to your request." },
+          { p: "When a real estate company uses SpaciaOS, we handle their buyers' enquiries on their behalf, including contact details, call recordings and transcripts, qualification answers and booked viewings." },
+          { p: "We process this data only to provide the service to that company and on their instructions. If you're a buyer who was contacted through SpaciaOS, the real estate company you enquired with is responsible for your data, so please contact them first. We'll help them respond to your request." },
         ],
       },
       {
         id: "sharing",
         title: "Who we share it with",
         blocks: [
-          { p: "We use a small number of trusted service providers to run Spacia. They only process data for us:" },
+          { p: "We use a small number of trusted service providers to run SpaciaOS. They only process data for us:" },
           { ul: ["Cloud database hosting", "Email delivery (for example, waitlist confirmations)", "Secure account sign-in", "AI voice calling, for customers", "Integrations a customer chooses to connect, such as their calendar or CRM"] },
           { p: "We'll share the current list of providers on request." },
           { p: "We may also share data if the law requires it, or to protect our users and our service." },
@@ -492,7 +492,7 @@ export const en = {
           { p: "We don't use advertising or analytics trackers. We use essential cookies to keep you signed in, and store a few preferences in your browser (such as your chosen language). You can clear these in your browser settings at any time." },
         ],
       },
-      { id: "children", title: "Children", blocks: [{ p: "Spacia is a business service and isn't intended for anyone under 18." }] },
+      { id: "children", title: "Children", blocks: [{ p: "SpaciaOS is a business service and isn't intended for anyone under 18." }] },
       {
         id: "changes",
         title: "Changes to this policy",
@@ -501,7 +501,7 @@ export const en = {
       {
         id: "contact",
         title: "Contact us",
-        blocks: [{ p: "Questions or requests about your data: **{contact}**" }, { p: "Spacia Technologies Ltd, Lagos, Nigeria" }],
+        blocks: [{ p: "Questions or requests about your data: **{contact}**" }, { p: "SpaciaOS Technologies Ltd, Lagos, Nigeria" }],
       },
     ] as { id: string; title: string; blocks: Block[] }[],
   },

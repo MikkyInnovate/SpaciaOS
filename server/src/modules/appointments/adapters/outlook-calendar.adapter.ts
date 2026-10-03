@@ -187,7 +187,7 @@ export class OutlookCalendarAdapter implements ICalendarProviderAdapter {
           subject: `${payload.propertyTitle} - Inspection (${payload.leadName})`,
           body: {
             contentType: "HTML",
-            content: `<p>${payload.notes || "Booked via Spacia OS"}</p><p><b>Client Phone:</b> ${payload.leadPhone || "N/A"}</p><p><b>Format:</b> ${payload.meetingType}</p>`,
+            content: `<p>${payload.notes || "Booked via SpaciaOS OS"}</p><p><b>Client Phone:</b> ${payload.leadPhone || "N/A"}</p><p><b>Format:</b> ${payload.meetingType}</p>`,
           },
           start: { dateTime: payload.startTime, timeZone: "UTC" },
           end: { dateTime: payload.endTime, timeZone: "UTC" },

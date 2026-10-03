@@ -343,7 +343,7 @@ export function PixelFeatures() {
 
 /* Pricing ------------------------------------------------------------ */
 
-// Tiers per the Spacia business model: managed AI sales system, monthly fee + PAYG usage
+// Tiers per the SpaciaOS business model: managed AI sales system, monthly fee + PAYG usage
 const PLANS: { id: PlanId; featured: boolean }[] = [
   { id: "starter", featured: false },
   { id: "growth", featured: true },

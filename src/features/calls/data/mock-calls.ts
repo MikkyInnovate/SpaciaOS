@@ -52,7 +52,7 @@ export const MOCK_CALLS: Call[] = [
       {
         id: "turn_01",
         speaker: "agent",
-        speakerName: "Spacia AI Sales Associate",
+        speakerName: "SpaciaOS AI Sales Associate",
         timestamp: "00:04",
         timestampSeconds: 4,
         message:
@@ -74,7 +74,7 @@ export const MOCK_CALLS: Call[] = [
       {
         id: "turn_03",
         speaker: "agent",
-        speakerName: "Spacia AI Sales Associate",
+        speakerName: "SpaciaOS AI Sales Associate",
         timestamp: "00:54",
         timestampSeconds: 54,
         message:
@@ -97,7 +97,7 @@ export const MOCK_CALLS: Call[] = [
       {
         id: "turn_05",
         speaker: "agent",
-        speakerName: "Spacia AI Sales Associate",
+        speakerName: "SpaciaOS AI Sales Associate",
         timestamp: "02:05",
         timestampSeconds: 125,
         message:
@@ -118,7 +118,7 @@ export const MOCK_CALLS: Call[] = [
       {
         id: "turn_07",
         speaker: "agent",
-        speakerName: "Spacia AI Sales Associate",
+        speakerName: "SpaciaOS AI Sales Associate",
         timestamp: "03:12",
         timestampSeconds: 192,
         message:
@@ -188,11 +188,11 @@ export const MOCK_CALLS: Call[] = [
       {
         id: "turn_201",
         speaker: "agent",
-        speakerName: "Spacia AI Sales Associate",
+        speakerName: "SpaciaOS AI Sales Associate",
         timestamp: "00:05",
         timestampSeconds: 5,
         message:
-          "Good morning Ms. Jenkins. Alex from Spacia on behalf of Premier Realty regarding your inquiry for the Oceanfront Duplex in Eko Atlantic.",
+          "Good morning Ms. Jenkins. Alex from SpaciaOS on behalf of Premier Realty regarding your inquiry for the Oceanfront Duplex in Eko Atlantic.",
         sentiment: "neutral",
       },
       {
@@ -209,7 +209,7 @@ export const MOCK_CALLS: Call[] = [
       {
         id: "turn_203",
         speaker: "agent",
-        speakerName: "Spacia AI Sales Associate",
+        speakerName: "SpaciaOS AI Sales Associate",
         timestamp: "00:58",
         timestampSeconds: 58,
         message:
@@ -231,7 +231,7 @@ export const MOCK_CALLS: Call[] = [
       {
         id: "turn_205",
         speaker: "agent",
-        speakerName: "Spacia AI Sales Associate",
+        speakerName: "SpaciaOS AI Sales Associate",
         timestamp: "02:08",
         timestampSeconds: 128,
         message:
@@ -298,7 +298,7 @@ export const MOCK_CALLS: Call[] = [
       {
         id: "turn_301",
         speaker: "agent",
-        speakerName: "Spacia AI Sales Associate",
+        speakerName: "SpaciaOS AI Sales Associate",
         timestamp: "00:04",
         timestampSeconds: 4,
         message:
@@ -320,7 +320,7 @@ export const MOCK_CALLS: Call[] = [
       {
         id: "turn_303",
         speaker: "agent",
-        speakerName: "Spacia AI Sales Associate",
+        speakerName: "SpaciaOS AI Sales Associate",
         timestamp: "01:02",
         timestampSeconds: 62,
         message:
@@ -388,11 +388,11 @@ export const MOCK_CALLS: Call[] = [
       {
         id: "turn_401",
         speaker: "agent",
-        speakerName: "Spacia AI Sales Associate",
+        speakerName: "SpaciaOS AI Sales Associate",
         timestamp: "00:04",
         timestampSeconds: 4,
         message:
-          "Good afternoon Dr. Eze, Sarah from Spacia reaching out regarding your interest in the Maitama Smart Duplex.",
+          "Good afternoon Dr. Eze, Sarah from SpaciaOS reaching out regarding your interest in the Maitama Smart Duplex.",
         sentiment: "neutral",
       },
       {
@@ -465,11 +465,11 @@ export const MOCK_CALLS: Call[] = [
       {
         id: "turn_501",
         speaker: "agent",
-        speakerName: "Spacia AI Sales Associate",
+        speakerName: "SpaciaOS AI Sales Associate",
         timestamp: "00:04",
         timestampSeconds: 4,
         message:
-          "Good afternoon Alhaji Yusuf, this is Sarah from Spacia regarding your inquiry on the Victoria Island commercial parcel.",
+          "Good afternoon Alhaji Yusuf, this is Sarah from SpaciaOS regarding your inquiry on the Victoria Island commercial parcel.",
         sentiment: "neutral",
       },
       {
@@ -534,11 +534,11 @@ export const MOCK_CALLS: Call[] = [
       {
         id: "turn_601",
         speaker: "agent",
-        speakerName: "Spacia AI Sales Associate",
+        speakerName: "SpaciaOS AI Sales Associate",
         timestamp: "00:05",
         timestampSeconds: 5,
         message:
-          "Hello Mrs. Bakare, Sarah from Spacia following up on the Lekki Phase 1 terraced residence.",
+          "Hello Mrs. Bakare, Sarah from SpaciaOS following up on the Lekki Phase 1 terraced residence.",
         sentiment: "neutral",
       },
       {
@@ -556,7 +556,7 @@ export const MOCK_CALLS: Call[] = [
       {
         id: "turn_603",
         speaker: "agent",
-        speakerName: "Spacia AI Sales Associate",
+        speakerName: "SpaciaOS AI Sales Associate",
         timestamp: "00:58",
         timestampSeconds: 58,
         message:
@@ -608,11 +608,11 @@ export const MOCK_CALLS: Call[] = [
       {
         id: "turn_701",
         speaker: "agent",
-        speakerName: "Spacia AI Sales Associate",
+        speakerName: "SpaciaOS AI Sales Associate",
         timestamp: "00:08",
         timestampSeconds: 8,
         message:
-          "Hello Mr. Nwosu, this is Sarah from Spacia on behalf of Premier Realty following up on your inquiry for the Guzape Hillside Villa. I will leave our private brochure on your WhatsApp. Please feel free to reply at your convenience. Have a wonderful afternoon.",
+          "Hello Mr. Nwosu, this is Sarah from SpaciaOS on behalf of Premier Realty following up on your inquiry for the Guzape Hillside Villa. I will leave our private brochure on your WhatsApp. Please feel free to reply at your convenience. Have a wonderful afternoon.",
         sentiment: "neutral",
       },
     ],
@@ -663,11 +663,11 @@ export const MOCK_CALLS: Call[] = [
       {
         id: "turn_801",
         speaker: "agent",
-        speakerName: "Spacia AI Sales Associate",
+        speakerName: "SpaciaOS AI Sales Associate",
         timestamp: "00:04",
         timestampSeconds: 4,
         message:
-          "Good morning Ms. Adesina, Sarah from Spacia following up on the Bespoke Eco-Smart Villa in Alausa CBD.",
+          "Good morning Ms. Adesina, Sarah from SpaciaOS following up on the Bespoke Eco-Smart Villa in Alausa CBD.",
         sentiment: "neutral",
       },
       {

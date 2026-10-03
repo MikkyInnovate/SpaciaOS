@@ -5,7 +5,7 @@ import { useId } from "react";
 const STAR =
   "M0,-66 C5,-30 22,-7 54,0 C22,7 5,30 0,66 C-6,30 -30,7 -74,0 C-30,-7 -6,-30 0,-66 Z";
 
-/** The Spacia star mark. Inherits color via `currentColor`; the cuts are true gaps. */
+/** The SpaciaOS star mark. Inherits color via `currentColor`; the cuts are true gaps. */
 export function SpaciaMark({ className = "h-6 w-6", title }: { className?: string; title?: string }) {
   const mask = useId();
   return (
@@ -28,7 +28,7 @@ export function SpaciaMark({ className = "h-6 w-6", title }: { className?: strin
   );
 }
 
-/** Mark + "Spacia" wordmark. Size with `className` (font-size drives everything). */
+/** Mark + "SpaciaOS" wordmark. Size with `className` (font-size drives everything). */
 export function SpaciaLogo({ className = "text-[18px]", tone = "dark" }: { className?: string; tone?: "dark" | "light" }) {
   return (
     <span
@@ -37,7 +37,7 @@ export function SpaciaLogo({ className = "text-[18px]", tone = "dark" }: { class
       } ${className}`}
     >
       <SpaciaMark className="h-[1.35em] w-[1.35em] shrink-0" />
-      Spacia
+      SpaciaOS
     </span>
   );
 }

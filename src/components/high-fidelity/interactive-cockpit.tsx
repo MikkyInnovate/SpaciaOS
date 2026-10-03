@@ -233,7 +233,7 @@ export function InteractiveCockpit() {
                   }`}
                 >
                   <div className="flex items-center justify-between text-[10px] text-zinc-400 font-mono mb-0.5">
-                    <span>{turn.speaker === "ai" ? "Spacia AI" : scenario.name}</span>
+                    <span>{turn.speaker === "ai" ? "SpaciaOS AI" : scenario.name}</span>
                     <span>{turn.timestamp}</span>
                   </div>
                   <p>{turn.text}</p>

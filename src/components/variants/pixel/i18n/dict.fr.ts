@@ -8,7 +8,7 @@ export const fr: Dict = {
   switcher: { label: "Langue" },
 
   common: {
-    homeAria: "Accueil Spacia",
+    homeAria: "Accueil SpaciaOS",
     joinWaitlist: "Liste d'attente",
     joinTheWaitlist: "Rejoindre la liste d'attente",
     seeHow: "Voir comment ça marche",
@@ -21,7 +21,7 @@ export const fr: Dict = {
     statusLabel: "En direct",
     feed: ["Lead portail → appelé en 00:03", "Lead WhatsApp → qualifié", "Lead pub → visite réservée", "Lead web → repris par l'agent"],
     title: "La vitesse commerciale autonome pour l'immobilier de luxe.",
-    body: "Spacia est le système de vente IA des équipes immobilières. Il répond à chaque nouvelle demande en quelques secondes, qualifie et relance les acheteurs, réserve les visites et transmet vos meilleurs leads à vos agents."
+    body: "SpaciaOS est le système de vente IA des équipes immobilières. Il répond à chaque nouvelle demande en quelques secondes, qualifie et relance les acheteurs, réserve les visites et transmet vos meilleurs leads à vos agents."
   },
 
   marquee: {
@@ -150,11 +150,11 @@ export const fr: Dict = {
     live: "En direct",
     takeOver: "Reprendre",
     transcript: [
-      "Spacia · Bonjour Adaeze, je vous appelle pour le duplex d'Ikoyi.",
+      "SpaciaOS · Bonjour Adaeze, je vous appelle pour le duplex d'Ikoyi.",
       "Acheteur · Il est toujours disponible ?",
-      "Spacia · Oui. Quel est votre budget ?",
+      "SpaciaOS · Oui. Quel est votre budget ?",
       "Acheteur · Environ 450 millions de ₦.",
-      "Spacia · Une visite samedi à 10 h vous convient ?",
+      "SpaciaOS · Une visite samedi à 10 h vous convient ?",
       "Acheteur · Samedi, c'est parfait.",
     ],
     summary: "Résumé · Budget 450 M₦ · Visite sam. 10:00",
@@ -248,7 +248,7 @@ export const fr: Dict = {
     waitlistSubtitle: "Tout ce que les équipes demandent avant l'accès anticipé.",
     stillQuestion: "Encore une question ?",
     stillBody: "Rejoignez la liste d'attente et répondez à l'e-mail de bienvenue. Une vraie personne de notre équipe vous répondra.",
-    supportAlt: "Une membre souriante de l'équipe Spacia",
+    supportAlt: "Une membre souriante de l'équipe SpaciaOS",
     product: [
       { q: "Est-ce un chatbot ?", a: "Non. SpaciaOS passe de vrais appels téléphoniques. Il parle à l'acheteur, pose les bonnes questions et réserve la visite. Aucun formulaire, rien à taper." },
       { q: "En combien de temps appelle-t-il un nouveau lead ?", a: "Quelques secondes après l'arrivée de la demande, jour et nuit, pendant que l'acheteur consulte encore votre annonce." },
@@ -302,9 +302,9 @@ export const fr: Dict = {
     specs: ["Le système de vente IA pour l'immobilier", "Répond à chaque lead en moins de 3 secondes", "Qualifie, relance · réserve les visites"],
     featureCaption: "Chaque annonce, une réponse",
     featureAlts: ["Une villa blanche avec piscine", "Un immeuble d'appartements moderne", "Un salon lumineux et moderne"],
-    rights: "Spacia Technologies Ltd. Tous droits réservés.",
+    rights: "SpaciaOS Technologies Ltd. Tous droits réservés.",
     backToTop: "Haut de page",
-    socialAria: "Spacia sur {name}",
+    socialAria: "SpaciaOS sur {name}",
   },
 
   waitlistPage: {
@@ -405,8 +405,8 @@ export const fr: Dict = {
         id: "who-we-are",
         title: "Qui sommes-nous",
         blocks: [
-          { p: "Spacia Technologies Ltd (« Spacia », « nous ») conçoit et exploite un système de vente IA pour les entreprises immobilières. Cette politique explique comment nous traitons les données personnelles lorsque vous visitez notre site, rejoignez notre liste d'attente ou travaillez avec nous en tant que client." },
-          { p: "Pour les données que vous nous transmettez directement (par exemple en rejoignant la liste d'attente), Spacia est le **responsable du traitement**. Pour les données que nos clients font transiter par Spacia (par exemple les demandes de leurs acheteurs), le client est responsable du traitement et Spacia agit en tant que **sous-traitant**. Voir « Données traitées pour nos clients » ci-dessous." },
+          { p: "SpaciaOS Technologies Ltd (« SpaciaOS », « nous ») conçoit et exploite un système de vente IA pour les entreprises immobilières. Cette politique explique comment nous traitons les données personnelles lorsque vous visitez notre site, rejoignez notre liste d'attente ou travaillez avec nous en tant que client." },
+          { p: "Pour les données que vous nous transmettez directement (par exemple en rejoignant la liste d'attente), SpaciaOS est le **responsable du traitement**. Pour les données que nos clients font transiter par SpaciaOS (par exemple les demandes de leurs acheteurs), le client est responsable du traitement et SpaciaOS agit en tant que **sous-traitant**. Voir « Données traitées pour nos clients » ci-dessous." },
         ],
       },
       {
@@ -417,7 +417,7 @@ export const fr: Dict = {
           { ul: ["Votre adresse e-mail professionnelle", "Si vous choisissez de nous les communiquer : votre nom, numéro de téléphone, nom d'entreprise, site web et taille d'équipe", "Votre code de parrainage, et celui de la personne qui vous a invité"] },
           { p: "Automatiquement, pour garder la liste équitable et sans spam :" },
           { ul: ["Une version brouillée de manière irréversible (hachée) de votre adresse IP, jamais l'adresse IP elle-même", "Votre type de navigateur (user agent) et l'heure de votre inscription"] },
-          { p: "Lorsque vous utilisez votre compte Spacia, nous conservons également vos informations de connexion ainsi que les paramètres et intégrations que vous configurez." },
+          { p: "Lorsque vous utilisez votre compte SpaciaOS, nous conservons également vos informations de connexion ainsi que les paramètres et intégrations que vous configurez." },
         ],
       },
       {
@@ -439,15 +439,15 @@ export const fr: Dict = {
         id: "customer-data",
         title: "Données traitées pour nos clients",
         blocks: [
-          { p: "Lorsqu'une entreprise immobilière utilise Spacia, nous traitons pour son compte les demandes de ses acheteurs, y compris les coordonnées, les enregistrements et transcriptions d'appels, les réponses de qualification et les visites réservées." },
-          { p: "Nous traitons ces données uniquement pour fournir le service à cette entreprise et selon ses instructions. Si vous êtes un acheteur contacté via Spacia, l'entreprise immobilière auprès de laquelle vous vous êtes renseigné est responsable de vos données : contactez-la en premier. Nous l'aiderons à répondre à votre demande." },
+          { p: "Lorsqu'une entreprise immobilière utilise SpaciaOS, nous traitons pour son compte les demandes de ses acheteurs, y compris les coordonnées, les enregistrements et transcriptions d'appels, les réponses de qualification et les visites réservées." },
+          { p: "Nous traitons ces données uniquement pour fournir le service à cette entreprise et selon ses instructions. Si vous êtes un acheteur contacté via SpaciaOS, l'entreprise immobilière auprès de laquelle vous vous êtes renseigné est responsable de vos données : contactez-la en premier. Nous l'aiderons à répondre à votre demande." },
         ],
       },
       {
         id: "sharing",
         title: "Avec qui nous les partageons",
         blocks: [
-          { p: "Nous faisons appel à un petit nombre de prestataires de confiance pour faire fonctionner Spacia. Ils traitent les données uniquement pour notre compte :" },
+          { p: "Nous faisons appel à un petit nombre de prestataires de confiance pour faire fonctionner SpaciaOS. Ils traitent les données uniquement pour notre compte :" },
           { ul: ["Hébergement de base de données dans le cloud", "Envoi d'e-mails (par exemple, les confirmations d'inscription)", "Connexion sécurisée aux comptes", "Appels vocaux IA, pour nos clients", "Les intégrations qu'un client choisit de connecter, comme son agenda ou son CRM"] },
           { p: "Nous communiquons la liste à jour de nos prestataires sur demande." },
           { p: "Nous pouvons également partager des données si la loi l'exige, ou pour protéger nos utilisateurs et notre service." },
@@ -490,7 +490,7 @@ export const fr: Dict = {
           { p: "Nous n'utilisons ni traceurs publicitaires ni outils d'analyse. Nous utilisons des cookies essentiels pour vous garder connecté et enregistrons quelques préférences dans votre navigateur (comme la langue choisie). Vous pouvez les effacer à tout moment dans les réglages de votre navigateur." },
         ],
       },
-      { id: "children", title: "Mineurs", blocks: [{ p: "Spacia est un service professionnel et ne s'adresse pas aux moins de 18 ans." }] },
+      { id: "children", title: "Mineurs", blocks: [{ p: "SpaciaOS est un service professionnel et ne s'adresse pas aux moins de 18 ans." }] },
       {
         id: "changes",
         title: "Modifications de cette politique",
@@ -499,7 +499,7 @@ export const fr: Dict = {
       {
         id: "contact",
         title: "Nous contacter",
-        blocks: [{ p: "Questions ou demandes concernant vos données : **{contact}**" }, { p: "Spacia Technologies Ltd, Lagos, Nigeria" }],
+        blocks: [{ p: "Questions ou demandes concernant vos données : **{contact}**" }, { p: "SpaciaOS Technologies Ltd, Lagos, Nigeria" }],
       },
     ],
   },
