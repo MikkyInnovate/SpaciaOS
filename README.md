@@ -68,6 +68,35 @@ The app needs the backend running to show data. Without it, pages show empty sta
 
 ---
 
+## Deploying the waitlist to Cloudflare (branch `deploy/waitlist`)
+
+This branch is a **waitlist-only** build for Cloudflare Workers. It serves `/waitlist` (with `/` redirecting to it), `/privacy` and the 404 page. The app, sign-in and landing page are not included. The waitlist API (`/api/v1/waitlist/{stats,join,profile}`) runs inside the site itself (`src/app/api/v1/waitlist`, logic in `src/lib/waitlist/server.ts`), talking directly to Neon and Resend, so no separate backend server is needed.
+
+**One-time setup** (needs a free Cloudflare account):
+
+```bash
+npx wrangler login                          # opens the browser to authorise
+npx wrangler secret put DATABASE_URL        # paste the Neon connection string
+npx wrangler secret put RESEND_API_KEY      # optional: enables the welcome email
+npx wrangler secret put RESEND_FROM_EMAIL   # optional: e.g. "SpaciaOS <hello@yourdomain.com>"
+```
+
+**Deploy** (and redeploy after any change):
+
+```bash
+npm run deploy      # builds with OpenNext and uploads to Cloudflare
+```
+
+The site goes live at `https://spaciaos-waitlist.<your-account>.workers.dev`. A custom domain can be attached later in the Cloudflare dashboard (Workers & Pages → spaciaos-waitlist → Settings → Domains & Routes) without redeploying.
+
+**Local preview in the Workers runtime:** copy `.dev.vars.example` to `.dev.vars`, fill in the values, then run `npm run preview`.
+
+Notes:
+- Resend's test sender (`onboarding@resend.dev`) only delivers to the Resend account owner. Verify a domain in Resend to email every sign-up. Sign-ups are saved either way.
+- There's no per-IP rate limit on this build (the NestJS backend used Redis for that). Add a Cloudflare rate-limiting rule on `/api/v1/waitlist/*` if spam appears. The hidden honeypot field is still active.
+
+---
+
 ## 1. Project Overview & Product Summary
 
 Spacia acts as an automated sales acceleration layer positioned between inbound marketing channels (Meta Ads, Google, PropertyPortals, WhatsApp, Direct Calls) and real-estate sales teams:

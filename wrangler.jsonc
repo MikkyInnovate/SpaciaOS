@@ -1,0 +1,26 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "main": ".open-next/worker.js",
+  "name": "spaciaos-waitlist",
+  "compatibility_date": "2026-10-01",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "services": [
+    {
+      // Self-reference binding required by OpenNext (name must match the worker name)
+      "binding": "WORKER_SELF_REFERENCE",
+      "service": "spaciaos-waitlist"
+    }
+  ],
+  "observability": { "enabled": true },
+  "vars": {
+    "NEXT_PUBLIC_APP_NAME": "SpaciaOS"
+  }
+  // Secrets (set with `npx wrangler secret put <NAME>`, never committed):
+  //   DATABASE_URL       Neon connection string
+  //   RESEND_API_KEY     optional, enables the welcome email
+  //   RESEND_FROM_EMAIL  optional, e.g. "SpaciaOS <hello@yourdomain.com>"
+}

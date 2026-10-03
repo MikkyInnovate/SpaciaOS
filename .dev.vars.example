@@ -1,0 +1,4 @@
+# Copy to .dev.vars for local Workers preview (never commit .dev.vars)
+DATABASE_URL=postgresql://user:password@host/db?sslmode=require
+RESEND_API_KEY=
+RESEND_FROM_EMAIL=SpaciaOS <onboarding@resend.dev>
