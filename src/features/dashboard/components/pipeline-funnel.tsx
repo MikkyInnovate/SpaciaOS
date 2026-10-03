@@ -181,8 +181,8 @@ export function PipelineFunnel({
     <Card className="py-4 sm:py-0 bg-white border-border shadow-2xs">
       <CardHeader className="flex flex-col items-stretch border-b border-border p-0! sm:flex-row">
         <div className="flex flex-1 flex-col justify-center gap-1 px-6 py-4 sm:py-0">
-          <CardTitle className="font-display text-base font-bold text-stone-900">
-            Pipeline Progression & Conversion Trajectory
+          <CardTitle className="font-display text-[17px] font-normal tracking-[-0.02em] text-[#14231d]">
+            Lead pipeline
           </CardTitle>
           <CardDescription className="text-xs text-stone-500">
             {periodDescription}
@@ -210,7 +210,7 @@ export function PipelineFunnel({
                     {chartConfig[key].label}
                   </span>
                 </div>
-                <span className="font-display text-xl sm:text-2xl font-bold tracking-tight text-stone-900 tabular-nums">
+                <span className="font-display text-xl sm:text-2xl font-light tracking-[-0.03em] text-[#14231d] tabular-nums">
                   {totals[key].toLocaleString()}
                 </span>
               </button>
@@ -307,7 +307,7 @@ export function PipelineFunnel({
             <span className="text-[11px] font-semibold text-stone-500 uppercase tracking-wider">
               Speed to Lead
             </span>
-            <p className="font-display text-lg font-bold text-stone-900 mt-0.5">
+            <p className="font-display text-lg font-light tracking-[-0.02em] text-[#14231d] mt-0.5">
               {benchmarks?.speedToLead || "48s response"}
             </p>
             <span className="text-[11px] text-stone-500">
@@ -319,7 +319,7 @@ export function PipelineFunnel({
             <span className="text-[11px] font-semibold text-stone-500 uppercase tracking-wider">
               Qualification Accuracy
             </span>
-            <p className="font-display text-lg font-bold text-[#0d4a36] mt-0.5">
+            <p className="font-display text-lg font-light tracking-[-0.02em] text-[#15803d] mt-0.5">
               {benchmarks?.qualificationAccuracy ||
                 (totals.inquiries > 0
                   ? `${Math.round((totals.qualified / totals.inquiries) * 100)}% Verified`
@@ -332,9 +332,9 @@ export function PipelineFunnel({
 
           <div className="p-3 rounded-md border border-stone-200/80 bg-stone-50/50">
             <span className="text-[11px] font-semibold text-stone-500 uppercase tracking-wider">
-              Confirmed Viewings
+              Upcoming viewings
             </span>
-            <p className="font-display text-lg font-bold text-blue-600 mt-0.5">
+            <p className="font-display text-lg font-light tracking-[-0.02em] text-[#14231d] mt-0.5">
               {totals.viewings} Scheduled
             </p>
             <span className="text-[11px] text-stone-500">

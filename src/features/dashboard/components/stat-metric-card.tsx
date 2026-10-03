@@ -21,44 +21,19 @@ export interface StatMetricCardProps {
   isLoading?: boolean;
 }
 
-const VARIANT_STYLES: Record<
-  StatMetricVariant,
-  {
-    iconWrapper: string;
-    trend: string;
-    badge: string;
-  }
-> = {
-  sky: {
-    iconWrapper: "bg-sky-50 border-sky-200/80 text-sky-700",
-    trend: "text-sky-800 bg-sky-50/80 border-sky-200/70",
-    badge: "bg-sky-50 text-sky-700 border-sky-200",
-  },
-  amber: {
-    iconWrapper: "bg-amber-50 border-amber-200/80 text-amber-700",
-    trend: "text-amber-800 bg-amber-50/80 border-amber-200/70",
-    badge: "bg-amber-50 text-amber-700 border-amber-200",
-  },
-  emerald: {
-    iconWrapper: "bg-emerald-50 border-emerald-200/80 text-[#0d4a36]",
-    trend: "text-emerald-800 bg-emerald-50/80 border-emerald-200/70",
-    badge: "bg-emerald-50 text-emerald-700 border-emerald-200",
-  },
-  rose: {
-    iconWrapper: "bg-rose-50 border-rose-200/80 text-rose-700",
-    trend: "text-rose-800 bg-rose-50/80 border-rose-200/70",
-    badge: "bg-rose-50 text-rose-700 border-rose-200",
-  },
-  indigo: {
-    iconWrapper: "bg-indigo-50 border-indigo-200/80 text-indigo-700",
-    trend: "text-indigo-800 bg-indigo-50/80 border-indigo-200/70",
-    badge: "bg-indigo-50 text-indigo-700 border-indigo-200",
-  },
-  stone: {
-    iconWrapper: "bg-stone-50 border-stone-200/80 text-stone-600",
-    trend: "text-stone-700 bg-stone-50 border-stone-200/60",
-    badge: "bg-stone-100 text-stone-700 border-stone-200",
-  },
+// Restrained brand palette: neutral tiles, green for positive/qualified, rose only for urgency
+const CALM = {
+  iconWrapper: "bg-[#f7f7f5] border-zinc-200 text-zinc-500",
+  trend: "text-[#15803d] bg-[#15803d]/[0.07] border-[#15803d]/15",
+  badge: "bg-white text-zinc-600 border-zinc-200",
+};
+const VARIANT_STYLES: Record<StatMetricVariant, { iconWrapper: string; trend: string; badge: string }> = {
+  sky: CALM,
+  amber: CALM,
+  indigo: CALM,
+  stone: CALM,
+  emerald: { ...CALM, iconWrapper: "bg-[#15803d]/[0.07] border-[#15803d]/15 text-[#15803d]" },
+  rose: { ...CALM, iconWrapper: "bg-rose-50 border-rose-100 text-rose-600", badge: "bg-rose-50 text-rose-700 border-rose-100" },
 };
 
 export function StatMetricCard({
@@ -73,7 +48,7 @@ export function StatMetricCard({
 }: StatMetricCardProps) {
   if (isLoading) {
     return (
-      <Card className="bg-white border-stone-200/80 shadow-2xs">
+      <Card className="rounded-[8px] border-zinc-200 bg-white shadow-none">
         <CardContent className="p-4.5 space-y-2.5">
           <div className="flex items-center justify-between">
             <Skeleton className="h-3 w-20" />
@@ -92,15 +67,15 @@ export function StatMetricCard({
   const styles = VARIANT_STYLES[variant] || VARIANT_STYLES.stone;
 
   return (
-    <Card className="bg-white border-stone-200/80 shadow-2xs hover:border-stone-300 transition-colors">
+    <Card className="rounded-[8px] border-zinc-200 bg-white shadow-none transition-colors hover:border-[#15803d]/30">
       <CardContent className="p-4.5">
         <div className="flex items-center justify-between">
-          <span className="text-[11px] font-semibold text-stone-500 tracking-wider uppercase">
+          <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-zinc-500">
             {title}
           </span>
           <div
             className={cn(
-              "flex h-7 w-7 items-center justify-center rounded-lg border shadow-2xs shrink-0",
+              "flex h-7 w-7 shrink-0 items-center justify-center rounded-[6px] border",
               styles.iconWrapper
             )}
           >
@@ -108,14 +83,14 @@ export function StatMetricCard({
           </div>
         </div>
 
-        <div className="mt-2 flex items-center gap-2">
-          <span className="font-display text-2xl font-bold tracking-tight text-stone-900 tabular-nums leading-none">
+        <div className="mt-3 flex items-center gap-2">
+          <span className="font-display text-[32px] font-light leading-none tracking-[-0.035em] text-[#14231d] tabular-nums">
             {value}
           </span>
           {trend && (
             <span
               className={cn(
-                "inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[11px] font-semibold tabular-nums border leading-none shrink-0",
+                "inline-flex shrink-0 items-center gap-1 rounded-[4px] border px-1.5 py-0.5 text-[11px] font-medium leading-none tabular-nums",
                 trend.isPositive !== false ? styles.trend : "text-rose-700 bg-rose-50 border-rose-200"
               )}
             >
@@ -126,7 +101,7 @@ export function StatMetricCard({
           {badge && (
             <span
               className={cn(
-                "inline-flex items-center rounded-md px-1.5 py-0.5 text-[10px] font-semibold border leading-none shrink-0",
+                "inline-flex shrink-0 items-center rounded-[4px] border px-1.5 py-0.5 font-mono text-[10px] leading-none",
                 styles.badge
               )}
             >
@@ -135,7 +110,7 @@ export function StatMetricCard({
           )}
         </div>
 
-        <p className="mt-1 text-xs text-stone-500 font-normal truncate">{subtext}</p>
+        <p className="mt-2 truncate text-[12px] text-zinc-500">{subtext}</p>
       </CardContent>
     </Card>
   );

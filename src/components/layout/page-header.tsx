@@ -17,17 +17,17 @@ export function PageHeader({
   return (
     <div
       className={cn(
-        "flex flex-col gap-3 pb-3 pt-0 sm:flex-row sm:items-center sm:justify-between",
+        "flex flex-col gap-4 pb-4 pt-1 sm:flex-row sm:items-end sm:justify-between",
         className
       )}
       {...props}
     >
       <div className="space-y-1">
-        <h1 className="font-display text-2xl font-bold tracking-tight text-stone-900 sm:text-3xl">
+        <h1 className="font-display text-[28px] font-light leading-[1.05] tracking-[-0.035em] text-[#14231d] sm:text-[34px]">
           {title}
         </h1>
         {description && (
-          <p className="text-sm text-stone-500 font-normal">{description}</p>
+          <p className="text-[14px] text-zinc-500">{description}</p>
         )}
       </div>
       {actions && (

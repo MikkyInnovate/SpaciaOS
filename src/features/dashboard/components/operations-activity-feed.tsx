@@ -128,7 +128,7 @@ export function OperationsActivityFeed({
               <div className="flex h-7 w-7 items-center justify-center rounded-md bg-stone-100 text-stone-700 border border-stone-200">
                 <Activity className="h-4 w-4" aria-hidden="true" />
               </div>
-              <CardTitle className="font-display text-base font-bold text-stone-900">
+              <CardTitle className="font-display text-[17px] font-normal tracking-[-0.02em] text-[#14231d]">
                 History
               </CardTitle>
               <span className="flex items-center gap-1 text-[11px] font-medium text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
@@ -137,7 +137,7 @@ export function OperationsActivityFeed({
               </span>
             </div>
             <CardDescription className="text-xs text-stone-500">
-              Chronological unified audit log of inbound calls, viewings, notifications & agent handoffs.
+              Calls, viewings, alerts and handoffs, newest first.
             </CardDescription>
           </div>
 

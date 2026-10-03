@@ -31,7 +31,6 @@ import {
   CheckCircle2,
   Flame,
   CalendarCheck,
-  Building2,
   Download,
   Loader2,
   X,
@@ -193,18 +192,13 @@ export default function DashboardPage() {
     <Container size="lg" className="space-y-4">
       {/* Workspace Command Header */}
       <PageHeader
-        title="Sales Command Center"
-        description="Autonomous prospect response, qualification, viewing pipeline & broker intervention cockpit."
+        title="Overview"
+        description="Today's leads, calls and viewings at a glance."
         actions={
           <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1.5 h-8 rounded-md border border-stone-200 bg-white px-2.5 text-xs font-medium text-stone-700 shadow-2xs whitespace-nowrap">
-              <Building2 className="h-3.5 w-3.5 text-stone-400 shrink-0" aria-hidden="true" />
-              <span>{currentWorkspace?.name || "Spacia Luxury Hub"}</span>
-            </div>
-
-            <div className="flex items-center gap-1.5 h-8 rounded-md border border-stone-200 bg-white px-2.5 text-xs font-medium text-stone-700 shadow-2xs whitespace-nowrap">
-              <span className="h-1.5 w-1.5 rounded-full bg-emerald-600 shrink-0 animate-pulse" />
-              <span>AI Core: Active</span>
+            <div className="flex h-8 items-center gap-2 whitespace-nowrap rounded-[6px] border border-zinc-200 bg-white px-2.5 font-mono text-[10px] uppercase tracking-[0.14em] text-zinc-700">
+              <span className="h-1.5 w-1.5 shrink-0 animate-pulse rounded-full bg-[#15803d]" />
+              <span>AI agent · On</span>
             </div>
 
             <Button
@@ -212,7 +206,7 @@ export default function DashboardPage() {
               size="sm"
               onClick={handleExport}
               disabled={isExporting}
-              className="h-8 gap-1.5 text-xs text-stone-700 bg-white shadow-2xs whitespace-nowrap hover:bg-stone-50 cursor-pointer"
+              className="h-8 cursor-pointer gap-1.5 whitespace-nowrap rounded-[6px] border-zinc-200 bg-white text-[12px] text-zinc-700 shadow-none hover:border-[#15803d]/40 hover:bg-white hover:text-zinc-950"
             >
               {isExporting ? (
                 <>
@@ -221,8 +215,8 @@ export default function DashboardPage() {
                 </>
               ) : (
                 <>
-                  <Download className="h-3.5 w-3.5 text-stone-400 shrink-0" />
-                  <span>Export</span>
+                  <Download className="h-3.5 w-3.5 shrink-0 text-zinc-400" />
+                  <span>Export CSV</span>
                 </>
               )}
             </Button>
@@ -235,8 +229,8 @@ export default function DashboardPage() {
         <div className="rounded-lg border border-rose-200 bg-rose-50/80 p-3 flex items-center justify-between text-xs text-rose-900 shadow-xs animate-in fade-in-50">
           <div className="flex items-center gap-2">
             <span className="h-2 w-2 rounded-full bg-rose-600 animate-pulse" />
-            <span className="font-semibold">Human Broker Takeover Active for {takeoverBanner}.</span>
-            <span className="text-rose-700">Autonomous AI communications paused. Direct closer intervention required.</span>
+            <span className="font-semibold">You&apos;ve taken over {takeoverBanner}&apos;s call.</span>
+            <span className="text-rose-700">The AI agent is paused for this lead.</span>
           </div>
           <Button
             size="sm"
@@ -253,12 +247,12 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* 1. INBOUND LEADS */}
         <StatMetricCard
-          title="Inbound Leads"
+          title="New leads"
           value={metrics ? metrics.leads.total : 0}
           subtext={
             metrics
-              ? `${metrics.leads.today} new inquiries today`
-              : "Live telemetry"
+              ? `${metrics.leads.today} new today`
+              : "Updating…"
           }
           trend={{
             value: metrics?.leads.trend || "+0%",
@@ -271,7 +265,7 @@ export default function DashboardPage() {
 
         {/* 2. QUALIFIED INTENT */}
         <StatMetricCard
-          title="Qualified Intent"
+          title="Qualified"
           value={metrics ? metrics.qualified.total : 0}
           subtext={
             metrics
@@ -289,14 +283,14 @@ export default function DashboardPage() {
 
         {/* 3. HOT PROSPECTS */}
         <StatMetricCard
-          title="Hot Prospects"
+          title="Hot leads"
           value={metrics ? metrics.hot.total : 0}
           subtext={
             metrics?.hot.urgentAttentionCount
               ? `${metrics.hot.urgentAttentionCount} unbooked urgent`
               : metrics?.handoffs.pendingActionCount
               ? `${metrics.handoffs.pendingActionCount} pending takeovers`
-              : "High transaction intent"
+              : "Ready to buy soon"
           }
           badge="Score ≥ 85"
           icon={Flame}
@@ -306,7 +300,7 @@ export default function DashboardPage() {
 
         {/* 4. BOOKED VIEWINGS */}
         <StatMetricCard
-          title="Booked Viewings"
+          title="Viewings booked"
           value={metrics ? metrics.viewings.total : 0}
           subtext={
             metrics
@@ -329,7 +323,7 @@ export default function DashboardPage() {
         <div className="space-y-3">
           <div className="flex items-center justify-between text-xs text-stone-500 px-1">
             <span className="font-medium text-stone-700">
-              Inspecting Lead: <strong className="text-stone-900">{selectedLead.name}</strong> • AI Call Transcript
+              <strong className="text-zinc-950">{selectedLead.name}</strong> · Call transcript
             </span>
             <button
               type="button"
@@ -337,7 +331,7 @@ export default function DashboardPage() {
               className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md border border-stone-200 bg-white text-stone-600 hover:text-stone-900 hover:bg-stone-100 shadow-2xs font-medium text-xs transition-colors cursor-pointer"
             >
               <X className="h-3.5 w-3.5 text-stone-500" />
-              <span>Close Split</span>
+              <span>Close</span>
             </button>
           </div>
 

@@ -2,7 +2,7 @@ import type { NavSection } from "@/types/navigation";
 
 export const NAVIGATION_SECTIONS: NavSection[] = [
   {
-    label: "Sales Command",
+    label: "Sales",
     items: [
       {
         title: "Overview",
@@ -37,7 +37,7 @@ export const NAVIGATION_SECTIONS: NavSection[] = [
     ],
   },
   {
-    label: "Management",
+    label: "Workspace",
     items: [
       {
         title: "AI Sales Agent",
