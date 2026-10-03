@@ -19,6 +19,12 @@ export const waitlistSubscribers = pgTable(
     ipHash: varchar("ip_hash", { length: 64 }),
     userAgent: varchar("user_agent", { length: 255 }),
     status: varchar("status", { length: 32 }).notNull().default("pending"),
+    // Optional "about your team" details, collected after joining
+    fullName: varchar("full_name", { length: 120 }),
+    phone: varchar("phone", { length: 32 }), // E.164, e.g. +2348012345678
+    companyName: varchar("company_name", { length: 160 }),
+    companyWebsite: varchar("company_website", { length: 255 }),
+    teamSize: varchar("team_size", { length: 16 }),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },

@@ -1,0 +1,1 @@
+ALTER TABLE "waitlist_subscribers" ADD COLUMN IF NOT EXISTS "phone" varchar(32);

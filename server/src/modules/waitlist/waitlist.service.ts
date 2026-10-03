@@ -2,16 +2,19 @@ import {
   Injectable,
   Inject,
   Logger,
+  NotFoundException,
   Optional,
 } from "@nestjs/common";
-import { eq, count } from "drizzle-orm";
+import { eq, count, gte } from "drizzle-orm";
 import * as crypto from "crypto";
 import { DRIZZLE_DATABASE, DrizzleDb } from "../../database/database.provider";
 import * as schema from "../../database/schema";
 import { JoinWaitlistDto } from "./dto/join-waitlist.dto";
+import { UpdateWaitlistProfileDto } from "./dto/update-waitlist-profile.dto";
 import {
   WaitlistJoinResponseDto,
   WaitlistStatsResponseDto,
+  WaitlistProfileResponseDto,
 } from "./dto/waitlist-response.dto";
 import { ResendNotificationAdapter } from "../notifications/adapters/resend-notification.adapter";
 
@@ -25,7 +28,6 @@ export class WaitlistService {
   private readonly logger = new Logger(WaitlistService.name);
   private static cachedStats: CachedStats | null = null;
   private readonly CACHE_TTL_MS = 15000; // 15 seconds
-  private readonly BASE_WAITLIST_OFFSET = 1240; // Strategic social proof offset
 
   constructor(
     @Inject(DRIZZLE_DATABASE)
@@ -46,11 +48,13 @@ export class WaitlistService {
     // 1. Invisible Honeypot Guard: If bot filled the hidden input, drop silently
     if (dto.honeypot && dto.honeypot.trim().length > 0) {
       this.logger.warn(`[Waitlist Anti-Bot] Trapped bot submission with honeypot value: "${dto.honeypot.substring(0, 20)}"`);
+      // Look plausible to the bot without saving anything or inventing inflated numbers
+      const botStats = await this.getStats();
       return {
         success: true,
-        message: "You're on the priority waitlist.",
-        position: this.BASE_WAITLIST_OFFSET + 77,
-        totalCount: this.BASE_WAITLIST_OFFSET + 77,
+        message: "You're on the waitlist.",
+        position: botStats.totalCount + 1,
+        totalCount: botStats.totalCount + 1,
         referralCode: "SPACIA-VIP",
         alreadyJoined: false,
         maskedEmail: this.maskEmail(dto.email),
@@ -69,10 +73,10 @@ export class WaitlistService {
     const stats = await this.getStats();
 
     if (existing) {
-      const position = this.BASE_WAITLIST_OFFSET + existing.sequenceNumber;
+      const position = existing.sequenceNumber;
       return {
         success: true,
-        message: `You're already on the priority list! Your reserved position is #${position}.`,
+        message: `You're already on the waitlist. Your position is #${position}.`,
         position,
         totalCount: stats.totalCount,
         referralCode: existing.referralCode,
@@ -123,10 +127,10 @@ export class WaitlistService {
           .limit(1);
 
         if (reFetched) {
-          const position = this.BASE_WAITLIST_OFFSET + reFetched.sequenceNumber;
+          const position = reFetched.sequenceNumber;
           return {
             success: true,
-            message: `You're already on the priority list! Your reserved position is #${position}.`,
+            message: `You're already on the waitlist. Your position is #${position}.`,
             position,
             totalCount: stats.totalCount,
             referralCode: reFetched.referralCode,
@@ -139,8 +143,8 @@ export class WaitlistService {
       throw err;
     }
 
-    const assignedPosition = this.BASE_WAITLIST_OFFSET + subscriber.sequenceNumber;
-    const updatedTotal = this.BASE_WAITLIST_OFFSET + subscriber.sequenceNumber;
+    const assignedPosition = subscriber.sequenceNumber;
+    const updatedTotal = rawCount + 1;
 
     // 4. Asynchronous Welcome Email Dispatch (Fire-and-forget, non-blocking)
     this.dispatchWelcomeEmail(email, assignedPosition, referralCode).catch((emailErr) => {
@@ -149,7 +153,7 @@ export class WaitlistService {
 
     return {
       success: true,
-      message: `Welcome to SpaciaOS! You are reserved at position #${assignedPosition}.`,
+      message: `Welcome to SpaciaOS! You are #${assignedPosition}.`,
       position: assignedPosition,
       totalCount: updatedTotal,
       referralCode,
@@ -159,7 +163,33 @@ export class WaitlistService {
   }
 
   /**
-   * Fast, cached waitlist metrics for live odometer rendering on public landing/waitlist pages.
+   * Adds the optional "about your team" details after someone has joined.
+   * Looked up by the subscriber's own referral code (returned only to them on join).
+   */
+  async updateProfile(dto: UpdateWaitlistProfileDto): Promise<WaitlistProfileResponseDto> {
+    const code = dto.referralCode.trim().toUpperCase();
+    const [updated] = await this.db
+      .update(schema.waitlistSubscribers)
+      .set({
+        fullName: dto.fullName.trim(),
+        phone: dto.phone,
+        companyName: dto.companyName.trim(),
+        companyWebsite: dto.companyWebsite ? dto.companyWebsite : null,
+        teamSize: dto.teamSize ?? null,
+        updatedAt: new Date(),
+      })
+      .where(eq(schema.waitlistSubscribers.referralCode, code))
+      .returning({ sequenceNumber: schema.waitlistSubscribers.sequenceNumber });
+
+    if (!updated) {
+      throw new NotFoundException("We couldn't find your waitlist spot. Please join again with your email.");
+    }
+    return { success: true, position: updated.sequenceNumber };
+  }
+
+  /**
+   * Real waitlist metrics (short cache) for the public landing/waitlist pages.
+   * No offsets or synthetic numbers: what's in the table is what's reported.
    */
   async getStats(): Promise<WaitlistStatsResponseDto> {
     const now = Date.now();
@@ -171,16 +201,16 @@ export class WaitlistService {
       const [countResult] = await this.db
         .select({ value: count() })
         .from(schema.waitlistSubscribers);
-
-      const actualDbCount = Number(countResult?.value || 0);
-      const totalCount = this.BASE_WAITLIST_OFFSET + actualDbCount;
-      const activeToday = 42 + (actualDbCount % 19);
+      const [todayResult] = await this.db
+        .select({ value: count() })
+        .from(schema.waitlistSubscribers)
+        .where(gte(schema.waitlistSubscribers.createdAt, new Date(now - 24 * 60 * 60 * 1000)));
 
       const stats: WaitlistStatsResponseDto = {
-        totalCount,
-        activeToday,
-        growthPercentage: 18.4,
-        recentMilestone: "1,200+ Luxury Developers & Brokers",
+        totalCount: Number(countResult?.value || 0),
+        activeToday: Number(todayResult?.value || 0),
+        growthPercentage: null,
+        recentMilestone: null,
       };
 
       WaitlistService.cachedStats = {
@@ -191,13 +221,8 @@ export class WaitlistService {
       return stats;
     } catch (err: any) {
       this.logger.error(`Error fetching waitlist stats: ${err.message}`);
-      // Fallback baseline in case of transient DB warmup
-      return {
-        totalCount: this.BASE_WAITLIST_OFFSET,
-        activeToday: 38,
-        growthPercentage: 15.2,
-        recentMilestone: "1,200+ Luxury Developers & Brokers",
-      };
+      // Honest fallback: report nothing rather than invent a number
+      return { totalCount: 0, activeToday: 0, growthPercentage: null, recentMilestone: null };
     }
   }
 
@@ -225,13 +250,12 @@ export class WaitlistService {
           </p>
 
           <div style="background-color: #f5f5f4; border: 1px solid #d6d3d1; border-radius: 8px; padding: 20px; margin: 28px 0; text-align: center;">
-            <div style="font-size: 12px; font-weight: 600; text-transform: uppercase; color: #78716c; letter-spacing: 1px;">Your Reserved Waitlist Priority</div>
+            <div style="font-size: 12px; font-weight: 600; text-transform: uppercase; color: #78716c; letter-spacing: 1px;">Your waitlist position</div>
             <div style="font-size: 44px; font-weight: 800; color: #0d4a36; margin: 8px 0;">#${position}</div>
-            <div style="font-size: 13px; color: #57534e;">Priority Batch: Alpha Cohort 1</div>
           </div>
 
           <div style="margin-top: 24px;">
-            <h3 style="font-size: 14px; font-weight: 600; color: #1c1917; margin-bottom: 8px;">Want to move up 25 spots?</h3>
+            <h3 style="font-size: 14px; font-weight: 600; color: #1c1917; margin-bottom: 8px;">Know a team that should join?</h3>
             <p style="color: #57534e; font-size: 13px; line-height: 1.5; margin: 0 0 12px 0;">
               Share your personal invite link with real estate colleagues or your sales team:
             </p>
@@ -249,7 +273,7 @@ export class WaitlistService {
 
     await this.resendAdapter.sendEmail({
       to: toEmail,
-      subject: `Access Confirmed: You're #${position} on the SpaciaOS Priority List`,
+      subject: `You're #${position} on the SpaciaOS waitlist`,
       html,
     });
   }

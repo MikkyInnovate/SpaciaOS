@@ -50,6 +50,20 @@
       "when": 1790689000000,
       "tag": "0006_waitlist",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1791044391715,
+      "tag": "0007_waitlist_profile",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1791045332429,
+      "tag": "0008_waitlist_phone",
+      "breakpoints": true
     }
   ]
 }
