@@ -5,6 +5,7 @@ import { AnimatePresence, motion, useInView, useReducedMotion } from "motion/rea
 import { Building2, Check, Megaphone, MessageCircle, PhoneCall } from "lucide-react";
 import { EnterGroup, EnterItem } from "./enter";
 import { useT } from "./i18n";
+import { SpaciaMark } from "@/components/brand/spacia-logo";
 
 /**
  * "Speed to lead" scene: a looping, pixel-styled story of one lead.
@@ -132,11 +133,7 @@ export function SpeedToLeadScene() {
 
         {/* SpaciaOS node */}
         <EnterItem from="scale" className="flex items-center justify-center gap-3 self-center bg-[#0d4a36] px-4 py-3 text-white">
-          <span className="grid h-6 w-6 grid-cols-3 gap-px" aria-hidden="true">
-            {[1, 1, 0, 1, 0, 0, 1, 1, 1].map((on, i) => (
-              <span key={i} className={on ? "bg-[#22c55e]" : "bg-white/10"} />
-            ))}
-          </span>
+          <SpaciaMark className="h-6 w-6 text-[#22c55e]" />
           <span className="font-mono text-[11px] uppercase tracking-[0.14em]">SpaciaOS</span>
         </EnterItem>
 

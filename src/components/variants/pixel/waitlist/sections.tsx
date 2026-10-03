@@ -11,6 +11,7 @@ import { FaqAside } from "../faq-aside";
 import { FaqAccordion } from "../faq-accordion";
 import { MascotSip } from "../mascot-sip";
 import { useT } from "../i18n";
+import { SpaciaMark } from "@/components/brand/spacia-logo";
 
 // Early access opens: countdown target (fixed date so every visitor sees the same time left)
 const BATCH_2_OPENS = "2026-10-23T09:00:00+01:00";
@@ -135,10 +136,8 @@ export function PixelTeamNote() {
               ))}
             </dl>
             <div className="mt-6 flex items-center gap-3 border-t border-dashed border-zinc-300 pt-5">
-              <span className="grid h-8 w-8 grid-cols-3 gap-px bg-zinc-100 p-1" aria-hidden="true">
-                {[1, 1, 0, 1, 0, 0, 1, 1, 1].map((on, i) => (
-                  <span key={i} className={on ? "bg-[#15803d]" : ""} />
-                ))}
+              <span className="flex h-8 w-8 items-center justify-center bg-zinc-100 text-[#0e6121]" aria-hidden="true">
+                <SpaciaMark className="h-5 w-5" />
               </span>
               <div className="leading-tight">
                 <div className="text-[13px] font-medium text-zinc-950">{t.waitlistPage.team}</div>
