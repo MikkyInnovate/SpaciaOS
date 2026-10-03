@@ -113,7 +113,7 @@ export class ConversationMemoryService {
         workspaceId,
         conversationId,
         senderType,
-        senderName: senderName || (senderType === "ai_agent" ? "Spacia AI" : "Prospect"),
+        senderName: senderName || (senderType === "ai_agent" ? "SpaciaOS AI" : "Prospect"),
         content,
         deliveryStatus: "delivered",
         aiMetadata: aiMetadata || {},

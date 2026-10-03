@@ -53,7 +53,7 @@ export class VapiClientService {
         variableValues: {
           leadName: params.leadName,
           leadBudget: params.leadBudget || "Market Tier",
-          propertyTitle: params.propertyTitle || "Exclusive Spacia Portfolio",
+          propertyTitle: params.propertyTitle || "Exclusive SpaciaOS Portfolio",
           propertyLocation: params.propertyLocation || "Lagos",
           persona: params.persona || "Victoria",
           workspaceId: params.workspaceId,

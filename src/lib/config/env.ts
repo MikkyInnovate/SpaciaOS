@@ -6,7 +6,7 @@ import { z } from "zod";
  */
 const clientEnvSchema = z.object({
   NEXT_PUBLIC_APP_URL: z.string().url().default("http://localhost:3000"),
-  NEXT_PUBLIC_APP_NAME: z.string().default("Spacia"),
+  NEXT_PUBLIC_APP_NAME: z.string().default("SpaciaOS"),
   NEXT_PUBLIC_API_BASE_URL: z.string().default("http://localhost:3000/api"),
   NEXT_PUBLIC_DEFAULT_WORKSPACE_ID: z.string().default("ws_default_spacia"),
   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: z.string().optional(),

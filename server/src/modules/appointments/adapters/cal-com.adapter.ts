@@ -103,7 +103,7 @@ export class CalComAdapter implements ICalendarProviderAdapter {
 
     // Auto discover username / email
     let accountEmail = "cal.com/spacia-broker";
-    let calendarName = "Spacia Property Viewings";
+    let calendarName = "SpaciaOS Property Viewings";
 
     try {
       const res = await fetch(`${this.CALCOM_API_V1}/event-types?apiKey=${apiKey}`);
@@ -173,7 +173,7 @@ export class CalComAdapter implements ICalendarProviderAdapter {
           responses: {
             name: payload.leadName,
             email: payload.leadEmail || "lead@spacia.io",
-            notes: `Spacia Property Tour: ${payload.propertyTitle} (${payload.meetingType || "In-Person"})\n${payload.notes || ""}`,
+            notes: `SpaciaOS Property Tour: ${payload.propertyTitle} (${payload.meetingType || "In-Person"})\n${payload.notes || ""}`,
             location: { value: payload.location || payload.propertyTitle, optionValue: "" },
           },
           metadata: {
@@ -232,7 +232,7 @@ export class CalComAdapter implements ICalendarProviderAdapter {
         const res = await fetch(`${this.CALCOM_API_V1}/bookings/${calendarEventId}/cancel?apiKey=${apiKey}`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ reason: "Cancelled by broker via Spacia OS" }),
+          body: JSON.stringify({ reason: "Cancelled by broker via SpaciaOS OS" }),
         });
         return res.ok;
       } catch (err) {

@@ -147,7 +147,7 @@ export class BookPropertyInspectionTool
     };
 
     const sourceVerification: SourceVerification = {
-      source: "Spacia Calendar Engine",
+      source: "SpaciaOS Calendar Engine",
       providerId: created.calendarProvider || "native",
       isVerified: true,
       verifiedAt: new Date().toISOString(),

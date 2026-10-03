@@ -295,7 +295,7 @@ export class MockAiProvider implements IAiProvider {
 
     // Conversational greeting or closing
     return {
-      content: `Hello! I am your Spacia AI luxury property advisor. How can I assist you with prime real estate in Lagos today?`,
+      content: `Hello! I am your SpaciaOS AI luxury property advisor. How can I assist you with prime real estate in Lagos today?`,
       usage: {
         promptTokens: 120,
         completionTokens: 30,

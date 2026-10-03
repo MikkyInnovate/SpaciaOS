@@ -23,7 +23,7 @@ export class SpaciaNativePropertyAdapter implements IPropertyAdapter {
   private readonly logger = new Logger(SpaciaNativePropertyAdapter.name);
 
   readonly providerId = "spacia_native";
-  readonly providerName = "Spacia Native Database";
+  readonly providerName = "SpaciaOS Native Database";
 
   constructor(
     @Inject(DRIZZLE_DATABASE)
@@ -419,7 +419,7 @@ export class SpaciaNativePropertyAdapter implements IPropertyAdapter {
         providerName: this.providerName,
         status: "healthy",
         latencyMs,
-        message: "Spacia Native Database operational",
+        message: "SpaciaOS Native Database operational",
         capabilities: {
           canSearch: true,
           canCheckAvailability: true,

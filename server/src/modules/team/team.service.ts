@@ -411,7 +411,7 @@ export class TeamService {
     } catch {}
 
     // 7. Dispatch invitation email via Resend
-    let workspaceName = "Spacia Luxury Agency";
+    let workspaceName = "SpaciaOS Luxury Agency";
     try {
       const [ws] = await this.db
         .select({ name: schema.workspaces.name })
@@ -783,7 +783,7 @@ export class TeamService {
   }
 
   /**
-   * Helper: Ensure default Spacia brokers exist for a luxury workspace
+   * Helper: Ensure default SpaciaOS brokers exist for a luxury workspace
    */
   private async ensureSeedBrokers(workspaceId: string): Promise<void> {
     try {
@@ -900,7 +900,7 @@ export class TeamService {
 
     const firstName = user?.firstName || email.split("@")[0];
 
-    let workspaceName = "Spacia Luxury Agency";
+    let workspaceName = "SpaciaOS Luxury Agency";
     try {
       const [ws] = await this.db
         .select({ name: schema.workspaces.name })
@@ -945,7 +945,7 @@ export class TeamService {
     const html = `
       <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 580px; margin: 0 auto; padding: 32px 24px; background: #ffffff; color: #1c1917; border: 1px solid #e7e5e4; border-radius: 12px;">
         <div style="margin-bottom: 24px;">
-          <span style="font-size: 18px; font-weight: 700; color: #0d4a36; letter-spacing: -0.02em;">Spacia<span style="color: #059669;">OS</span></span>
+          <span style="font-size: 18px; font-weight: 700; color: #0d4a36; letter-spacing: -0.02em;">SpaciaOS<span style="color: #059669;">OS</span></span>
           <span style="font-size: 11px; margin-left: 8px; background: #ecfdf5; color: #065f46; padding: 2px 6px; border-radius: 4px; font-weight: 600;">WORKSPACE INVITATION</span>
         </div>
         <h2 style="font-size: 20px; font-weight: 600; color: #1c1917; margin: 0 0 12px 0;">You've been invited to join ${workspaceName}</h2>
@@ -1048,7 +1048,7 @@ export class TeamService {
     return {
       id: member.id,
       workspaceId: member.workspaceId,
-      workspaceName: workspace?.name || "Spacia Luxury Agency",
+      workspaceName: workspace?.name || "SpaciaOS Luxury Agency",
       email: targetEmail,
       hasClerkAccount,
       role: member.role,

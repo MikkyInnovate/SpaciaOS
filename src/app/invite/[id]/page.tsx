@@ -57,7 +57,7 @@ interface InvitationData {
 
 const HEADLINES = [
   "Every viewing booked, qualified, and closed in real time.",
-  "Autonomous AI voice agents for premier property developments.",
+  "The AI sales system for real estate teams.",
   "Instant prospect qualification and automated viewing pipeline.",
 ];
 
@@ -228,7 +228,7 @@ export default function InviteOnboardingPage() {
       <div className="hidden lg:block relative h-full max-h-screen w-full lg:w-1/2 bg-stone-950 overflow-hidden">
         <Image
           src="/images/auth-real-estate.jpg"
-          alt="Spacia Real Estate Advisory"
+          alt="SpaciaOS Real Estate Advisory"
           fill
           priority
           sizes="50vw"
@@ -248,7 +248,7 @@ export default function InviteOnboardingPage() {
             <AuthTypewriterHeadline />
 
             <p className="text-xs xl:text-sm text-stone-300 leading-relaxed font-normal">
-              Autonomous voice agents, prospect qualification, and instant pipeline velocity engineered for modern luxury real-estate developers.
+              Answer, qualify and follow up every enquiry, book viewings automatically, and hand your best leads to your team.
             </p>
           </div>
         </div>

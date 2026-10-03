@@ -310,7 +310,7 @@ export class AiOrchestratorService {
       conversation.id,
       "ai_agent",
       finalContent,
-      aiConfig?.name || "Spacia AI",
+      aiConfig?.name || "SpaciaOS AI",
       {
         provider: this.aiProvider.providerName,
         model: lastUsage.model,

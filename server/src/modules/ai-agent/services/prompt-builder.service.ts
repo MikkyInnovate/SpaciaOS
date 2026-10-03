@@ -56,7 +56,7 @@ export class PromptBuilderService {
 
     return {
       workspaceId,
-      workspaceName: "Spacia Premier Realty",
+      workspaceName: "SpaciaOS Premier Realty",
       primaryMarket: "Lagos Prime Luxury",
       tier: "starter",
     };
@@ -122,7 +122,7 @@ export class PromptBuilderService {
     channel = "web_chat",
     aiConfig?: schema.AiAgentConfigRecord | null
   ): string {
-    const agencyName = workspace.workspaceName || "Spacia Premier Realty";
+    const agencyName = workspace.workspaceName || "SpaciaOS Premier Realty";
     const market = workspace.primaryMarket || "Lagos Prime Luxury";
     const agentName = aiConfig?.name || "Amara";
     const tone = aiConfig?.tone || "luxury_professional";

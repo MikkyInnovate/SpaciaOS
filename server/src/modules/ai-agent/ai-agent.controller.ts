@@ -85,7 +85,7 @@ export class AiAgentController {
     return {
       success: true,
       config,
-      message: "AI agent configuration reset to Spacia luxury baseline.",
+      message: "AI agent configuration reset to SpaciaOS luxury baseline.",
     };
   }
 

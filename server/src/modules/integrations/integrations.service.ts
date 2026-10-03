@@ -40,11 +40,11 @@ const PROVIDER_METADATA: Record<string, ProviderMetadata> = {
     category: "crm",
   },
   vapi: {
-    description: "Managed AI voice calling engine (Provisioned by Spacia)",
+    description: "Managed AI voice calling engine (Provisioned by SpaciaOS)",
     category: "voice",
   },
   resend: {
-    description: "Managed transactional email and viewing notifications (Provisioned by Spacia)",
+    description: "Managed transactional email and viewing notifications (Provisioned by SpaciaOS)",
     category: "notifications",
   },
   whatsapp: {

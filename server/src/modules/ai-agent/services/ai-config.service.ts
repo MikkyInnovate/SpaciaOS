@@ -22,7 +22,7 @@ export const DEFAULT_AI_CONFIG = {
   tone: "luxury_professional" as const,
   language: "en-NG" as const,
   greeting:
-    "Good day. Thank you for contacting Spacia. I am Amara, your personal luxury real estate advisor. How may I assist your property acquisition today?",
+    "Good day. Thank you for contacting SpaciaOS. I am Amara, your personal luxury real estate advisor. How may I assist your property acquisition today?",
   businessHours: {
     enabled: true,
     start: "08:00",
@@ -182,7 +182,7 @@ export class AiConfigService {
   }
 
   /**
-   * Resets workspace configuration back to Spacia luxury baseline defaults.
+   * Resets workspace configuration back to SpaciaOS luxury baseline defaults.
    */
   async resetConfig(workspaceId: string): Promise<AiAgentConfigRecord> {
     await this.getOrCreateConfig(workspaceId);
@@ -566,7 +566,7 @@ export class AiConfigService {
       liveTranscript: [
         {
           speaker: "ai" as const,
-          text: "Good day, I am assisting you from Spacia Luxury Real Estate.",
+          text: "Good day, I am assisting you from SpaciaOS Luxury Real Estate.",
           timestamp: "Just now",
         },
       ],
