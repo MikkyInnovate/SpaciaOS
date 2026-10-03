@@ -3,6 +3,8 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   output: process.env.BUILD_STANDALONE === "true" ? "standalone" : undefined,
   images: {
+    // Served as-is on Cloudflare (no image optimisation binding needed)
+    unoptimized: true,
     remotePatterns: [
       {
         protocol: "https",
@@ -32,14 +34,9 @@ const nextConfig: NextConfig = {
           }
         : false,
   },
-  async rewrites() {
-    const backendUrl = process.env.BACKEND_API_URL || "http://localhost:8000";
-    return [
-      {
-        source: "/api/v1/:path*",
-        destination: `${backendUrl}/api/v1/:path*`,
-      },
-    ];
+  // Waitlist-only deployment: the home page is the waitlist
+  async redirects() {
+    return [{ source: "/", destination: "/waitlist", permanent: false }];
   },
 };
 

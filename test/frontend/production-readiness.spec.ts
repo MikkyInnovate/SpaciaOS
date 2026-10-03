@@ -1,7 +1,6 @@
 import { describe, it, expect, render } from "./setup";
 import { telemetry } from "../../src/lib/telemetry/sentry";
 import React from "react";
-import AppErrorBoundary from "../../src/app/(app)/error";
 
 export async function runProductionReadinessTests() {
   describe("Day 29 Production Readiness: Frontend Telemetry & Error Boundaries", () => {
@@ -62,26 +61,6 @@ export async function runProductionReadinessTests() {
       });
     });
 
-    describe("2. Error Boundary UI & Recovery Controls", () => {
-      it("renders the AppErrorBoundary component with recovery actions and digest", () => {
-        const mockError = new Error("ChunkLoadError: Loading chunk 41 failed");
-        (mockError as any).digest = "DIGEST_778899_PROD";
-        let resetCalled = false;
-
-        const { html } = render(
-          React.createElement(AppErrorBoundary, {
-            error: mockError,
-            reset: () => {
-              resetCalled = true;
-            },
-          })
-        );
-
-        expect(html.includes("View Temporarily Unavailable")).toBe(true);
-        expect(html.includes("Reload Component")).toBe(true);
-        expect(html.includes("Return to Overview")).toBe(true);
-        expect(html.includes("DIGEST_778899_PROD")).toBe(true);
-      });
-    });
+    // The app route error boundary is not part of the waitlist-only deployment.
   });
 }

@@ -1,10 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Caveat, Instrument_Serif, Inter, Outfit } from "next/font/google";
-import { ClerkProvider } from "@clerk/nextjs";
 import { siteConfig } from "@/lib/config/site";
-import { isClerkConfigured } from "@/lib/config/env";
 import { Toaster } from "@/components/ui/sonner";
-import { ClerkConfigMissing } from "@/components/shared/clerk-config-missing";
 import "./globals.css";
 
 const inter = Inter({
@@ -60,100 +57,29 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
-const clerkAppearance = {
-  layout: {
-    socialButtonsPlacement: "bottom" as const,
-  },
-  variables: {
-    colorPrimary: "#0d4a36",
-    colorText: "#18181b",
-    colorTextSecondary: "#71717a",
-    colorBackground: "#ffffff",
-    colorInputBackground: "#ffffff",
-    colorInputText: "#18181b",
-    borderRadius: "0.5rem",
-    fontFamily: "var(--font-sans)",
-  },
-  elements: {
-    card: "border border-stone-200 shadow-sm rounded-xl",
-    headerTitle: "font-display font-bold text-stone-900 tracking-tight",
-    headerSubtitle: "text-xs text-stone-500",
-    formButtonPrimary: "bg-[#0d4a36] hover:bg-[#093829] text-white font-medium text-xs shadow-2xs transition-colors",
-    formFieldInput: "border-stone-200 focus:border-stone-400 focus:ring-stone-400 text-xs rounded-lg",
-    footerActionLink: "text-[#0d4a36] hover:text-[#093829] font-medium text-xs",
-  },
-};
-
-// Our own copy for the sign-in / sign-up start screens (otherwise Clerk shows its dashboard app name)
-const clerkLocalization = {
-  signIn: {
-    start: {
-      title: "Sign in to SpaciaOS",
-      subtitle: "Welcome back. Every lead, still answered.",
-    },
-  },
-  signUp: {
-    start: {
-      title: "Create your SpaciaOS account",
-      subtitle: "Set up in minutes. We handle the rest.",
-    },
-  },
-};
-
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  if (!isClerkConfigured) {
-    return (
-      <html
-        lang="en"
-        className={`${inter.variable} ${outfit.variable} ${instrumentSerif.variable} ${caveat.variable} h-full antialiased`}
-        suppressHydrationWarning
-      >
-        <body className="min-h-full flex flex-col font-sans bg-background text-foreground">
-          <ClerkConfigMissing />
-        </body>
-      </html>
-    );
-  }
-
   return (
-    <ClerkProvider appearance={clerkAppearance} localization={clerkLocalization}>
-      <html
-        lang="en"
-        className={`${inter.variable} ${outfit.variable} ${instrumentSerif.variable} ${caveat.variable} h-full antialiased`}
-        suppressHydrationWarning
-      >
-        <head>
-          <link rel="preconnect" href="https://fonts.googleapis.com" />
-          <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-          <link
-            rel="stylesheet"
-            href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
-          />
-          <script
-            dangerouslySetInnerHTML={{
-              __html: `
-                if (typeof window !== 'undefined') {
-                  window.addEventListener('unhandledrejection', function(event) {
-                    var r = event.reason;
-                    if (r && (r.code === 'failed_to_load_clerk_js' || (typeof r.message === 'string' && r.message.indexOf('Failed to load Clerk JS') !== -1))) {
-                      event.preventDefault();
-                      console.warn('[SpaciaOS] Clerk JS was blocked by browser ad blocker or network policy. Continuing in resilient development mode.');
-                    }
-                  });
-                }
-              `,
-            }}
-          />
-        </head>
-        <body className="min-h-full flex flex-col font-sans bg-background text-foreground selection:bg-stone-200 selection:text-stone-900">
-          {children}
-          <Toaster position="top-right" richColors />
-        </body>
-      </html>
-    </ClerkProvider>
+    <html
+      lang="en"
+      className={`${inter.variable} ${outfit.variable} ${instrumentSerif.variable} ${caveat.variable} h-full antialiased`}
+      suppressHydrationWarning
+    >
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+        />
+      </head>
+      <body className="min-h-full flex flex-col font-sans bg-background text-foreground selection:bg-stone-200 selection:text-stone-900">
+        {children}
+        <Toaster position="top-right" richColors />
+      </body>
+    </html>
   );
 }

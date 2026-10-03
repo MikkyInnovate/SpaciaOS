@@ -1,5 +1,5 @@
 import { WorkspaceLoading } from "@/components/layout/workspace-loading";
 
 export default function RootLoading() {
-  return <WorkspaceLoading />;
+  return <WorkspaceLoading label="Loading" />;
 }

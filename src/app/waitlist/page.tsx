@@ -28,7 +28,6 @@ const LINKS = [
   { href: "#how", key: "howItWorks" },
   { href: "#perks", key: "whatYouGet" },
   { href: "#faq", key: "faq" },
-  { href: "/", key: "product" },
 ] as const;
 
 export default function WaitlistPage() {

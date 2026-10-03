@@ -14,20 +14,11 @@ const SRC_DIR = path.resolve(__dirname, "../../src");
 
 export async function runBrowserTests() {
   await describe("1. Route Resolution & Component Export Integrity", async () => {
+    // Waitlist-only deployment (deploy/waitlist): the app routes are not part of this build
     const routesToTest = [
-      { name: "/", file: "app/page.tsx" },
       { name: "/waitlist", file: "app/waitlist/page.tsx" },
-      { name: "/dashboard", file: "app/(app)/dashboard/page.tsx" },
-      { name: "/leads", file: "app/(app)/leads/page.tsx" },
-      { name: "/calls", file: "app/(app)/calls/page.tsx" },
-      { name: "/appointments", file: "app/(app)/appointments/page.tsx" },
-      { name: "/analytics", file: "app/(app)/analytics/page.tsx" },
-      { name: "/conversations", file: "app/(app)/conversations/page.tsx" },
-      { name: "/team", file: "app/(app)/team/page.tsx" },
-      { name: "/ai-agent", file: "app/(app)/ai-agent/page.tsx" },
-      { name: "/integrations", file: "app/(app)/integrations/page.tsx" },
-      { name: "/ops", file: "app/(app)/ops/page.tsx" },
-      { name: "/primitives", file: "app/(app)/primitives/page.tsx" },
+      { name: "/privacy", file: "app/privacy/page.tsx" },
+      { name: "404", file: "app/not-found.tsx" },
     ];
 
     for (const route of routesToTest) {
