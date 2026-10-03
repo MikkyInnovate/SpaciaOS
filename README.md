@@ -17,9 +17,23 @@ This repository houses the frontend (Next.js) and backend (`/server`, NestJS + N
 | `feature/waitlist` | Waitlist page at `/waitlist` + waitlist backend (real counts, profile fields, phone capture, migrations 0006–0008) | `feature/landing-page` |
 | `feature/privacy-policy` | Privacy policy at `/privacy` (EN / FR) | `feature/landing-page` |
 | `feature/404-page` | Tiled real estate 404 page | `frontend` |
+| `deploy/waitlist` | **Deploy-only** branch for the live public site (landing + waitlist + privacy + 404 on Cloudflare). App routes removed, Next 16.3.8, built-in waitlist API. **Never merge into `frontend`.** | `feature/waitlist` + merges |
 | `backup/*-2026-10-03` | Snapshots taken before the branch split on 3 Oct 2026 — safe to delete once the above are merged | — |
 
 Merge order when releasing: `frontend` → `feature/landing-page` → `feature/waitlist` / `feature/privacy-policy`; `feature/404-page` can merge any time after `frontend`.
+
+### Live deployment
+
+| | |
+| :--- | :--- |
+| **URL** | https://spaciaos.spacia-frontend.workers.dev |
+| **Host** | Cloudflare Workers (worker `spaciaos`) via OpenNext |
+| **Pages live** | `/` landing, `/waitlist`, `/privacy`, 404. Dashboard and sign-in are not deployed. |
+| **Waitlist data** | Saved to the same Neon `waitlist_subscribers` table; the waitlist API runs inside the site (no backend server needed) |
+| **Secrets on the worker** | `DATABASE_URL`, `RESEND_API_KEY`, `RESEND_FROM_EMAIL` |
+| **Deploy from** | branch `deploy/waitlist`: `npx opennextjs-cloudflare build && npx opennextjs-cloudflare deploy` (full steps in that branch's README) |
+
+When changing the landing page, waitlist, privacy page or 404: commit to its feature branch **and** apply the same change to `deploy/waitlist`, then redeploy.
 
 ### Routes
 
@@ -63,8 +77,10 @@ The app needs the backend running to show data. Without it, pages show empty sta
 - Outbound calls need a voice number that can dial Nigeria (the free number can't call internationally).
 - Real privacy contact email, data-retention period, and legal review of `/privacy`.
 - Real social profile URLs in the footer; confirm non-NGN prices.
-- Set `NEXT_PUBLIC_APP_NAME=SpaciaOS` in the hosting environment.
-- Deployment plan for the marketing pages vs the app (to be decided).
+- Connect GitHub to the Cloudflare worker (Workers Builds, branch `deploy/waitlist`) for automatic deploys.
+- Buy a domain, attach it to the worker, and verify it in Resend so welcome emails reach everyone (the test sender only emails the account owner).
+- Add a Cloudflare rate-limit rule on `/api/v1/waitlist/*` if spam appears.
+- Deploy the full app (sign-in + dashboard) and the NestJS backend (Cloudflare Containers or Render/Railway); set `NEXT_PUBLIC_APP_NAME=SpaciaOS` there.
 
 ---
 
