@@ -15,6 +15,8 @@ const SRC_DIR = path.resolve(__dirname, "../../src");
 export async function runBrowserTests() {
   await describe("1. Route Resolution & Component Export Integrity", async () => {
     const routesToTest = [
+      { name: "/", file: "app/page.tsx" },
+      { name: "/waitlist", file: "app/waitlist/page.tsx" },
       { name: "/dashboard", file: "app/(app)/dashboard/page.tsx" },
       { name: "/leads", file: "app/(app)/leads/page.tsx" },
       { name: "/calls", file: "app/(app)/calls/page.tsx" },
