@@ -1,8 +1,9 @@
 import { SpaciaMark } from "@/components/brand/spacia-logo";
+import { IntroCount } from "./intro-count";
 import { MarkIntroSeen } from "./mark-intro-seen";
 
 /* First-visit intro for the landing page: the counter runs 00 → 100 while a pixel bar
-   fills, then the screen slides away. Pure CSS (works before hydration). Shown once per
+   fills, then the screen slides away. The bar and slide are CSS; the number is a tiny client counter. Shown once per
    browser session (the page skips it when the session cookie is set); skipped entirely
    for reduced-motion visitors. */
 
@@ -19,7 +20,7 @@ export function LandingIntro() {
           <SpaciaMark className="h-10 w-10" />
         </span>
         <div className="mt-6 flex items-start font-display text-[72px] font-light leading-none tracking-[-0.05em] text-[#14231d] tabular-nums">
-          <span className="intro-count" />
+          <IntroCount />
           <span className="mt-2 text-[24px] text-[#15803d]">%</span>
         </div>
         <div className="mt-6 grid w-full gap-[3px]" style={{ gridTemplateColumns: `repeat(${CELLS}, minmax(0, 1fr))` }}>
