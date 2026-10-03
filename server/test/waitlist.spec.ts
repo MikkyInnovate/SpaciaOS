@@ -58,8 +58,9 @@ async function runWaitlistTests() {
     assert.strictEqual(statsRes.status, 200, "Stats endpoint must be publicly accessible (HTTP 200)");
     const statsBody = await statsRes.json();
     assert.strictEqual(statsBody.success, true);
-    assert.ok(statsBody.data.totalCount >= 1240, "Total count must reflect baseline social proof");
-    assert.ok(statsBody.data.activeToday > 0, "Active count must be greater than zero");
+    assert.ok(Number.isInteger(statsBody.data.totalCount) && statsBody.data.totalCount >= 0, "Total count must be the real row count");
+    assert.ok(statsBody.data.activeToday >= 0 && statsBody.data.activeToday <= statsBody.data.totalCount, "Active today must be a real subset of the total");
+    assert.strictEqual(statsBody.data.growthPercentage, null, "No synthetic growth figure");
     console.log(`  ✔ Live stats verified: totalCount=${statsBody.data.totalCount}, activeToday=${statsBody.data.activeToday}`);
 
     // ---------------------------------------------------------------------------
@@ -78,7 +79,8 @@ async function runWaitlistTests() {
     const joinBody = await joinRes.json();
     assert.strictEqual(joinBody.success, true);
     assert.strictEqual(joinBody.data.alreadyJoined, false);
-    assert.ok(joinBody.data.position >= 1241, "Position must be assigned sequentially above baseline");
+    assert.ok(joinBody.data.position >= 1, "Position must be a real sequence number starting at 1");
+    assert.strictEqual(joinBody.data.position, statsBody.data.totalCount + 1, "Position must follow the real count (no offset)");
     assert.ok(joinBody.data.referralCode.startsWith("SPACIA-"), "Referral code must have SPACIA- prefix");
     assert.ok(joinBody.data.maskedEmail.includes("***"), "Email must be masked for privacy in response");
     console.log(`  ✔ Successfully registered: position=#${joinBody.data.position}, referralCode=${joinBody.data.referralCode}, masked=${joinBody.data.maskedEmail}`);
@@ -143,8 +145,41 @@ async function runWaitlistTests() {
     assert.ok(subscriber.ipHash, "IP address must be securely hashed with SHA-256");
     console.log("  ✔ Database record certified with immutable sequence ranking and hashed IP.");
 
+    // ---------------------------------------------------------------------------
+    // TEST 6: Step-2 profile details
+    // ---------------------------------------------------------------------------
+    console.log("\n▶ [CHECK 6: PROFILE] Saving team details via referral code...");
+    const profileRes = await fetch(`${baseUrl}/waitlist/profile`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        referralCode: joinBody.data.referralCode,
+        fullName: "Ada Broker",
+        phone: "+234 801 234 5678",
+        companyName: "Lagos Prime Realty",
+        companyWebsite: "lagosprime.ng",
+        teamSize: "6-20",
+      }),
+    });
+    assert.strictEqual(profileRes.status, 200, "Profile update must succeed");
+    const [withProfile] = await db
+      .select()
+      .from(schema.waitlistSubscribers)
+      .where(eq(schema.waitlistSubscribers.email, testEmail.toLowerCase()))
+      .limit(1);
+    assert.strictEqual(withProfile.companyWebsite, "https://lagosprime.ng", "Website must be normalised to https://");
+    assert.strictEqual(withProfile.teamSize, "6-20");
+    assert.strictEqual(withProfile.phone, "+2348012345678", "Phone must be stored as E.164");
+    const badRes = await fetch(`${baseUrl}/waitlist/profile`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ referralCode: "SPACIA-NOPE0000", fullName: "X Y", phone: "+2348000000000", companyName: "Nope Co" }),
+    });
+    assert.strictEqual(badRes.status, 404, "Unknown referral code must 404");
+    console.log("  ✔ Profile saved and normalised; unknown codes rejected.");
+
     console.log("\n=========================================================");
-    console.log(" ✅ ALL WAITLIST ENGINE TESTS PASSED (5/5 CHECKS)!");
+    console.log(" ✅ ALL WAITLIST ENGINE TESTS PASSED (6/6 CHECKS)!");
     console.log("=========================================================\n");
   } finally {
     // Cleanup test subscriber

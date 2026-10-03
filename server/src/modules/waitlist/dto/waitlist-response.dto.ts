@@ -11,6 +11,12 @@ export interface WaitlistJoinResponseDto {
 export interface WaitlistStatsResponseDto {
   totalCount: number;
   activeToday: number;
-  growthPercentage: number;
-  recentMilestone: string;
+  /** Not tracked yet; null rather than an invented figure. */
+  growthPercentage: number | null;
+  recentMilestone: string | null;
+}
+
+export interface WaitlistProfileResponseDto {
+  success: boolean;
+  position: number;
 }

@@ -2,6 +2,7 @@ import {
   Controller,
   Post,
   Get,
+  Patch,
   Body,
   Req,
   HttpCode,
@@ -12,9 +13,11 @@ import { Public } from "../../common/auth/public.decorator";
 import { RateLimit } from "../../common/guards/rate-limit.decorator";
 import { WaitlistService } from "./waitlist.service";
 import { JoinWaitlistDto } from "./dto/join-waitlist.dto";
+import { UpdateWaitlistProfileDto } from "./dto/update-waitlist-profile.dto";
 import {
   WaitlistJoinResponseDto,
   WaitlistStatsResponseDto,
+  WaitlistProfileResponseDto,
 } from "./dto/waitlist-response.dto";
 
 @Controller("waitlist")
@@ -46,6 +49,21 @@ export class WaitlistController {
     const userAgent = (req.headers["user-agent"] as string) || undefined;
 
     return this.waitlistService.joinWaitlist(dto, clientIp, userAgent);
+  }
+
+  /**
+   * Add the optional "about your team" details after joining (step 2 of the form).
+   */
+  @Patch("profile")
+  @HttpCode(HttpStatus.OK)
+  @RateLimit({
+    points: 10,
+    duration: 60,
+    keyPrefix: "waitlist_profile",
+    errorMessage: "Too many updates from this IP. Please wait a minute.",
+  })
+  async updateProfile(@Body() dto: UpdateWaitlistProfileDto): Promise<WaitlistProfileResponseDto> {
+    return this.waitlistService.updateProfile(dto);
   }
 
   /**
