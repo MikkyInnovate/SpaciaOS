@@ -1,21 +1,19 @@
 import { SpaciaMark } from "@/components/brand/spacia-logo";
+import { MarkIntroSeen } from "./mark-intro-seen";
 
 /* First-visit intro for the landing page: the counter runs 00 → 100 while a pixel bar
    fills, then the screen slides away. Pure CSS (works before hydration). Shown once per
-   browser session; skipped entirely for reduced-motion visitors. */
+   browser session (the page skips it when the session cookie is set); skipped entirely
+   for reduced-motion visitors. */
+
+export const INTRO_COOKIE = "spacia-intro";
 
 const CELLS = 24;
 
 export function LandingIntro() {
   return (
     <div className="intro-overlay fixed inset-0 z-[100] flex items-center justify-center bg-[#f4f4f2] px-5" aria-hidden="true">
-      {/* hide instantly if this session has already seen the intro */}
-      <script
-        dangerouslySetInnerHTML={{
-          __html:
-            "try{if(sessionStorage.getItem('spacia-intro')){document.documentElement.setAttribute('data-intro-seen','')}else{sessionStorage.setItem('spacia-intro','1')}}catch(e){}",
-        }}
-      />
+      <MarkIntroSeen />
       <div className="flex w-full max-w-[280px] flex-col items-center text-center">
         <span className="intro-mark text-[#14231d]">
           <SpaciaMark className="h-10 w-10" />
