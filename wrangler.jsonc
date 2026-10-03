@@ -12,7 +12,7 @@
     {
       // Self-reference binding required by OpenNext (name must match the worker name)
       "binding": "WORKER_SELF_REFERENCE",
-      "service": "spaciaos-waitlist"
+      "service": "spaciaos"
     }
   ],
   "observability": { "enabled": true },
