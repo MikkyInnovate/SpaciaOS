@@ -30,6 +30,16 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
+/** Turns a provider/backend error into a plain sentence for the toast. */
+function describeCallError(err: unknown): string {
+  const raw = err instanceof Error ? err.message : String(err ?? "");
+  if (/international/i.test(raw)) {
+    return "Your calling number can't make international calls. Add a number that supports this country in your voice settings.";
+  }
+  if (/lead/i.test(raw) && raw.length < 80) return raw;
+  return "The voice service didn't accept the call. Please try again, or check your voice settings.";
+}
+
 interface InitiateCallDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -132,9 +142,9 @@ export function InitiateCallDialog({
         leadId: targetLead.id,
         leadName: targetLead.name,
         leadPhone: targetLead.phone,
-        propertyTitle: targetLead.propertyTitle || "Luxury Development",
-        propertyLocation: targetLead.location || "Lagos, Nigeria",
-        declaredBudget: targetLead.budget || "₦1.5 Billion",
+        propertyTitle: targetLead.propertyTitle || "",
+        propertyLocation: targetLead.location,
+        declaredBudget: targetLead.budget,
         score: targetLead.score,
         scoreCategory: targetLead.scoreCategory,
         persona: selectedPersona.name,
@@ -142,69 +152,30 @@ export function InitiateCallDialog({
 
       activeCallRef.current = createdCall;
       setCallState("active");
-    } catch (err: any) {
-      toast.error("Failed to connect to Vapi voice gateway.");
+    } catch (err: unknown) {
+      toast.error("Couldn't start the call", { description: describeCallError(err) });
       setCallState("idle");
     }
   };
 
   const handleFinishCall = async () => {
     setCallState("completing");
-
     try {
+      // The transcript, summary and score arrive from the voice provider once the call
+      // ends; here we only refresh what the backend has recorded so far.
       const currentCall = activeCallRef.current;
-      const vapiCallId = (currentCall?.metrics as any)?.vapiCallId;
-
-      if (vapiCallId && currentCall?.id) {
-        // Send webhook to trigger full Vapi end-of-call processing & Day 11 qualification
-        await callsService.sendEndOfCallWebhook({
-          vapiCallId,
-          leadName: targetLead.name,
-          leadPhone: targetLead.phone,
-          propertyTitle: targetLead.propertyTitle,
-          duration: Math.max(activeSeconds, 60),
+      const refreshed = currentCall?.id ? await callsService.getCallById(currentCall.id) : null;
+      const call = refreshed || currentCall;
+      if (call) {
+        toast.success("Call ended", {
+          description: `The transcript and summary for ${targetLead.name} will appear once processing finishes.`,
         });
-
-        // Refetch fully hydrated call with transcript, summary, and Day 11 score
-        const refreshed = await callsService.getCallById(currentCall.id);
-        if (refreshed) {
-          toast.success("Vapi Voice Call Logged & Qualified", {
-            description: `Autonomous session with ${targetLead.name} completed. Audio, transcript, and lead score recorded in database.`,
-          });
-          onCallCompleted?.(refreshed);
-          setCallState("idle");
-          onOpenChange(false);
-          return;
-        }
+        onCallCompleted?.(call);
       }
-
-      // Simulated fallback
-      const fallbackCall =
-        currentCall ||
-        (await callsService.initiateVapiCall({
-          leadId: targetLead.id,
-          leadName: targetLead.name,
-          leadPhone: targetLead.phone,
-          propertyTitle: targetLead.propertyTitle,
-          propertyLocation: targetLead.location,
-          declaredBudget: targetLead.budget,
-          score: targetLead.score,
-          scoreCategory: targetLead.scoreCategory,
-          persona: selectedPersona.name,
-        }));
-
-      toast.success("Vapi Voice Call Logged", {
-        description: `Autonomous session with ${targetLead.name} completed. Audio and transcript synchronized.`,
-      });
-
-      if (onCallCompleted) {
-        onCallCompleted(fallbackCall);
-      }
-
       setCallState("idle");
       onOpenChange(false);
     } catch {
-      toast.error("Failed to complete call session.");
+      toast.error("Couldn't refresh the call. It will appear in the call log once processed.");
       setCallState("idle");
     }
   };

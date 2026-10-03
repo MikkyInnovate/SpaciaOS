@@ -201,120 +201,19 @@ class CallsService {
     persona?: string;
     customPrompt?: string;
   }): Promise<Call> {
-    // If we have a valid leadId (UUID format), attempt real backend initiation first
-    if (params.leadId && params.leadId.includes("-")) {
-      try {
-        const payload = {
-          leadId: params.leadId,
-          persona: params.persona || "Victoria (Senior Luxury Closer)",
-          customPrompt: params.customPrompt,
-        };
-        const realCall = await apiClient.post<Call>("/api/v1/calls", payload);
-        if (realCall && realCall.id) {
-          this.calls.unshift(realCall);
-          return realCall;
-        }
-      } catch (err: any) {
-        console.warn("Backend call initiation failed, falling back to simulated session:", err);
-      }
+    // Real calls only: a failed initiation is surfaced to the caller, never simulated.
+    if (!params.leadId || !params.leadId.includes("-")) {
+      throw new Error("Choose a saved lead before starting a call.");
     }
-
-    await new Promise((r) => setTimeout(r, 100));
-
-    const callId = createUniqueId("call");
-    const newCall: Call = {
-      id: callId,
+    const payload = {
       leadId: params.leadId,
-      leadName: params.leadName,
-      leadPhone: params.leadPhone,
-      propertyTitle: params.propertyTitle,
-      propertyLocation: params.propertyLocation || "Lagos, Nigeria",
-      declaredBudget: params.declaredBudget || "₦250,000,000",
-      score: params.score || 82,
-      scoreCategory: params.scoreCategory || "WARM",
-      outcome: "qualified",
-      recordingState: "ready",
-      audioDurationSeconds: 142,
-      createdAt: new Date().toISOString(),
-      relativeTime: "Just now",
-      agentPersona: params.persona || "Victoria (Senior Luxury Closer)",
-      metrics: {
-        durationSeconds: 142,
-        durationFormatted: "2m 22s",
-        talkRatio: { aiPercent: 44, prospectPercent: 56 },
-        turnCount: 5,
-        averageLatencyMs: 380,
-      },
-      summary: {
-        synthesis: `Prospect engaged via Vapi AI telephony. Verified serious interest in ${params.propertyTitle}. Affirmed target budget alignment and requested legal underwriting review.`,
-        keyTakeaways: [
-          "Inquiry confirmed for specified development",
-          "Liquid capital availability verified",
-          "Requested viewing availability for upcoming weekend",
-        ],
-        objectionsRaised: ["Offshore transfer clearance timeline"],
-        actionItems: [
-          "Dispatch digital brochure and floor plans",
-          "Reserve inspection slot with on-site broker",
-        ],
-        suggestedNextStep: "Schedule formal viewing inspection",
-      },
-      transcript: [
-        {
-          id: createUniqueId("turn_1"),
-          speaker: "agent",
-          speakerName: params.persona?.split(" ")[0] || "Victoria",
-          timestamp: "00:04",
-          timestampSeconds: 4,
-          message: `Good day ${params.leadName}, this is ${params.persona?.split(" ")[0] || "Victoria"} from Pacia Properties. I am reaching out regarding your inquiry for ${params.propertyTitle}. Is now a good time?`,
-          sentiment: "positive",
-        },
-        {
-          id: createUniqueId("turn_2"),
-          speaker: "prospect",
-          speakerName: params.leadName,
-          timestamp: "00:15",
-          timestampSeconds: 15,
-          message: `Yes, good afternoon. I saw the listing and wanted to understand the payment milestone structure and title status.`,
-          sentiment: "positive",
-          bantTags: ["budget", "property_fit"],
-        },
-        {
-          id: createUniqueId("turn_3"),
-          speaker: "agent",
-          speakerName: params.persona?.split(" ")[0] || "Victoria",
-          timestamp: "00:32",
-          timestampSeconds: 32,
-          message: `Certainly. The property holds clean Governor's Consent with encumbrance-free title. We accommodate outright settlement or a structured 6-month milestone plan.`,
-          sentiment: "positive",
-          bantTags: ["property_fit"],
-        },
-        {
-          id: createUniqueId("turn_4"),
-          speaker: "prospect",
-          speakerName: params.leadName,
-          timestamp: "00:54",
-          timestampSeconds: 54,
-          message: `Excellent. Our liquidity is in place; I would like to arrange an in-person inspection of the site this Saturday.`,
-          sentiment: "positive",
-          bantTags: ["budget", "timeline"],
-          keyQuote: true,
-        },
-        {
-          id: createUniqueId("turn_5"),
-          speaker: "agent",
-          speakerName: params.persona?.split(" ")[0] || "Victoria",
-          timestamp: "01:12",
-          timestampSeconds: 72,
-          message: `Fantastic. I have provisionally reserved Saturday 11:00 AM for you. Our senior broker will have the full inspection dossier ready. Thank you, ${params.leadName}.`,
-          sentiment: "positive",
-          bantTags: ["timeline"],
-        },
-      ],
+      persona: params.persona,
+      customPrompt: params.customPrompt,
     };
-
-    this.calls.unshift(newCall);
-    return newCall;
+    const realCall = await apiClient.post<Call>("/api/v1/calls", payload);
+    if (!realCall?.id) throw new Error("The call could not be started.");
+    this.calls.unshift(realCall);
+    return realCall;
   }
 
   async sendEndOfCallWebhook(params: {
