@@ -3,6 +3,8 @@ import { NextResponse, type NextRequest, type NextFetchEvent } from "next/server
 
 const isPublicRoute = createRouteMatcher([
   "/",
+  "/waitlist(.*)",
+  "/privacy(.*)",
   "/sign-in(.*)",
   "/sign-up(.*)",
   "/unauthorized(.*)",
@@ -12,6 +14,8 @@ const isPublicRoute = createRouteMatcher([
   "/integrations(.*)",
   "/invite(.*)",
   "/primitives(.*)",
+  "/videos(.*)",
+  "/kresna-footer.html",
 ]);
 
 const hasClerkKeys = Boolean(
@@ -36,7 +40,7 @@ export default function proxy(req: NextRequest, ev: NextFetchEvent) {
 export const config = {
   matcher: [
     // Skip Next.js internals and all static files, unless found in search params
-    "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
+    "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest|mp4|webm|ogg|m4v)).*)",
     // Always run for API routes
     "/(api|trpc)(.*)",
   ],
