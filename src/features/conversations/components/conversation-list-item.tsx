@@ -110,7 +110,7 @@ export function ConversationListItem({
             {formatRelativeTime(conversation.lastMessage.timestamp)}
           </span>
           {conversation.unreadCount > 0 && (
-            <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-[#0d4a36] px-1 text-[9px] font-bold text-white shadow-2xs">
+            <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-[#0d4a36] px-1 text-[9px] font-semibold text-white shadow-2xs">
               {conversation.unreadCount}
             </span>
           )}

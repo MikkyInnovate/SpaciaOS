@@ -164,7 +164,7 @@ export function CallDetailCockpit({
                     className="object-cover rounded-2xl"
                   />
                 )}
-                <AvatarFallback className="bg-[#0d4a36]/10 text-[#0d4a36] font-display font-bold text-sm sm:text-base rounded-2xl">
+                <AvatarFallback className="bg-[#0d4a36]/10 text-[#0d4a36] font-display font-normal text-sm sm:text-base rounded-2xl">
                   {getInitials(call.leadName)}
                 </AvatarFallback>
               </Avatar>
@@ -179,11 +179,11 @@ export function CallDetailCockpit({
             {/* Client Identity & Metadata Hierarchy with Generous Breathing Room */}
             <div className="min-w-0 flex-1 space-y-2">
               <div className="flex items-center gap-2.5 flex-wrap">
-                <h3 className="font-display text-base sm:text-lg font-bold text-stone-900 tracking-tight leading-tight truncate">
+                <h3 className="font-display text-base sm:text-lg font-normal text-[#14231d] tracking-tight leading-tight truncate">
                   {call.leadName}
                 </h3>
                 {call.isEscalated && (
-                  <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-rose-700 bg-rose-50 px-2 py-0.5 rounded-full border border-rose-200">
+                  <span className="font-mono inline-flex items-center gap-1 text-[10px] font-normal uppercase tracking-[0.14em] text-rose-700 bg-rose-50 px-2 py-0.5 rounded-full border border-rose-200">
                     <span className="h-1.5 w-1.5 rounded-full bg-rose-500 animate-ping" />
                     Takeover Alert
                   </span>
@@ -256,7 +256,7 @@ export function CallDetailCockpit({
           </div>
 
           <div className="text-right shrink-0 pl-3 border-l border-stone-200/80">
-            <span className="font-mono font-bold text-stone-900 block tabular-nums text-xs sm:text-sm">
+            <span className="font-mono font-semibold text-stone-900 block tabular-nums text-xs sm:text-sm">
               {call.declaredBudget}
             </span>
             <span className="text-[10px] text-stone-400 font-medium">Declared Budget</span>
@@ -370,7 +370,7 @@ export function CallDetailCockpit({
           className="space-y-2.5 pt-1"
         >
           <div className="flex items-center justify-between px-1">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-stone-500 flex items-center gap-1.5">
+            <span className="font-mono text-[10px] font-normal uppercase tracking-[0.14em] text-zinc-500 flex items-center gap-1.5">
               <FileText className="h-3.5 w-3.5 text-[#0d4a36]" />
               <span>Full Conversational Dialogue</span>
             </span>
@@ -410,7 +410,7 @@ export function CallDetailCockpit({
           className="space-y-2.5 pt-4 border-t border-stone-200/80"
         >
           <div className="flex items-center justify-between px-1">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-stone-500 flex items-center gap-1.5">
+            <span className="font-mono text-[10px] font-normal uppercase tracking-[0.14em] text-zinc-500 flex items-center gap-1.5">
               <Sparkles className="h-3.5 w-3.5 text-[#0d4a36]" />
               <span>Executive AI Voice Brief</span>
             </span>
@@ -441,7 +441,7 @@ export function CallDetailCockpit({
           className="space-y-2.5 pt-4 border-t border-stone-200/80 pb-6"
         >
           <div className="flex items-center justify-between px-1">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-stone-500 flex items-center gap-1.5">
+            <span className="font-mono text-[10px] font-normal uppercase tracking-[0.14em] text-zinc-500 flex items-center gap-1.5">
               <Zap className="h-3.5 w-3.5 text-[#0d4a36]" />
               <span>Speech Performance & Latency Analytics</span>
             </span>
@@ -459,7 +459,7 @@ export function CallDetailCockpit({
             <p className="text-stone-600 text-xs">
               Voice Model:{" "}
               <strong className="text-stone-900 font-semibold">
-                {call.agentPersona || "Neural Executive v2.4"}
+                {call.agentPersona || "AI sales agent"}
               </strong>
             </p>
             <p className="text-stone-500 text-[11px] leading-relaxed">

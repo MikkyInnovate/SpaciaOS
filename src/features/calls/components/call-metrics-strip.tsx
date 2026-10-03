@@ -22,33 +22,33 @@ export function CallMetricsStrip({ metrics, className }: CallMetricsStripProps) 
       <div className="grid grid-cols-3 gap-2 text-center sm:text-left">
         {/* Duration */}
         <div className="space-y-0.5">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400 flex items-center gap-1">
+          <span className="font-mono text-[10px] font-normal uppercase tracking-[0.14em] text-zinc-500 flex items-center gap-1">
             <Clock className="h-3 w-3 text-stone-500" />
             <span>Call Duration</span>
           </span>
-          <p className="font-mono text-sm font-bold text-stone-900 tabular-nums">
+          <p className="font-mono text-sm font-semibold text-stone-900 tabular-nums">
             {durationFormatted}
           </p>
         </div>
 
         {/* Turn Count */}
         <div className="space-y-0.5">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400 flex items-center gap-1">
+          <span className="font-mono text-[10px] font-normal uppercase tracking-[0.14em] text-zinc-500 flex items-center gap-1">
             <MessageSquare className="h-3 w-3 text-stone-500" />
             <span>Dialogue Turns</span>
           </span>
-          <p className="font-mono text-sm font-bold text-stone-900 tabular-nums">
+          <p className="font-mono text-sm font-semibold text-stone-900 tabular-nums">
             {turnCount} turns
           </p>
         </div>
 
         {/* Speech Latency */}
         <div className="space-y-0.5">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400 flex items-center gap-1">
+          <span className="font-mono text-[10px] font-normal uppercase tracking-[0.14em] text-zinc-500 flex items-center gap-1">
             <Zap className="h-3 w-3 text-emerald-600" />
             <span>AI Latency</span>
           </span>
-          <p className="font-mono text-sm font-bold text-emerald-800 tabular-nums">
+          <p className="font-mono text-sm font-semibold text-emerald-800 tabular-nums">
             {averageLatencyMs}ms
           </p>
         </div>
@@ -66,7 +66,7 @@ export function CallMetricsStrip({ metrics, className }: CallMetricsStripProps) 
               AI: {talkRatio.aiPercent}%
             </span>
             <span className="text-stone-300">•</span>
-            <span className="text-emerald-800 font-bold flex items-center gap-0.5">
+            <span className="text-emerald-800 font-semibold flex items-center gap-0.5">
               <User className="h-2.5 w-2.5" />
               Prospect: {talkRatio.prospectPercent}%
             </span>

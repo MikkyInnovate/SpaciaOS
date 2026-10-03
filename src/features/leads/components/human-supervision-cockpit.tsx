@@ -69,7 +69,7 @@ export function HumanSupervisionCockpit({
   const handleStopAIClick = async () => {
     setIsActing(true);
     try {
-      await onStopAI?.("Broker paused autonomous AI automation");
+      await onStopAI?.("Agent paused the AI for this lead");
       toast.warning("AI Engine Paused", {
         description: `Autonomous voice and chat paused for ${lead.name}.`,
       });
@@ -128,7 +128,7 @@ export function HumanSupervisionCockpit({
       <div className="rounded-xl border border-stone-200 bg-white p-3 shadow-2xs space-y-2.5">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400">
+            <span className="font-mono text-[10px] font-normal uppercase tracking-[0.14em] text-zinc-500">
               Supervision Protocol:
             </span>
             {isHumanManaged ? (
@@ -161,7 +161,7 @@ export function HumanSupervisionCockpit({
                 className="bg-stone-100/80 text-stone-700 border-stone-200 gap-1.5 py-0.5 px-2 text-xs font-semibold"
               >
                 <Bot className="h-3.5 w-3.5 text-stone-600" />
-                <span>AI Autonomous Queue</span>
+                <span>AI queue</span>
               </Badge>
             )}
 
@@ -254,13 +254,13 @@ export function HumanSupervisionCockpit({
             <div className="flex items-center gap-2">
               <AlertTriangle className="h-4 w-4 text-amber-600 shrink-0" />
               <span className="font-medium">
-                {lead.aiStoppedReason || "Autonomous AI outbound sequences are paused for this prospect."}
+                {lead.aiStoppedReason || "AI calls and follow-ups are paused for this lead."}
               </span>
             </div>
             <button
               type="button"
               onClick={handleResumeAIClick}
-              className="text-[11px] font-bold text-amber-900 underline hover:text-amber-950 cursor-pointer shrink-0"
+              className="text-[11px] font-semibold text-amber-900 underline hover:text-amber-950 cursor-pointer shrink-0"
             >
               Resume AI Now
             </button>
@@ -271,7 +271,7 @@ export function HumanSupervisionCockpit({
         {isLost && lead.lossDetails && (
           <div className="rounded-lg bg-rose-50 border border-rose-200 p-2.5 text-xs text-rose-900 space-y-1">
             <div className="flex items-center justify-between">
-              <span className="font-bold flex items-center gap-1.5">
+              <span className="font-semibold flex items-center gap-1.5">
                 <UserX className="h-3.5 w-3.5 text-rose-600" />
                 <span>Disqualified: {lead.lossDetails.reasonLabel}</span>
               </span>

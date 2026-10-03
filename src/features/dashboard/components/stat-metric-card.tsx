@@ -110,7 +110,7 @@ export function StatMetricCard({
           )}
         </div>
 
-        <p className="mt-2 truncate text-[12px] text-zinc-500">{subtext}</p>
+        <p className="mt-2 line-clamp-2 text-[12px] leading-snug text-zinc-500">{subtext}</p>
       </CardContent>
     </Card>
   );

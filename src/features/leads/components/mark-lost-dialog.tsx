@@ -57,14 +57,14 @@ export function MarkLostDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[440px]">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-base font-bold text-rose-900">
+          <DialogTitle className="flex items-center gap-2 text-base font-semibold text-rose-900">
             <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-rose-100 text-rose-700">
               <UserX className="h-4 w-4" />
             </div>
             <span>Mark Deal as Lost</span>
           </DialogTitle>
           <DialogDescription className="text-xs text-stone-500">
-            Transition <strong>{leadName || "this prospect"}</strong> to Lost status. This will halt all autonomous AI voice calls and automated messaging sequences.
+            Transition <strong>{leadName || "this prospect"}</strong> to Lost. This stops all AI calls and follow-up messages.
           </DialogDescription>
         </DialogHeader>
 

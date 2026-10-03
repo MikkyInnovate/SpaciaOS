@@ -87,7 +87,7 @@ export function RecommendedActionCard({
             <Compass className="h-4 w-4" />
           </div>
           <div>
-            <h4 className="text-xs font-bold text-stone-900 leading-none">
+            <h4 className="text-xs font-semibold text-stone-900 leading-none">
               Recommended Broker Directive
             </h4>
             {action.dueTimeFormatted && (
@@ -130,7 +130,7 @@ export function RecommendedActionCard({
 
       {/* Protocol Guidance / Script Box */}
       <div className="rounded-lg bg-stone-50 border border-stone-200/70 p-2.5 text-xs text-stone-700 space-y-1">
-        <span className="text-[10px] font-bold uppercase tracking-wider text-stone-600 flex items-center gap-1.5">
+        <span className="font-mono text-[10px] font-normal uppercase tracking-[0.14em] text-zinc-500 flex items-center gap-1.5">
           <CheckCircle2 className="h-3.5 w-3.5 text-stone-500" />
           <span>Execution Protocol</span>
         </span>
@@ -164,7 +164,7 @@ export function RecommendedActionCard({
           className="h-8 gap-1.5 bg-white hover:bg-stone-50 text-stone-700 border-stone-200 text-xs font-medium shadow-2xs cursor-pointer"
           onClick={() => {
             handleAction(
-              "Executive Email Dispatch",
+              "Send email",
               `Drafting outbound executive email for ${leadName || "prospect"}${leadEmail ? ` (${leadEmail})` : ""}`
             );
             if (leadEmail) {

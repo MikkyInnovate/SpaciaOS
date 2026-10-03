@@ -41,7 +41,7 @@ const VOICE_PERSONAS = [
   {
     id: "victoria",
     name: "Victoria — Senior Luxury Specialist",
-    description: "British-Nigerian Executive, warm tone, strategic closer.",
+    description: "Warm, professional, British-Nigerian accent.",
     latency: "380ms",
   },
   {
@@ -263,7 +263,7 @@ export function InitiateCallDialog({
             <>
               {/* Target Lead Card */}
               <div className="rounded-lg border border-stone-200/80 bg-[#fcfcfb] p-3 space-y-1.5">
-                <div className="text-[11px] font-semibold text-stone-500 uppercase tracking-wider">
+                <div className="font-mono text-[10px] font-normal text-zinc-500 uppercase tracking-[0.14em]">
                   Target Prospect
                 </div>
                 {availableLeads.length > 0 ? (
@@ -430,7 +430,7 @@ export function InitiateCallDialog({
                 className="h-8 text-xs bg-[#0d4a36] hover:bg-[#093829] text-white gap-1.5 cursor-pointer shadow-2xs font-medium px-3.5 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <PhoneCall className="h-3.5 w-3.5" />
-                <span>Dispatch Vapi Call</span>
+                <span>Start call</span>
               </Button>
             </div>
           )}

@@ -258,7 +258,7 @@ export function IntegrationCard({
               <CardTitle className="text-sm font-semibold text-stone-900 leading-tight">
                 {integration.name}
               </CardTitle>
-              <span className="inline-block text-[10px] font-semibold text-stone-400 uppercase tracking-wider mt-1">
+              <span className="font-mono inline-block text-[10px] font-normal text-zinc-500 uppercase tracking-[0.14em] mt-1">
                 {integration.category}
               </span>
             </div>

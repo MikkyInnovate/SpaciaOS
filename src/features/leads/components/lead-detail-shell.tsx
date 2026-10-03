@@ -265,7 +265,7 @@ export function LeadDetailShell({
             <div className="flex flex-wrap items-center justify-between gap-2.5">
               {/* Live AI Engine State Pill with Instant Killswitch */}
               <div className="flex items-center gap-2">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400">
+                <span className="font-mono text-[10px] font-normal uppercase tracking-[0.14em] text-zinc-500">
                   AI Telemetry:
                 </span>
                 {lead.isAiStopped ? (
@@ -301,7 +301,7 @@ export function LeadDetailShell({
                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
                       <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-600" />
                     </span>
-                    <span>AI Autonomous Active</span>
+                    <span>AI agent · On</span>
                     {onStopAI && (
                       <button
                         type="button"
@@ -317,7 +317,7 @@ export function LeadDetailShell({
 
               {/* Stage Switcher */}
               <div className="flex items-center gap-2 shrink-0">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400 select-none">
+                <span className="font-mono text-[10px] font-normal uppercase tracking-[0.14em] text-zinc-500 select-none">
                   Stage:
                 </span>
                 <LeadStatusSelect
@@ -419,7 +419,7 @@ export function LeadDetailShell({
             >
               <Sparkles className="h-3.5 w-3.5 text-emerald-700" />
               <span>Qualification &amp; Score</span>
-              <span className="font-mono text-[10px] px-1.5 py-0.2 rounded-full bg-emerald-100 text-emerald-800 font-bold">
+              <span className="font-mono text-[10px] px-1.5 py-0.2 rounded-full bg-emerald-100 text-emerald-800 font-semibold">
                 {lead.score}/100
               </span>
             </button>
@@ -436,7 +436,7 @@ export function LeadDetailShell({
             >
               <PhoneCall className="h-3.5 w-3.5 text-emerald-700" />
               <span>Voice Calls &amp; Audio</span>
-              <span className="font-mono text-[10px] px-1.5 py-0.2 rounded-full bg-stone-100 text-stone-700 font-bold">
+              <span className="font-mono text-[10px] px-1.5 py-0.2 rounded-full bg-stone-100 text-stone-700 font-semibold">
                 {connectedCalls.length}
               </span>
             </button>
@@ -453,7 +453,7 @@ export function LeadDetailShell({
             >
               <History className="h-3.5 w-3.5" />
               <span>Timeline Log</span>
-              <span className="font-mono text-[10px] px-1.5 py-0.2 rounded-full bg-stone-100 text-stone-700 font-bold">
+              <span className="font-mono text-[10px] px-1.5 py-0.2 rounded-full bg-stone-100 text-stone-700 font-semibold">
                 {lead.activities?.length || 0}
               </span>
             </button>
@@ -490,10 +490,10 @@ export function LeadDetailShell({
               {/* Commercial Profile Summary — Clean Unboxed Key Metrics Strip */}
               <div className="grid grid-cols-1 sm:grid-cols-3 divide-y sm:divide-y-0 sm:divide-x divide-stone-200/70 py-1 px-1 gap-3 sm:gap-0">
                 <div className="sm:pr-5 space-y-0.5">
-                  <span className="text-[10px] text-stone-400 uppercase font-bold tracking-wider block">
+                  <span className="font-mono text-[10px] text-zinc-500 uppercase font-normal tracking-[0.14em] block">
                     Declared Allocation
                   </span>
-                  <p className="font-mono text-base font-bold text-stone-900 tabular-nums">
+                  <p className="font-mono text-base font-semibold text-stone-900 tabular-nums">
                     {lead.budget}
                   </p>
                   <span className="text-[11px] text-stone-500 block">
@@ -502,7 +502,7 @@ export function LeadDetailShell({
                 </div>
 
                 <div className="pt-2 sm:pt-0 sm:px-5 space-y-0.5">
-                  <span className="text-[10px] text-stone-400 uppercase font-bold tracking-wider block">
+                  <span className="font-mono text-[10px] text-zinc-500 uppercase font-normal tracking-[0.14em] block">
                     Assigned Sales Pod
                   </span>
                   <p className="text-xs font-semibold text-stone-900 flex items-center gap-1.5 mt-1">
@@ -515,7 +515,7 @@ export function LeadDetailShell({
                 </div>
 
                 <div className="pt-2 sm:pt-0 sm:pl-5 space-y-0.5">
-                  <span className="text-[10px] text-stone-400 uppercase font-bold tracking-wider block">
+                  <span className="font-mono text-[10px] text-zinc-500 uppercase font-normal tracking-[0.14em] block">
                     Transaction Intent
                   </span>
                   <p className="text-xs font-semibold text-stone-900 flex items-center gap-1.5 mt-1">
@@ -592,7 +592,7 @@ export function LeadDetailShell({
             <div className="space-y-4 animate-in fade-in duration-150">
               <div className="flex items-center justify-between border-b border-stone-200 pb-2">
                 <div>
-                  <h4 className="text-xs font-semibold uppercase tracking-wider text-stone-900 flex items-center gap-1.5">
+                  <h4 className="font-mono text-[10px] font-normal uppercase tracking-[0.14em] text-stone-900 flex items-center gap-1.5">
                     <PhoneCall className="h-3.5 w-3.5 text-emerald-700" />
                     <span>Connected Vapi Voice Telephony</span>
                   </h4>
@@ -610,7 +610,7 @@ export function LeadDetailShell({
                     className="h-7 text-[11px] bg-[#0d4a36] hover:bg-[#0a3a2a] text-white shadow-2xs cursor-pointer gap-1.5 font-medium px-2.5"
                   >
                     <PhoneCall className="h-3 w-3" />
-                    <span>Dispatch Vapi Call</span>
+                    <span>Start call</span>
                   </Button>
                 </div>
               </div>
@@ -653,7 +653,7 @@ export function LeadDetailShell({
                         <div className="space-y-1">
                           <div className="flex items-center gap-2">
                             <span className="font-semibold text-stone-900 text-xs">
-                              {call.agentPersona || "Neural Executive (Sarah)"}
+                              {call.agentPersona || "AI sales agent (Sarah)"}
                             </span>
                             <span className="text-[10px] font-mono text-stone-400">
                               • {call.relativeTime}
@@ -672,7 +672,7 @@ export function LeadDetailShell({
                             className="h-7 text-xs px-2.5 bg-emerald-50 border-emerald-200 text-emerald-800 hover:bg-emerald-100 cursor-pointer"
                           >
                             <ExternalLink className="h-3 w-3 mr-1" />
-                            <span>Inspect in Call Cockpit</span>
+                            <span>Open in Calls</span>
                           </Button>
                         </div>
                       </div>

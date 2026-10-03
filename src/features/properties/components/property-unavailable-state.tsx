@@ -50,7 +50,7 @@ export function PropertyUnavailableState({
             <span className="text-[10px] text-stone-400 uppercase font-medium block">
               Asking Price
             </span>
-            <span className="font-mono font-bold text-stone-800 tabular-nums">
+            <span className="font-mono font-semibold text-stone-800 tabular-nums">
               {property.formattedPrice}
             </span>
           </div>

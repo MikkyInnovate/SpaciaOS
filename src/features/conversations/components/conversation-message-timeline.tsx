@@ -134,7 +134,7 @@ export function ConversationMessageTimeline({
         <div key={groupIdx} className="space-y-4">
           {/* Date Separator */}
           <div className="flex items-center justify-center">
-            <span className="rounded-full bg-stone-100/90 border border-stone-200/70 px-3 py-0.5 text-[10px] font-medium text-stone-500 uppercase tracking-wider select-none">
+            <span className="font-mono rounded-full bg-stone-100/90 border border-stone-200/70 px-3 py-0.5 text-[10px] font-normal text-zinc-500 uppercase tracking-[0.14em] select-none">
               {group.date}
             </span>
           </div>

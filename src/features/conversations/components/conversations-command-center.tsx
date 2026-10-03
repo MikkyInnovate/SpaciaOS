@@ -179,7 +179,7 @@ export function ConversationsCommandCenter() {
           description: `Direct message delivered to ${selectedConversation.prospect.name}.`,
         });
       } catch {
-        toast.error("Failed to dispatch message");
+        toast.error("Couldn't send message");
       } finally {
         setIsSending(false);
       }

@@ -33,15 +33,15 @@ type FunnelMetricKey = "count" | "percentageOfTop" | "stepConversionRate";
 
 const chartConfig = {
   count: {
-    label: "Lead Volume",
+    label: "Leads",
     color: "#0d4a36",
   },
   percentageOfTop: {
-    label: "Funnel Retention",
+    label: "Still in funnel",
     color: "#059669",
   },
   stepConversionRate: {
-    label: "Step Pass-Through",
+    label: "Moved to next step",
     color: "#2563eb",
   },
 } satisfies ChartConfig;
@@ -60,7 +60,7 @@ const STAGE_BAR_COLORS = [
 const STAGE_SHORT_LABELS: Record<string, string> = {
   leads: "Leads",
   contacted: "Contacted",
-  conversations: "In Talk",
+  conversations: "Talking",
   qualified: "Qualified",
   hot: "Hot",
   viewing_booked: "Booked",
@@ -100,27 +100,27 @@ function FunnelCustomTooltip({
           {item.stageNumber}. {item.label}
         </span>
         {item.isWon && (
-          <span className="rounded bg-emerald-100 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-[#0d4a36]">
-            Closed Won
+          <span className="font-mono rounded bg-emerald-100 px-1.5 py-0.5 text-[10px] font-normal uppercase tracking-[0.14em] text-[#0d4a36]">
+            Won
           </span>
         )}
       </div>
       <div className="grid grid-cols-2 gap-2 text-[11px]">
         <div>
           <span className="text-[10px] text-stone-400 block">Volume</span>
-          <span className="font-bold font-mono text-stone-900">{item.count} leads</span>
+          <span className="font-semibold font-mono text-stone-900">{item.count} leads</span>
         </div>
         <div>
           <span className="text-[10px] text-stone-400 block">% of Funnel</span>
-          <span className="font-bold font-mono text-[#0d4a36]">{item.percentageOfTop}%</span>
+          <span className="font-semibold font-mono text-[#0d4a36]">{item.percentageOfTop}%</span>
         </div>
         <div>
           <span className="text-[10px] text-stone-400 block">Step Conv.</span>
-          <span className="font-bold font-mono text-stone-900">{item.stepConversionRate}%</span>
+          <span className="font-semibold font-mono text-stone-900">{item.stepConversionRate}%</span>
         </div>
         <div>
           <span className="text-[10px] text-stone-400 block">Drop-off</span>
-          <span className="font-bold font-mono text-rose-600">
+          <span className="font-semibold font-mono text-rose-600">
             {item.dropOffCount > 0 ? `-${item.dropOffCount} (${item.dropOffRate}%)` : "0"}
           </span>
         </div>
@@ -224,11 +224,11 @@ export function FunnelStageChart({ data, isLoading = false }: FunnelStageChartPr
     <Card className="py-4 sm:py-0 bg-white border-border shadow-2xs overflow-hidden">
       <CardHeader className="flex flex-col items-stretch border-b border-border p-0! sm:flex-row">
         <div className="flex flex-1 flex-col justify-center gap-1 px-6 py-4 sm:py-0">
-          <CardTitle className="font-display text-base font-bold text-stone-900">
-            Conversion Funnel
+          <CardTitle className="font-display text-base font-normal text-[#14231d]">
+            Lead funnel
           </CardTitle>
           <CardDescription className="text-xs text-stone-500">
-            Stage-by-stage progression from inbound inquiry to closed won
+            How leads move from enquiry to closed deal
           </CardDescription>
         </div>
 
@@ -256,11 +256,11 @@ export function FunnelStageChart({ data, isLoading = false }: FunnelStageChartPr
                     className="h-2 w-2 rounded-full shrink-0"
                     style={{ backgroundColor: chartConfig[key].color }}
                   />
-                  <span className="text-[11px] font-semibold text-stone-500 uppercase tracking-wider truncate">
+                  <span className="font-mono text-[10px] font-normal text-zinc-500 uppercase tracking-[0.14em] truncate">
                     {chartConfig[key].label}
                   </span>
                 </div>
-                <span className="font-display text-xl sm:text-2xl font-bold tracking-tight text-stone-900 tabular-nums">
+                <span className="font-display text-xl sm:text-2xl font-light tracking-tight text-[#14231d] tabular-nums">
                   {displayValue}
                 </span>
               </button>
@@ -342,46 +342,46 @@ export function FunnelStageChart({ data, isLoading = false }: FunnelStageChartPr
         {/* Funnel Metrics Summary Under Chart */}
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 pt-4 mt-2 border-t border-border/80">
           <div className="p-3 rounded-md border border-stone-200/80 bg-stone-50/50">
-            <span className="text-[11px] font-semibold text-stone-500 uppercase tracking-wider">
-              Total Inbound
+            <span className="font-mono text-[10px] font-normal text-zinc-500 uppercase tracking-[0.14em]">
+              Total leads
             </span>
-            <p className="font-display text-lg font-bold text-stone-900 mt-0.5">
+            <p className="font-display text-lg font-normal text-[#14231d] mt-0.5">
               {totalLeads.toLocaleString()}
             </p>
             <span className="text-[11px] text-stone-500">
-              Top of conversion funnel
+              Every enquiry received
             </span>
           </div>
 
           <div className="p-3 rounded-md border border-stone-200/80 bg-stone-50/50">
-            <span className="text-[11px] font-semibold text-stone-500 uppercase tracking-wider">
-              Qualified Intent
+            <span className="font-mono text-[10px] font-normal text-zinc-500 uppercase tracking-[0.14em]">
+              Qualified
             </span>
-            <p className="font-display text-lg font-bold text-stone-900 mt-0.5">
+            <p className="font-display text-lg font-normal text-[#14231d] mt-0.5">
               {qualifiedCount.toLocaleString()}
             </p>
             <span className="text-[11px] text-stone-500">
-              Passed qualification criteria
+              Met your buying criteria
             </span>
           </div>
 
           <div className="p-3 rounded-md border border-stone-200/80 bg-stone-50/50">
-            <span className="text-[11px] font-semibold text-stone-500 uppercase tracking-wider">
+            <span className="font-mono text-[10px] font-normal text-zinc-500 uppercase tracking-[0.14em]">
               Completed Viewings
             </span>
-            <p className="font-display text-lg font-bold text-stone-900 mt-0.5">
+            <p className="font-display text-lg font-normal text-[#14231d] mt-0.5">
               {viewingsCount.toLocaleString()}
             </p>
             <span className="text-[11px] text-stone-500">
-              Attended property walkthroughs
+              Buyers who attended
             </span>
           </div>
 
           <div className="p-3 rounded-md border border-stone-200/80 bg-stone-50/50">
-            <span className="text-[11px] font-semibold text-stone-500 uppercase tracking-wider">
-              Overall Win Rate
+            <span className="font-mono text-[10px] font-normal text-zinc-500 uppercase tracking-[0.14em]">
+              Win rate
             </span>
-            <p className="font-display text-lg font-bold text-[#0d4a36] mt-0.5">
+            <p className="font-display text-lg font-normal text-[#0d4a36] mt-0.5">
               {overallConversionRate}%
             </p>
             <span className="text-[11px] text-stone-500">

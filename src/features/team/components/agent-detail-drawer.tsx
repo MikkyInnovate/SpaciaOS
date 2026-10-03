@@ -211,7 +211,7 @@ export function AgentDetailDrawer({
 
             <div className="flex items-center gap-2 self-start sm:self-center shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-stone-200/60">
               <div className="text-right">
-                <div className="text-[11px] font-medium text-stone-700">Dispatch Routing</div>
+                <div className="text-[11px] font-medium text-stone-700">Lead routing</div>
                 <div className="text-[10px] text-stone-400">
                   {isAvailable ? "Eligible for leads" : "Paused"}
                 </div>

@@ -60,13 +60,13 @@ export function LeadPropertyCard({
     <div className="rounded-xl border border-stone-200/70 bg-white p-4 space-y-3.5 shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
       {/* Section Header */}
       <div className="flex items-center justify-between border-b border-stone-100 pb-2.5">
-        <h4 className="text-xs font-semibold uppercase tracking-wider text-stone-500 flex items-center gap-1.5">
+        <h4 className="font-mono text-[10px] font-normal uppercase tracking-[0.14em] text-zinc-500 flex items-center gap-1.5">
           <Building className="h-3.5 w-3.5 text-[#0d4a36]" />
           Target Property Information
         </h4>
         <Badge
           variant="outline"
-          className="text-[10px] uppercase font-semibold tracking-wider text-stone-600 bg-stone-50 border-stone-200"
+          className="font-mono text-[10px] uppercase font-normal tracking-[0.14em] text-zinc-500 bg-stone-50 border-stone-200"
         >
           {intent} Intent
         </Badge>
@@ -89,7 +89,7 @@ export function LeadPropertyCard({
           {/* Development Stage Tag */}
           {property?.developmentStage && (
             <div className="absolute top-2.5 left-2.5">
-              <span className="text-[10px] font-semibold tracking-wider uppercase px-2 py-0.5 rounded bg-black/60 backdrop-blur-xs text-white border border-white/10">
+              <span className="font-mono text-[10px] font-normal tracking-[0.14em] uppercase px-2 py-0.5 rounded bg-black/60 backdrop-blur-xs text-white border border-white/10">
                 {property.developmentStage}
               </span>
             </div>
@@ -207,7 +207,7 @@ export function LeadPropertyCard({
             <Tag className="h-3 w-3 text-stone-400" />
             Asking / Target Price
           </span>
-          <p className="font-mono text-base font-bold text-stone-900 tabular-nums mt-0.5">
+          <p className="font-mono text-base font-semibold text-stone-900 tabular-nums mt-0.5">
             {targetPrice}
           </p>
         </div>

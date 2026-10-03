@@ -166,7 +166,7 @@ export function CalendarConnectionsPanel() {
   const getProviderIcon = (provider: string) => {
     if (provider === "google_calendar") {
       return (
-        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50 text-blue-600 border border-blue-100 font-bold text-sm shrink-0">
+        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50 text-blue-600 border border-blue-100 font-semibold text-sm shrink-0">
           <svg className="w-5 h-5" viewBox="0 0 24 24">
             <path
               fill="#4285F4"

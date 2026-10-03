@@ -116,7 +116,7 @@ Suggested Next Step: ${summary.suggestedNextStep || "Review conversation"}`;
 
       {/* 1. Core Synthesis */}
       <div className="rounded-lg border border-emerald-100 bg-emerald-50/40 p-3 space-y-1">
-        <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-900 block">
+        <span className="font-mono text-[10px] font-normal uppercase tracking-[0.14em] text-emerald-900 block">
           Primary Call Synthesis
         </span>
         <p className="text-xs text-stone-800 leading-relaxed font-normal">
@@ -126,7 +126,7 @@ Suggested Next Step: ${summary.suggestedNextStep || "Review conversation"}`;
 
       {/* 2. Key Takeaways */}
       <div className="space-y-1.5">
-        <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400 flex items-center gap-1">
+        <span className="font-mono text-[10px] font-normal uppercase tracking-[0.14em] text-zinc-500 flex items-center gap-1">
           <CheckCircle2 className="h-3 w-3 text-emerald-600" />
           <span>Key Verified Facts</span>
         </span>
@@ -146,9 +146,9 @@ Suggested Next Step: ${summary.suggestedNextStep || "Review conversation"}`;
       {/* 3. Identified Objections */}
       {summary.objectionsRaised.length > 0 && (
         <div className="space-y-1.5">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-amber-700 flex items-center gap-1">
+          <span className="font-mono text-[10px] font-normal uppercase tracking-[0.14em] text-amber-700 flex items-center gap-1">
             <AlertTriangle className="h-3 w-3 text-amber-600" />
-            <span>Friction Points & Questions</span>
+            <span>Concerns and questions</span>
           </span>
           <div className="space-y-1">
             {summary.objectionsRaised.map((obj, idx) => (
@@ -166,7 +166,7 @@ Suggested Next Step: ${summary.suggestedNextStep || "Review conversation"}`;
 
       {/* 4. Action Directives */}
       <div className="space-y-1.5 pt-1 border-t border-stone-100">
-        <span className="text-[10px] font-bold uppercase tracking-wider text-stone-500 flex items-center gap-1">
+        <span className="font-mono text-[10px] font-normal uppercase tracking-[0.14em] text-zinc-500 flex items-center gap-1">
           <ArrowRightCircle className="h-3 w-3 text-stone-700" />
           <span>Recommended Broker Protocol</span>
         </span>
@@ -176,7 +176,7 @@ Suggested Next Step: ${summary.suggestedNextStep || "Review conversation"}`;
               key={idx}
               className="flex items-start gap-2 text-xs text-stone-800 rounded-md bg-white border border-stone-200 p-2 shadow-2xs font-medium"
             >
-              <span className="text-emerald-700 font-bold shrink-0">→</span>
+              <span className="text-emerald-700 font-semibold shrink-0">→</span>
               <span className="leading-snug">{action}</span>
             </div>
           ))}

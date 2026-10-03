@@ -54,7 +54,7 @@ export function AIActivityIndicator({
                 <span className="font-semibold text-xs text-stone-900 leading-tight">
                   {actor.name}
                 </span>
-                <span className="rounded bg-emerald-100 px-1 py-0.2 text-[9px] font-bold text-emerald-900 uppercase tracking-wider">
+                <span className="font-mono rounded bg-emerald-100 px-1 py-0.2 text-[10px] font-normal text-emerald-900 uppercase tracking-[0.14em]">
                   AI Autonomous
                 </span>
               </div>

@@ -45,7 +45,7 @@ const CATEGORY_MAP: Record<
   }
 > = {
   ingestion: {
-    label: "Ingestion & Core",
+    label: "Lead capture",
     badge: "bg-stone-100 text-stone-700 border-stone-200",
     border: "border-stone-200",
     icon: Globe,
@@ -143,7 +143,7 @@ export function RevenuePathStepper({
       <CardHeader className="border-b border-stone-100 pb-5">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div>
-            <CardTitle className="text-base font-display font-bold text-stone-900">
+            <CardTitle className="text-base font-display font-normal text-[#14231d]">
               Sales Pipeline
             </CardTitle>
             <CardDescription className="text-xs text-stone-500 mt-1">
@@ -158,7 +158,7 @@ export function RevenuePathStepper({
               <div className="w-2.5 h-2.5 bg-emerald-600 rounded-full" />
             </div>
             <div>
-              <div className="text-xs font-bold text-emerald-950 flex items-center gap-1.5">
+              <div className="text-xs font-semibold text-emerald-950 flex items-center gap-1.5">
                 <span>{operationalNodes}/{totalNodes} Steps Active</span>
                 <span className="font-mono text-[11px] font-semibold text-emerald-700">
                   ({readinessPercentage}%)
@@ -244,7 +244,7 @@ export function RevenuePathStepper({
                     <div className="relative">
                       <div
                         className={cn(
-                          "w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs shadow-2xs border transition-colors",
+                          "w-8 h-8 rounded-full flex items-center justify-center font-semibold text-xs shadow-2xs border transition-colors",
                           node.status === "operational"
                             ? "bg-emerald-50 text-[#0d4a36] border-emerald-300"
                             : "bg-stone-100 text-stone-500 border-stone-200"
@@ -252,7 +252,7 @@ export function RevenuePathStepper({
                       >
                         <Icon className="w-4 h-4" />
                       </div>
-                      <span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-[#0d4a36] text-white text-[9px] font-mono font-bold flex items-center justify-center">
+                      <span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-[#0d4a36] text-white text-[9px] font-mono font-semibold flex items-center justify-center">
                         {node.step}
                       </span>
                     </div>
@@ -285,7 +285,7 @@ export function RevenuePathStepper({
                       <div className="text-[10px] text-stone-400 font-medium">
                         Live Volume
                       </div>
-                      <div className="text-xs font-bold font-mono text-stone-800">
+                      <div className="text-xs font-semibold font-mono text-stone-800">
                         {node.eventsRecorded === 0
                           ? "0 recorded"
                           : node.key === "verified_property_data"

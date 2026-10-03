@@ -70,7 +70,7 @@ export default function CallsPage() {
   const handleTakeover = async (call: Call) => {
     if (call.leadId) {
       leadsService
-        .takeoverLead(call.leadId, "Marcus Vance", "Broker takeover from live call cockpit")
+        .takeoverLead(call.leadId, "Marcus Vance", "Agent took over the live call")
         .catch((err) => console.warn("Takeover sync notification:", err));
     }
     setCalls((prev) =>
@@ -102,7 +102,7 @@ export default function CallsPage() {
       {/* Page Header */}
       <PageHeader
         title="Calls"
-        description={`Autonomous voice interactions, audio recordings, and qualification logs for ${currentWorkspace?.name || "your workspace"}.`}
+        description="Every call your AI agent made, with recordings and transcripts."
         actions={
           <Button
             size="sm"
@@ -123,13 +123,13 @@ export default function CallsPage() {
             <span>Avg. Call Duration</span>
           </div>
           <div className="mt-2 flex items-baseline">
-            <span className="font-display text-2xl font-bold tracking-tight text-stone-900 tabular-nums">
+            <span className="font-display text-2xl font-light tracking-tight text-[#14231d] tabular-nums">
               3
             </span>
             <span className="text-xs font-medium text-stone-500 font-sans ml-0.5 mr-1.5">
               m
             </span>
-            <span className="font-display text-2xl font-bold tracking-tight text-stone-900 tabular-nums">
+            <span className="font-display text-2xl font-light tracking-tight text-[#14231d] tabular-nums">
               42
             </span>
             <span className="text-xs font-medium text-stone-500 font-sans ml-0.5">
@@ -145,7 +145,7 @@ export default function CallsPage() {
             <span>Calls Placed Today</span>
           </div>
           <div className="mt-2 flex items-baseline gap-1.5">
-            <span className="font-display text-2xl font-bold tracking-tight text-stone-900 tabular-nums">
+            <span className="font-display text-2xl font-light tracking-tight text-[#14231d] tabular-nums">
               42
             </span>
             <span className="text-xs font-medium text-stone-500 font-sans">
@@ -161,7 +161,7 @@ export default function CallsPage() {
             <span>Viewings Booked via Voice</span>
           </div>
           <div className="mt-2 flex items-baseline gap-1.5">
-            <span className="font-display text-2xl font-bold tracking-tight text-stone-900 tabular-nums">
+            <span className="font-display text-2xl font-light tracking-tight text-[#14231d] tabular-nums">
               11
             </span>
             <span className="text-xs font-medium text-stone-500 font-sans">

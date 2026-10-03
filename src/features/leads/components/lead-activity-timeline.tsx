@@ -172,7 +172,7 @@ export function LeadActivityTimeline({
             <History className="h-3.5 w-3.5 text-[#0d4a36]" />
           </div>
           <div>
-            <h4 className="text-xs font-semibold uppercase tracking-wider text-stone-900">
+            <h4 className="font-mono text-[10px] font-normal uppercase tracking-[0.14em] text-stone-900">
               Interaction Timeline &amp; Audit Log
             </h4>
             <span className="text-[11px] text-stone-500">
@@ -183,7 +183,7 @@ export function LeadActivityTimeline({
 
         {/* Dropdown Filter */}
         <div className="flex items-center gap-1.5 self-start sm:self-auto shrink-0">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400 select-none">
+          <span className="font-mono text-[10px] font-normal uppercase tracking-[0.14em] text-zinc-500 select-none">
             Filter:
           </span>
           <Select
@@ -422,7 +422,7 @@ export function LeadActivityTimeline({
                         className="h-7 text-xs px-2.5 bg-white border-emerald-200 text-emerald-800 hover:bg-emerald-100/80 cursor-pointer shadow-2xs font-medium shrink-0"
                       >
                         <PhoneCall className="h-3 w-3 mr-1 text-emerald-700" />
-                        <span>Inspect in Call Cockpit</span>
+                        <span>Open in Calls</span>
                       </Button>
                     )}
                   </div>

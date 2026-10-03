@@ -63,7 +63,7 @@ export function MarkNurtureDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[440px]">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2 text-base font-bold text-teal-950">
+          <DialogTitle className="flex items-center gap-2 text-base font-semibold text-teal-950">
             <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-teal-100 text-teal-800">
               <CalendarHeart className="h-4 w-4" />
             </div>

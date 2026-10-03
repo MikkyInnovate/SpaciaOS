@@ -94,14 +94,14 @@ export function AutomationEventFeed({
           workflowId: `wf_sim_${Date.now()}`,
           entityId: entityId || "lead_01",
           title: "Telephony Handshake Dropout (Simulated)",
-          description: "Circuit carrier packet loss detected during automated BANT dialer sequence.",
+          description: "The call dropped during qualification.",
           category: "voice_call",
           status: "retrying",
           actor: {
             type: "ai_agent",
             name: "SpaciaOS Voice Core",
-            role: "Autonomous Sales Associate",
-            modelIdentifier: "Neural Executive v2.4",
+            role: "AI sales agent",
+            modelIdentifier: "AI sales agent",
             latencyMs: 395,
           },
           timestamp: "Just now",
@@ -125,13 +125,13 @@ export function AutomationEventFeed({
       : {
           workflowId: `wf_sim_${Date.now()}`,
           entityId: entityId || "lead_01",
-          title: "Autonomous BANT Qualification Score Calculated",
+          title: "Qualification score calculated",
           description: "Prospect qualified at 94/100 following completed automated interview.",
           category: "underwriting",
           status: "completed",
           actor: {
             type: "ai_agent",
-            name: "BANT Underwriter Core",
+            name: "SpaciaOS qualification",
             role: "Risk & Readiness Engine",
             modelIdentifier: "Underwriting Engine v3",
             confidenceScore: 98,
@@ -200,7 +200,7 @@ export function AutomationEventFeed({
               )}
             >
               <Bot className="h-3 w-3 text-[#0d4a36]" />
-              <span>AI Autonomous ({aiCount})</span>
+              <span>AI ({aiCount})</span>
             </button>
 
             <button

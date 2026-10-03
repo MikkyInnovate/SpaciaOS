@@ -26,7 +26,7 @@ export default function SettingsPage() {
     <Container size="lg" className="space-y-6">
       <PageHeader
         title="Settings"
-        description={`Workspace profile, autonomous AI behavior, and access controls for ${currentWorkspace?.name || "your workspace"}.`}
+        description="Workspace details, AI agent behaviour and access."
         actions={
           <Button
             onClick={handleSave}
@@ -123,7 +123,7 @@ export default function SettingsPage() {
           <CardHeader>
             <CardTitle className="text-sm font-semibold text-stone-900 flex items-center gap-2">
               <Bot className="h-4 w-4 text-[#0d4a36]" />
-              <span>AI Autonomous Response Engine Configuration</span>
+              <span>AI agent settings</span>
             </CardTitle>
             <CardDescription className="text-xs text-stone-500">
               Real-time parameters governing automatic prospect qualification, booking viewings, and WhatsApp routing.
@@ -150,7 +150,7 @@ export default function SettingsPage() {
                   <span className="text-xs font-semibold text-stone-800">Human Hand-off</span>
                   <Badge variant="outline" className="text-emerald-700 bg-emerald-50 text-[10px]">Active</Badge>
                 </div>
-                <p className="text-[11px] text-stone-500">Auto-routes to on-duty brokers upon high-intent negotiation.</p>
+                <p className="text-[11px] text-stone-500">Sends serious buyers to the agent on duty.</p>
               </div>
             </div>
           </CardContent>

@@ -40,7 +40,7 @@ export interface BuyerIntentMeta {
 
 export const BUYER_INTENT_META: Record<BuyerIntentCategory, BuyerIntentMeta> = {
   high_purchase_intent: {
-    label: "High Purchase Intent",
+    label: "Ready to buy",
     badgeClass: "bg-emerald-50/80 text-[#0d4a36] border-emerald-200/90",
     dotClass: "bg-[#0d4a36]",
     icon: Target,
@@ -179,7 +179,7 @@ export function IntentConfidenceGauge({
   return (
     <div className={cn("space-y-1.5", className)}>
       <div className="flex items-center justify-between text-xs">
-        <span className="text-[11px] font-semibold text-stone-500 uppercase tracking-wider">
+        <span className="font-mono text-[10px] font-normal text-zinc-500 uppercase tracking-[0.14em]">
           Confidence Score
         </span>
         <div className="flex items-center gap-1.5 font-mono">
@@ -188,7 +188,7 @@ export function IntentConfidenceGauge({
               {tier.label}
             </span>
           )}
-          <span className={cn("font-bold text-xs tabular-nums", tier.textClass)}>
+          <span className={cn("font-semibold text-xs tabular-nums", tier.textClass)}>
             {clampedScore}%
           </span>
         </div>
@@ -303,7 +303,7 @@ export function BuyerIntentCard({
 
       {/* Synthesis Quote / Summary with Architectural Left Laser Line */}
       <div className="rounded-md border-l-2 border-[#0d4a36] bg-stone-50/70 border-y border-r border-stone-200/80 p-2.5 text-xs text-stone-800 leading-relaxed font-normal shadow-2xs">
-        <span className="text-[10px] font-semibold text-stone-400 uppercase tracking-wider block mb-0.5">
+        <span className="font-mono text-[10px] font-normal text-zinc-500 uppercase tracking-[0.14em] block mb-0.5">
           AI Executive Synthesis
         </span>
         &ldquo;{evaluation.summary}&rdquo;
@@ -311,7 +311,7 @@ export function BuyerIntentCard({
 
       {/* Extracted Signals */}
       <div>
-        <div className="flex items-center justify-between text-[10px] font-semibold uppercase tracking-wider text-stone-400 mb-1.5">
+        <div className="font-mono flex items-center justify-between text-[10px] font-normal uppercase tracking-[0.14em] text-zinc-500 mb-1.5">
           <span>Extracted Signals</span>
           <span className="font-mono text-stone-400">({signals.length})</span>
         </div>
@@ -356,14 +356,14 @@ export function BuyerIntentCard({
       {/* Human Role & Closing Action */}
       <div className="pt-2.5 border-t border-stone-100 flex items-center justify-between gap-2 text-xs">
         <div className="flex items-center gap-1.5 text-stone-600 truncate">
-          <span className="font-semibold text-stone-900 text-[11px] uppercase tracking-wider text-stone-500">
+          <span className="font-mono font-normal text-stone-900 text-[10px] uppercase tracking-[0.14em] text-zinc-500">
             {evaluation.humanActionStage === "awaiting_closing_payment"
               ? "Human Stage:"
               : "Next Action:"}
           </span>
           <span className="truncate text-stone-700 text-xs">
             {evaluation.humanActionStage === "awaiting_closing_payment"
-              ? "AI scheduled inspection · Closer handles showing & payment"
+              ? "AI booked the viewing · your agent handles the visit and payment"
               : actionText}
           </span>
         </div>

@@ -195,7 +195,7 @@ export default function AiAgentPage() {
       {/* 1. Page Header matching Homepage Overview */}
       <PageHeader
         title="AI Sales Agent"
-        description="Autonomous prospect response, qualification, and viewing pipeline."
+        description="How your AI agent answers, qualifies and books viewings."
         actions={
           <div className="flex items-center gap-2">
             {/* Workspace Identifier matching Homepage */}
@@ -266,14 +266,14 @@ export default function AiAgentPage() {
 
         {/* 2. QUALIFIED INTENT */}
         <StatMetricCard
-          title="Qualified Intent"
+          title="Qualified"
           value={`${telemetry.qualificationRate}%`}
           subtext={
             telemetry.totalLeads
               ? `${telemetry.qualifiedLeads ?? 4} of ${telemetry.totalLeads ?? 4} verified leads`
-              : "BANT qualification active"
+              : "Qualifying every lead"
           }
-          badge="BANT Verified"
+          badge="Qualified"
           icon={CheckCircle2}
           variant="emerald"
         />
@@ -294,7 +294,7 @@ export default function AiAgentPage() {
 
         {/* 4. BOOKED VIEWINGS */}
         <StatMetricCard
-          title="Booked Viewings"
+          title="Viewings booked"
           value={telemetry.appointmentsToday ?? telemetry.bookedAppointmentsToday ?? 0}
           subtext={
             telemetry.totalAppointments
@@ -324,7 +324,7 @@ export default function AiAgentPage() {
             )}
           >
             <Radio className="h-3.5 w-3.5" />
-            <span>Live Fleet Operations &amp; Dispatch</span>
+            <span>Live calls</span>
             <span
               className={cn(
                 "px-1.5 py-0.2 rounded text-[10px] font-mono border transition-colors",

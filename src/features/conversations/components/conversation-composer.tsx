@@ -112,7 +112,7 @@ export function ConversationComposer({
                 Broker direct active
               </span>
             ) : (
-              <span>Autonomous AI monitored</span>
+              <span>AI is handling this chat</span>
             )}
           </div>
 

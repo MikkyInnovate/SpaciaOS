@@ -39,8 +39,8 @@ import type { Appointment } from "@/features/appointments/types";
 type AnalyticsView = "funnel" | "pipeline" | "performance";
 
 const VIEW_OPTIONS: { key: AnalyticsView; label: string; icon: React.ElementType }[] = [
-  { key: "funnel", label: "Sales Funnel", icon: Layers },
-  { key: "pipeline", label: "Sales Pipeline", icon: CheckCircle2 },
+  { key: "funnel", label: "Funnel", icon: Layers },
+  { key: "pipeline", label: "Pipeline", icon: CheckCircle2 },
   { key: "performance", label: "Performance", icon: Gauge },
 ];
 
@@ -113,7 +113,7 @@ export default function AnalyticsPage() {
     fetchAnalytics();
   }, [fetchAnalytics, currentWorkspace?.id]);
 
-  // Dynamically compute real daily trajectory from actual database records
+  // Daily counts computed from real lead and appointment records
   const dynamicTrajectoryData = React.useMemo(() => {
     const days = selectedPeriod === "7d" ? 7 : 14;
     const result: Array<{ date: string; inquiries: number; qualified: number; viewings: number }> = [];
@@ -165,7 +165,7 @@ export default function AnalyticsPage() {
     <Container size="lg" className="space-y-6">
       <PageHeader
         title="Analytics"
-        description={`Conversion funnels, pipeline health, and performance metrics for ${currentWorkspace?.name || "your workspace"}.`}
+        description="How your leads move from first enquiry to closed deal."
         actions={
           <div className="flex items-center gap-2">
             {/* Refresh Button */}
@@ -175,7 +175,7 @@ export default function AnalyticsPage() {
               onClick={() => fetchAnalytics(true)}
               disabled={isRefreshing}
               className="h-9 w-9 p-0 border-stone-200 text-stone-600 hover:text-stone-900 bg-white shadow-2xs rounded-lg cursor-pointer"
-              title="Refresh Analytics"
+              title="Refresh"
             >
               <RefreshCw
                 className={cn(
@@ -329,15 +329,15 @@ export default function AnalyticsPage() {
               data={dynamicTrajectoryData}
               periodDescription={
                 selectedCustomDate
-                  ? `Inbound activity and conversions leading up to ${selectedCustomDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`
-                  : "Daily inbound volume, AI verified qualification, and viewing completions over the selected timeframe"
+                  ? `Leads and conversions up to ${selectedCustomDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`
+                  : "New leads, qualified leads and viewings per day"
               }
               benchmarks={
                 metricsData
                   ? {
                       speedToLead: metricsData.speedToLead.value,
                       qualificationAccuracy: metricsData.qualificationRate.value,
-                      viewingVelocity: "+38% vs Manual",
+                      viewingVelocity: "",
                     }
                   : undefined
               }
@@ -354,33 +354,33 @@ export default function AnalyticsPage() {
           <div className="space-y-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <StatMetricCard
-                title="Speed to Lead"
+                title="Speed to lead"
                 value={metricsData?.speedToLead.value ?? "< 60s"}
-                subtext={metricsData?.speedToLead.subtext ?? "autonomous AI outreach dispatch"}
+                subtext={metricsData?.speedToLead.subtext ?? "Average time to first call"}
                 icon={Clock}
                 variant="stone"
                 isLoading={isLoading}
               />
               <StatMetricCard
-                title="Instant Qualification"
+                title="Qualified rate"
                 value={metricsData?.qualificationRate.value ?? "0%"}
-                subtext={metricsData?.qualificationRate.subtext ?? "0 of 0 leads BANT qualified"}
+                subtext={metricsData?.qualificationRate.subtext ?? "0 of 0 leads qualified"}
                 icon={Zap}
                 variant="emerald"
                 isLoading={isLoading}
               />
               <StatMetricCard
-                title="Autonomous Resolution"
+                title="Handled by AI"
                 value={metricsData?.autonomousResolutionRate.value ?? "0%"}
-                subtext={metricsData?.autonomousResolutionRate.subtext ?? "0 of 0 leads handled autonomously"}
+                subtext={metricsData?.autonomousResolutionRate.subtext ?? "0 of 0 leads handled without an agent"}
                 icon={ShieldCheck}
                 variant="emerald"
                 isLoading={isLoading}
               />
               <StatMetricCard
-                title="Viewing Conversions"
+                title="Viewings booked"
                 value={metricsData?.bookedViewings.value ?? "0"}
-                subtext={metricsData?.bookedViewings.subtext ?? "0 scheduled viewings"}
+                subtext={metricsData?.bookedViewings.subtext ?? "0 viewings booked"}
                 icon={CalendarCheck}
                 variant="sky"
                 isLoading={isLoading}
@@ -392,15 +392,15 @@ export default function AnalyticsPage() {
               data={dynamicTrajectoryData}
               periodDescription={
                 selectedCustomDate
-                  ? `Operational performance and velocity leading up to ${selectedCustomDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`
-                  : "Continuous conversion trajectory, qualification throughput, and response velocity"
+                  ? `Performance up to ${selectedCustomDate.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}`
+                  : "Leads, qualification and viewings over time"
               }
               benchmarks={
                 metricsData
                   ? {
                       speedToLead: metricsData.speedToLead.value,
                       qualificationAccuracy: metricsData.qualificationRate.value,
-                      viewingVelocity: "+38% vs Manual",
+                      viewingVelocity: "",
                     }
                   : undefined
               }

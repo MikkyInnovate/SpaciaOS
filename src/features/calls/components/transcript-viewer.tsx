@@ -97,7 +97,7 @@ export function TranscriptViewer({
       <div className="p-3 border-b border-stone-100 bg-stone-50/60 flex items-center justify-between gap-2.5">
         <div className="flex-1 max-w-sm">
           <SearchInput
-            placeholder="Search dialogue or BANT tags..."
+            placeholder="Search the transcript..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             onClear={() => setSearchTerm("")}
@@ -174,7 +174,7 @@ export function TranscriptViewer({
                     </span>
 
                     {turn.keyQuote && (
-                      <span className="inline-flex items-center gap-0.5 text-[9px] font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-1 py-0.2 rounded border border-emerald-200">
+                      <span className="font-mono inline-flex items-center gap-0.5 text-[10px] font-normal uppercase tracking-[0.14em] text-emerald-700 bg-emerald-50 px-1 py-0.2 rounded border border-emerald-200">
                         <BookmarkCheck className="h-2.5 w-2.5" />
                         Key Signal
                       </span>

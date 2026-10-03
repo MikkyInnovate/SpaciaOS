@@ -353,7 +353,7 @@ export function CallAudioPlayer({
 
         {/* Digital Time Readout */}
         <div className="font-mono text-xs font-semibold text-stone-700 tabular-nums shrink-0 pl-1 select-none">
-          <span className="text-stone-900 font-bold">
+          <span className="text-stone-900 font-semibold">
             {formatSeconds(currentTime)}
           </span>
           <span className="text-stone-300 mx-1">/</span>

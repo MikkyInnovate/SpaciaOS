@@ -158,7 +158,7 @@ export function AIAgentActivityState({
                 className="inline-flex items-center gap-1.5 h-7.5 px-3 text-xs font-semibold bg-[#0d4a36] hover:bg-[#093829] text-white rounded-md shadow-2xs transition-all cursor-pointer"
               >
                 <PhoneCall className="h-3.5 w-3.5 text-emerald-300" />
-                <span>Open in Calls Cockpit</span>
+                <span>Open in Calls</span>
                 <ExternalLink className="h-3 w-3 opacity-60 ml-0.5" />
               </Link>
 
@@ -246,7 +246,7 @@ export function AIAgentActivityState({
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border p-4 bg-stone-50/50">
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="font-display text-base font-bold text-stone-900">
+              <h2 className="font-display text-base font-normal text-[#14231d]">
                 Operational Activity &amp; Dispatch History
               </h2>
               <span className="flex items-center gap-1.5 rounded-full border border-stone-200 bg-white px-2 py-0.5 text-[11px] font-medium text-stone-600 shadow-2xs">

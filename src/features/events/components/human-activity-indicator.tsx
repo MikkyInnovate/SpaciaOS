@@ -63,7 +63,7 @@ export function HumanActivityIndicator({
                 <span className="font-semibold text-xs text-stone-900 leading-tight">
                   {actor.name}
                 </span>
-                <span className="rounded bg-indigo-100 px-1 py-0.2 text-[9px] font-bold text-indigo-900 uppercase tracking-wider">
+                <span className="font-mono rounded bg-indigo-100 px-1 py-0.2 text-[10px] font-normal text-indigo-900 uppercase tracking-[0.14em]">
                   Broker Takeover
                 </span>
               </div>
@@ -108,7 +108,7 @@ export function HumanActivityIndicator({
     >
       <Avatar className="h-5 w-5 shrink-0 border border-indigo-200">
         {actor.avatarUrl && <AvatarImage src={actor.avatarUrl} alt={actor.name} />}
-        <AvatarFallback className="bg-indigo-100 text-indigo-800 text-[9px] font-bold">
+        <AvatarFallback className="bg-indigo-100 text-indigo-800 text-[9px] font-semibold">
           {getInitials(actor.name)}
         </AvatarFallback>
       </Avatar>

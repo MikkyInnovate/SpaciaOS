@@ -183,8 +183,8 @@ export default function TeamPage() {
     <Container size="lg" className="space-y-4">
       {/* Header matching dashboard/page.tsx standard */}
       <PageHeader
-        title="Team & Governance"
-        description="Luxury brokerage sales roster, lead routing dispatch rules, and role-based access control."
+        title="Team"
+        description="Your team, who gets which leads, and what each person can access."
         actions={
           <div className="flex items-center gap-2">
             <Button

@@ -17,7 +17,6 @@ import {
   BookingConfirmationDialog,
   CalendarConnectionsPanel,
 } from "@/features/appointments";
-import { useWorkspace } from "@/lib/context/workspace-context";
 import {
   CalendarDays,
   Plus,
@@ -30,7 +29,6 @@ import {
 import { toast } from "sonner";
 
 export default function AppointmentsPage() {
-  const { currentWorkspace } = useWorkspace();
 
   const [allAppointments, setAllAppointments] = React.useState<Appointment[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
@@ -171,8 +169,8 @@ export default function AppointmentsPage() {
   return (
     <Container size="lg" className="space-y-6 pb-12">
       <PageHeader
-        title="Appointments & Inspections"
-        description={`Manage confirmed luxury property viewings, agent schedules, and calendar availability for ${currentWorkspace?.name || "your workspace"}.`}
+        title="Viewings"
+        description="Booked viewings, your agents' schedules and calendar availability."
         actions={
           <div className="flex items-center gap-2">
             <Button
@@ -204,7 +202,7 @@ export default function AppointmentsPage() {
             <span>Total Bookings</span>
             <CalendarDays className="h-4 w-4 text-stone-400" />
           </div>
-          <div className="mt-1 font-mono text-2xl font-bold text-stone-900">
+          <div className="font-display mt-1 font-mono text-2xl font-light text-[#14231d]">
             {allAppointments.length}
           </div>
           <div className="mt-1 text-[11px] text-stone-400">All recorded inspections</div>
@@ -215,7 +213,7 @@ export default function AppointmentsPage() {
             <span>Confirmed Viewings</span>
             <CalendarCheck className="h-4 w-4 text-emerald-600" />
           </div>
-          <div className="mt-1 font-mono text-2xl font-bold text-emerald-800">
+          <div className="font-display mt-1 font-mono text-2xl font-light text-emerald-800">
             {confirmedCount}
           </div>
           <div className="mt-1 text-[11px] text-emerald-700 font-medium">Ready for walkthrough</div>
@@ -226,7 +224,7 @@ export default function AppointmentsPage() {
             <span>Pending Confirmation</span>
             <Clock className="h-4 w-4 text-amber-500" />
           </div>
-          <div className="mt-1 font-mono text-2xl font-bold text-amber-700">
+          <div className="font-display mt-1 font-mono text-2xl font-light text-amber-700">
             {scheduledCount}
           </div>
           <div className="mt-1 text-[11px] text-stone-400">Awaiting client confirm</div>
@@ -237,7 +235,7 @@ export default function AppointmentsPage() {
             <span>Completed Viewings</span>
             <CheckCircle2 className="h-4 w-4 text-[#0d4a36]" />
           </div>
-          <div className="mt-1 font-mono text-2xl font-bold text-[#0d4a36]">
+          <div className="font-display mt-1 font-mono text-2xl font-light text-[#0d4a36]">
             {completedCount}
           </div>
           <div className="mt-1 text-[11px] text-stone-400">Successfully conducted</div>

@@ -100,7 +100,7 @@ export function AppointmentFiltersBar({
       <div className="flex flex-wrap items-center justify-between gap-2 border-t border-stone-100 pt-2.5">
         {/* Status Category Segmented Control */}
         <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
-          <span className="text-[11px] font-medium text-stone-500 uppercase tracking-wider mr-1">
+          <span className="font-mono text-[10px] font-normal text-zinc-500 uppercase tracking-[0.14em] mr-1">
             Status:
           </span>
           {STATUS_CHIPS.map((chip) => {
@@ -125,7 +125,7 @@ export function AppointmentFiltersBar({
 
         {/* Format Dropdown */}
         <div className="flex items-center gap-1.5">
-          <span className="text-[11px] font-medium text-stone-500 uppercase tracking-wider mr-1">
+          <span className="font-mono text-[10px] font-normal text-zinc-500 uppercase tracking-[0.14em] mr-1">
             Format:
           </span>
           <div className="w-44">

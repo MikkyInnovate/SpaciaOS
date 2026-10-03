@@ -92,7 +92,7 @@ export function OperationsActivityFeed({
           icon: Send,
           color: "text-sky-600 bg-sky-50 border-sky-200",
           badge: "bg-sky-50 text-sky-700 border-sky-200",
-          label: "RESEND DISPATCH",
+          label: "EMAIL SENT",
         };
       case "human_takeover":
         return {
@@ -106,7 +106,7 @@ export function OperationsActivityFeed({
           icon: CheckCircle2,
           color: "text-[#0d4a36] bg-emerald-50 border-emerald-200",
           badge: "bg-emerald-50 text-[#0d4a36] border-emerald-200",
-          label: "BANT QUALIFIED",
+          label: "QUALIFIED",
         };
       case "lead_captured":
       default:
@@ -220,7 +220,7 @@ export function OperationsActivityFeed({
                       </span>
                       <Badge
                         variant="outline"
-                        className={cn("text-[9px] px-1.5 py-0 font-bold uppercase", meta.badge)}
+                        className={cn("text-[9px] px-1.5 py-0 font-semibold uppercase", meta.badge)}
                       >
                         {item.badge || meta.label}
                       </Badge>

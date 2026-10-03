@@ -41,7 +41,7 @@ export function LeadQualificationCard({
           statusText: bant.needNote,
         },
         {
-          name: "Timeline Velocity",
+          name: "Timeline",
           score: bant.timelineScore,
           weight: "20%",
           statusText: bant.timelineNote,
@@ -93,7 +93,7 @@ export function LeadQualificationCard({
     <div className="rounded-xl border border-stone-200 bg-white p-4 space-y-4">
       {/* Section Header */}
       <div className="flex items-center justify-between border-b border-stone-100 pb-2.5">
-        <h4 className="text-xs font-semibold uppercase tracking-wider text-stone-500 flex items-center gap-1.5">
+        <h4 className="font-mono text-[10px] font-normal uppercase tracking-[0.14em] text-zinc-500 flex items-center gap-1.5">
           <Sparkles className="h-3.5 w-3.5 text-[#0d4a36]" />
           Autonomous Qualification Underwriting
         </h4>
@@ -119,7 +119,7 @@ export function LeadQualificationCard({
               <CheckCircle2 className="h-3.5 w-3.5 text-emerald-700" />
               AI Intake Assessment
             </span>
-            <span className="text-[9px] uppercase tracking-wider font-semibold text-emerald-800 bg-emerald-100 px-1.5 py-0.2 rounded">
+            <span className="font-mono text-[10px] uppercase tracking-[0.14em] font-normal text-emerald-800 bg-emerald-100 px-1.5 py-0.2 rounded">
               Simulated Analysis
             </span>
           </div>
