@@ -56,14 +56,14 @@ export function PropertyCard({
       {/* Section Header: Title & Badges */}
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-stone-100 pb-2.5">
         <div className="flex items-center gap-2">
-          <h4 className="text-xs font-semibold uppercase tracking-wider text-stone-500 flex items-center gap-1.5">
+          <h4 className="font-mono text-[10px] font-normal uppercase tracking-[0.14em] text-zinc-500 flex items-center gap-1.5">
             <Building className="h-3.5 w-3.5 text-[#0d4a36]" />
             Target Property Intelligence
           </h4>
           {intent && (
             <Badge
               variant="outline"
-              className="text-[10px] uppercase font-semibold tracking-wider text-stone-600 bg-stone-50 border-stone-200"
+              className="font-mono text-[10px] uppercase font-normal tracking-[0.14em] text-zinc-500 bg-stone-50 border-stone-200"
             >
               {intent} Intent
             </Badge>
@@ -92,7 +92,7 @@ export function PropertyCard({
           {/* Development Stage Badge */}
           {property.developmentStage && (
             <div className="absolute top-2.5 left-2.5">
-              <span className="text-[10px] font-semibold tracking-wider uppercase px-2 py-0.5 rounded bg-black/60 backdrop-blur-xs text-white border border-white/10">
+              <span className="font-mono text-[10px] font-normal tracking-[0.14em] uppercase px-2 py-0.5 rounded bg-black/60 backdrop-blur-xs text-white border border-white/10">
                 {property.developmentStage}
               </span>
             </div>
@@ -198,7 +198,7 @@ export function PropertyCard({
       {/* Property Features / Verified Amenities Chips */}
       {property.features && property.features.length > 0 && (
         <div className="space-y-1.5 pt-1">
-          <span className="text-[10px] font-bold text-stone-400 uppercase tracking-wider block">
+          <span className="font-mono text-[10px] font-normal text-zinc-500 uppercase tracking-[0.14em] block">
             Verified Amenities &amp; Features
           </span>
           <div className="flex flex-wrap gap-1.5">
@@ -222,7 +222,7 @@ export function PropertyCard({
             <Tag className="h-3 w-3 text-stone-400" />
             Asking / Target Price
           </span>
-          <p className="font-mono text-base font-bold text-stone-900 tabular-nums mt-0.5">
+          <p className="font-mono text-base font-semibold text-stone-900 tabular-nums mt-0.5">
             {property.formattedPrice}
           </p>
         </div>

@@ -71,7 +71,7 @@ export function WorkflowRetryState({
       await onEscalate(workflowId);
     }
     toast.success("Escalated to Human Broker", {
-      description: "Sales associate notified for manual lead intervention.",
+      description: "An agent has been asked to follow up.",
     });
   };
 

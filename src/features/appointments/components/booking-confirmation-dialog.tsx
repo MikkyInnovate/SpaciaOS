@@ -188,21 +188,21 @@ ${meetLink ? `Google Meet: ${meetLink}\n` : ""}Status: Confirmed. AI outreach st
 
               <dl className="grid grid-cols-2 border-t border-stone-100">
                 <div className="border-r border-stone-100 px-3.5 py-3">
-                  <dt className="flex items-center gap-1 text-[10px] font-medium uppercase tracking-wider text-stone-400">
+                  <dt className="font-mono flex items-center gap-1 text-[10px] font-normal uppercase tracking-[0.14em] text-zinc-500">
                     <CalendarDays className="h-3 w-3" />
                     Date
                   </dt>
                   <dd className="mt-1 text-xs font-semibold text-stone-900">{formattedDate}</dd>
                 </div>
                 <div className="px-3.5 py-3">
-                  <dt className="flex items-center gap-1 text-[10px] font-medium uppercase tracking-wider text-stone-400">
+                  <dt className="font-mono flex items-center gap-1 text-[10px] font-normal uppercase tracking-[0.14em] text-zinc-500">
                     <Clock className="h-3 w-3" />
                     Time
                   </dt>
                   <dd className="mt-1 font-mono text-xs font-semibold text-stone-900 tabular-nums">{formattedTime}</dd>
                 </div>
                 <div className="border-r border-t border-stone-100 px-3.5 py-3">
-                  <dt className="flex items-center gap-1 text-[10px] font-medium uppercase tracking-wider text-stone-400">
+                  <dt className="font-mono flex items-center gap-1 text-[10px] font-normal uppercase tracking-[0.14em] text-zinc-500">
                     <User className="h-3 w-3" />
                     Client
                   </dt>
@@ -222,7 +222,7 @@ ${meetLink ? `Google Meet: ${meetLink}\n` : ""}Status: Confirmed. AI outreach st
                   </dd>
                 </div>
                 <div className="border-t border-stone-100 px-3.5 py-3">
-                  <dt className="text-[10px] font-medium uppercase tracking-wider text-stone-400">Host</dt>
+                  <dt className="font-mono text-[10px] font-normal uppercase tracking-[0.14em] text-zinc-500">Host</dt>
                   <dd className="mt-1 truncate text-xs font-semibold text-stone-900">{appointment.assignedBrokerName}</dd>
                   <dd className="mt-0.5 text-[11px] text-stone-500">{formatLabel(appointment.meetingType)}</dd>
                 </div>
@@ -231,7 +231,7 @@ ${meetLink ? `Google Meet: ${meetLink}\n` : ""}Status: Confirmed. AI outreach st
               {meetLink && (
                 <div className="flex items-center justify-between gap-3 border-t border-stone-100 px-3.5 py-2.5">
                   <div className="min-w-0">
-                    <p className="flex items-center gap-1 text-[10px] font-medium uppercase tracking-wider text-stone-400">
+                    <p className="font-mono flex items-center gap-1 text-[10px] font-normal uppercase tracking-[0.14em] text-zinc-500">
                       <Video className="h-3 w-3" />
                       Meet
                     </p>
@@ -280,7 +280,7 @@ ${meetLink ? `Google Meet: ${meetLink}\n` : ""}Status: Confirmed. AI outreach st
                   </p>
                 </div>
               </div>
-              <span className="shrink-0 rounded bg-emerald-100 px-1.5 py-0.5 font-mono text-[10px] font-bold text-emerald-800">
+              <span className="shrink-0 rounded bg-emerald-100 px-1.5 py-0.5 font-mono text-[10px] font-semibold text-emerald-800">
                 SENT
               </span>
             </div>

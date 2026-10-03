@@ -40,7 +40,6 @@ import {
 import { toast } from "sonner";
 import { cn } from "@/lib/utils/cn";
 import { EmptyState } from "@/components/shared/empty-state";
-import { useWorkspace } from "@/lib/context/workspace-context";
 import { propertiesService } from "@/features/properties";
 import { appointmentsService } from "@/features/appointments";
 import {
@@ -55,14 +54,13 @@ import {
 
 const CATEGORIES: { id: IntegrationCategory; label: string }[] = [
   { id: "all", label: "All Integrations" },
-  { id: "leads", label: "Lead Ingestion" },
+  { id: "leads", label: "Lead capture" },
   { id: "calendar", label: "Calendars" },
   { id: "properties", label: "Property Inventory" },
   { id: "crm", label: "CRMs" },
 ];
 
 export default function IntegrationsPage() {
-  const { currentWorkspace } = useWorkspace();
 
   // Integrations Fleet State
   const [integrations, setIntegrations] = React.useState<IntegrationItem[]>([]);
@@ -445,10 +443,8 @@ export default function IntegrationsPage() {
   return (
     <Container size="lg" className="space-y-6 pb-12 font-sans">
       <PageHeader
-        title="Client Integrations"
-        description={`Manage credentials, connection health, and real-time handshakes for ${
-          currentWorkspace?.name || "SpaciaOS Luxury Workspace"
-        }.`}
+        title="Integrations"
+        description="Connect your lead sources, calendars and CRM."
         actions={
           <div className="flex items-center gap-2">
             <Badge
@@ -521,7 +517,7 @@ export default function IntegrationsPage() {
         <div className="flex flex-wrap items-center justify-between gap-2 border-t border-stone-100 pt-2.5">
           {/* Category Chips */}
           <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
-            <span className="text-[11px] font-medium text-stone-500 uppercase tracking-wider mr-1">
+            <span className="font-mono text-[10px] font-normal text-zinc-500 uppercase tracking-[0.14em] mr-1">
               Category:
             </span>
             {CATEGORIES.map((cat) => {
@@ -546,7 +542,7 @@ export default function IntegrationsPage() {
 
           {/* Status Dropdown */}
           <div className="flex items-center gap-1.5">
-            <span className="text-[11px] font-medium text-stone-500 uppercase tracking-wider mr-1">
+            <span className="font-mono text-[10px] font-normal text-zinc-500 uppercase tracking-[0.14em] mr-1">
               Status:
             </span>
             <div className="w-40">
@@ -794,7 +790,7 @@ export default function IntegrationsPage() {
             <div className="p-3 bg-stone-900 text-stone-100 rounded-lg font-mono text-xs space-y-1.5">
               <div className="flex items-center justify-between text-stone-400 border-b border-stone-800 pb-1.5 text-[11px]">
                 <span className="flex items-center gap-1.5">
-                  <Terminal className="h-3.5 w-3.5 text-emerald-400" /> Real-Time Adapter Telemetry
+                  <Terminal className="h-3.5 w-3.5 text-emerald-400" /> Connection status
                 </span>
                 <span>{probeResult.timestamp}</span>
               </div>
@@ -842,7 +838,7 @@ export default function IntegrationsPage() {
         <DialogContent className="sm:max-w-md p-0 gap-0 overflow-hidden border border-stone-200 bg-white shadow-xl">
           <DialogHeader className="p-5 pb-4 border-b border-stone-100 bg-white">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50 text-blue-600 border border-blue-100 font-bold text-sm shrink-0">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50 text-blue-600 border border-blue-100 font-semibold text-sm shrink-0">
                 <svg className="w-5 h-5" viewBox="0 0 24 24">
                   <path
                     fill="#4285F4"

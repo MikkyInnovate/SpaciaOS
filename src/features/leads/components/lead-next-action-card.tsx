@@ -20,8 +20,8 @@ export function LeadNextActionCard({
 }: LeadNextActionCardProps) {
   const [isCompleted, setIsCompleted] = React.useState(false);
 
-  const actionText = directive?.action || fallbackAction || "Autonomous qualification monitoring";
-  const assignedTo = directive?.assignedTo || "Autonomous AI Engine";
+  const actionText = directive?.action || fallbackAction || "AI is qualifying this lead";
+  const assignedTo = directive?.assignedTo || "AI sales agent";
   const priority = directive?.priority || "Routine";
   const dueDate = directive?.dueDate || "Active";
   const recommendation = directive?.protocolRecommendation;
@@ -48,7 +48,7 @@ export function LeadNextActionCard({
         <div className="flex items-center gap-2">
           <Badge
             variant="outline"
-            className={cn("text-[10px] font-semibold uppercase tracking-wider", priorityBadgeStyles)}
+            className={cn("font-mono text-[10px] font-normal uppercase tracking-[0.14em]", priorityBadgeStyles)}
           >
             {priority} Priority
           </Badge>
@@ -71,7 +71,7 @@ export function LeadNextActionCard({
 
       {/* Main directive content */}
       <div className="space-y-1.5">
-        <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400">
+        <span className="font-mono text-[10px] font-normal uppercase tracking-[0.14em] text-zinc-500">
           Next Operational Directive
         </span>
         <h4 className="text-sm font-semibold text-stone-900 leading-snug">

@@ -82,7 +82,7 @@ export function AIAgentStatusCard({
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <CardTitle className="font-display text-base font-bold text-stone-900 tracking-tight">
+                <CardTitle className="font-display text-base font-normal text-[#14231d] tracking-tight">
                   SpaciaOS Voice Core Telemetry
                 </CardTitle>
                 <span className="rounded bg-emerald-50 px-1.5 py-0.2 text-[10px] font-semibold text-emerald-800 border border-emerald-200/80">
@@ -155,7 +155,7 @@ export function AIAgentStatusCard({
                 <PhoneCall className="h-3 w-3 text-emerald-700" />
                 Line Concurrency
               </span>
-              <span className="font-mono font-bold text-stone-900">
+              <span className="font-mono font-semibold text-stone-900">
                 {activeStatus.activeLines} / {activeStatus.maxConcurrency}
               </span>
             </div>
@@ -182,10 +182,10 @@ export function AIAgentStatusCard({
                 Ultra-Low
               </Badge>
             </div>
-            <p className="font-mono text-lg font-bold text-stone-900 leading-tight">
+            <p className="font-display font-mono text-lg font-normal text-[#14231d] leading-tight">
               {activeStatus.averageLatencyMs}ms
             </p>
-            <p className="text-[10px] text-stone-400">Sub-second neural turnaround</p>
+            <p className="text-[10px] text-stone-400">Replies in under a second</p>
           </div>
 
           {/* Calls Handled Today */}
@@ -196,10 +196,10 @@ export function AIAgentStatusCard({
                 Calls Today
               </span>
             </div>
-            <p className="font-mono text-lg font-bold text-stone-900 leading-tight">
+            <p className="font-display font-mono text-lg font-normal text-[#14231d] leading-tight">
               {activeStatus.callsHandledToday}
             </p>
-            <p className="text-[10px] text-stone-400">Autonomous outbound &amp; intake</p>
+            <p className="text-[10px] text-stone-400">Calls new leads and follows up</p>
           </div>
 
           {/* Qualification Rate */}
@@ -211,7 +211,7 @@ export function AIAgentStatusCard({
               </span>
             </div>
             <div className="flex items-baseline gap-1.5">
-              <span className="font-mono text-lg font-bold text-stone-900 leading-tight">
+              <span className="font-display font-mono text-lg font-normal text-[#14231d] leading-tight">
                 {activeStatus.qualificationRate}%
               </span>
               <span className="text-[10px] font-mono text-emerald-700 font-semibold">

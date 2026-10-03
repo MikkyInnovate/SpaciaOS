@@ -127,7 +127,7 @@ export default function DashboardPage() {
           id: apt.id,
           prospectName: apt.leadName || "Registered Prospect",
           propertyTitle: apt.propertyTitle || "Luxury Property Inspection",
-          agentName: apt.assignedBrokerName || "Senior Luxury Closer",
+          agentName: apt.assignedBrokerName || "Senior sales agent",
           date: new Date(apt.startTime).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
           time: new Date(apt.startTime).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }),
           status: apt.status === "confirmed" ? "Confirmed" : apt.status === "scheduled" ? "Scheduled" : "Pending",

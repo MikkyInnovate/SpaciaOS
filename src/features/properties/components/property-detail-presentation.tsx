@@ -372,11 +372,11 @@ Would you like to schedule a private physical inspection this week?
 
                   {/* Top Badge Overlay */}
                   <div className="absolute top-3 left-3 flex items-center gap-2">
-                    <span className="text-[10px] font-semibold tracking-wider uppercase px-2 py-0.5 rounded bg-black/60 backdrop-blur-xs text-white border border-white/10">
+                    <span className="font-mono text-[10px] font-normal tracking-[0.14em] uppercase px-2 py-0.5 rounded bg-black/60 backdrop-blur-xs text-white border border-white/10">
                       {property.propertyType}
                     </span>
                     {property.developmentStage && (
-                      <span className="text-[10px] font-semibold tracking-wider uppercase px-2 py-0.5 rounded bg-[#0d4a36]/80 backdrop-blur-xs text-white border border-white/10">
+                      <span className="font-mono text-[10px] font-normal tracking-[0.14em] uppercase px-2 py-0.5 rounded bg-[#0d4a36]/80 backdrop-blur-xs text-white border border-white/10">
                         {property.developmentStage}
                       </span>
                     )}
@@ -458,10 +458,10 @@ Would you like to schedule a private physical inspection this week?
             <div className="rounded-xl border border-stone-200 bg-stone-50/60 p-4 space-y-3">
               <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 border-b border-stone-200/60 pb-3">
                 <div>
-                  <span className="text-[10px] text-stone-400 uppercase font-bold tracking-wider block">
+                  <span className="font-mono text-[10px] text-zinc-500 uppercase font-normal tracking-[0.14em] block">
                     Listing Valuation
                   </span>
-                  <span className="font-mono text-2xl font-bold text-stone-900 tabular-nums">
+                  <span className="font-display font-mono text-2xl font-light text-[#14231d] tabular-nums">
                     {property.formattedPrice}
                   </span>
                 </div>
@@ -514,7 +514,7 @@ Would you like to schedule a private physical inspection this week?
             {/* 3. Title Deed & Legal Underwriting Section */}
             <div className="rounded-xl border border-stone-200 bg-white p-4 space-y-3">
               <div className="flex items-center justify-between border-b border-stone-100 pb-2">
-                <h4 className="text-xs font-semibold uppercase tracking-wider text-stone-500 flex items-center gap-1.5">
+                <h4 className="font-mono text-[10px] font-normal uppercase tracking-[0.14em] text-zinc-500 flex items-center gap-1.5">
                   <ShieldCheck className="h-3.5 w-3.5 text-emerald-700" />
                   Legal Underwriting &amp; Title Verification
                 </h4>
@@ -543,7 +543,7 @@ Would you like to schedule a private physical inspection this week?
 
               {property.verification.notes && (
                 <div className="p-2.5 rounded-lg bg-emerald-50/50 border border-emerald-100 text-xs text-emerald-900 space-y-0.5">
-                  <span className="text-[10px] font-semibold uppercase tracking-wider text-emerald-700 block">
+                  <span className="font-mono text-[10px] font-normal uppercase tracking-[0.14em] text-emerald-700 block">
                     Underwriting Clearance Note:
                   </span>
                   <p className="text-[11px] leading-relaxed text-emerald-800">
@@ -560,7 +560,7 @@ Would you like to schedule a private physical inspection this week?
 
             {/* 4. Verified Features & Amenities */}
             <div className="rounded-xl border border-stone-200 bg-white p-4 space-y-3">
-              <h4 className="text-xs font-semibold uppercase tracking-wider text-stone-500 flex items-center gap-1.5 border-b border-stone-100 pb-2">
+              <h4 className="font-mono text-[10px] font-normal uppercase tracking-[0.14em] text-zinc-500 flex items-center gap-1.5 border-b border-stone-100 pb-2">
                 <Sparkles className="h-3.5 w-3.5 text-[#0d4a36]" />
                 Verified Features &amp; Infrastructure
               </h4>
@@ -581,7 +581,7 @@ Would you like to schedule a private physical inspection this week?
             {/* 5. Commercial Terms & Payment Milestones */}
             {property.commercialTerms && (
               <div className="rounded-xl border border-stone-200 bg-white p-4 space-y-3">
-                <h4 className="text-xs font-semibold uppercase tracking-wider text-stone-500 flex items-center gap-1.5 border-b border-stone-100 pb-2">
+                <h4 className="font-mono text-[10px] font-normal uppercase tracking-[0.14em] text-zinc-500 flex items-center gap-1.5 border-b border-stone-100 pb-2">
                   <Tag className="h-3.5 w-3.5 text-stone-600" />
                   Commercial Terms &amp; Payment Options
                 </h4>
@@ -629,7 +629,7 @@ Would you like to schedule a private physical inspection this week?
 
             {/* 6. Architectural Description */}
             <div className="rounded-xl border border-stone-200 bg-white p-4 space-y-2">
-              <h4 className="text-xs font-semibold uppercase tracking-wider text-stone-500 flex items-center gap-1.5 border-b border-stone-100 pb-2">
+              <h4 className="font-mono text-[10px] font-normal uppercase tracking-[0.14em] text-zinc-500 flex items-center gap-1.5 border-b border-stone-100 pb-2">
                 <FileText className="h-3.5 w-3.5 text-stone-600" />
                 Architectural Overview
               </h4>

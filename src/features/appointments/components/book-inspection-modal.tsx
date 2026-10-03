@@ -345,7 +345,7 @@ export function BookInspectionModal({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="broker_ade">Ade Admin (Senior Closer)</SelectItem>
+                  <SelectItem value="broker_ade">Ade Admin (Senior agent)</SelectItem>
                   <SelectItem value="broker_victoria">Victoria Okon (Senior Partner)</SelectItem>
                   <SelectItem value="broker_femi">Femi Davies (Ikoyi Specialist)</SelectItem>
                 </SelectContent>

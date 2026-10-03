@@ -34,7 +34,7 @@ export function LeadDossierPanel({ lead, onClose, onTakeover, callEvent }: LeadD
       <div className="flex items-start justify-between border-b border-border p-4 bg-stone-50/60">
         <div>
           <div className="flex items-center gap-2">
-            <h3 className="font-display text-base font-bold text-stone-900 truncate">
+            <h3 className="font-display text-base font-normal text-[#14231d] truncate">
               {lead.name}
             </h3>
             <Badge
@@ -158,7 +158,7 @@ export function LeadDossierPanel({ lead, onClose, onTakeover, callEvent }: LeadD
                 <span>Executive AI Call Summary</span>
               </div>
               <p className="text-xs text-stone-800 leading-relaxed font-normal">
-                {callEvent?.summary || lead.aiNotes || "Inbound enquiry qualified by SpaciaOS. All intent parameters verified."}
+                {callEvent?.summary || lead.aiNotes || "Enquiry qualified by SpaciaOS. Budget, timeline and needs confirmed."}
               </p>
             </div>
 

@@ -242,7 +242,7 @@ Next Action: ${lead.nextAction}`;
             </div>
             <div>
               <h3 className="text-sm font-semibold text-stone-900 flex items-center gap-1.5">
-                <span>Autonomous Qualification Dossier</span>
+                <span>Qualification summary</span>
                 <Badge variant="live" className="text-[10px] px-1.5 py-0">
                   Live Audit
                 </Badge>
@@ -364,7 +364,7 @@ Next Action: ${lead.nextAction}`;
             <div className="space-y-0.5">
               <span className="text-[11px] font-medium text-stone-500">Underwriting Score</span>
               <div className="flex items-baseline gap-1.5">
-                <span className="text-2xl font-bold font-display text-stone-900 tabular-nums">
+                <span className="text-2xl font-light font-display text-[#14231d] tabular-nums">
                   {lead.score}
                 </span>
                 <span className="text-xs font-medium text-stone-400">/100</span>
@@ -378,9 +378,9 @@ Next Action: ${lead.nextAction}`;
             <div className="flex items-center justify-between text-xs">
               <span className="text-[11px] font-medium text-stone-500 flex items-center gap-1">
                 <Sparkles className="h-3 w-3 text-emerald-600" />
-                <span>AI Intent Confidence</span>
+                <span>AI confidence</span>
               </span>
-              <span className="font-mono font-bold text-stone-900 tabular-nums">
+              <span className="font-mono font-semibold text-stone-900 tabular-nums">
                 {profile.confidenceScore}%
               </span>
             </div>
@@ -392,9 +392,9 @@ Next Action: ${lead.nextAction}`;
       {/* 2. BUYER INTENT & ROOT MOTIVATION */}
       <div className="rounded-xl border border-stone-200 bg-white p-4 shadow-2xs space-y-3">
         <div className="flex items-center justify-between border-b border-stone-100 pb-2">
-          <span className="text-xs font-semibold uppercase tracking-wider text-stone-500 flex items-center gap-1.5">
+          <span className="font-mono text-[10px] font-normal uppercase tracking-[0.14em] text-zinc-500 flex items-center gap-1.5">
             <TrendingUp className="h-3.5 w-3.5 text-stone-600" />
-            <span>Buyer Intent & Core Motivation</span>
+            <span>What the buyer wants</span>
           </span>
           <BuyerIntentBadge category={profile.buyerIntent} size="sm" />
         </div>
@@ -406,7 +406,7 @@ Next Action: ${lead.nextAction}`;
               <Sparkles className="h-3.5 w-3.5 text-emerald-700" />
               <span>Primary Purchase Catalyst</span>
             </span>
-            <span className="text-[10px] text-emerald-700 font-medium uppercase tracking-wider">
+            <span className="font-mono text-[10px] text-emerald-700 font-normal uppercase tracking-[0.14em]">
               Verified Driver
             </span>
           </div>
@@ -418,7 +418,7 @@ Next Action: ${lead.nextAction}`;
         {/* Conversational Intent Signals */}
         {profile.intentSignals && profile.intentSignals.length > 0 && (
           <div className="space-y-1.5 pt-1">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400">
+            <span className="font-mono text-[10px] font-normal uppercase tracking-[0.14em] text-zinc-500">
               Extracted Intent Signals
             </span>
             <div className="flex flex-wrap gap-1.5">
@@ -439,7 +439,7 @@ Next Action: ${lead.nextAction}`;
       {/* 3. COMMERCIAL BUDGET & LIQUIDITY ANALYSIS */}
       <div className="rounded-xl border border-stone-200 bg-white p-4 shadow-2xs space-y-3">
         <div className="flex items-center justify-between border-b border-stone-100 pb-2">
-          <span className="text-xs font-semibold uppercase tracking-wider text-stone-500 flex items-center gap-1.5">
+          <span className="font-mono text-[10px] font-normal uppercase tracking-[0.14em] text-zinc-500 flex items-center gap-1.5">
             <DollarSign className="h-3.5 w-3.5 text-stone-600" />
             <span>Commercial Budget & Liquidity</span>
           </span>
@@ -459,17 +459,17 @@ Next Action: ${lead.nextAction}`;
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs">
           <div className="rounded-lg border border-stone-100 bg-stone-50/70 p-2.5 space-y-1">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400">
+            <span className="font-mono text-[10px] font-normal uppercase tracking-[0.14em] text-zinc-500">
               Declared Budget
             </span>
-            <p className="font-mono text-sm font-bold text-stone-900 tabular-nums">
+            <p className="font-mono text-sm font-semibold text-stone-900 tabular-nums">
               {profile.budgetAnalysis.declared}
             </p>
             <span className="text-[11px] text-stone-500">Stated ceiling</span>
           </div>
 
           <div className="rounded-lg border border-stone-100 bg-stone-50/70 p-2.5 space-y-1">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400">
+            <span className="font-mono text-[10px] font-normal uppercase tracking-[0.14em] text-zinc-500">
               Payment Structure
             </span>
             <p className="text-xs font-semibold text-stone-900 mt-0.5 flex items-center gap-1">
@@ -486,10 +486,10 @@ Next Action: ${lead.nextAction}`;
           </div>
 
           <div className="rounded-lg border border-stone-100 bg-stone-50/70 p-2.5 space-y-1">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400">
+            <span className="font-mono text-[10px] font-normal uppercase tracking-[0.14em] text-zinc-500">
               Target Asking Price
             </span>
-            <p className="font-mono text-sm font-bold text-stone-900 tabular-nums">
+            <p className="font-mono text-sm font-semibold text-stone-900 tabular-nums">
               {profile.budgetAnalysis.targetAskingPrice || lead.propertyDetails?.targetPrice || lead.budget}
             </p>
             <span className="text-[11px] text-stone-500">
@@ -520,7 +520,7 @@ Next Action: ${lead.nextAction}`;
       {/* 4. DECISION READINESS & TIMELINE VELOCITY */}
       <div className="rounded-xl border border-stone-200 bg-white p-4 shadow-2xs space-y-3">
         <div className="flex items-center justify-between border-b border-stone-100 pb-2">
-          <span className="text-xs font-semibold uppercase tracking-wider text-stone-500 flex items-center gap-1.5">
+          <span className="font-mono text-[10px] font-normal uppercase tracking-[0.14em] text-zinc-500 flex items-center gap-1.5">
             <Clock className="h-3.5 w-3.5 text-stone-600" />
             <span>Decision Readiness & Timeline</span>
           </span>
@@ -538,7 +538,7 @@ Next Action: ${lead.nextAction}`;
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
           {/* Readiness Stage Details */}
           <div className="rounded-lg border border-stone-100 bg-stone-50/70 p-3 space-y-1">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400">
+            <span className="font-mono text-[10px] font-normal uppercase tracking-[0.14em] text-zinc-500">
               Sign-Off Context
             </span>
             <p className="text-xs text-stone-800 leading-relaxed font-medium">
@@ -549,7 +549,7 @@ Next Action: ${lead.nextAction}`;
           {/* Timeline Velocity */}
           <div className="rounded-lg border border-stone-100 bg-stone-50/70 p-3 space-y-1">
             <div className="flex items-center justify-between">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400">
+              <span className="font-mono text-[10px] font-normal uppercase tracking-[0.14em] text-zinc-500">
                 Closing Window
               </span>
               <Badge
@@ -560,12 +560,12 @@ Next Action: ${lead.nextAction}`;
                     ? "warm"
                     : "outline"
                 }
-                className="text-[10px] uppercase font-bold"
+                className="text-[10px] uppercase font-semibold"
               >
                 {profile.timelineUrgency}
               </Badge>
             </div>
-            <p className="font-mono text-sm font-bold text-stone-900 tabular-nums">
+            <p className="font-mono text-sm font-semibold text-stone-900 tabular-nums">
               {profile.timelineWindow}
             </p>
             {profile.targetClosingDate && (
@@ -581,7 +581,7 @@ Next Action: ${lead.nextAction}`;
       <div className="rounded-xl border border-stone-200 bg-white p-4 shadow-2xs space-y-3">
         <div className="flex items-center justify-between border-b border-stone-100 pb-2">
           <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold uppercase tracking-wider text-stone-500 flex items-center gap-1.5">
+            <span className="font-mono text-[10px] font-normal uppercase tracking-[0.14em] text-zinc-500 flex items-center gap-1.5">
               <AlertTriangle className="h-3.5 w-3.5 text-stone-600" />
               <span>Identified Objections & Risk Items</span>
             </span>
@@ -601,7 +601,7 @@ Next Action: ${lead.nextAction}`;
         {objections.length === 0 ? (
           <div className="rounded-lg border border-emerald-100 bg-emerald-50/40 p-3 text-xs flex items-center gap-2 text-emerald-800">
             <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
-            <span>Zero open friction points identified. Prospect exhibits smooth transaction trajectory.</span>
+            <span>No open concerns. This buyer is on track.</span>
           </div>
         ) : (
           <div className="space-y-2">
@@ -703,7 +703,7 @@ Next Action: ${lead.nextAction}`;
       {/* 6. EXPLAINABLE ALGORITHMIC SCORE BREAKDOWN */}
       <div className="rounded-xl border border-stone-200 bg-white p-4 shadow-2xs space-y-3">
         <div className="flex items-center justify-between border-b border-stone-100 pb-2">
-          <span className="text-xs font-semibold uppercase tracking-wider text-stone-500 flex items-center gap-1.5">
+          <span className="font-mono text-[10px] font-normal uppercase tracking-[0.14em] text-zinc-500 flex items-center gap-1.5">
             <Sparkles className="h-3.5 w-3.5 text-[#0d4a36]" />
             <span>Explainable Score Underwriting Audit</span>
           </span>
@@ -713,7 +713,7 @@ Next Action: ${lead.nextAction}`;
         <div className="space-y-2">
           {/* Positive Catalysts */}
           <div className="space-y-1.5">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-800 flex items-center gap-1">
+            <span className="font-mono text-[10px] font-normal uppercase tracking-[0.14em] text-emerald-800 flex items-center gap-1">
               <CheckCircle2 className="h-3 w-3 text-emerald-600" />
               <span>Positive Underwriting Catalysts</span>
             </span>
@@ -729,7 +729,7 @@ Next Action: ${lead.nextAction}`;
                       <p className="text-[11px] text-stone-500">{factor.detail}</p>
                     )}
                   </div>
-                  <span className="font-mono font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded text-[11px] shrink-0 ml-2">
+                  <span className="font-mono font-semibold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded text-[11px] shrink-0 ml-2">
                     +{factor.impact} pts
                   </span>
                 </div>
@@ -740,7 +740,7 @@ Next Action: ${lead.nextAction}`;
           {/* Risk Deductions */}
           {profile.explainableBreakdown.riskFactors.length > 0 && (
             <div className="space-y-1.5 pt-2 border-t border-stone-100">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-rose-800 flex items-center gap-1">
+              <span className="font-mono text-[10px] font-normal uppercase tracking-[0.14em] text-rose-800 flex items-center gap-1">
                 <AlertCircle className="h-3 w-3 text-rose-600" />
                 <span>Frictional Deductions & Risk Factors</span>
               </span>
@@ -756,7 +756,7 @@ Next Action: ${lead.nextAction}`;
                         <p className="text-[11px] text-stone-500">{factor.detail}</p>
                       )}
                     </div>
-                    <span className="font-mono font-bold text-rose-700 bg-rose-100 px-1.5 py-0.5 rounded text-[11px] shrink-0 ml-2">
+                    <span className="font-mono font-semibold text-rose-700 bg-rose-100 px-1.5 py-0.5 rounded text-[11px] shrink-0 ml-2">
                       {factor.impact} pts
                     </span>
                   </div>
@@ -770,7 +770,7 @@ Next Action: ${lead.nextAction}`;
         <div className="flex items-center justify-between border-t border-stone-100 pt-2.5 text-xs text-stone-600 font-medium">
           <span>Net Underwriting Output:</span>
           <div className="flex items-center gap-1.5">
-            <span className="font-mono text-sm font-bold text-stone-900">{lead.score} / 100</span>
+            <span className="font-mono text-sm font-semibold text-stone-900">{lead.score} / 100</span>
             <ScoreIndicator score={lead.score} category={lead.scoreCategory} variant="badge" />
           </div>
         </div>

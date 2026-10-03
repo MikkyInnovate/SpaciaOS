@@ -14,10 +14,8 @@ import {
   type PropertyAvailability,
 } from "@/features/properties";
 import { Search, Building2, RefreshCw, Filter, Sparkles } from "lucide-react";
-import { useWorkspace } from "@/lib/context/workspace-context";
 
 export default function PropertiesPage() {
-  const { currentWorkspace } = useWorkspace();
   const [properties, setProperties] = React.useState<Property[]>([]);
   const [totalCount, setTotalCount] = React.useState<number>(0);
   const [isLoading, setIsLoading] = React.useState<boolean>(true);
@@ -62,7 +60,7 @@ export default function PropertiesPage() {
     <Container size="lg" className="space-y-6">
       <PageHeader
         title="Properties"
-        description={`Portfolio inventory for ${currentWorkspace?.name || "your workspace"} unified via the Property Adapter Layer.`}
+        description="Your listings, synced from your property system."
         actions={
           <div className="flex items-center gap-2">
             {adapterHealth && (

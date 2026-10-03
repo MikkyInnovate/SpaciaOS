@@ -118,7 +118,7 @@ export function CallList({
         <CardHeader className="p-3.5 border-b border-stone-100 bg-stone-50/50 flex flex-row items-center justify-between">
           <div>
             <CardTitle className="text-sm font-semibold text-stone-900 flex items-center gap-1.5">
-              <span>Autonomous Voice Logs</span>
+              <span>Call log</span>
               <span className="text-[10px] font-mono text-stone-400 bg-white px-1.5 py-0.5 rounded border border-stone-200">
                 {filteredCalls.length} calls
               </span>

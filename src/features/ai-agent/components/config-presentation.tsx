@@ -84,7 +84,7 @@ const TONE_OPTIONS: Array<{
   },
   {
     id: "assertive",
-    label: "High Velocity / Assertive",
+    label: "Fast and direct",
     badge: "Direct & Decisive",
     description:
       "Emphasizes scarce luxury inventory, capital appreciation potential, and immediate private viewing booking.",
@@ -319,7 +319,7 @@ export function AIAgentConfigPresentation({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border p-4 bg-stone-50/50">
         <div>
           <div className="flex items-center gap-2">
-            <h2 className="font-display text-base font-bold text-stone-900">
+            <h2 className="font-display text-base font-normal text-[#14231d]">
               AI Agent Configuration
             </h2>
             <span className="flex items-center gap-1.5 rounded-md border border-emerald-200/90 bg-emerald-50/80 px-2 py-0.5 text-[11px] font-medium text-emerald-800 shadow-2xs">
@@ -474,7 +474,7 @@ export function AIAgentConfigPresentation({
             )}
           >
             <Sliders className="h-3.5 w-3.5" />
-            <span>BANT Gates</span>
+            <span>Qualification questions</span>
           </button>
         </div>
       </div>
@@ -488,7 +488,7 @@ export function AIAgentConfigPresentation({
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
               {/* 1. NAME */}
               <div className="p-3 rounded-lg border border-stone-200/80 bg-stone-50/60 space-y-1">
-                <span className="text-stone-500 text-[11px] font-medium uppercase tracking-wider block">
+                <span className="font-mono text-zinc-500 text-[10px] font-normal uppercase tracking-[0.14em] block">
                   Agent Persona Name
                 </span>
                 {isEditing ? (
@@ -507,14 +507,14 @@ export function AIAgentConfigPresentation({
                 ) : (
                   <>
                     <p className="font-semibold text-stone-900 text-sm">{currentDisplayConfig.name}</p>
-                    <p className="text-[11px] text-stone-400">Autonomous Sales Executive</p>
+                    <p className="text-[11px] text-stone-400">AI sales agent</p>
                   </>
                 )}
               </div>
 
               {/* 2. VOICE */}
               <div className="p-3 rounded-lg border border-stone-200/80 bg-stone-50/60 space-y-1">
-                <span className="text-stone-500 text-[11px] font-medium uppercase tracking-wider block">
+                <span className="font-mono text-zinc-500 text-[10px] font-normal uppercase tracking-[0.14em] block">
                   Neural Voice Synthesis
                 </span>
                 {isEditing ? (
@@ -528,7 +528,7 @@ export function AIAgentConfigPresentation({
                     }
                   >
                     <SelectTrigger className="h-8 text-xs border-stone-200 bg-white focus:ring-[#0d4a36]/20 focus:border-[#0d4a36]">
-                      <SelectValue placeholder="Select neural voice" />
+                      <SelectValue placeholder="Select a voice" />
                     </SelectTrigger>
                     <SelectContent>
                       {VOICE_OPTIONS.map((v) => (
@@ -552,7 +552,7 @@ export function AIAgentConfigPresentation({
 
               {/* 3. TONE */}
               <div className="p-3 rounded-lg border border-stone-200/80 bg-stone-50/60 space-y-1">
-                <span className="text-stone-500 text-[11px] font-medium uppercase tracking-wider block">
+                <span className="font-mono text-zinc-500 text-[10px] font-normal uppercase tracking-[0.14em] block">
                   Communication Tone
                 </span>
                 {isEditing ? (
@@ -590,7 +590,7 @@ export function AIAgentConfigPresentation({
 
               {/* 4. LANGUAGE */}
               <div className="p-3 rounded-lg border border-stone-200/80 bg-stone-50/60 space-y-1">
-                <span className="text-stone-500 text-[11px] font-medium uppercase tracking-wider block">
+                <span className="font-mono text-zinc-500 text-[10px] font-normal uppercase tracking-[0.14em] block">
                   Primary Language
                 </span>
                 {isEditing ? (
@@ -630,7 +630,7 @@ export function AIAgentConfigPresentation({
             {/* 5. GREETING SCRIPT */}
             <div className="p-3.5 rounded-lg border border-stone-200/80 bg-stone-50/70 space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-[11px] font-semibold text-stone-700 uppercase tracking-wider block">
+                <span className="font-mono text-[10px] font-normal text-stone-700 uppercase tracking-[0.14em] block">
                   Opening Script &amp; Greeting Baseline
                 </span>
                 <span className="text-[11px] text-stone-500">Injected into conversation intake turns</span>
@@ -665,7 +665,7 @@ export function AIAgentConfigPresentation({
               {/* Enabled Switch */}
               <div className="p-3 rounded-lg border border-stone-200/80 bg-stone-50/60 flex items-center justify-between">
                 <div>
-                  <span className="text-stone-500 text-[11px] font-medium uppercase tracking-wider block">
+                  <span className="font-mono text-zinc-500 text-[10px] font-normal uppercase tracking-[0.14em] block">
                     Operating Schedule Enforced
                   </span>
                   <p className="text-[11px] text-stone-400">
@@ -703,7 +703,7 @@ export function AIAgentConfigPresentation({
 
               {/* Start & End Times */}
               <div className="p-3 rounded-lg border border-stone-200/80 bg-stone-50/60 space-y-1">
-                <span className="text-stone-500 text-[11px] font-medium uppercase tracking-wider block">
+                <span className="font-mono text-zinc-500 text-[10px] font-normal uppercase tracking-[0.14em] block">
                   Active Hours Window (24h)
                 </span>
                 {isEditing ? (
@@ -742,17 +742,17 @@ export function AIAgentConfigPresentation({
                   </div>
                 ) : (
                   <>
-                    <p className="font-mono text-sm font-bold text-stone-900">
+                    <p className="font-mono text-sm font-semibold text-stone-900">
                       {currentDisplayConfig.businessHours.start} – {currentDisplayConfig.businessHours.end}
                     </p>
-                    <p className="text-[11px] text-stone-400">Call &amp; chat active dispatch window</p>
+                    <p className="text-[11px] text-stone-400">Calling and chat hours</p>
                   </>
                 )}
               </div>
 
               {/* Timezone */}
               <div className="p-3 rounded-lg border border-stone-200/80 bg-stone-50/60 space-y-1">
-                <span className="text-stone-500 text-[11px] font-medium uppercase tracking-wider block">
+                <span className="font-mono text-zinc-500 text-[10px] font-normal uppercase tracking-[0.14em] block">
                   Timezone Standard
                 </span>
                 {isEditing ? (
@@ -784,7 +784,7 @@ export function AIAgentConfigPresentation({
 
             {/* Active Days of Week */}
             <div className="p-3.5 rounded-lg border border-stone-200/80 bg-stone-50/70 space-y-2">
-              <span className="text-[11px] font-semibold text-stone-700 uppercase tracking-wider block">
+              <span className="font-mono text-[10px] font-normal text-stone-700 uppercase tracking-[0.14em] block">
                 Active Operating Days
               </span>
               <div className="flex flex-wrap gap-2 items-center">
@@ -821,7 +821,7 @@ export function AIAgentConfigPresentation({
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {/* High Budget Escalation Threshold */}
               <div className="p-3 rounded-lg border border-stone-200/80 bg-stone-50/60 space-y-1">
-                <span className="text-stone-500 text-[11px] font-medium uppercase tracking-wider block">
+                <span className="font-mono text-zinc-500 text-[10px] font-normal uppercase tracking-[0.14em] block">
                   Ultra-High Budget Threshold
                 </span>
                 {isEditing ? (
@@ -840,12 +840,12 @@ export function AIAgentConfigPresentation({
                           },
                         })
                       }
-                      className="w-full h-8 pl-7 pr-2.5 text-xs font-mono font-bold rounded-md border border-stone-300 bg-white"
+                      className="w-full h-8 pl-7 pr-2.5 text-xs font-mono font-semibold rounded-md border border-stone-300 bg-white"
                     />
                   </div>
                 ) : (
                   <>
-                    <p className="font-mono text-base font-bold text-stone-900">
+                    <p className="font-mono text-base font-semibold text-stone-900">
                       ₦{Number(currentDisplayConfig.escalationRules.budgetThresholdNaira).toLocaleString()}
                     </p>
                     <p className="text-[11px] text-stone-400">Triggers priority senior partner escalation</p>
@@ -855,7 +855,7 @@ export function AIAgentConfigPresentation({
 
               {/* Max Negative Sentiments */}
               <div className="p-3 rounded-lg border border-stone-200/80 bg-stone-50/60 space-y-1">
-                <span className="text-stone-500 text-[11px] font-medium uppercase tracking-wider block">
+                <span className="font-mono text-zinc-500 text-[10px] font-normal uppercase tracking-[0.14em] block">
                   Dispute / Friction Threshold
                 </span>
                 {isEditing ? (
@@ -873,11 +873,11 @@ export function AIAgentConfigPresentation({
                         },
                       })
                     }
-                    className="w-full h-8 px-2.5 text-xs font-mono font-bold rounded-md border border-stone-300 bg-white"
+                    className="w-full h-8 px-2.5 text-xs font-mono font-semibold rounded-md border border-stone-300 bg-white"
                   />
                 ) : (
                   <>
-                    <p className="font-mono text-base font-bold text-stone-900">
+                    <p className="font-mono text-base font-semibold text-stone-900">
                       {currentDisplayConfig.escalationRules.maxNegativeSentiments} Turns
                     </p>
                     <p className="text-[11px] text-stone-400">Transfers immediately on objection loop</p>
@@ -888,7 +888,7 @@ export function AIAgentConfigPresentation({
               {/* Require Human For Contracts */}
               <div className="p-3 rounded-lg border border-stone-200/80 bg-stone-50/60 flex items-center justify-between">
                 <div>
-                  <span className="text-stone-500 text-[11px] font-medium uppercase tracking-wider block">
+                  <span className="font-mono text-zinc-500 text-[10px] font-normal uppercase tracking-[0.14em] block">
                     Contract Human Takeover
                   </span>
                   <p className="text-[11px] text-stone-400">Strict legal deed review</p>
@@ -924,7 +924,7 @@ export function AIAgentConfigPresentation({
             {/* Keyword Chips */}
             <div className="p-3.5 rounded-lg border border-stone-200/80 bg-stone-50/70 space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-[11px] font-semibold text-stone-700 uppercase tracking-wider block">
+                <span className="font-mono text-[10px] font-normal text-stone-700 uppercase tracking-[0.14em] block">
                   Human Broker Takeover Keywords
                 </span>
                 {isEditing && <span className="text-[10px] text-stone-400">Click &times; to delete</span>}
@@ -989,7 +989,7 @@ export function AIAgentConfigPresentation({
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {/* Max Attempts */}
               <div className="p-3 rounded-lg border border-stone-200/80 bg-stone-50/60 space-y-1">
-                <span className="text-stone-500 text-[11px] font-medium uppercase tracking-wider block">
+                <span className="font-mono text-zinc-500 text-[10px] font-normal uppercase tracking-[0.14em] block">
                   Max Follow-Up Sequences
                 </span>
                 {isEditing ? (
@@ -1007,11 +1007,11 @@ export function AIAgentConfigPresentation({
                         },
                       })
                     }
-                    className="w-full h-8 px-2.5 text-xs font-mono font-bold rounded-md border border-stone-300 bg-white"
+                    className="w-full h-8 px-2.5 text-xs font-mono font-semibold rounded-md border border-stone-300 bg-white"
                   />
                 ) : (
                   <>
-                    <p className="font-mono text-base font-bold text-stone-900">
+                    <p className="font-mono text-base font-semibold text-stone-900">
                       {currentDisplayConfig.followUpRules.maxAttempts} Touches Max
                     </p>
                     <p className="text-[11px] text-stone-400">Protects prospects from spam fatigue</p>
@@ -1021,7 +1021,7 @@ export function AIAgentConfigPresentation({
 
               {/* Interval Hours */}
               <div className="p-3 rounded-lg border border-stone-200/80 bg-stone-50/60 space-y-1">
-                <span className="text-stone-500 text-[11px] font-medium uppercase tracking-wider block">
+                <span className="font-mono text-zinc-500 text-[10px] font-normal uppercase tracking-[0.14em] block">
                   Cadence Spacing (Hours)
                 </span>
                 {isEditing ? (
@@ -1039,21 +1039,21 @@ export function AIAgentConfigPresentation({
                         },
                       })
                     }
-                    className="w-full h-8 px-2.5 text-xs font-mono font-bold rounded-md border border-stone-300 bg-white"
+                    className="w-full h-8 px-2.5 text-xs font-mono font-semibold rounded-md border border-stone-300 bg-white"
                   />
                 ) : (
                   <>
-                    <p className="font-mono text-base font-bold text-stone-900">
+                    <p className="font-mono text-base font-semibold text-stone-900">
                       Every {currentDisplayConfig.followUpRules.intervalHours} Hours
                     </p>
-                    <p className="text-[11px] text-stone-400">Automated queue dispatch interval</p>
+                    <p className="text-[11px] text-stone-400">Follow-up interval</p>
                   </>
                 )}
               </div>
 
               {/* Auto Archive Unresponsive */}
               <div className="p-3 rounded-lg border border-stone-200/80 bg-stone-50/60 space-y-1">
-                <span className="text-stone-500 text-[11px] font-medium uppercase tracking-wider block">
+                <span className="font-mono text-zinc-500 text-[10px] font-normal uppercase tracking-[0.14em] block">
                   Unresponsive Archive Window
                 </span>
                 {isEditing ? (
@@ -1071,11 +1071,11 @@ export function AIAgentConfigPresentation({
                         },
                       })
                     }
-                    className="w-full h-8 px-2.5 text-xs font-mono font-bold rounded-md border border-stone-300 bg-white"
+                    className="w-full h-8 px-2.5 text-xs font-mono font-semibold rounded-md border border-stone-300 bg-white"
                   />
                 ) : (
                   <>
-                    <p className="font-mono text-base font-bold text-stone-900">
+                    <p className="font-mono text-base font-semibold text-stone-900">
                       {currentDisplayConfig.followUpRules.autoArchiveUnresponsiveDays} Days
                     </p>
                     <p className="text-[11px] text-stone-400">Moves to long-term nurture pool</p>
@@ -1086,7 +1086,7 @@ export function AIAgentConfigPresentation({
 
             {/* Channel Order */}
             <div className="p-3.5 rounded-lg border border-stone-200/80 bg-stone-50/70 space-y-2">
-              <span className="text-[11px] font-semibold text-stone-700 uppercase tracking-wider block">
+              <span className="font-mono text-[10px] font-normal text-stone-700 uppercase tracking-[0.14em] block">
                 Channel Dispatch Sequence
               </span>
               <div className="flex items-center gap-2">
@@ -1096,7 +1096,7 @@ export function AIAgentConfigPresentation({
                       key={idx}
                       className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-md border border-stone-200 shadow-2xs font-mono text-xs font-medium"
                     >
-                      <span className="text-emerald-700 font-bold">{idx + 1}.</span>
+                      <span className="text-emerald-700 font-semibold">{idx + 1}.</span>
                       <span className="capitalize">{ch}</span>
                     </div>
                   )
@@ -1114,7 +1114,7 @@ export function AIAgentConfigPresentation({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {/* Minimum Budget Threshold */}
               <div className="p-3 rounded-lg border border-stone-200/80 bg-stone-50/60 space-y-1">
-                <span className="text-stone-500 text-[11px] font-medium uppercase tracking-wider block">
+                <span className="font-mono text-zinc-500 text-[10px] font-normal uppercase tracking-[0.14em] block">
                   Minimum BANT Budget Threshold
                 </span>
                 {isEditing ? (
@@ -1133,12 +1133,12 @@ export function AIAgentConfigPresentation({
                           },
                         })
                       }
-                      className="w-full h-8 pl-7 pr-2.5 text-xs font-mono font-bold rounded-md border border-stone-300 bg-white text-stone-900"
+                      className="w-full h-8 pl-7 pr-2.5 text-xs font-mono font-semibold rounded-md border border-stone-300 bg-white text-stone-900"
                     />
                   </div>
                 ) : (
                   <>
-                    <p className="font-mono text-base font-bold text-stone-900">
+                    <p className="font-mono text-base font-semibold text-stone-900">
                       {currentDisplayConfig.qualificationGates?.formattedMinimumBudget || "₦85,000,000"}
                     </p>
                     <p className="text-[11px] text-stone-400">Below threshold routed to automated nurture</p>
@@ -1148,7 +1148,7 @@ export function AIAgentConfigPresentation({
 
               {/* Decision Horizon */}
               <div className="p-3 rounded-lg border border-stone-200/80 bg-stone-50/60 space-y-1">
-                <span className="text-stone-500 text-[11px] font-medium uppercase tracking-wider block">
+                <span className="font-mono text-zinc-500 text-[10px] font-normal uppercase tracking-[0.14em] block">
                   Target Decision Horizon
                 </span>
                 {isEditing ? (
@@ -1167,11 +1167,11 @@ export function AIAgentConfigPresentation({
                         },
                       })
                     }
-                    className="w-full h-8 px-2.5 text-xs font-mono font-bold rounded-md border border-stone-300 bg-white"
+                    className="w-full h-8 px-2.5 text-xs font-mono font-semibold rounded-md border border-stone-300 bg-white"
                   />
                 ) : (
                   <>
-                    <p className="font-mono text-base font-bold text-stone-900">
+                    <p className="font-mono text-base font-semibold text-stone-900">
                       &lt; {currentDisplayConfig.qualificationGates?.targetTimelineDays || 30} Days
                     </p>
                     <p className="text-[11px] text-stone-400">Qualifies for immediate physical viewing slot</p>
@@ -1183,7 +1183,7 @@ export function AIAgentConfigPresentation({
             {/* Approved Deeds */}
             <div className="p-3.5 rounded-lg border border-stone-200/80 bg-stone-50/70 space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-[11px] font-semibold text-stone-700 uppercase tracking-wider block">
+                <span className="font-mono text-[10px] font-normal text-stone-700 uppercase tracking-[0.14em] block">
                   Approved Property Title Deeds
                 </span>
                 {isEditing && <span className="text-[10px] text-stone-400">Click &times; to delete</span>}

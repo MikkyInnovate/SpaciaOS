@@ -31,11 +31,11 @@ interface QueueJob {
 const DEFAULT_QUEUE_JOBS: QueueJob[] = [
   {
     id: "job_01",
-    title: "Autonomous Lead Intake & Scoring",
+    title: "Lead intake and scoring",
     category: "underwriting",
     status: "completed",
     latencyFormatted: "140ms",
-    channel: "SpaciaOS BANT Engine",
+    channel: "SpaciaOS qualification",
     timeAgo: "12s ago",
   },
   {

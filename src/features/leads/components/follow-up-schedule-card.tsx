@@ -108,7 +108,7 @@ export function FollowUpScheduleCard({
               <CalendarClock className="h-4 w-4" />
             </div>
             <div>
-              <h4 className="text-xs font-bold text-stone-900 leading-none">
+              <h4 className="text-xs font-semibold text-stone-900 leading-none">
                 Scheduled Follow-up Touchpoint
               </h4>
               <span className="text-[11px] text-stone-500 font-medium mt-0.5 block">
@@ -139,10 +139,10 @@ export function FollowUpScheduleCard({
         {/* Date & Time display */}
         <div className="flex items-center justify-between gap-3 p-2.5 rounded-lg bg-stone-50 border border-stone-200/70">
           <div className="space-y-0.5">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-stone-400 block">
+            <span className="font-mono text-[10px] font-normal uppercase tracking-[0.14em] text-zinc-500 block">
               Scheduled Date & Time
             </span>
-            <p className="font-mono text-sm font-bold text-stone-900 tabular-nums flex items-center gap-1.5">
+            <p className="font-mono text-sm font-semibold text-stone-900 tabular-nums flex items-center gap-1.5">
               <CalendarDays className="h-4 w-4 text-stone-600" />
               <span>{schedule.scheduledFormatted}</span>
             </p>
@@ -172,7 +172,7 @@ export function FollowUpScheduleCard({
       <Dialog open={isRescheduleOpen} onOpenChange={setIsRescheduleOpen}>
         <DialogContent className="sm:max-w-[440px]">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-base font-bold text-stone-900">
+            <DialogTitle className="flex items-center gap-2 text-base font-semibold text-stone-900">
               <CalendarClock className="h-5 w-5 text-teal-700" />
               <span>Reschedule Follow-up for {leadName || "Lead"}</span>
             </DialogTitle>

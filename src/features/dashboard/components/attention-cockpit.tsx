@@ -44,7 +44,7 @@ export function AttentionCockpit({ items, onInspectLead }: AttentionCockpitProps
               <div className="flex h-7 w-7 items-center justify-center rounded-md bg-rose-100 text-rose-700 border border-rose-200">
                 <AlertTriangle className="h-4 w-4" aria-hidden="true" />
               </div>
-              <CardTitle className="font-display text-base font-bold text-stone-900">
+              <CardTitle className="font-display text-base font-normal text-[#14231d]">
                 What Requires Attention?
               </CardTitle>
               <Badge
@@ -160,7 +160,7 @@ export function AttentionCockpit({ items, onInspectLead }: AttentionCockpitProps
                         
                         <span
                           className={cn(
-                            "text-[10px] font-bold tracking-wider uppercase",
+                            "font-mono text-[10px] font-normal tracking-[0.14em] uppercase",
                             isCritical ? "text-rose-700" : isHot ? "text-amber-800" : isViewingToday ? "text-indigo-800" : "text-stone-600"
                           )}
                         >
@@ -177,7 +177,7 @@ export function AttentionCockpit({ items, onInspectLead }: AttentionCockpitProps
                       <Badge
                         variant="outline"
                         className={cn(
-                          "text-[9px] px-1.5 py-0 font-bold uppercase",
+                          "text-[9px] px-1.5 py-0 font-semibold uppercase",
                           isCritical
                             ? "bg-rose-100/80 text-rose-800 border-rose-300"
                             : "bg-amber-100/70 text-amber-800 border-amber-200"

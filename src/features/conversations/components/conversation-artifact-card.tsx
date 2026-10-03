@@ -163,10 +163,10 @@ export function ConversationArtifactCard({
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5 font-semibold text-[#0d4a36]">
             <CheckCircle2 className="h-4 w-4 text-emerald-600" />
-            <span>{artifact.milestoneTitle || "BANT Qualification Gate Passed"}</span>
+            <span>{artifact.milestoneTitle || "Lead qualified"}</span>
           </div>
           {artifact.milestoneScore && (
-            <span className="font-mono text-xs font-bold text-[#0d4a36] bg-emerald-100/80 px-1.5 py-0.5 rounded">
+            <span className="font-mono text-xs font-semibold text-[#0d4a36] bg-emerald-100/80 px-1.5 py-0.5 rounded">
               {artifact.milestoneScore}/100
             </span>
           )}

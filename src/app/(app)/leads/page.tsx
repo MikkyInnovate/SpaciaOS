@@ -297,13 +297,8 @@ function LeadsPageContent() {
     <Container size="lg" className="space-y-4 pb-12">
       {/* Page Header */}
         <PageHeader
-          title="Lead Management"
-          description={
-            <span>
-              Autonomous prospect intake, 5-point qualification underwriting, and deal progression for{" "}
-              <strong>{currentWorkspace?.name || "Pacia Agency HQ"}</strong>.
-            </span>
-          }
+          title="Leads"
+          description="Every enquiry, its score, and what happens next."
           actions={
             <div className="flex items-center gap-2">
               <Button

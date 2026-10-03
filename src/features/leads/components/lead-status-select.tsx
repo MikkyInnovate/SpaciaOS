@@ -73,7 +73,7 @@ export function LeadStatusSelect({
   return (
     <div className="flex items-center gap-2">
       {showLabel && (
-        <span className="text-[10px] font-bold text-stone-400 uppercase tracking-wider select-none">
+        <span className="font-mono text-[10px] font-normal text-zinc-500 uppercase tracking-[0.14em] select-none">
           Stage:
         </span>
       )}

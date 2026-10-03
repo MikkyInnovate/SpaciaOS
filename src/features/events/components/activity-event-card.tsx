@@ -218,7 +218,7 @@ export function ActivityEventCard({
           {/* Transcript Snippet */}
           {event.payload?.transcriptSnippet && (
             <div className="rounded-lg bg-stone-50/80 p-2.5 border border-stone-200 space-y-1">
-              <div className="flex items-center gap-1 text-[10px] font-semibold text-stone-500 uppercase tracking-wider">
+              <div className="font-mono flex items-center gap-1 text-[10px] font-normal text-zinc-500 uppercase tracking-[0.14em]">
                 <Sparkles className="h-3 w-3 text-[#0d4a36]" />
                 <span>Interaction Transcript Snippet</span>
               </div>
@@ -231,7 +231,7 @@ export function ActivityEventCard({
           {/* Attachments */}
           {event.payload?.attachments && event.payload.attachments.length > 0 && (
             <div className="space-y-1">
-              <span className="text-[10px] font-semibold text-stone-500 uppercase tracking-wider">
+              <span className="font-mono text-[10px] font-normal text-zinc-500 uppercase tracking-[0.14em]">
                 Attached Documents &amp; Media
               </span>
               <div className="flex flex-wrap gap-2">

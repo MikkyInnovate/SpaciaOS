@@ -193,30 +193,30 @@ class AnalyticsService {
         value: "76.5%",
         percentage: 76.5,
         trend: "+5.2%",
-        subtext: "autonomous pass",
+        subtext: "qualified by AI",
         isPositive: true,
       },
       bookedViewings: {
         value: "24",
         numericValue: 24,
         trend: "+12.0%",
-        subtext: "on broker calendars",
+        subtext: "on your calendars",
         isPositive: true,
       },
       pipelinePotential: {
         value: "₦1.85B",
         rawNaira: 1_850_000_000,
         trend: "+22.5%",
-        subtext: "verified budget",
+        subtext: "from stated budgets",
         isPositive: true,
       },
       speedToLead: {
         value: "48s",
-        subtext: "inbound to first voice touch",
+        subtext: "Average time to first call",
       },
       autonomousResolutionRate: {
         value: "88.4%",
-        subtext: "resolved without human friction",
+        subtext: "Leads handled without an agent",
       },
     };
   }

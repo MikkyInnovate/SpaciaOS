@@ -45,7 +45,7 @@ export function IntegrationsSummaryCards({
       <Card className="bg-white border-stone-200/80 shadow-2xs hover:border-stone-300 transition-colors">
         <CardContent className="p-4.5">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-semibold text-stone-500 tracking-wider uppercase">
+            <span className="font-mono text-[10px] font-normal text-zinc-500 tracking-[0.14em] uppercase">
               Configured Services
             </span>
             <div className="flex h-7 w-7 items-center justify-center rounded-lg border border-stone-200 bg-stone-50 text-stone-600 shadow-2xs shrink-0">
@@ -53,7 +53,7 @@ export function IntegrationsSummaryCards({
             </div>
           </div>
           <div className="mt-2 flex items-center gap-2">
-            <span className="font-display text-2xl font-bold tracking-tight text-stone-900 tabular-nums leading-none">
+            <span className="font-display text-2xl font-light tracking-tight text-[#14231d] tabular-nums leading-none">
               {total}
             </span>
             <span className="inline-flex items-center rounded-md px-1.5 py-0.5 text-[10px] font-semibold border leading-none shrink-0 bg-stone-100 text-stone-700 border-stone-200">
@@ -70,7 +70,7 @@ export function IntegrationsSummaryCards({
       <Card className="bg-white border-stone-200/80 shadow-2xs hover:border-stone-300 transition-colors">
         <CardContent className="p-4.5">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-semibold text-stone-500 tracking-wider uppercase">
+            <span className="font-mono text-[10px] font-normal text-zinc-500 tracking-[0.14em] uppercase">
               Connected Services
             </span>
             <div className="flex h-7 w-7 items-center justify-center rounded-lg border border-emerald-200/80 bg-emerald-50 text-[#0d4a36] shadow-2xs shrink-0">
@@ -80,7 +80,7 @@ export function IntegrationsSummaryCards({
           <div className="mt-2 flex items-center gap-2">
             <span
               className={cn(
-                "font-display text-2xl font-bold tracking-tight tabular-nums leading-none",
+                "font-display text-2xl font-light tracking-tight tabular-nums leading-none",
                 connectedCount > 0 ? "text-emerald-800" : "text-stone-900"
               )}
             >
@@ -107,7 +107,7 @@ export function IntegrationsSummaryCards({
       <Card className="bg-white border-stone-200/80 shadow-2xs hover:border-stone-300 transition-colors">
         <CardContent className="p-4.5">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-semibold text-stone-500 tracking-wider uppercase">
+            <span className="font-mono text-[10px] font-normal text-zinc-500 tracking-[0.14em] uppercase">
               Fleet Health Score
             </span>
             <div className="flex h-7 w-7 items-center justify-center rounded-lg border border-emerald-200/80 bg-emerald-50 text-[#0d4a36] shadow-2xs shrink-0">
@@ -115,7 +115,7 @@ export function IntegrationsSummaryCards({
             </div>
           </div>
           <div className="mt-2 flex items-center gap-2">
-            <span className="font-display text-2xl font-bold tracking-tight text-stone-900 tabular-nums leading-none">
+            <span className="font-display text-2xl font-light tracking-tight text-[#14231d] tabular-nums leading-none">
               {healthScore !== null ? `${healthScore}%` : "—"}
             </span>
             <span
@@ -145,7 +145,7 @@ export function IntegrationsSummaryCards({
       <Card className="bg-white border-stone-200/80 shadow-2xs hover:border-stone-300 transition-colors">
         <CardContent className="p-4.5">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-semibold text-stone-500 tracking-wider uppercase">
+            <span className="font-mono text-[10px] font-normal text-zinc-500 tracking-[0.14em] uppercase">
               Avg Roundtrip Latency
             </span>
             <div className="flex h-7 w-7 items-center justify-center rounded-lg border border-sky-200/80 bg-sky-50 text-sky-700 shadow-2xs shrink-0">
@@ -154,7 +154,7 @@ export function IntegrationsSummaryCards({
           </div>
           <div className="mt-2 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="font-display text-2xl font-bold tracking-tight text-stone-900 tabular-nums leading-none">
+              <span className="font-display text-2xl font-light tracking-tight text-[#14231d] tabular-nums leading-none">
                 {avgLatency !== null ? `${avgLatency}ms` : "—"}
               </span>
               <span

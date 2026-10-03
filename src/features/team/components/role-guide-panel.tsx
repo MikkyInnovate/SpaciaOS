@@ -44,7 +44,7 @@ export function RoleGuidePanel({ roles }: RoleGuidePanelProps) {
             >
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
-                  <h4 className="text-xs font-bold text-stone-900">{r.title}</h4>
+                  <h4 className="text-xs font-semibold text-stone-900">{r.title}</h4>
                   <Badge variant="outline" className="text-[10px] capitalize">
                     {r.role.replace("_", " ")}
                   </Badge>
@@ -55,7 +55,7 @@ export function RoleGuidePanel({ roles }: RoleGuidePanelProps) {
               </div>
 
               <div className="pt-2 border-t border-stone-100 space-y-1">
-                <span className="text-[10px] font-semibold text-stone-400 uppercase tracking-wider block">
+                <span className="font-mono text-[10px] font-normal text-zinc-500 uppercase tracking-[0.14em] block">
                   Permissions
                 </span>
                 <div className="flex flex-wrap gap-1">

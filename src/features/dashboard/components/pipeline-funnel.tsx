@@ -34,7 +34,7 @@ const chartConfig = {
     color: "#3f3f46", // Clean Charcoal
   },
   qualified: {
-    label: "Qualified Intent",
+    label: "Qualified",
     color: "#0d4a36", // Pacia Signature Forest Green
   },
   viewings: {
@@ -206,7 +206,7 @@ export function PipelineFunnel({
                     className="h-2 w-2 rounded-full shrink-0"
                     style={{ backgroundColor: chartConfig[key].color }}
                   />
-                  <span className="text-[11px] font-semibold text-stone-500 uppercase tracking-wider truncate">
+                  <span className="font-mono text-[10px] font-normal text-zinc-500 uppercase tracking-[0.14em] truncate">
                     {chartConfig[key].label}
                   </span>
                 </div>
@@ -304,41 +304,41 @@ export function PipelineFunnel({
         {/* Velocity Benchmarks Under Chart */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-3 border-t border-border/80">
           <div className="p-3 rounded-md border border-stone-200/80 bg-stone-50/50">
-            <span className="text-[11px] font-semibold text-stone-500 uppercase tracking-wider">
-              Speed to Lead
+            <span className="font-mono text-[10px] font-normal text-zinc-500 uppercase tracking-[0.14em]">
+              Speed to lead
             </span>
             <p className="font-display text-lg font-light tracking-[-0.02em] text-[#14231d] mt-0.5">
-              {benchmarks?.speedToLead || "48s response"}
+              {benchmarks?.speedToLead || "--"}
             </p>
             <span className="text-[11px] text-stone-500">
-              Autonomous AI dial & SMS qualification
+              Average time to first call
             </span>
           </div>
 
           <div className="p-3 rounded-md border border-stone-200/80 bg-stone-50/50">
-            <span className="text-[11px] font-semibold text-stone-500 uppercase tracking-wider">
-              Qualification Accuracy
+            <span className="font-mono text-[10px] font-normal text-zinc-500 uppercase tracking-[0.14em]">
+              Qualified rate
             </span>
             <p className="font-display text-lg font-light tracking-[-0.02em] text-[#15803d] mt-0.5">
               {benchmarks?.qualificationAccuracy ||
                 (totals.inquiries > 0
-                  ? `${Math.round((totals.qualified / totals.inquiries) * 100)}% Verified`
-                  : "0% Verified")}
+                  ? `${Math.round((totals.qualified / totals.inquiries) * 100)}%`
+                  : "0%")}
             </p>
             <span className="text-[11px] text-stone-500">
-              {totals.qualified} BANT qualified buyers
+              {totals.qualified} qualified buyers
             </span>
           </div>
 
           <div className="p-3 rounded-md border border-stone-200/80 bg-stone-50/50">
-            <span className="text-[11px] font-semibold text-stone-500 uppercase tracking-wider">
+            <span className="font-mono text-[10px] font-normal text-zinc-500 uppercase tracking-[0.14em]">
               Upcoming viewings
             </span>
             <p className="font-display text-lg font-light tracking-[-0.02em] text-[#14231d] mt-0.5">
               {totals.viewings} Scheduled
             </p>
             <span className="text-[11px] text-stone-500">
-              In-person luxury property inspections
+              Booked on your calendars
             </span>
           </div>
         </div>

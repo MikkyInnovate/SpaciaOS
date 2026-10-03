@@ -304,8 +304,8 @@ export class AnalyticsService {
         grossInbound: { value: "0", numericValue: 0, subtext: "no leads captured yet", isPositive: true },
         qualificationRate: { value: "0%", percentage: 0, subtext: "0 qualified leads", isPositive: false },
         bookedViewings: { value: "0", numericValue: 0, subtext: "0 viewings scheduled", isPositive: false },
-        pipelinePotential: { value: "₦0", rawNaira: 0, subtext: "Active prospective pipeline (₦0 closed won)", isPositive: false },
-        speedToLead: { value: "--", subtext: "autonomous AI outreach dispatch" },
+        pipelinePotential: { value: "₦0", rawNaira: 0, subtext: "No open deals yet", isPositive: false },
+        speedToLead: { value: "--", subtext: "Average time to first call" },
         autonomousResolutionRate: { value: "0%", subtext: "0 leads handled" },
       };
     }
@@ -318,37 +318,37 @@ export class AnalyticsService {
         value: totalLeads.toString(),
         numericValue: totalLeads,
         trend: undefined,
-        subtext: "total captured leads",
+        subtext: "Leads received",
         isPositive: true,
       },
       qualificationRate: {
         value: `${qualRate}%`,
         percentage: qualRate,
         trend: undefined,
-        subtext: `${qualifiedLeads} of ${totalLeads} leads BANT qualified`,
+        subtext: `${qualifiedLeads} of ${totalLeads} leads qualified`,
         isPositive: qualRate >= 50,
       },
       bookedViewings: {
         value: bookedViewings.toString(),
         numericValue: bookedViewings,
         trend: undefined,
-        subtext: `${completedAppointmentsCount > 0 ? `${completedAppointmentsCount} completed · ` : ""}${bookedViewings} scheduled viewings`,
+        subtext: `${completedAppointmentsCount > 0 ? `${completedAppointmentsCount} completed · ` : ""}${bookedViewings} viewings booked`,
         isPositive: true,
       },
       pipelinePotential: {
         value: this.formatNaira(totalBudgetSum),
         rawNaira: totalBudgetSum,
         trend: undefined,
-        subtext: `Active prospective pipeline (${activeLeadsCount} active · ₦0 closed won)`,
+        subtext: `Across ${activeLeadsCount} open ${activeLeadsCount === 1 ? "lead" : "leads"}`,
         isPositive: true,
       },
       speedToLead: {
         value: totalLeads > 0 ? "< 60s" : "--",
-        subtext: "autonomous AI outreach dispatch",
+        subtext: "Average time to first call",
       },
       autonomousResolutionRate: {
         value: `${autoRate}%`,
-        subtext: `${autonomousLeadsCount} of ${totalLeads} leads handled autonomously`,
+        subtext: `${autonomousLeadsCount} of ${totalLeads} leads handled without an agent`,
       },
     };
   }

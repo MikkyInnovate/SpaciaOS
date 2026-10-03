@@ -9,7 +9,6 @@ import {
   CallList,
   CallDetailCockpit,
   InitiateCallDialog,
-  MOCK_CALLS,
   callsService,
   type Call,
 } from "@/features/calls";
@@ -24,7 +23,7 @@ import { toast } from "sonner";
 
 export default function CallsPage() {
   const { currentWorkspace } = useWorkspace();
-  const [calls, setCalls] = React.useState<Call[]>(MOCK_CALLS);
+  const [calls, setCalls] = React.useState<Call[]>([]);
   const [selectedCall, setSelectedCall] = React.useState<Call | null>(null);
   const [isInitiateOpen, setIsInitiateOpen] = React.useState(false);
 
@@ -34,7 +33,7 @@ export default function CallsPage() {
     async function loadCalls() {
       try {
         const data = await callsService.getCalls();
-        if (isMounted && data && data.length > 0) {
+        if (isMounted && data) {
           setCalls(data);
         }
       } catch (err) {
@@ -46,6 +45,21 @@ export default function CallsPage() {
       isMounted = false;
     };
   }, [currentWorkspace?.id]);
+
+  // Summary stats from the real call log
+  const stats = React.useMemo(() => {
+    const today = new Date().toDateString();
+    const totalSeconds = calls.reduce((sum, c) => sum + (c.audioDurationSeconds || 0), 0);
+    const avg = calls.length ? Math.round(totalSeconds / calls.length) : 0;
+    const qualified = calls.filter((c) => c.outcome === "qualified" || c.outcome === "viewing_booked").length;
+    return {
+      avgMin: Math.floor(avg / 60),
+      avgSec: avg % 60,
+      qualifiedRate: calls.length ? Math.round((qualified / calls.length) * 100) : 0,
+      today: calls.filter((c) => new Date(c.createdAt).toDateString() === today).length,
+      viewings: calls.filter((c) => c.outcome === "viewing_booked").length,
+    };
+  }, [calls]);
 
   // Close sidepanel on ESC key & lock background scroll
   React.useEffect(() => {
@@ -70,7 +84,7 @@ export default function CallsPage() {
   const handleTakeover = async (call: Call) => {
     if (call.leadId) {
       leadsService
-        .takeoverLead(call.leadId, "Marcus Vance", "Broker takeover from live call cockpit")
+        .takeoverLead(call.leadId, "Agent", "Agent took over the live call")
         .catch((err) => console.warn("Takeover sync notification:", err));
     }
     setCalls((prev) =>
@@ -102,7 +116,7 @@ export default function CallsPage() {
       {/* Page Header */}
       <PageHeader
         title="Calls"
-        description={`Autonomous voice interactions, audio recordings, and qualification logs for ${currentWorkspace?.name || "your workspace"}.`}
+        description="Every call your AI agent made, with recordings and transcripts."
         actions={
           <Button
             size="sm"
@@ -123,20 +137,20 @@ export default function CallsPage() {
             <span>Avg. Call Duration</span>
           </div>
           <div className="mt-2 flex items-baseline">
-            <span className="font-display text-2xl font-bold tracking-tight text-stone-900 tabular-nums">
-              3
+            <span className="font-display text-2xl font-light tracking-tight text-[#14231d] tabular-nums">
+              {stats.avgMin}
             </span>
             <span className="text-xs font-medium text-stone-500 font-sans ml-0.5 mr-1.5">
               m
             </span>
-            <span className="font-display text-2xl font-bold tracking-tight text-stone-900 tabular-nums">
-              42
+            <span className="font-display text-2xl font-light tracking-tight text-[#14231d] tabular-nums">
+              {String(stats.avgSec).padStart(2, "0")}
             </span>
             <span className="text-xs font-medium text-stone-500 font-sans ml-0.5">
               s
             </span>
           </div>
-          <p className="text-[11px] text-stone-500 mt-1">88% qualification rate</p>
+          <p className="text-[11px] text-stone-500 mt-1">{stats.qualifiedRate}% qualified</p>
         </Card>
 
         <Card className="p-3.5 border-border bg-white shadow-2xs">
@@ -145,14 +159,14 @@ export default function CallsPage() {
             <span>Calls Placed Today</span>
           </div>
           <div className="mt-2 flex items-baseline gap-1.5">
-            <span className="font-display text-2xl font-bold tracking-tight text-stone-900 tabular-nums">
-              42
+            <span className="font-display text-2xl font-light tracking-tight text-[#14231d] tabular-nums">
+              {stats.today}
             </span>
             <span className="text-xs font-medium text-stone-500 font-sans">
               Outbound
             </span>
           </div>
-          <p className="text-[11px] text-stone-500 mt-1">Sub-5s response to inquiries</p>
+          <p className="text-[11px] text-stone-500 mt-1">Calls made since midnight</p>
         </Card>
 
         <Card className="p-3.5 border-border bg-white shadow-2xs">
@@ -161,24 +175,34 @@ export default function CallsPage() {
             <span>Viewings Booked via Voice</span>
           </div>
           <div className="mt-2 flex items-baseline gap-1.5">
-            <span className="font-display text-2xl font-bold tracking-tight text-stone-900 tabular-nums">
-              11
+            <span className="font-display text-2xl font-light tracking-tight text-[#14231d] tabular-nums">
+              {stats.viewings}
             </span>
             <span className="text-xs font-medium text-stone-500 font-sans">
               Confirmed
             </span>
           </div>
-          <p className="text-[11px] text-stone-500 mt-1">Auto-synced to Google Calendar</p>
+          <p className="text-[11px] text-stone-500 mt-1">Booked on a call</p>
         </Card>
       </div>
 
       {/* Main Full-Width Calls List Table */}
       <div className="w-full">
-        <CallList
-          calls={calls}
-          selectedCallId={selectedCall?.id}
-          onSelectCall={(call) => setSelectedCall(call)}
-        />
+        {calls.length === 0 ? (
+          <Card className="flex flex-col items-center justify-center gap-2 border-border bg-white px-6 py-16 text-center shadow-2xs">
+            <PhoneCall className="h-5 w-5 text-stone-400" />
+            <p className="font-display text-base text-[#14231d]">No calls yet</p>
+            <p className="max-w-sm text-sm text-stone-500">
+              Calls your AI agent makes will appear here, with recordings and transcripts.
+            </p>
+          </Card>
+        ) : (
+          <CallList
+            calls={calls}
+            selectedCallId={selectedCall?.id}
+            onSelectCall={(call) => setSelectedCall(call)}
+          />
+        )}
       </div>
 
       {/* Gentle, Sleek Slide-over Sidepanel: Slides in from the right edge */}

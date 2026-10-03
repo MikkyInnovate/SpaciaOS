@@ -53,7 +53,7 @@ export function ConversationContextPanel({
           <div className="flex items-center justify-between">
             <CardTitle className="text-xs font-semibold text-stone-900 flex items-center gap-1.5">
               <ShieldCheck className="h-3.5 w-3.5 text-[#0d4a36]" />
-              <span>AI Qualification Telemetry</span>
+              <span>AI qualification</span>
             </CardTitle>
             <span className="font-mono text-[10px] text-stone-400">Score: {conversation.qualificationScore}/100</span>
           </div>
@@ -63,21 +63,21 @@ export function ConversationContextPanel({
           <div className="space-y-1">
             <div className="flex items-center justify-between text-[11px]">
               <span className="text-stone-500 font-medium">Confidence Level</span>
-              <span className="font-mono font-bold text-stone-900">{conversation.confidenceScore}%</span>
+              <span className="font-mono font-semibold text-stone-900">{conversation.confidenceScore}%</span>
             </div>
             <IntentConfidenceGauge score={conversation.confidenceScore} />
           </div>
 
           {/* Buyer Intent Tier */}
           <div className="pt-2 border-t border-stone-100 flex items-center justify-between">
-            <span className="text-[11px] text-stone-500">Extracted Intent:</span>
+            <span className="text-[11px] text-stone-500">Looking for:</span>
             <BuyerIntentBadge category={conversation.buyerIntent} className="text-[10px]" />
           </div>
 
           {/* Conversational Signals */}
           {conversation.intentSignals.length > 0 && (
             <div className="pt-2 border-t border-stone-100 space-y-1.5">
-              <span className="text-[10px] text-stone-400 font-semibold uppercase tracking-wider">
+              <span className="font-mono text-[10px] text-zinc-500 font-normal uppercase tracking-[0.14em]">
                 Key Conversational Signals
               </span>
               <div className="flex flex-wrap gap-1">
@@ -140,7 +140,7 @@ export function ConversationContextPanel({
         <CardHeader className="p-3.5 pb-2">
           <CardTitle className="text-xs font-semibold text-stone-900 flex items-center gap-1.5">
             <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
-            <span>5-Point BANT Underwriting</span>
+            <span>Qualification checklist</span>
           </CardTitle>
         </CardHeader>
         <CardContent className="p-3.5 pt-0 space-y-2.5">
@@ -232,7 +232,7 @@ export function ConversationContextPanel({
             </Badge>
           </div>
           <div className="flex items-center gap-2 pt-1">
-            <div className="h-7 w-7 rounded-full bg-stone-800 text-white flex items-center justify-center font-bold text-xs">
+            <div className="h-7 w-7 rounded-full bg-stone-800 text-white flex items-center justify-center font-semibold text-xs">
               {(conversation.assignedBroker.name || "B").slice(0, 1).toUpperCase()}
             </div>
             <div>

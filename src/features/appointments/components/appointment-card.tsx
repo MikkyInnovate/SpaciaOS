@@ -125,7 +125,7 @@ export function AppointmentCard({
             </div>
 
             {appointment.propertyPrice && (
-              <span className="shrink-0 font-mono text-xs font-bold text-emerald-800 bg-emerald-50/70 border border-emerald-200/60 px-2 py-0.5 rounded-md">
+              <span className="shrink-0 font-mono text-xs font-semibold text-emerald-800 bg-emerald-50/70 border border-emerald-200/60 px-2 py-0.5 rounded-md">
                 {appointment.propertyPrice}
               </span>
             )}

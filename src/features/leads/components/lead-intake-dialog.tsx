@@ -44,7 +44,7 @@ interface LeadIntakeDialogProps {
 
 const INBOUND_CHANNELS = [
   { value: "Meta Ads", label: "Meta Inbound (Instagram / FB Ads)" },
-  { value: "Google Inbound", label: "Google High-Intent Search" },
+  { value: "Google Inbound", label: "Google Search" },
   { value: "WhatsApp Inbound", label: "WhatsApp Direct Inquiry" },
   { value: "Direct Phone", label: "Direct Phone Inbound" },
   { value: "Broker Referral", label: "Broker Network Referral" },
@@ -317,7 +317,7 @@ export function LeadIntakeDialog({
               </FormField>
 
               <FormField>
-                <FormLabel>Acquisition Intent</FormLabel>
+                <FormLabel>Buying goal</FormLabel>
                 <Select
                   value={intent}
                   onValueChange={(val) => setIntent(val as "Purchase" | "Rental" | "Investment")}
@@ -406,7 +406,7 @@ export function LeadIntakeDialog({
           <DialogFooter className="p-3.5 px-5 border-t border-stone-100 bg-[#fcfcfb] flex items-center justify-between sm:justify-between">
             <div className="text-[11px] text-stone-400 flex items-center gap-1.5">
               <Sparkles className="h-3.5 w-3.5 text-emerald-700" />
-              <span>Initial BANT scoring auto-calculated</span>
+              <span>Initial score calculated automatically</span>
             </div>
 
             <div className="flex items-center gap-2">

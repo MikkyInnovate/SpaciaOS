@@ -74,7 +74,7 @@ export function LeadTable({
                 {item.property?.location || item.location}
               </span>
               <span className="text-stone-300">•</span>
-              <span className="text-[10px] uppercase font-semibold tracking-wider text-stone-600 bg-stone-100 px-1.5 py-0.2 rounded border border-stone-200">
+              <span className="font-mono text-[10px] uppercase font-normal tracking-[0.14em] text-zinc-500 bg-stone-100 px-1.5 py-0.2 rounded border border-stone-200">
                 {item.intent}
               </span>
             </div>

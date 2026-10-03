@@ -97,7 +97,7 @@ export function HandoffContextCard({
       {/* Trigger reason banner */}
       <div className="rounded-lg bg-white/80 border border-sky-200/60 p-2.5">
         <div className="flex items-start gap-2">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-sky-800 shrink-0 mt-0.5">
+          <span className="font-mono text-[10px] font-normal uppercase tracking-[0.14em] text-sky-800 shrink-0 mt-0.5">
             Handoff Catalyst:
           </span>
           <p className="text-xs font-semibold text-stone-900 leading-snug">
@@ -108,7 +108,7 @@ export function HandoffContextCard({
 
       {/* Conversational Synthesis */}
       <div className="space-y-1">
-        <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-stone-500">
+        <div className="font-mono flex items-center gap-1.5 text-[10px] font-normal uppercase tracking-[0.14em] text-zinc-500">
           <Sparkles className="h-3.5 w-3.5 text-[#0d4a36]" />
           <span>AI Discovery Synthesis</span>
         </div>
@@ -120,7 +120,7 @@ export function HandoffContextCard({
       {/* Key Quotes from Prospect */}
       {context.keyQuotes && context.keyQuotes.length > 0 && (
         <div className="space-y-1.5 pl-2 border-l-2 border-sky-300">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-stone-500 flex items-center gap-1">
+          <span className="font-mono text-[10px] font-normal uppercase tracking-[0.14em] text-zinc-500 flex items-center gap-1">
             <Quote className="h-3 w-3 text-sky-700 shrink-0" />
             <span>Direct Prospect Statement</span>
           </span>

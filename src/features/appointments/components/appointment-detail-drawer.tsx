@@ -396,21 +396,21 @@ export function AppointmentDetailDrawer({
               </div>
               <dl className="grid grid-cols-2 border-t border-stone-100">
                 <div className="border-r border-stone-100 px-3.5 py-3">
-                  <dt className="flex items-center gap-1 text-[10px] font-medium uppercase tracking-wider text-stone-400">
+                  <dt className="font-mono flex items-center gap-1 text-[10px] font-normal uppercase tracking-[0.14em] text-zinc-500">
                     <CalendarDays className="h-3 w-3" />
                     Date
                   </dt>
                   <dd className="mt-1 text-xs font-semibold text-stone-900">{dateLabel}</dd>
                 </div>
                 <div className="px-3.5 py-3">
-                  <dt className="flex items-center gap-1 text-[10px] font-medium uppercase tracking-wider text-stone-400">
+                  <dt className="font-mono flex items-center gap-1 text-[10px] font-normal uppercase tracking-[0.14em] text-zinc-500">
                     <Clock className="h-3 w-3" />
                     Time
                   </dt>
                   <dd className="mt-1 font-mono text-xs font-semibold text-stone-900 tabular-nums">{timeLabel}</dd>
                 </div>
                 <div className="border-r border-t border-stone-100 px-3.5 py-3">
-                  <dt className="flex items-center gap-1 text-[10px] font-medium uppercase tracking-wider text-stone-400">
+                  <dt className="font-mono flex items-center gap-1 text-[10px] font-normal uppercase tracking-[0.14em] text-zinc-500">
                     <User className="h-3 w-3" />
                     Client
                   </dt>
@@ -426,7 +426,7 @@ export function AppointmentDetailDrawer({
                   )}
                 </div>
                 <div className="border-t border-stone-100 px-3.5 py-3">
-                  <dt className="text-[10px] font-medium uppercase tracking-wider text-stone-400">Host</dt>
+                  <dt className="font-mono text-[10px] font-normal uppercase tracking-[0.14em] text-zinc-500">Host</dt>
                   <dd className="mt-1 text-xs font-semibold text-stone-900">{appointment.assignedBrokerName}</dd>
                   <dd className="mt-0.5 text-[11px] text-stone-500">{formatLabel(appointment.meetingType)}</dd>
                 </div>
@@ -434,7 +434,7 @@ export function AppointmentDetailDrawer({
               {appointment.meetingUrl && (
                 <div className="flex items-center justify-between gap-3 border-t border-stone-100 px-3.5 py-2.5">
                   <div className="min-w-0">
-                    <p className="flex items-center gap-1 text-[10px] font-medium uppercase tracking-wider text-stone-400">
+                    <p className="font-mono flex items-center gap-1 text-[10px] font-normal uppercase tracking-[0.14em] text-zinc-500">
                       <Video className="h-3 w-3" />
                       Meet
                     </p>
@@ -445,21 +445,21 @@ export function AppointmentDetailDrawer({
             </div>
 
             <div className="rounded-lg border border-stone-200 bg-stone-50/60 px-3.5 py-3">
-              <p className="text-[10px] font-medium uppercase tracking-wider text-stone-400">Calendar</p>
+              <p className="font-mono text-[10px] font-normal uppercase tracking-[0.14em] text-zinc-500">Calendar</p>
               <p className="mt-1 text-xs font-medium text-stone-800">{providerLabel(appointment.calendarProvider)}</p>
               <p className="mt-0.5 font-mono text-[11px] text-stone-500">#{reference}</p>
             </div>
 
             {appointment.notes && (
               <div>
-                <p className="text-[10px] font-medium uppercase tracking-wider text-stone-400">Notes</p>
+                <p className="font-mono text-[10px] font-normal uppercase tracking-[0.14em] text-zinc-500">Notes</p>
                 <p className="mt-1 text-xs leading-relaxed text-stone-700">{appointment.notes}</p>
               </div>
             )}
 
             {appointment.cancelledReason && (
               <div>
-                <p className="text-[10px] font-medium uppercase tracking-wider text-stone-400">Cancellation reason</p>
+                <p className="font-mono text-[10px] font-normal uppercase tracking-[0.14em] text-zinc-500">Cancellation reason</p>
                 <p className="mt-1 text-xs text-stone-700">{appointment.cancelledReason}</p>
               </div>
             )}
@@ -520,7 +520,7 @@ export function AppointmentDetailDrawer({
 
               {reminderHistory.length > 0 && (
                 <div className="mt-2 pt-2 border-t border-stone-200/60 space-y-1">
-                  <p className="text-[10px] font-medium uppercase tracking-wider text-stone-400">Recent Dispatches</p>
+                  <p className="font-mono text-[10px] font-normal uppercase tracking-[0.14em] text-zinc-500">Recent Dispatches</p>
                   {reminderHistory.map((hist, idx) => (
                     <div key={idx} className="flex items-center gap-1.5 text-[10px] text-emerald-800">
                       <CheckCircle2 className="h-2.5 w-2.5 text-emerald-600" />

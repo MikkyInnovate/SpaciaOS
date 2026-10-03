@@ -61,7 +61,7 @@ export function AnalyticsSummaryCards({
       {/* Primary KPI Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatMetricCard
-          title="Gross Inbound Prospects"
+          title="New leads"
           value={metrics.grossInbound.value}
           subtext={metrics.grossInbound.subtext}
           trend={
@@ -77,7 +77,7 @@ export function AnalyticsSummaryCards({
         />
 
         <StatMetricCard
-          title="Instant Qualification Rate"
+          title="Qualified rate"
           value={metrics.qualificationRate.value}
           subtext={metrics.qualificationRate.subtext}
           trend={
@@ -93,7 +93,7 @@ export function AnalyticsSummaryCards({
         />
 
         <StatMetricCard
-          title="Booked Viewings"
+          title="Viewings booked"
           value={metrics.bookedViewings.value}
           subtext={metrics.bookedViewings.subtext}
           trend={
@@ -109,7 +109,7 @@ export function AnalyticsSummaryCards({
         />
 
         <StatMetricCard
-          title="Active Pipeline Potential"
+          title="Pipeline value"
           value={metrics.pipelinePotential.value}
           subtext={metrics.pipelinePotential.subtext}
           trend={
@@ -125,7 +125,7 @@ export function AnalyticsSummaryCards({
         />
       </div>
 
-      {/* Autonomous Operational Velocity Banners */}
+      {/* Speed and automation */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="flex items-center justify-between p-3.5 rounded-xl bg-stone-50 border border-stone-200/80 shadow-2xs">
           <div className="flex items-center gap-3">
@@ -134,7 +134,7 @@ export function AnalyticsSummaryCards({
             </div>
             <div>
               <div className="text-xs font-semibold text-stone-900">
-                Speed to Lead
+                Speed to lead
               </div>
               <div className="text-[11px] text-stone-500">
                 {metrics.speedToLead.subtext}
@@ -142,11 +142,11 @@ export function AnalyticsSummaryCards({
             </div>
           </div>
           <div className="text-right">
-            <div className="text-base font-bold font-mono text-stone-900">
+            <div className="text-base font-semibold font-mono text-stone-900">
               {metrics.speedToLead.value}
             </div>
             <div className="text-[10px] font-semibold text-emerald-700 bg-emerald-100/70 px-1.5 py-0.5 rounded-md inline-block">
-              Outbound Dispatch
+              Time to first call
             </div>
           </div>
         </div>
@@ -158,7 +158,7 @@ export function AnalyticsSummaryCards({
             </div>
             <div>
               <div className="text-xs font-semibold text-stone-900">
-                Autonomous Resolution Rate
+                Handled by AI
               </div>
               <div className="text-[11px] text-stone-500">
                 {metrics.autonomousResolutionRate.subtext}
@@ -166,11 +166,11 @@ export function AnalyticsSummaryCards({
             </div>
           </div>
           <div className="text-right">
-            <div className="text-base font-bold font-mono text-stone-900">
+            <div className="text-base font-semibold font-mono text-stone-900">
               {metrics.autonomousResolutionRate.value}
             </div>
             <div className="text-[10px] font-semibold text-sky-700 bg-sky-100/70 px-1.5 py-0.5 rounded-md inline-block">
-              {parseFloat(metrics.autonomousResolutionRate.value) >= 80 ? "Fully automated" : "Autonomous Tier"}
+              {parseFloat(metrics.autonomousResolutionRate.value) >= 80 ? "Mostly automated" : "Partly automated"}
             </div>
           </div>
         </div>

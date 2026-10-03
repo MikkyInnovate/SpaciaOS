@@ -18,7 +18,7 @@ export function AIAgentLiveFeed({ events }: AIAgentLiveFeedProps) {
             <div className="flex h-7 w-7 items-center justify-center rounded-md bg-stone-100 text-stone-700 border border-stone-200/60">
               <Bot className="h-4 w-4" aria-hidden="true" />
             </div>
-            <CardTitle className="font-display text-base font-bold text-stone-900">
+            <CardTitle className="font-display text-base font-normal text-[#14231d]">
               AI Sales Activity
             </CardTitle>
           </div>
