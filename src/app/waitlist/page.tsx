@@ -37,7 +37,7 @@ export default function WaitlistPage() {
       <MotionRoot>
         <SmoothAnchors />
         <PixelWaitlistProvider>
-          <div className="min-h-screen bg-[#f4f4f2] text-zinc-950 selection:bg-[#15803d] selection:text-white">
+          <div className="min-h-screen overflow-x-clip bg-[#f4f4f2] text-zinc-950 selection:bg-[#15803d] selection:text-white">
             <PixelNav links={LINKS} ctaHref="#join" />
             <PixelWaitlistHero />
             <PixelWaitlistSteps />

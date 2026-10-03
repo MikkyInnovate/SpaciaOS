@@ -44,7 +44,7 @@ export default async function LandingPage() {
       <MotionRoot>
         <SmoothAnchors />
         {!introSeen && <LandingIntro />}
-        <div className="min-h-screen bg-[#f4f4f2] text-zinc-950 selection:bg-[#15803d] selection:text-white">
+        <div className="min-h-screen overflow-x-clip bg-[#f4f4f2] text-zinc-950 selection:bg-[#15803d] selection:text-white">
           <PixelNav />
           <PixelHero />
           <IntegrationsMarquee />
