@@ -87,7 +87,7 @@ npx wrangler secret put RESEND_FROM_EMAIL   # optional: e.g. "SpaciaOS <hello@yo
 npm run deploy      # builds with OpenNext and uploads to Cloudflare
 ```
 
-The site goes live at `https://spaciaos-waitlist.<your-account>.workers.dev`. A custom domain can be attached later in the Cloudflare dashboard (Workers & Pages → spaciaos-waitlist → Settings → Domains & Routes) without redeploying.
+The site goes live at `https://spaciaos.<your-account>.workers.dev`. A custom domain can be attached later in the Cloudflare dashboard (Workers & Pages → spaciaos → Settings → Domains & Routes) without redeploying.
 
 **Local preview in the Workers runtime:** copy `.dev.vars.example` to `.dev.vars`, fill in the values, then run `npm run preview`.
 
