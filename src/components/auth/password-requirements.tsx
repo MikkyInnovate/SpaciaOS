@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { createPortal } from "react-dom";
-import { Check, Circle, ShieldCheck } from "lucide-react";
+import { Check, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 
 interface RequirementRule {
@@ -126,46 +126,46 @@ export function PasswordRequirements({ containerRef }: PasswordRequirementsProps
   const isAllValid = passedCount === PASSWORD_RULES.length;
 
   return createPortal(
-    <div className="rounded-md border border-stone-200/90 bg-stone-50/80 p-2 text-xs transition-all duration-200 shadow-2xs mt-1">
-      <div className="flex items-center justify-between mb-1">
-        <div className="flex items-center gap-1.5 font-medium text-stone-700 text-[11px]">
-          <ShieldCheck className={cn("h-3.5 w-3.5", isAllValid ? "text-emerald-700" : "text-stone-500")} />
-          <span>Password Requirements</span>
+    <div className="mt-2 bg-white p-3 text-xs ring-1 ring-zinc-200 transition-all duration-200">
+      <div className="mb-2 flex items-center justify-between">
+        <div className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.14em] text-zinc-500">
+          <ShieldCheck className={cn("h-3.5 w-3.5", isAllValid ? "text-[#15803d]" : "text-zinc-400")} />
+          <span>Password requirements</span>
         </div>
         <span
           className={cn(
-            "text-[10px] font-semibold px-1.5 py-0.2 rounded",
+            "px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-[0.12em]",
             isAllValid
-              ? "bg-emerald-100 text-emerald-800"
-              : "bg-stone-200/70 text-stone-600"
+              ? "bg-[#15803d] text-white"
+              : "bg-[#f4f4f2] text-zinc-500 ring-1 ring-zinc-200"
           )}
         >
           {passedCount}/{PASSWORD_RULES.length} met
         </span>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-2 gap-y-0.5 pt-1 border-t border-stone-200/60">
+      <div className="grid grid-cols-1 gap-x-3 gap-y-1 border-t border-zinc-100 pt-2 sm:grid-cols-2">
         {results.map((rule) => (
           <div
             key={rule.id}
             className={cn(
               "flex items-center gap-1.5 text-[11px] transition-colors py-0.5",
               rule.passed
-                ? "text-emerald-800 font-medium"
-                : "text-stone-500"
+                ? "text-[#14231d]"
+                : "text-zinc-500"
             )}
           >
             {rule.passed ? (
-              <div className="flex h-3.5 w-3.5 items-center justify-center rounded-full bg-emerald-600 text-white shrink-0">
+              <div className="flex h-3.5 w-3.5 shrink-0 items-center justify-center bg-[#15803d] text-white">
                 <Check className="h-2.5 w-2.5 stroke-[3]" />
               </div>
             ) : (
-              <Circle className="h-3.5 w-3.5 text-stone-300 stroke-[2] shrink-0" />
+              <span className="h-3.5 w-3.5 shrink-0 ring-1 ring-inset ring-zinc-300" />
             )}
             <span className="truncate">
               {rule.label}
               {rule.progress && !rule.passed && password.length > 0 && (
-                <span className="text-stone-400 ml-1 text-[10px]">({rule.progress})</span>
+                <span className="ml-1 text-[10px] text-zinc-400">({rule.progress})</span>
               )}
             </span>
           </div>
