@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { headers } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { MotionRoot } from "@/components/marketing/motion";
 import { PixelFooter } from "@/components/variants/pixel/pixel-footer";
 import {
@@ -22,7 +22,7 @@ import { SmoothAnchors } from "@/components/variants/pixel/smooth-anchors";
 import { PrivacyBento } from "@/components/variants/pixel/privacy/privacy-bento";
 import { PixelShell } from "@/components/variants/pixel/i18n/pixel-shell";
 import { currencyFromHeaders } from "@/components/variants/pixel/currency-region";
-import { LandingIntro } from "@/components/variants/pixel/landing-intro";
+import { INTRO_COOKIE, LandingIntro } from "@/components/variants/pixel/landing-intro";
 
 export const metadata: Metadata = {
   title: { absolute: "SpaciaOS · The AI Sales System for Real Estate" },
@@ -38,11 +38,12 @@ export default async function LandingPage() {
   // Pricing currency from the visitor's IP country (header set by Vercel/Cloudflare);
   // null in local dev, where the browser guesses instead.
   const currency = currencyFromHeaders(await headers());
+  const introSeen = (await cookies()).has(INTRO_COOKIE);
   return (
     <PixelShell currency={currency}>
       <MotionRoot>
         <SmoothAnchors />
-        <LandingIntro />
+        {!introSeen && <LandingIntro />}
         <div className="min-h-screen bg-[#f4f4f2] text-zinc-950 selection:bg-[#15803d] selection:text-white">
           <PixelNav />
           <PixelHero />
