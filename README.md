@@ -1,8 +1,70 @@
-# Spacia (SpaciaOS) — AI Sales Command Center
+# SpaciaOS — The AI Sales System for Real Estate
 
-> **Spacia** is a high-performance, managed AI sales orchestration platform purpose-built for modern real-estate brokerages and development firms. It autonomously captures inbound property inquiries, engages prospects via natural voice and chat, qualifies buyers against stringent underwriting criteria, evaluates purchasing power and timeline, and seamlessly books qualified viewings directly onto connected sales agents' calendars.
+> **SpaciaOS** is a managed AI sales system purpose-built for modern real-estate brokerages and development firms. It autonomously captures inbound property inquiries, engages prospects via natural voice and chat, qualifies buyers against stringent underwriting criteria, evaluates purchasing power and timeline, and seamlessly books qualified viewings directly onto connected sales agents' calendars.
 
-This repository houses the **production frontend and backend implementation for Days 1 through 30** of the Spacia MVP.
+This repository houses the frontend (Next.js) and backend (`/server`, NestJS + Neon PostgreSQL) for SpaciaOS.
+
+---
+
+## 0. Start Here — Current State (3 October 2026)
+
+### Branches
+
+| Branch | What it contains | Based on |
+| :--- | :--- | :--- |
+| `frontend` | The app: brand (logo, favicons, fonts, shared styles), sign-in / sign-up, dashboard and all app pages, loaders, real-data-only calls flow | — |
+| `feature/landing-page` | Marketing landing page at `/` (design system in `src/components/variants/pixel`) | `frontend` |
+| `feature/waitlist` | Waitlist page at `/waitlist` + waitlist backend (real counts, profile fields, phone capture, migrations 0006–0008) | `feature/landing-page` |
+| `feature/privacy-policy` | Privacy policy at `/privacy` (EN / FR) | `feature/landing-page` |
+| `feature/404-page` | Tiled real estate 404 page | `frontend` |
+| `backup/*-2026-10-03` | Snapshots taken before the branch split on 3 Oct 2026 — safe to delete once the above are merged | — |
+
+Merge order when releasing: `frontend` → `feature/landing-page` → `feature/waitlist` / `feature/privacy-policy`; `feature/404-page` can merge any time after `frontend`.
+
+### Routes
+
+| URL | Page | Auth |
+| :--- | :--- | :--- |
+| `/` | Landing page (first visit shows a counting intro, once per session) | Public |
+| `/waitlist` | Waitlist (email first, then name, phone, company, website, team size) | Public |
+| `/privacy` | Privacy policy | Public |
+| `/sign-in`, `/sign-up` | Authentication | Public |
+| `/dashboard`, `/leads`, `/calls`, `/appointments`, `/analytics`, `/ai-agent`, `/integrations`, `/team`, `/settings` | The app | Signed in |
+| any unknown URL | 404 page | — |
+
+Pricing on the landing page is chosen from the visitor's IP country (NGN / USD / GBP / EUR, all prices ending in 99); English / French is switchable from the floating language pill.
+
+### Run it locally
+
+```bash
+npm install && cp .env.example .env.local
+npm run dev                                          # frontend → http://localhost:3000
+cd server && npm install && npm run start:dev        # backend  → http://localhost:8000
+```
+
+The app needs the backend running to show data. Without it, pages show empty states (there is no sample data any more).
+
+### Brand assets
+
+- Logo components: `src/components/brand/spacia-logo.tsx` (`SpaciaMark`, `SpaciaLogo`) — official vectors.
+- Source files: `public/brand/spacia-{logo,mark}-{green,bright,black,white}.svg`.
+- Favicons and app icons (rounded): `public/favicon*`, `public/icon-*.png`, `public/apple-touch-icon.png`, `public/site.webmanifest`, `src/app/favicon.ico`.
+- Product name in copy: **SpaciaOS**. The official wordmark artwork reads "Spacia".
+
+### Data policy
+
+- No mock or sample data is shown in the app. Services start empty and show what the backend returns.
+- Failed actions are surfaced as errors — e.g. a call the voice provider rejects shows a plain-English error and is never simulated.
+- The waitlist count is the real number of sign-ups (no offsets).
+- `src/features/*/data/mock-*.ts` remain only for the automated tests and the internal `/primitives` showcase.
+
+### Open items before launch
+
+- Outbound calls need a voice number that can dial Nigeria (the free number can't call internationally).
+- Real privacy contact email, data-retention period, and legal review of `/privacy`.
+- Real social profile URLs in the footer; confirm non-NGN prices.
+- Set `NEXT_PUBLIC_APP_NAME=SpaciaOS` in the hosting environment.
+- Deployment plan for the marketing pages vs the app (to be decided).
 
 ---
 
@@ -22,7 +84,7 @@ Spacia acts as an automated sales acceleration layer positioned between inbound 
 | Milestone | Status | Description |
 | :--- | :---: | :--- |
 | **Day 1: Foundation** | **COMPLETE** | Next.js 16 (Turbopack) App Router architecture, TypeScript strict mode, Tailwind CSS v4, shadcn/ui component library, design token taxonomy, responsive shell, routing foundation, and global error/loading boundaries. |
-| **Day 2: Visual / Dashboard Pass** | **COMPLETE** | Refined light-mode-first aesthetic with Pacia Green (`#0d4a36`), warm off-white canvas (`#fbfbf9`), live AI activity feed, lead intake table, resizable Lead Dossier side-panel with simulated audio player & qualification matrix, pipeline funnel, appointments drawer, calls module, analytics date filtering, team roster, settings, command palette, notifications, and CSV export. |
+| **Day 2: Visual / Dashboard Pass** | **COMPLETE** | Refined light-mode-first aesthetic with SpaciaOS Green (`#0d4a36`), warm off-white canvas (`#fbfbf9`), live AI activity feed, lead intake table, resizable Lead Dossier side-panel with simulated audio player & qualification matrix, pipeline funnel, appointments drawer, calls module, analytics date filtering, team roster, settings, command palette, notifications, and CSV export. |
 | **Day 3: Authentication & Workspace** | **COMPLETE & APPROVED** | Full production Clerk authentication integration, responsive 50/50 split auth shell with typewriter animation, interactive password requirements validation, forgot password reset modal, Google sign-up detection & guidance, protected application routes via proxy middleware, authenticated user context (`AuthProvider`), multi-tenant workspace/organization context (`WorkspaceProvider` & header switcher), unauthorized/no-workspace guard state, and interactive sidebar user account menu with sign-out. *(Frontend integration complete; establishes auth contract for future backend services).* |
 | **Day 4: Core Domain Database UI Primitives** | **COMPLETE** | Production-ready suite of reusable command-center UI primitives: strongly-typed generic `DataTable` (sorting, pagination, search filter, skeleton/empty states), domain-aware `StatusBadge` (HOT/WARM/COLD, lifecycle stages, call outcomes, pulsing live dots), multi-variant `ScoreIndicator` (badge, gauge, 5-point BANT breakdown), resilient edge states (`EmptyState` presets, `ErrorState` with technical details accordion, `TableSkeleton`, `Skeleton`), modal & drawer patterns (`ConfirmDialog`, `DetailDrawer`), basic form suite (`SearchInput`, `CurrencyInput` with Nigerian Naira ₦ formatting, `Textarea`, `Checkbox`, `Switch`, `FormField`), and an interactive showcase testbench (`/primitives`). |
 | **Day 5: Lead-Management Foundation** | **COMPLETE** | Production-ready dedicated Lead Management foundation: modular `features/leads` domain module, strongly-typed `Lead` models, decoupled `leadsService` with mock API contract fallback, operational `LeadTable` built on `DataTable<Lead>` (Prospect, Property / Interest, Budget, Score, Status, Next Action), foundational `LeadFiltersBar` (text search, score category chips, domain status dropdown, filter reset), explainable `ScoreIndicator` presentation, and the `LeadDetailShell` establishing the dossier information architecture in a slide-over `DetailDrawer`. |
@@ -60,7 +122,7 @@ Spacia acts as an automated sales acceleration layer positioned between inbound 
 | :--- | :---: | :--- |
 | **Day 1: Architecture Foundation** | **COMPLETE** | Isolated NestJS 11 modular monolith in `/server`, Neon PostgreSQL connection pooling, Drizzle ORM, Zod environment schemas, standardized response/error envelopes, global validation pipes, and health probes. |
 | **Day 2: Clerk Multi-Tenant Architecture** | **COMPLETE** | Clerk-native multi-tenant authentication, session token verification, tenant-scoped data access via `BaseTenantRepository`, and cascade vs. retention deletion rules. |
-| **Day 3: Server-Side Authorization** | **COMPLETE** | Neon database membership validation (`workspace_members`), 4-tier Pacia role hierarchy (`owner`, `admin`, `sales_manager`, `sales_agent`), granular permissions, and explicit sync onboarding (`POST /api/v1/auth/sync`). |
+| **Day 3: Server-Side Authorization** | **COMPLETE** | Neon database membership validation (`workspace_members`), 4-tier SpaciaOS role hierarchy (`owner`, `admin`, `sales_manager`, `sales_agent`), granular permissions, and explicit sync onboarding (`POST /api/v1/auth/sync`). |
 | **Day 4: Core Domain Database Schemas** | **COMPLETE** | 19 live Neon PostgreSQL tables spanning Properties, Agents, Leads, Lead Events, Lead Scores, Conversations, Messages, Calls, Transcripts, Call Summaries, Qualification, Appointments, Integrations, and Notifications with composite foreign keys and multi-tenant isolation. |
 | **Day 5: Lead Ingestion Engine** | **COMPLETE** | Production-ready lead intake endpoint (`POST /api/v1/leads/ingest`), payload validation and phone/email normalization (E.164), authoritative workspace resolution, database-enforced idempotency (`idempotency_keys`), tenant-scoped duplicate detection/re-engagement, inbound event logging, and transactional outbox emission (`NewLead`). |
 | **Day 6: Lead Management APIs & Live Integration** | **COMPLETE & VERIFIED** | Production-ready Lead Management REST endpoints (`GET /api/v1/leads`, `GET /api/v1/leads/:id`, `PATCH /api/v1/leads/:id/status`, `POST /api/v1/leads/:id/activities`, `GET /api/v1/leads/:id/activities`). Decoupled DTO mapper layer (`LeadSummaryDto`, `LeadDetailDto`, `LeadActivityDto`) insulating frontend from database schema. Multi-tenant isolation enforced. Automatic immutable audit trail on status transitions. End-to-end integration with frontend UI via Next.js API gateway proxy with resilient dynamic Clerk auth tokens and JIT development membership provisioning. 10/10 automated tests passing. |
@@ -196,12 +258,12 @@ docker compose logs -f
 Spacia adheres to an editorial, high-trust luxury financial and real-estate design language:
 
 - **Light-Mode-First Canvas**: The primary application background uses a warm, softened stone off-white (`#fbfbf9` / `bg-[#fbfbf9]`) paired with pure white cards (`#ffffff`) and crisp borders (`#e7e5e4`).
-- **Signature Pacia Green**: Primary accents, brand marks, and high-priority call-to-actions utilize deep evergreen Pacia Green (`#0d4a36`), with subtle emerald highlights (`emerald-600`, `emerald-50`).
+- **Brand Greens**: `#0e6121` (logo), `#15803d` (primary accent and hover state), `#0d4a36` (deep), `#22c55e` / `#86efac` (live states and highlights). Ink is forest `#14231d`; canvas `#f4f4f2`.
 - **Qualification Accents**:
   - **Hot Leads**: Deep crimson/rose badges (`#be123c`, `bg-rose-50`) indicating 85%+ qualification score.
   - **Warm Leads**: Amber/golden badges (`#b45309`, `bg-amber-50`) indicating 60–84% qualification score.
   - **Cold / Unqualified**: Neutral slate (`#64748b`, `bg-slate-100`).
-- **Typography & Rhythm**: High-legibility sans stack (`Plus Jakarta Sans` / system UI) with tabular monospace numerals (`font-mono font-semibold tabular-nums`) for currency and percentages. High information density without visual clutter.
+- **Typography & Rhythm**: Headings in Outfit Light (never bold, no italics), card titles in Outfit Regular, body in Inter, and small uppercase micro-labels in monospace with wide tracking. Numbers use Outfit Light with tabular numerals. Buttons are square: black primary turning green on hover, white secondary with a hairline ring.
 
 ---
 
@@ -351,7 +413,12 @@ src/
    ```
 
 6. **Open in your browser:**
-   Navigate to [http://localhost:3000](http://localhost:3000). The application automatically redirects to the active `/dashboard`.
+   Navigate to [http://localhost:3000](http://localhost:3000). On `frontend`, `/` is the previous home page; the new landing page lives on `feature/landing-page`. Sign in to reach `/dashboard`.
+
+7. **Start the backend** (required for app data):
+   ```bash
+   cd server && npm install && npm run start:dev
+   ```
 
 ---
 
@@ -364,7 +431,7 @@ Reference `.env.example` for all configurable variables:
 # 1. CLIENT-SAFE CONFIGURATION (Exposed to browser bundle)
 # ------------------------------------------------------------------------------
 NEXT_PUBLIC_APP_URL=http://localhost:3000
-NEXT_PUBLIC_APP_NAME=Spacia
+NEXT_PUBLIC_APP_NAME=SpaciaOS
 NEXT_PUBLIC_API_BASE_URL=http://localhost:3000/api
 NEXT_PUBLIC_DEFAULT_WORKSPACE_ID=ws_default_spacia
 
@@ -414,18 +481,15 @@ WEBHOOK_SIGNING_SECRET=your_webhook_signing_secret_here
 
 ---
 
-## 10. Mock Data Strategy & Live API Transition
+## 10. Data Strategy — Real Data Only
 
-All data utilized across Day 1 and Day 2 lives in `@/features/dashboard/data/mock-data.ts`. The schema directly mirrors the target API contracts:
-- `DashboardLead`: Matches `/api/v1/leads` response.
-- `DashboardAICallEvent`: Matches `/api/v1/calls/events` WebSocket stream.
-- `UpcomingViewing`: Matches `/api/v1/appointments` response.
-- `PipelineFunnelStage`: Matches `/api/v1/analytics/funnel` payload.
+The app reads everything from the backend (`/server`) through the typed API client. Services start empty, and pages show empty states until real data exists. Earlier sample data was removed from the user-facing app on 3 Oct 2026:
 
-**Transitioning to Live APIs (Day 3)**:
-1. Replace mock imports in feature components with TanStack Query (`useQuery`, `useMutation`) or native Server Component fetchers.
-2. Direct all calls through the typed client in `@/lib/config/env.ts` (`NEXT_PUBLIC_API_BASE_URL`).
-3. Connect the `AIAgentLiveFeed` component to a WebSocket or SSE endpoint (`/api/v1/stream/ai-feed`).
+- The Calls page no longer seeds its list with sample calls; its summary stats are computed from real calls.
+- Starting a call never falls back to a scripted call or transcript, and ending a call never posts a simulated end-of-call event.
+- Takeovers no longer record a placeholder broker name.
+
+Sample fixtures in `src/features/*/data/mock-*.ts` are kept only for the automated test suite and the internal `/primitives` showcase.
 
 ---
 
@@ -491,7 +555,7 @@ Day 3 delivered production-ready Clerk authentication, multi-tenant workspace ro
 
 ## 14. Day 4 — Core Domain Database UI Primitives (Completed)
 
-Day 4 delivers a standardized suite of production-grade UI primitives and data-display patterns across the PaciaOS frontend:
+Day 4 delivers a standardized suite of production-grade UI primitives and data-display patterns across the SpaciaOS frontend:
 
 ### 1. Generic Data Table (`@/components/ui/data-table.tsx`)
 - **Type-safe `<TData>` Component**: Renders strongly-typed datasets with custom column definitions, headers, and alignments.
@@ -524,7 +588,7 @@ Day 4 delivers a standardized suite of production-grade UI primitives and data-d
 - **`CurrencyInput`**: Real-estate currency input with prefix formatting (`₦`), thousands separators, and sanitized numeric emission.
 - **`SearchInput`**: Search bar with search icon and instant clear button.
 - **`FormField` Suite**: Accessible wrapper with `FormLabel`, `FormDescription`, and `FormMessage`.
-- **`Textarea`, `Checkbox`, `Switch`**: Accessible form primitives styled in Pacia luxury real-estate tokens.
+- **`Textarea`, `Checkbox`, `Switch`**: Accessible form primitives styled in SpaciaOS luxury real-estate tokens.
 
 ### 7. Interactive Testbench
 - **Dedicated Developer Route (`/primitives`)**: Interactive showcase enabling live manipulation of all Day 4 primitives, state toggles (loading, error, empty), score sliders, dialogs, drawers, and form inputs. Accessible directly via URL (`/primitives`) for developer testing.
@@ -533,7 +597,7 @@ Day 4 delivers a standardized suite of production-grade UI primitives and data-d
 
 ## 15. Day 5 — Lead-Management Foundation (Completed)
 
-Day 5 establishes the dedicated Lead Management domain and operational command center for PaciaOS:
+Day 5 establishes the dedicated Lead Management domain and operational command center for SpaciaOS:
 
 ### 1. Dedicated Leads Domain Module (`@/features/leads/`)
 - **Strongly-Typed Domain Models (`types/index.ts`)**: Models representing `Lead`, `LeadScoreCategory` (`HOT`, `WARM`, `COLD`), `LeadStatus` (`Qualified`, `Viewing Booked`, `In Conversation`, `Contacting`, `Follow-up`, `New`), `LeadFilterParams`, and `LeadsApiResponse`.
@@ -709,7 +773,7 @@ Day 7 establishes a dedicated, first-class real-estate property intelligence lay
 
 ## 18. Day 8 — Event System & Automation Foundation (Completed & Verified)
 
-Day 8 prepares the PaciaOS frontend for asynchronous workflow execution states, real-estate telephony and WhatsApp events, resilient retry/failure recovery, and distinct AI autonomous versus human broker actor attribution:
+Day 8 prepares the SpaciaOS frontend for asynchronous workflow execution states, real-estate telephony and WhatsApp events, resilient retry/failure recovery, and distinct AI autonomous versus human broker actor attribution:
 
 ### 1. Dedicated Event Domain Architecture (`@/features/events`)
 - **Strongly-Typed Domain Models (`types/index.ts`)**:
@@ -732,7 +796,7 @@ Day 8 prepares the PaciaOS frontend for asynchronous workflow execution states, 
 
 ### 3. Actor Attribution: AI Autonomous vs. Human Broker Indicators
 - **`AIActivityIndicator` (`components/ai-activity-indicator.tsx`)**:
-  - Distinctive Pacia Green branding with emerald status pulse.
+  - Distinctive SpaciaOS Green branding with emerald status pulse.
   - Displays agent persona ("Spacia Voice Core"), neural model version ("Neural Executive v2.4"), latency metrics ("380ms"), and confidence percentage.
   - Supports `badge`, `compact`, and `detailed` card variants with live streaming pulse toggle.
 - **`HumanActivityIndicator` (`components/human-activity-indicator.tsx`)**:
@@ -816,7 +880,7 @@ src/features/ai-agent/
 - **`BuyerIntentCard`**: Composite presentation combining prospect identity, confidence gauge, intent classification, extracted quote, signal pills, and post-call outcomes:
   - **Autonomous Company Calendar Bookings**: Automatically checks team availability and schedules in-person physical inspections or virtual tours upon positive call outcomes.
   - **Human Closer Payment Stage**: Seamless handoff for the physical showing and deposit/escrow collection (`[ Collect Payment ]`).
-  - **Pacia Design System Fills**: Filter pill controls with `#0d4a36` active fill and soft neutral inactive states.
+  - **SpaciaOS Design System Fills**: Filter pill controls with `#0d4a36` active fill and soft neutral inactive states.
 
 ### 5. Technical Verification Status
 
@@ -1145,7 +1209,7 @@ Day 14 consolidates and connects all operational layers into the first complete,
 - **Property Edge States**: `PropertyUnknownState` for unassigned listings and `PropertyUnavailableState` for off-market inventory.
 
 ### 8. Design System Fidelity & Fluid Dialog Centering
-- **Pacia Green Identity**: Signature `#0d4a36` brand color with `#fbfbf9` canvas, `#ffffff` cards, and stone borders.
+- **SpaciaOS Green Identity**: Signature `#0d4a36` brand color with `#fbfbf9` canvas, `#ffffff` cards, and stone borders.
 - **Centered Viewport Dialogs**: Replaced buggy transform offsets with `fixed inset-0 flex items-center justify-center p-4` wrapper, eliminating top cutoffs across all viewport sizes.
 - **Apple/Linear-Grade Animations**: Fluid entrance keyframes (`spaciaDialogEnter`) using `cubic-bezier(0.16, 1, 0.3, 1)`.
 
@@ -1474,7 +1538,7 @@ Day 29 establishes enterprise production readiness across client crash resilienc
 
 ## 37. Backend Architecture & Milestones (`/server`)
 
-The Pacia modular monolith backend resides in `/server` (NestJS 11 + Neon PostgreSQL + Drizzle ORM + BullMQ + Redis). Full technical documentation and verification runbooks are recorded in [`server/README.md`](server/README.md).
+The SpaciaOS modular monolith backend resides in `/server` (NestJS 11 + Neon PostgreSQL + Drizzle ORM + BullMQ + Redis). Full technical documentation and verification runbooks are recorded in [`server/README.md`](server/README.md).
 
 ### Recent Backend Milestones:
 - **Day 7 — Property Adapter Layer (`features/properties`)**:
