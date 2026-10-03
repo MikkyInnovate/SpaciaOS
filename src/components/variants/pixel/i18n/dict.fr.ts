@@ -21,7 +21,7 @@ export const fr: Dict = {
     statusLabel: "En direct",
     feed: ["Lead portail → appelé en 00:03", "Lead WhatsApp → qualifié", "Lead pub → visite réservée", "Lead web → repris par l'agent"],
     title: "La vitesse commerciale autonome pour l'immobilier de luxe.",
-    body: "SpaciaOS est l'agent vocal IA des équipes immobilières. Il appelle chaque nouvelle demande, pose les bonnes questions et réserve la visite dans votre agenda, jour et nuit.",
+    body: "Spacia est le système de vente IA des équipes immobilières. Il répond à chaque nouvelle demande en quelques secondes, qualifie et relance les acheteurs, réserve les visites et transmet vos meilleurs leads à vos agents."
   },
 
   marquee: {
@@ -299,7 +299,7 @@ export const fr: Dict = {
     signIn: "Se connecter",
     comingSoon: "Bientôt",
     soon: ["Outlook Agenda", "Chat IA WhatsApp"],
-    specs: ["Agent vocal IA pour l'immobilier", "Appelle chaque lead en moins de 3 secondes", "Répond 24 h/24 · réserve les visites"],
+    specs: ["Le système de vente IA pour l'immobilier", "Répond à chaque lead en moins de 3 secondes", "Qualifie, relance · réserve les visites"],
     featureCaption: "Chaque annonce, une réponse",
     featureAlts: ["Une villa blanche avec piscine", "Un immeuble d'appartements moderne", "Un salon lumineux et moderne"],
     rights: "Spacia Technologies Ltd. Tous droits réservés.",
@@ -324,7 +324,7 @@ export const fr: Dict = {
     noteLabel: "Un mot de l'équipe",
     noteTitle: "Nous coulons encore les fondations.",
     noteP1: "Dans l'immobilier, celui qui rappelle en premier remporte souvent l'acheteur. La plupart des équipes ne peuvent pas répondre à chaque lead dès son arrivée.",
-    noteP2: "Nous construisons SpaciaOS pour changer cela, quelques équipes à la fois, afin que chaque agent vocal ressemble à l'équipe qu'il représente.",
+    noteP2: "Nous construisons SpaciaOS pour changer cela, quelques équipes à la fois, afin que chaque agent commercial IA ressemble à l'équipe qu'il représente.",
     facts: [
       ["Intégration", "Petits groupes"],
       ["Conçu pour", "Agences & promoteurs"],
@@ -363,7 +363,7 @@ export const fr: Dict = {
     copied: "Lien d'invitation copié.",
     copyFailed: "Copie impossible. Sélectionnez le lien et copiez-le manuellement.",
     share: { whatsapp: "WhatsApp", linkedin: "LinkedIn", x: "X" },
-    shareText: "Je viens de rejoindre la liste d'attente de SpaciaOS, un agent vocal IA qui répond à chaque lead immobilier en quelques secondes. Rejoignez-la avec mon invitation : {link}",
+    shareText: "Je viens de rejoindre la liste d'attente de SpaciaOS, le système de vente IA qui répond à chaque lead immobilier, le qualifie et réserve la visite. Rejoignez-la avec mon invitation : {link}",
     profileTitle: "Parlez-nous de votre équipe",
     fullName: "Nom complet",
     fullNamePlaceholder: "Ada Okafor",

@@ -15,12 +15,12 @@ import { SmoothAnchors } from "@/components/variants/pixel/smooth-anchors";
 import { PixelShell } from "@/components/variants/pixel/i18n/pixel-shell";
 
 export const metadata: Metadata = {
-  title: { absolute: "Join the Waitlist · SpaciaOS AI Voice Agent for Real Estate" },
+  title: { absolute: "Join the Waitlist · Spacia, the AI Sales System for Real Estate" },
   description:
-    "Get early access to SpaciaOS, the AI voice agent that calls every property lead in seconds and books inspections for you. Free to join, no commitment.",
+    "Get early access to Spacia, the AI sales system that answers, qualifies and follows up every property lead and books viewings for your team. Free to join, no commitment.",
   openGraph: {
-    title: "Never let a lead go cold | SpaciaOS waitlist",
-    description: "Early access to the AI voice agent for real estate teams. Free to join.",
+    title: "Never let a lead go cold | Spacia waitlist",
+    description: "Early access to the AI sales system for real estate teams. Free to join."
   },
 };
 

@@ -22,7 +22,7 @@ export const en = {
     statusLabel: "Live",
     feed: ["Portal lead → called 00:03", "WhatsApp lead → qualified", "Ad lead → viewing booked", "Web lead → agent took over"],
     title: "Autonomous sales speed for luxury real estate.",
-    body: "SpaciaOS is the AI voice agent for real estate teams. It calls every new enquiry, asks the right questions and books the inspection on your calendar, day or night.",
+    body: "Spacia is the AI sales system for real estate teams. It answers every new enquiry in seconds, qualifies and follows up with buyers, books viewings, and hands your best leads to your agents."
   },
 
   marquee: {
@@ -300,7 +300,7 @@ export const en = {
     signIn: "Sign in",
     comingSoon: "Coming soon",
     soon: ["Outlook Calendar", "WhatsApp AI chat"],
-    specs: ["AI voice agent for real estate", "Calls every lead in under 3 seconds", "Answers 24/7 · books inspections"],
+    specs: ["The AI sales system for real estate", "Answers every lead in under 3 seconds", "Qualifies, follows up · books viewings"],
     featureCaption: "Every listing, answered",
     featureAlts: ["A white villa with a pool", "A modern apartment building", "A bright, modern living room"],
     rights: "Spacia Technologies Ltd. All rights reserved.",
@@ -325,7 +325,7 @@ export const en = {
     noteLabel: "A note from the team",
     noteTitle: "We're still pouring the foundation.",
     noteP1: "In real estate, whoever calls back first usually wins the buyer. Most teams just can't answer every lead the moment it lands.",
-    noteP2: "We're building SpaciaOS to fix that, a few teams at a time, so every voice agent sounds like the team it works for.",
+    noteP2: "We're building SpaciaOS to fix that, a few teams at a time, so every AI sales agent sounds like the team it works for.",
     facts: [
       ["Onboarding", "Small groups"],
       ["Built for", "Brokerages & developers"],
@@ -365,7 +365,7 @@ export const en = {
     copied: "Invite link copied.",
     copyFailed: "Couldn't copy. Select the link and copy it manually.",
     share: { whatsapp: "WhatsApp", linkedin: "LinkedIn", x: "X" },
-    shareText: "I just joined the SpaciaOS waitlist, an AI voice agent that answers every real estate lead in seconds. Join with my invite: {link}",
+    shareText: "I just joined the SpaciaOS waitlist, the AI sales system that answers, qualifies and books every real estate lead. Join with my invite: {link}",
     profileTitle: "Tell us about your team",
     fullName: "Full name",
     fullNamePlaceholder: "Ada Okafor",

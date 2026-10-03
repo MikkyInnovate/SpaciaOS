@@ -158,7 +158,7 @@ export function LeadDossierPanel({ lead, onClose, onTakeover, callEvent }: LeadD
                 <span>Executive AI Call Summary</span>
               </div>
               <p className="text-xs text-stone-800 leading-relaxed font-normal">
-                {callEvent?.summary || lead.aiNotes || "Inbound inquiry qualified via autonomous voice agent. All intent parameters verified."}
+                {callEvent?.summary || lead.aiNotes || "Inbound enquiry qualified by Spacia. All intent parameters verified."}
               </p>
             </div>
 
