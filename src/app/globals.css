@@ -725,3 +725,34 @@ body {
   .intro-overlay { display: none; }
   .loader-breathe, .loader-cell { animation: none; }
 }
+
+/* ===== "Call connect" CTA (CallLink): hover plays a live call → CONNECTED ✓ ===== */
+.call-btn { position: relative; overflow: hidden; isolation: isolate; -webkit-tap-highlight-color: transparent;
+  transition: background-color 220ms ease, color 220ms ease, transform 180ms cubic-bezier(.2, .8, .2, 1); }
+.call-btn:active { transform: scale(.97); transition-duration: 70ms; }
+.call-btn:focus-visible { outline: 2px solid #22c55e; outline-offset: 3px; }
+.call-btn .call-face { display: inline-flex; align-items: center; gap: inherit; flex: 1; justify-content: inherit;
+  transition: transform 260ms cubic-bezier(.2, .8, .2, 1), opacity 180ms ease; }
+.call-btn .call-line { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; gap: .55rem;
+  font-variant-numeric: tabular-nums; white-space: nowrap; transform: translateY(105%); transition: transform 260ms cubic-bezier(.2, .8, .2, 1); }
+.call-btn .call-bars { display: inline-flex; align-items: flex-end; gap: 2px; height: 11px; }
+.call-btn .call-bars i { width: 2px; background: currentColor; opacity: .25; }
+.call-btn .call-bars i:nth-child(1) { height: 3px; } .call-btn .call-bars i:nth-child(2) { height: 6px; }
+.call-btn .call-bars i:nth-child(3) { height: 8px; } .call-btn .call-bars i:nth-child(4) { height: 11px; }
+.call-btn.is-on .call-face { transform: translateY(-105%); opacity: 0; }
+.call-btn.is-on .call-line { transform: translateY(0); }
+.call-btn.is-on .call-bars i { animation: call-bar 900ms steps(1, end) infinite; }
+.call-btn.is-on .call-bars i:nth-child(2) { animation-delay: 150ms; }
+.call-btn.is-on .call-bars i:nth-child(3) { animation-delay: 300ms; }
+.call-btn.is-on .call-bars i:nth-child(4) { animation-delay: 450ms; }
+.call-btn.is-connected { background-color: #15803d; color: #fff; }
+.call-btn.call-light.is-connected { background-color: #22c55e; color: #052e16; }
+.call-btn.is-connected .call-bars i { animation: none; opacity: 1; }
+@keyframes call-bar { 0%, 100% { opacity: .25; } 40% { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .call-btn .call-face, .call-btn .call-line { transition: opacity 120ms ease; }
+  .call-btn.is-on .call-face { transform: none; }
+  .call-btn .call-line { transform: none; opacity: 0; }
+  .call-btn.is-on .call-line { opacity: 1; }
+  .call-btn.is-on .call-bars i { animation: none; opacity: 1; }
+}

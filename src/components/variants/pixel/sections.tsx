@@ -16,6 +16,7 @@ import { FaqAccordion } from "./faq-accordion";
 import { PlanPrice, type PlanId } from "./pricing-currency";
 import { useT } from "./i18n";
 import type { Dict } from "./i18n/dict.en";
+import { CallLink } from "./call-link";
 
 /* Shared bits ------------------------------------------------------- */
 
@@ -39,7 +40,7 @@ export function Label({ children, dark = false }: { children: React.ReactNode; d
 }
 
 export const SQUARE_PRIMARY =
-  "inline-flex items-center gap-2 bg-zinc-950 px-5 py-3 font-mono text-[12px] uppercase tracking-[0.12em] text-white transition-colors duration-300 hover:bg-[#15803d]";
+  "inline-flex items-center gap-2 bg-zinc-950 px-5 py-3 font-mono text-[12px] uppercase tracking-[0.12em] text-white";
 export const SQUARE_GHOST =
   "inline-flex items-center gap-2 bg-white px-5 py-3 font-mono text-[12px] uppercase tracking-[0.12em] text-zinc-800 ring-1 ring-zinc-300 transition-colors duration-300 hover:ring-[#15803d] hover:text-[#15803d]";
 
@@ -76,9 +77,9 @@ export function PixelNav({
           </Link>
         ))}
       </nav>
-      <Link href={ctaHref} className="bg-zinc-950 px-4 py-2.5 font-mono text-[11px] uppercase tracking-[0.14em] text-white transition-colors hover:bg-[#15803d]">
+      <CallLink href={ctaHref} className="inline-flex items-center bg-zinc-950 px-4 py-2.5 font-mono text-[11px] uppercase tracking-[0.14em] text-white">
         {t.common.joinWaitlist}
-      </Link>
+      </CallLink>
     </header>
   );
 }
@@ -104,9 +105,9 @@ export function PixelHero() {
           </p>
         </Reveal>
         <Reveal delay={0.24} className="pointer-events-auto mt-8 flex flex-wrap gap-3">
-          <Link href={WAITLIST_HREF} className={SQUARE_PRIMARY}>
+          <CallLink href={WAITLIST_HREF} className={SQUARE_PRIMARY}>
             {t.common.joinTheWaitlist} <ArrowRight className="h-3.5 w-3.5" />
-          </Link>
+          </CallLink>
           <a href="#process" className={SQUARE_GHOST}>
             {t.common.seeHow}
           </a>
@@ -424,14 +425,15 @@ export function PixelPricing() {
                   </EnterItem>
                 ))}
               </EnterGroup>
-              <Link
+              <CallLink
                 href={`${WAITLIST_HREF}?plan=${p.id}`}
-                className={`relative mt-8 inline-flex items-center justify-between px-4 py-3 font-mono text-[12px] uppercase tracking-[0.12em] transition-colors ${
-                  featured ? "bg-white text-[#0d4a36] hover:bg-zinc-950 hover:text-white" : "bg-zinc-950 text-white hover:bg-[#15803d]"
+                tone={featured ? "light" : "dark"}
+                className={`mt-8 inline-flex items-center justify-between px-4 py-3 font-mono text-[12px] uppercase tracking-[0.12em] ${
+                  featured ? "bg-white text-[#0d4a36]" : "bg-zinc-950 text-white"
                 }`}
               >
                 {p.cta} <ArrowUpRight className="h-3.5 w-3.5" />
-              </Link>
+              </CallLink>
             </EnterItem>
           );
         })}
@@ -508,9 +510,9 @@ export function PixelFaqCta() {
               </p>
             </EnterItem>
             <EnterItem from="scale" className="mt-8">
-              <Link href={WAITLIST_HREF} className="inline-flex items-center gap-2 bg-white px-5 py-3 font-mono text-[12px] uppercase tracking-[0.12em] text-[#0d4a36] transition-colors hover:bg-[#22c55e]">
+              <CallLink href={WAITLIST_HREF} tone="light" className="inline-flex items-center gap-2 bg-white px-5 py-3 font-mono text-[12px] uppercase tracking-[0.12em] text-[#0d4a36]">
                 {t.common.joinTheWaitlist} <ArrowRight className="h-3.5 w-3.5" />
-              </Link>
+              </CallLink>
             </EnterItem>
           </EnterGroup>
         </EnterItem>

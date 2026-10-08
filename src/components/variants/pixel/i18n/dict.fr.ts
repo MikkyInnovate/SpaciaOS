@@ -13,6 +13,8 @@ export const fr: Dict = {
     joinTheWaitlist: "Rejoindre la liste d'attente",
     seeHow: "Voir comment ça marche",
     perMonth: "/MOIS",
+    calling: "Appel",
+    connected: "Connecté",
   },
 
   nav: { product: "Produit", howItWorks: "Fonctionnement", pricing: "Tarifs", faq: "FAQ", whatYouGet: "Avantages" },

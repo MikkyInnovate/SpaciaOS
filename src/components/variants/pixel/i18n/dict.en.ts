@@ -14,6 +14,8 @@ export const en = {
     joinTheWaitlist: "Join the waitlist",
     seeHow: "See how it works",
     perMonth: "/MO",
+    calling: "Calling",
+    connected: "Connected",
   },
 
   nav: { product: "Product", howItWorks: "How it works", pricing: "Pricing", faq: "FAQ", whatYouGet: "What you get" },
