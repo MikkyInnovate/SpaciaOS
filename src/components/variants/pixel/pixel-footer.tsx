@@ -10,6 +10,7 @@ import { WAITLIST_HREF } from "./data";
 import { BRAND_ICONS } from "@/components/brand/brand-icons";
 import { fmt, useT } from "./i18n";
 import type { Dict } from "./i18n/dict.en";
+import { CallLink } from "./call-link";
 
 /* Footer in the Power Type Foundry layout (Design Brain, frame 3770):
    slim link columns up top, a rotating feature card on the right,
@@ -104,12 +105,12 @@ function FeatureCard() {
         </span>
       </div>
       <div className="mt-2 flex justify-end">
-        <Link
+        <CallLink
           href={WAITLIST_HREF}
-          className="inline-flex items-center gap-2 bg-zinc-950 px-4 py-2.5 font-mono text-[11px] uppercase tracking-[0.12em] text-white transition-colors hover:bg-[#15803d]"
+          className="inline-flex items-center gap-2 bg-zinc-950 px-4 py-2.5 font-mono text-[11px] uppercase tracking-[0.12em] text-white"
         >
           {t.joinWaitlist} <ArrowUpRight className="h-3.5 w-3.5" />
-        </Link>
+        </CallLink>
       </div>
     </div>
   );
